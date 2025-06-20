@@ -604,9 +604,4 @@ class ThreeKingsLayer:
                 "conflict_count": len(self.conflict_resolution_history),
                 "council_majority_threshold": self.majority_threshold
             }
-        } = {}
-        
-        # Ethics King vote based on ethical status
-        ethics_status = ethics_data.get("evaluation", {}).get("status", "acceptable")
-        if ethics_status == "review_needed":
-            votes
+        }

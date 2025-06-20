@@ -36,18 +36,25 @@ Copy
 
 ### Usage
 
-To start an interactive session with the Unified Synthetic Mind:
+To start an interactive session with the Unified Synthetic Mind you can simply run:
+
+```bash
+python -m usm
+```
+
+This will launch a small command line interface. If you prefer to use the API directly:
 
 ```python
 from usm import UnifiedSyntheticMind
 
-usm = UnifiedSyntheticMind()
-usm.initialize()
+mind = UnifiedSyntheticMind()
 
 while True:
- user_input = input("> ")
- response = usm.process_input(user_input)
- print(response)
+    user_input = input("> ")
+    response = mind.get_response(user_input)
+    print(response)
+```
+
 Testing and Validation
 The tests/ directory contains a comprehensive suite of validation scenarios, covering capabilities such as:
 

@@ -18,6 +18,39 @@ class PatternRecognitionBlock(BaseBlock):
     def __init__(self):
         """Initialize the Pattern Recognition block."""
         super().__init__("PatternRecognition")
+
+        # Provide simple default implementations if detailed ones are missing
+        if not hasattr(self, "_detect_topic_patterns"):
+            self._detect_topic_patterns = lambda text, tokens, data, concepts: []
+        if not hasattr(self, "_detect_relationship_patterns"):
+            self._detect_relationship_patterns = lambda text, tokens, data, concepts: []
+        if not hasattr(self, "_detect_structural_patterns"):
+            self._detect_structural_patterns = lambda text, tokens, data, concepts: []
+        if not hasattr(self, "_detect_temporal_patterns"):
+            self._detect_temporal_patterns = lambda text, tokens, data, concepts: []
+        if not hasattr(self, "_detect_emotional_patterns"):
+            self._detect_emotional_patterns = lambda text, tokens, data, concepts: []
+
+        if not hasattr(self, "_extract_noun_phrases"):
+            self._extract_noun_phrases = lambda text, tokens: []
+        if not hasattr(self, "_extract_entities"):
+            self._extract_entities = lambda text, tokens: []
+        if not hasattr(self, "_extract_key_terms"):
+            self._extract_key_terms = lambda text, tokens: []
+        if not hasattr(self, "_extract_concepts"):
+            def _extract_concepts(text, tokens):
+                concepts = []
+                for extractor in self.concept_extractors:
+                    try:
+                        concepts.extend(extractor(text, tokens))
+                    except Exception:
+                        pass
+                return concepts
+            self._extract_concepts = _extract_concepts
+        if not hasattr(self, "_detect_intent"):
+            self._detect_intent = lambda text, concepts, patterns: {"type": "inform", "confidence": 0.5}
+        if not hasattr(self, "_detect_ethical_dimensions"):
+            self._detect_ethical_dimensions = lambda text, concepts: {}
         
         # Initialize pattern detectors
         self.pattern_detectors = {
@@ -36,7 +69,7 @@ class PatternRecognitionBlock(BaseBlock):
         ]
         
         # Maintain detector performance statistics
-        self.detector_stats = {detector: {"calls": 0, "patterns_found": 0} 
+        self.detector_stats = {detector: {"calls": 0, "patterns_found": 0}
                               for detector in self.pattern_detectors}
     
     def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:

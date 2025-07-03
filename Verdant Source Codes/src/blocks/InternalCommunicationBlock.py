@@ -401,6 +401,8 @@ class InternalCommunicationBlock(BaseBlock):
             "confidence_scores": information_analysis["confidence_scores"],
             "context_markers": information_analysis["context_markers"]
         }
+
+        memory_data = chunk.get_section_content("memory_section") or {}
         
         # Add ethical flags if available
         ethics_data = chunk.get_section_content("ethics_king_section") or {}

@@ -2,7 +2,9 @@ import numpy as np
 import time
 from typing import Dict, List, Any, Optional
 
-class EthicsKing:
+from .BaseKing import BaseKing
+
+class EthicsKing(BaseKing):
     """
     Ethics King: Oversees ethical considerations and moral alignment 
     in the Unified Synthetic Mind system.
@@ -15,6 +17,7 @@ class EthicsKing:
         """
         Initialize the Ethics King with core ethical principles and governance mechanisms.
         """
+        super().__init__("EthicsKing")
         # Core ethical principles with initial configurations
         self.principles = {
             "Non-Maleficence": {

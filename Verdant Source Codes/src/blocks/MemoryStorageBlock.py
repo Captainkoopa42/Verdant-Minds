@@ -3,8 +3,12 @@ import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 from collections import OrderedDict
 
+from .BaseBlock import BaseBlock
+from ..core.cognitive_chunk import CognitiveChunk
+from ..memory.memory_ecwf_bridge import MemoryECWFBridge
 
-class MemoryStorageBlock:
+
+class MemoryStorageBlock(BaseBlock):
     """
     A thread-safe in-memory storage block implementation with expiration and size limits.
     
@@ -16,14 +20,10 @@ class MemoryStorageBlock:
     - Statistics and monitoring
     """
     
-    def __init__(self, max_size: int = 1000, default_ttl: Optional[int] = None):
-        """
-        Initialize the memory storage block.
-        
-        Args:
-            max_size: Maximum number of items to store before eviction
-            default_ttl: Default time-to-live in seconds for items (None means no expiration)
-        """
+    def __init__(self, memory_bridge: MemoryECWFBridge, max_size: int = 1000, default_ttl: Optional[int] = None):
+        """Initialize the memory storage block."""
+        super().__init__("MemoryStorage")
+        self.memory_bridge = memory_bridge
         self._store: OrderedDict = OrderedDict()
         self._expiry: Dict[str, float] = {}
         self._max_size = max_size
@@ -37,6 +37,23 @@ class MemoryStorageBlock:
             "inserts": 0,
             "updates": 0,
         }
+
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Store and retrieve concepts from the memory web."""
+        sensory = chunk.get_section_content("sensory_input_section") or {}
+        text = sensory.get("input_text", "")
+        if text:
+            self.memory_bridge.memory_web.add_thought(text[:32])
+
+        chunk.update_section(
+            "memory_section",
+            {
+                "retrieved_concepts": [text[:32]] if text else [],
+                "timestamp": time.time(),
+            },
+        )
+        self.log_process(chunk, "memory_storage", {"stored_text": text[:32]})
+        return chunk
     
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """

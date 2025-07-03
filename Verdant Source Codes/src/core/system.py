@@ -629,6 +629,12 @@ class UnifiedSystem:
         }
         
         return system_metrics
+
+    def visualize_memory(self, output_file: str = "memory_graph.png") -> str:
+        """Generate a visualization of the Memory Web."""
+        if hasattr(self.memory_web, "visualize"):
+            return self.memory_web.visualize(output_file)
+        return ""
     
     def run_integration_tests(self) -> Dict[str, Any]:
         """

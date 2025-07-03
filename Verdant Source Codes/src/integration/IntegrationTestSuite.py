@@ -566,9 +566,9 @@ def main():
     
     Demonstrates how to run integration tests and generate reports.
     """
-    # This would typically be imported from your actual system module
-    from your_unified_system_module import UnifiedSyntheticMind
-    from your_integration_manager_module import BlockIntegrationManager
+    # Use the real system and integration manager
+    from usm import UnifiedSyntheticMind
+    from .BlockIntegrationManager import BlockIntegrationManager
     
     # Create system and integration manager
     system = UnifiedSyntheticMind()

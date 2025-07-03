@@ -520,3 +520,19 @@ class MemoryWeb:
             **activation_metrics,
             **time_metrics
         }
+
+    def visualize(self, output_file: str = "memory_graph.png") -> str:
+        """Visualize the memory graph using networkx and matplotlib."""
+        try:
+            import matplotlib.pyplot as plt
+
+            plt.figure(figsize=(8, 6))
+            pos = nx.spring_layout(self.graph)
+            nx.draw(self.graph, pos, with_labels=True, node_size=300, font_size=8)
+            plt.tight_layout()
+            plt.savefig(output_file)
+            plt.close()
+            return output_file
+        except Exception as e:
+            print(f"Memory visualization failed: {e}")
+            return ""

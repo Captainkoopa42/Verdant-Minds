@@ -577,8 +577,8 @@ def main():
     """
     Demonstration of the integration testing framework.
     """
-    # This would typically be called with an actual UnifiedSyntheticMind system
-    from your_unified_system_module import UnifiedSyntheticMind
+    # Use the real system module
+    from usm import UnifiedSyntheticMind
     
     # Create system
     system = UnifiedSyntheticMind()

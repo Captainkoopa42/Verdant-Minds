@@ -1,4 +1,6 @@
-numpy
-tensorflow
-networkx
-torch
+numpy>=1.21
+networkx>=3.0
+matplotlib>=3.4
+python-louvain>=0.16
+PyJWT>=2.0
+Werkzeug>=2.0

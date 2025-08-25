@@ -19,6 +19,7 @@ from src.blocks.continual_learning_block import ContinualLearningBlock
 from src.kings.three_kings_layer import ThreeKingsLayer
 from src.core.system_learning import SystemWideLearning
 from src.integration.integration_tools import integrate_system_tools
+from src.integration.SystemVisualizer import SystemVisualizer
 from src.utils.logging_utils import setup_logger
 
 class UnifiedSystem:
@@ -70,12 +71,15 @@ class UnifiedSystem:
         
         # Create system learning component
         self.system_learning = SystemWideLearning(self)
-        
+
         # Initialize 9-Block system
         self.blocks = self._initialize_blocks()
-        
+
         # Initialize Three Kings Layer
         self.three_kings_layer = ThreeKingsLayer()
+
+        # Visualization helper
+        self.visualizer = SystemVisualizer()
         
         # Define processing order
         self.processing_order = [
@@ -245,9 +249,23 @@ class UnifiedSystem:
             "glass_transition_temp": self.metrics["glass_transition_temp"],
             "system_entropy": self.metrics["system_entropy"]
         })
-        
+
         self.logger.info(f"Processing complete. Total time: {sum(processing_times.values()):.3f}s")
-        
+
+        # Log data for visualization
+        reasoning_data = chunk.get_section_content("reasoning_section") or {}
+        ethics_data = chunk.get_section_content("ethics_king_section") or {}
+        memory_data = chunk.get_section_content("memory_section") or {}
+
+        self.visualizer.log_cycle_data({
+            "cycle": self.metrics["total_interactions"],
+            "confidence": reasoning_data.get("confidence_score"),
+            "ethics": ethics_data.get("evaluation", {}).get("status"),
+            "memory_delta": len(memory_data.get("retrieved_concepts", [])),
+            "active_blocks": processing_times,
+            "chunk": chunk.chunk_id,
+        })
+
         return chunk
     
     def get_response(self, input_text: str, metadata: Dict[str, Any] = None) -> str:

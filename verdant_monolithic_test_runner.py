@@ -71,7 +71,7 @@ print("[✅] System initialization complete.\n")
 # ---------------------------------------------------------------------------
 # Helper for executing a single processing cycle with block-level protection
 # ---------------------------------------------------------------------------
-def run_cycle(input_text: str) -> Tuple[Any, Dict[str, Any], Dict[str, str]]:
+def run_cycle(input_text: str, cycle_num: int = 0) -> Tuple[Any, Dict[str, Any], Dict[str, str]]:
     """Execute a processing cycle with block-level error capture.
 
     Returns
@@ -135,6 +135,21 @@ def run_cycle(input_text: str) -> Tuple[Any, Dict[str, Any], Dict[str, str]]:
             },
         )
 
+    if chunk is not None:
+        reasoning = chunk.get_section_content("reasoning_section") or {}
+        ethics = chunk.get_section_content("ethics_king_section") or {}
+        memory = chunk.get_section_content("memory_section") or {}
+        SYSTEM.visualizer.log_cycle_data(
+            {
+                "cycle": cycle_num,
+                "confidence": reasoning.get("confidence_score"),
+                "ethics": ethics.get("evaluation", {}).get("status"),
+                "memory_delta": len(memory.get("retrieved_concepts", [])),
+                "active_blocks": timings,
+                "chunk": chunk.chunk_id,
+            }
+        )
+
     return chunk, timings, errors
 
 
@@ -152,7 +167,7 @@ if __name__ == "__main__":
     if args.user_input:
         print("\n[🧠] Processing interactive input...")
         cycle_start = time.time()
-        chunk, timings, errors = run_cycle(args.user_input)
+        chunk, timings, errors = run_cycle(args.user_input, 1)
         cycle_time = round(time.time() - cycle_start, 3)
 
         if chunk is not None and not errors:
@@ -177,6 +192,8 @@ if __name__ == "__main__":
             for blk, err in errors.items():
                 print(f"     ↪ {blk}: {err}")
             print(f"     ↪ Partial Module Times: {timings}")
+
+        SYSTEM.visualizer.generate_visual_report("verdant_test_output")
     else:
         # ---------------------------------------------------------------------------
         # Test loop
@@ -188,7 +205,7 @@ if __name__ == "__main__":
             print(f"\n[🧠] Starting Cycle {cycle}...")
             cycle_start = time.time()
 
-            chunk, timings, errors = run_cycle(f"Cycle input test #{cycle}")
+            chunk, timings, errors = run_cycle(f"Cycle input test #{cycle}", cycle)
             cycle_time = round(time.time() - cycle_start, 3)
 
             if chunk is not None and not errors:
@@ -225,4 +242,6 @@ if __name__ == "__main__":
         print(
             f"     Failure Rate          : {round((1 - successful_cycles / TEST_CYCLES) * 100, 2)}%"
         )
+
+        SYSTEM.visualizer.generate_visual_report("verdant_test_output")
 

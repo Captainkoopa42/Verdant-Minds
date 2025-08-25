@@ -72,6 +72,8 @@ class VerdantLoopController:
 
             print("[🌱] Cycle complete.\n")
 
+        self.system.visualizer.generate_visual_report("verdant_test_output")
+
     def run_cycle(self, input_text: str) -> Tuple[Any, Dict[str, Any], Dict[str, str]]:
         """Process one full cycle with timing and error capture."""
         errors: Dict[str, str] = {}
@@ -123,6 +125,21 @@ class VerdantLoopController:
                         t for t in timings.values() if isinstance(t, (int, float))
                     ),
                 },
+            )
+
+            reasoning = chunk.get_section_content("reasoning_section") or {}
+            ethics = chunk.get_section_content("ethics_king_section") or {}
+            memory = chunk.get_section_content("memory_section") or {}
+            cycle_index = len(self.system.visualizer.cycles) + 1
+            self.system.visualizer.log_cycle_data(
+                {
+                    "cycle": cycle_index,
+                    "confidence": reasoning.get("confidence_score"),
+                    "ethics": ethics.get("evaluation", {}).get("status"),
+                    "memory_delta": len(memory.get("retrieved_concepts", [])),
+                    "active_blocks": timings,
+                    "chunk": chunk.chunk_id,
+                }
             )
 
         return chunk, timings, errors

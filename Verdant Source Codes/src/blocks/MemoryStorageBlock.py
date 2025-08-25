@@ -89,22 +89,21 @@ class MemoryStorageBlock:
             Tuple[Any, bool]: (value, found_flag)
         """
         with self._lock:
-            # Check if the key exists
+            # Proactively clean up expired entries so size and stats remain
+            # accurate even if this method is the only one being called. This
+            # ensures stale items are removed before we attempt to fetch the
+            # requested key.
+            self._cleanup_expired()
+
+            # Check if the key exists after cleanup
             if key not in self._store:
                 self._stats["misses"] += 1
                 return default, False
-                
-            # Check if the key has expired
-            if self._is_expired(key):
-                self.delete(key)
-                self._stats["misses"] += 1
-                self._stats["expirations"] += 1
-                return default, False
-                
+
             # Move the accessed key to the end (most recently used)
             self._store.move_to_end(key)
             self._stats["hits"] += 1
-            
+
             return self._store[key], True
     
     def delete(self, key: str) -> bool:

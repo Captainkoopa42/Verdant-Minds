@@ -1,3 +1,3 @@
-from .PatternRecognitionBlock import PatternRecognitionBlock
+from src.blocks.PatternRecognitionBlock import PatternRecognitionBlock
 
 __all__ = ["PatternRecognitionBlock"]

@@ -3,9 +3,9 @@ import sys
 import time
 
 # Add source code path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Verdant Source Codes', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Verdant Source Codes'))
 
-from blocks.MemoryStorageBlock import MemoryStorageBlock
+from src.blocks.MemoryStorageBlock import MemoryStorageBlock
 
 
 def test_get_stats_excludes_expired_items():

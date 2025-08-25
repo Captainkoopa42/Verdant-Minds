@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Any
 
-from core.cognitive_chunk import CognitiveChunk
+from src.core.cognitive_chunk import CognitiveChunk
 
 class ECWFCore:
     """

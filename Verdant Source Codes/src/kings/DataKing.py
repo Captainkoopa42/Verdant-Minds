@@ -2,8 +2,8 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Any, Optional, Set
 
-from core.cognitive_chunk import CognitiveChunk
-from .base_king import BaseKing
+from src.core.cognitive_chunk import CognitiveChunk
+from src.kings.base_king import BaseKing
 
 class DataKing(BaseKing):
     """

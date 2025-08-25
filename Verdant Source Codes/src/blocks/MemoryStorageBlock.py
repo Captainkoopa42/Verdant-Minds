@@ -3,7 +3,7 @@ import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 from collections import OrderedDict
 
-from core.cognitive_chunk import CognitiveChunk
+from src.core.cognitive_chunk import CognitiveChunk
 
 
 class MemoryStorageBlock:

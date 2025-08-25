@@ -1,3 +1,3 @@
-from .ContinualLearningBlock import ContinualLearningBlock
+from src.blocks.ContinualLearningBlock import ContinualLearningBlock
 
 __all__ = ["ContinualLearningBlock"]

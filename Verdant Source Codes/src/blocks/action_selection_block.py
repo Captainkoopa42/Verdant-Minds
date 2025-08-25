@@ -1,3 +1,3 @@
-from .ActionSelectionBlock import ActionSelectionBlock
+from src.blocks.ActionSelectionBlock import ActionSelectionBlock
 
 __all__ = ["ActionSelectionBlock"]

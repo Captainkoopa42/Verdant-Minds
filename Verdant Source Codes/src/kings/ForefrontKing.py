@@ -1,8 +1,8 @@
 import time
 from typing import Any, Dict, List
 
-from core.cognitive_chunk import CognitiveChunk
-from .base_king import BaseKing
+from src.core.cognitive_chunk import CognitiveChunk
+from src.kings.base_king import BaseKing
 
 
 class ForefrontKing(BaseKing):

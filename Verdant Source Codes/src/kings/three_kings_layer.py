@@ -1,3 +1,3 @@
-from .ThreeKingsLayer import ThreeKingsLayer
+from src.kings.ThreeKingsLayer import ThreeKingsLayer
 
 __all__ = ["ThreeKingsLayer"]

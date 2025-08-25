@@ -156,11 +156,16 @@ class MemoryStorageBlock:
     def get_stats(self) -> Dict[str, int]:
         """
         Get usage statistics.
-        
+
         Returns:
             Dict[str, int]: Dictionary containing usage statistics
         """
         with self._lock:
+            # Ensure expired items are removed so metrics reflect the current
+            # state of the cache. Without this cleanup, stale entries could
+            # cause the reported size to be inaccurate.
+            self._cleanup_expired()
+
             stats = self._stats.copy()
             stats["size"] = len(self._store)
             return stats

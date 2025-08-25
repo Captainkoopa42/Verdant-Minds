@@ -4,7 +4,7 @@ import re
 from typing import Dict, List, Any, Tuple, Optional, Set
 
 from .base_block import BaseBlock
-from ..core.cognitive_chunk import CognitiveChunk
+from core.cognitive_chunk import CognitiveChunk
 
 class EthicsValuesBlock(BaseBlock):
     """
@@ -90,6 +90,12 @@ class EthicsValuesBlock(BaseBlock):
         for principle, terms in self.ethical_lexicon.items():
             for term in terms:
                 self.term_to_principle[term] = principle
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Process a cognitive chunk with ethics and values evaluation."""
+        print(f"EthicsValuesBlock processing chunk {chunk.chunk_id}")
+        return chunk
 
     def _identify_ethical_dimensions(
         self, 

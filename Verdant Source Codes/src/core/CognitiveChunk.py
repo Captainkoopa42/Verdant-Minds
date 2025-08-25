@@ -42,17 +42,19 @@ class CognitiveChunk:
         """
         self.sections[section_name] = content
         
-    def get_section_content(self, section_name: str) -> Optional[Dict[str, Any]]:
+    # [FIXED]
+    def get_section_content(self, section_name: str, default=None) -> Optional[Dict[str, Any]]:
         """
         Get content from a specified section.
-        
+
         Args:
             section_name: Name of the section to retrieve
-            
+            default: Value to return if section doesn't exist
+
         Returns:
-            Section content dictionary or None if section doesn't exist
+            Section content dictionary or the provided default if section doesn't exist
         """
-        return self.sections.get(section_name)
+        return self.sections.get(section_name, default)
     
     def add_processing_step(self, processor_name: str, operation: str, details: Dict[str, Any]):
         """

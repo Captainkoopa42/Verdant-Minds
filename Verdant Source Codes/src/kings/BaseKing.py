@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Tuple, Optional, Any, Set
 
-from ..core.cognitive_chunk import CognitiveChunk
+from core.cognitive_chunk import CognitiveChunk
 
 class BaseKing:
     """
@@ -38,6 +38,12 @@ class BaseKing:
             NotImplementedError: If not implemented by a child class
         """
         raise NotImplementedError(f"{self.king_name} must implement its own oversight logic.")
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Wrapper to conform to block interface."""
+        print(f"{self.king_name} processing chunk {chunk.chunk_id}")
+        return self.oversee_processing(chunk)
     
     def log_influence(self, chunk: CognitiveChunk, influence_type: str, details: Dict[str, Any]) -> Dict[str, Any]:
         """

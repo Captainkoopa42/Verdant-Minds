@@ -162,5 +162,58 @@ class PatternRecognitionBlock(BaseBlock):
         # No match found
         return None
 
+    def _detect_topic_patterns(self, text: str, tokens: List[str], sensory: Dict[str, Any], concepts: List[str]) -> List[Dict[str, Any]]:
+        """Very naive topic detector returning empty results."""
+        return []
+
+    def _detect_relationship_patterns(self, text: str, tokens: List[str], sensory: Dict[str, Any], concepts: List[str]) -> List[Dict[str, Any]]:
+        """Placeholder relationship pattern detector."""
+        return []
+
+    def _detect_structural_patterns(self, text: str, tokens: List[str], sensory: Dict[str, Any], concepts: List[str]) -> List[Dict[str, Any]]:
+        """Placeholder structural pattern detector."""
+        return []
+
+    def _detect_temporal_patterns(self, text: str, tokens: List[str], sensory: Dict[str, Any], concepts: List[str]) -> List[Dict[str, Any]]:
+        """Placeholder temporal pattern detector."""
+        return []
+
+    def _detect_emotional_patterns(self, text: str, tokens: List[str], sensory: Dict[str, Any], concepts: List[str]) -> List[Dict[str, Any]]:
+        """Placeholder emotional pattern detector."""
+        return []
+
+    def _extract_concepts(self, text: str, tokens: List[str]) -> List[str]:
+        concepts: List[str] = []
+        for extractor in self.concept_extractors:
+            try:
+                concepts.extend(extractor(text, tokens))
+            except Exception:
+                continue
+        return list(dict.fromkeys(concepts))
+
+    def _extract_noun_phrases(self, text: str, tokens: List[str]) -> List[str]:
+        return [t for t in tokens if t.isalpha() and t[0].islower()]
+
+    def _extract_entities(self, text: str, tokens: List[str]) -> List[str]:
+        return [t for t in tokens if t and t[0].isupper()]
+
+    def _extract_key_terms(self, text: str, tokens: List[str]) -> List[str]:
+        return [t for t in tokens if len(t) > 3]
+
+    def _detect_intent(self, text: str, concepts: List[str], patterns: List[Dict[str, Any]]) -> Dict[str, Any]:
+        intent_type = "question" if "?" in text else "statement"
+        return {"type": intent_type, "confidence": 0.5}
+
+    def _detect_ethical_dimensions(self, text: str, concepts: List[str]) -> List[str]:
+        keywords = {
+            "harm": "Non-maleficence",
+            "good": "Beneficence",
+            "choice": "Autonomy",
+            "fair": "Justice",
+            "transparent": "Transparency",
+        }
+        text_lower = text.lower()
+        return [dim for word, dim in keywords.items() if word in text_lower]
+
 # Export the block for use in the system
 __all__ = ['PatternRecognitionBlock']

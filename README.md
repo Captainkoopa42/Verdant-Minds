@@ -59,6 +59,12 @@ Consciousness-like property measurement
 
 To run the full test suite:
 Copypython -m unittest discover tests/
+
+To run a single interactive processing cycle with custom text, use the monolithic test runner:
+
+```
+python verdant_monolithic_test_runner.py --user-input "Tell me about quantum computing."
+```
 Contributing
 We welcome contributions from the wider AI research community. Please see CONTRIBUTING.md for guidelines on how to contribute to the project.
 License

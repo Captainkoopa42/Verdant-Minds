@@ -3,6 +3,8 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Any, Optional
 
+from core.cognitive_chunk import CognitiveChunk
+
 class MemoryWeb:
     """
     Associative memory system using a graph-based representation.
@@ -25,6 +27,12 @@ class MemoryWeb:
             "created_timestamp": time.time(),
             "last_access_timestamp": time.time()
         }
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Stub processing to maintain interface."""
+        print(f"MemoryWeb processing chunk {chunk.chunk_id}")
+        return chunk
     
     def add_thought(self, label: str, stability: float = 0.5, metadata: Dict[str, Any] = None):
         """

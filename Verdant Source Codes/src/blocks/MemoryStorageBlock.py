@@ -3,6 +3,8 @@ import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 from collections import OrderedDict
 
+from core.cognitive_chunk import CognitiveChunk
+
 
 class MemoryStorageBlock:
     """
@@ -37,6 +39,12 @@ class MemoryStorageBlock:
             "inserts": 0,
             "updates": 0,
         }
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Stub processing method for compatibility."""
+        print(f"MemoryStorageBlock processing chunk {chunk.chunk_id}")
+        return chunk
     
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """

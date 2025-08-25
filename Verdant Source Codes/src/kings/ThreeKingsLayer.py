@@ -2,7 +2,7 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Optional, Any
 
-from ..core.cognitive_chunk import CognitiveChunk
+from core.cognitive_chunk import CognitiveChunk
 from .data_king import DataKing
 from .forefront_king import ForefrontKing
 from .ethics_king import EthicsKing
@@ -43,6 +43,12 @@ class ThreeKingsLayer:
             "conflicts_resolved": 0,
             "council_votes": 0
         }
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Wrapper to conform to block interface."""
+        print(f"ThreeKingsLayer processing chunk {chunk.chunk_id}")
+        return self.oversee_processing(chunk)
     
     def oversee_processing(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """

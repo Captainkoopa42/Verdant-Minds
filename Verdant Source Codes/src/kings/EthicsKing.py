@@ -2,6 +2,8 @@ import numpy as np
 import time
 from typing import Dict, List, Any, Optional
 
+from core.cognitive_chunk import CognitiveChunk
+
 class EthicsKing:
     """
     Ethics King: Oversees ethical considerations and moral alignment 
@@ -62,6 +64,12 @@ class EthicsKing:
         
         # Ethical concern tracking
         self.ethics_sensitivity: Dict[str, Dict[str, Any]] = {}
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Wrapper to conform to block interface."""
+        print(f"EthicsKing processing chunk {chunk.chunk_id}")
+        return self.oversee_processing(chunk)
     
     def oversee_processing(self, chunk):
         """

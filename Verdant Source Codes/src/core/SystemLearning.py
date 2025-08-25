@@ -2,6 +2,8 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Optional, Any, Set
 
+from .cognitive_chunk import CognitiveChunk
+
 class SystemWideLearning:
     """
     System-wide learning mechanisms for the Unified Synthetic Mind.
@@ -40,10 +42,16 @@ class SystemWideLearning:
         # Learning state
         self.total_learning_cycles = 0
         self.last_learning_time = time.time()
-        
+
         # Glass transition temperature parameters
         self.t_glass = 0.5  # Initial glass transition temperature
         self.phase_state = "balanced"  # Current cognitive phase state
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Stub processing method for learning component."""
+        print(f"SystemWideLearning processing chunk {chunk.chunk_id}")
+        return chunk
     
     def apply_feedback(self, feedback: Dict[str, Any], context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -239,10 +247,17 @@ class SystemWideLearning:
             return adjustments
         
         ecwf_core = self.system.ecwf_core
-        
+
         # Extract adjustment signals
         ethical_adjustment = learning_signals["ethical_adjustment"]
         reasoning_adjustment = learning_signals["reasoning_adjustment"]
+
+        # [FIXED] Safely initialize gradients
+        chunk = learning_signals.get("chunk")
+        ethical_gradient = None
+        if isinstance(chunk, CognitiveChunk):
+            ethical_gradient = chunk.get_section_content("ethics", {}).get("gradient", None)
+        cognitive_gradient = None
         
         # Scale adjustments by learning rates
         ethical_factor = ethical_adjustment * self.learning_rates["ethical"]
@@ -252,8 +267,8 @@ class SystemWideLearning:
         if abs(ethical_factor) > 0.001:
             # Create gradient vectors for ethical dimensions
             ethical_gradient = np.random.normal(
-                loc=ethical_factor, 
-                scale=abs(ethical_factor) * 0.2, 
+                loc=ethical_factor,
+                scale=abs(ethical_factor) * 0.2,
                 size=ecwf_core.num_ethical_dims
             )
             
@@ -271,8 +286,8 @@ class SystemWideLearning:
         if abs(reasoning_factor) > 0.001:
             # Create gradient vectors for cognitive dimensions
             cognitive_gradient = np.random.normal(
-                loc=reasoning_factor, 
-                scale=abs(reasoning_factor) * 0.2, 
+                loc=reasoning_factor,
+                scale=abs(reasoning_factor) * 0.2,
                 size=ecwf_core.num_cognitive_dims
             )
             
@@ -289,17 +304,19 @@ class SystemWideLearning:
         
         # Track which dimensions were most affected
         if hasattr(ecwf_core, "dimension_meanings"):
-            for i, impact in enumerate(np.abs(cognitive_gradient)):
-                dim_name = f"C{i+1}"
-                if dim_name in ecwf_core.dimension_meanings:
-                    dim_meaning = ecwf_core.dimension_meanings[dim_name]
-                    adjustments["dimension_impacts"][dim_meaning] = float(impact)
-            
-            for i, impact in enumerate(np.abs(ethical_gradient)):
-                dim_name = f"E{i+1}"
-                if dim_name in ecwf_core.dimension_meanings:
-                    dim_meaning = ecwf_core.dimension_meanings[dim_name]
-                    adjustments["dimension_impacts"][dim_meaning] = float(impact)
+            if cognitive_gradient is not None:
+                for i, impact in enumerate(np.abs(cognitive_gradient)):
+                    dim_name = f"C{i+1}"
+                    if dim_name in ecwf_core.dimension_meanings:
+                        dim_meaning = ecwf_core.dimension_meanings[dim_name]
+                        adjustments["dimension_impacts"][dim_meaning] = float(impact)
+
+            if ethical_gradient is not None:
+                for i, impact in enumerate(np.abs(ethical_gradient)):
+                    dim_name = f"E{i+1}"
+                    if dim_name in ecwf_core.dimension_meanings:
+                        dim_meaning = ecwf_core.dimension_meanings[dim_name]
+                        adjustments["dimension_impacts"][dim_meaning] = float(impact)
         
         return adjustments
     

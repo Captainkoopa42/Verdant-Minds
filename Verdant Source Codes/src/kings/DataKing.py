@@ -2,7 +2,7 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Any, Optional, Set
 
-from ..core.cognitive_chunk import CognitiveChunk
+from core.cognitive_chunk import CognitiveChunk
 from .base_king import BaseKing
 
 class DataKing(BaseKing):
@@ -44,6 +44,12 @@ class DataKing(BaseKing):
             "relevance_assessments": 0,
             "avg_information_quality": 0.5
         }
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Wrapper to conform to block interface."""
+        print(f"DataKing processing chunk {chunk.chunk_id}")
+        return self.oversee_processing(chunk)
     
     def oversee_processing(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """

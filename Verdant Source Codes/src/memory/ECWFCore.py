@@ -1,6 +1,8 @@
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Any
 
+from core.cognitive_chunk import CognitiveChunk
+
 class ECWFCore:
     """
     Ethical Cognitive Wave Function (ECWF) implementation.
@@ -46,6 +48,12 @@ class ECWFCore:
         
         # Dimension meanings (can be set later)
         self.dimension_meanings = {}
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Stub processing to maintain interface."""
+        print(f"ECWFCore processing chunk {chunk.chunk_id}")
+        return chunk
     
     def _initialize_parameters(self):
         """Initialize wave function parameters."""

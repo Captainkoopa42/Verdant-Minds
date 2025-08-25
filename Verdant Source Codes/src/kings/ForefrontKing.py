@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List
 
-from ..core.cognitive_chunk import CognitiveChunk
+from core.cognitive_chunk import CognitiveChunk
 from .base_king import BaseKing
 
 
@@ -47,6 +47,12 @@ class ForefrontKing(BaseKing):
         self.influence_history = []
         self.oversight_metrics = {}
         self.blocks_supervised = ["InternalCommunication", "ReasoningPlanning", "ActionSelection"]
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Wrapper to conform to block interface."""
+        print(f"ForefrontKing processing chunk {chunk.chunk_id}")
+        return self.oversee_processing(chunk)
     
     def oversee_processing(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """

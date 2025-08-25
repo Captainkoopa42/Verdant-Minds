@@ -2,6 +2,8 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Optional, Any, Set
 
+from core.cognitive_chunk import CognitiveChunk
+
 class MemoryECWFBridge:
     """
     Bridge between MemoryWeb and ECWFCore for the Unified Synthetic Mind.
@@ -40,6 +42,12 @@ class MemoryECWFBridge:
             "emergent_connections": 0,
             "last_update": time.time()
         }
+
+    # [FIXED]
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Stub processing to maintain interface."""
+        print(f"MemoryECWFBridge processing chunk {chunk.chunk_id}")
+        return chunk
     
     def initialize_concept_mappings(self, ethical_concepts=None):
         """

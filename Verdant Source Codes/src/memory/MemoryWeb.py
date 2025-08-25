@@ -55,11 +55,11 @@ class MemoryWeb:
             # Connect to most stable existing thoughts for initial integration
             if len(self.memory_store) > 1:
                 sorted_thoughts = sorted(
-                    self.memory_store.keys(),
+                    (thought for thought in self.memory_store.keys() if thought != label),
                     key=lambda x: self.memory_store[x]["stability"],
                     reverse=True
                 )[:3]  # Connect to top 3 stable thoughts
-                
+
                 for conn in sorted_thoughts:
                     self.connect_thoughts(label, conn)
             
@@ -98,6 +98,10 @@ class MemoryWeb:
             True if a new connection was created, False if updated
         """
         if label1 not in self.memory_store or label2 not in self.memory_store:
+            return False
+
+        # Avoid creating self-referential connections
+        if label1 == label2:
             return False
         
         # Calculate weight based on stability of both concepts

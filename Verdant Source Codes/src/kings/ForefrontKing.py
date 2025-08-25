@@ -1,10 +1,11 @@
-import numpy as np
 import time
-from typing import Dict, List, Tuple, Optional, Any, Set
+from typing import Any, Dict, List
 
 from ..core.cognitive_chunk import CognitiveChunk
+from .base_king import BaseKing
 
-class ForefrontKing:
+
+class ForefrontKing(BaseKing):
     """
     The Forefront King manages executive function, attention allocation, and decision-making.
     

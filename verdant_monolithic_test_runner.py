@@ -8,6 +8,7 @@ and per‑module execution times.  Failures in individual blocks are
 captured and reported without terminating the overall test run.
 """
 
+import argparse
 import os
 import sys
 import time
@@ -136,48 +137,92 @@ def run_cycle(input_text: str) -> Tuple[Any, Dict[str, Any], Dict[str, str]]:
 
     return chunk, timings, errors
 
-# ---------------------------------------------------------------------------
-# Test loop
-# ---------------------------------------------------------------------------
-TEST_CYCLES = 10
-successful_cycles = 0
 
-for cycle in range(1, TEST_CYCLES + 1):
-    print(f"\n[🧠] Starting Cycle {cycle}...")
-    cycle_start = time.time()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Monolithic integration test runner for the Verdant-Minds system."
+    )
+    parser.add_argument(
+        "--user-input",
+        type=str,
+        help="Process a single user input instead of running automated test cycles.",
+    )
+    args = parser.parse_args()
 
-    chunk, timings, errors = run_cycle(f"Cycle input test #{cycle}")
-    cycle_time = round(time.time() - cycle_start, 3)
+    if args.user_input:
+        print("\n[🧠] Processing interactive input...")
+        cycle_start = time.time()
+        chunk, timings, errors = run_cycle(args.user_input)
+        cycle_time = round(time.time() - cycle_start, 3)
 
-    if chunk is not None and not errors:
-        # Extract diagnostics
-        memory_data = chunk.get_section_content("memory_section") or {}
-        reasoning_data = chunk.get_section_content("reasoning_section") or {}
-        ethics_data = chunk.get_section_content("ethics_king_section") or {}
+        if chunk is not None and not errors:
+            memory_data = chunk.get_section_content("memory_section") or {}
+            reasoning_data = chunk.get_section_content("reasoning_section") or {}
+            ethics_data = chunk.get_section_content("ethics_king_section") or {}
 
-        confidence = reasoning_data.get("confidence_score", "N/A")
-        ethics_assessment = ethics_data.get("evaluation", {}).get("status", "N/A")
-        memory_changes = {
-            "retrieved": len(memory_data.get("retrieved_concepts", [])),
-            "stored": len(SYSTEM.memory_web.memory_store),
-        }
+            confidence = reasoning_data.get("confidence_score", "N/A")
+            ethics_assessment = ethics_data.get("evaluation", {}).get("status", "N/A")
+            memory_changes = {
+                "retrieved": len(memory_data.get("retrieved_concepts", [])),
+                "stored": len(SYSTEM.memory_web.memory_store),
+            }
 
-        print(f"[✅] Cycle {cycle} completed in {cycle_time}s")
-        print(f"     ↪ Confidence Score: {confidence}")
-        print(f"     ↪ Ethical Assessment: {ethics_assessment}")
-        print(f"     ↪ Memory Changes: {memory_changes}")
-        print(f"     ↪ Module Times: {timings}")
-        successful_cycles += 1
+            print(f"[✅] Cycle completed in {cycle_time}s")
+            print(f"     ↪ Confidence Score: {confidence}")
+            print(f"     ↪ Ethical Assessment: {ethics_assessment}")
+            print(f"     ↪ Memory Changes: {memory_changes}")
+            print(f"     ↪ Module Times: {timings}")
+        else:
+            print("[⚠️] Cycle encountered errors")
+            for blk, err in errors.items():
+                print(f"     ↪ {blk}: {err}")
+            print(f"     ↪ Partial Module Times: {timings}")
     else:
-        print(f"[⚠️] Cycle {cycle} encountered errors")
-        for blk, err in errors.items():
-            print(f"     ↪ {blk}: {err}")
-        print(f"     ↪ Partial Module Times: {timings}")
+        # ---------------------------------------------------------------------------
+        # Test loop
+        # ---------------------------------------------------------------------------
+        TEST_CYCLES = 10
+        successful_cycles = 0
 
-# ---------------------------------------------------------------------------
-# Final summary
-# ---------------------------------------------------------------------------
-print("\n[📊] Verdant‑Minds Monolithic Test Run Complete")
-print(f"     Total Cycles Attempted: {TEST_CYCLES}")
-print(f"     Successful Cycles     : {successful_cycles}")
-print(f"     Failure Rate          : {round((1 - successful_cycles / TEST_CYCLES) * 100, 2)}%")
+        for cycle in range(1, TEST_CYCLES + 1):
+            print(f"\n[🧠] Starting Cycle {cycle}...")
+            cycle_start = time.time()
+
+            chunk, timings, errors = run_cycle(f"Cycle input test #{cycle}")
+            cycle_time = round(time.time() - cycle_start, 3)
+
+            if chunk is not None and not errors:
+                # Extract diagnostics
+                memory_data = chunk.get_section_content("memory_section") or {}
+                reasoning_data = chunk.get_section_content("reasoning_section") or {}
+                ethics_data = chunk.get_section_content("ethics_king_section") or {}
+
+                confidence = reasoning_data.get("confidence_score", "N/A")
+                ethics_assessment = ethics_data.get("evaluation", {}).get("status", "N/A")
+                memory_changes = {
+                    "retrieved": len(memory_data.get("retrieved_concepts", [])),
+                    "stored": len(SYSTEM.memory_web.memory_store),
+                }
+
+                print(f"[✅] Cycle {cycle} completed in {cycle_time}s")
+                print(f"     ↪ Confidence Score: {confidence}")
+                print(f"     ↪ Ethical Assessment: {ethics_assessment}")
+                print(f"     ↪ Memory Changes: {memory_changes}")
+                print(f"     ↪ Module Times: {timings}")
+                successful_cycles += 1
+            else:
+                print(f"[⚠️] Cycle {cycle} encountered errors")
+                for blk, err in errors.items():
+                    print(f"     ↪ {blk}: {err}")
+                print(f"     ↪ Partial Module Times: {timings}")
+
+        # ---------------------------------------------------------------------------
+        # Final summary
+        # ---------------------------------------------------------------------------
+        print("\n[📊] Verdant‑Minds Monolithic Test Run Complete")
+        print(f"     Total Cycles Attempted: {TEST_CYCLES}")
+        print(f"     Successful Cycles     : {successful_cycles}")
+        print(
+            f"     Failure Rate          : {round((1 - successful_cycles / TEST_CYCLES) * 100, 2)}%"
+        )
+

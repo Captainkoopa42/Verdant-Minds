@@ -1,8 +1,8 @@
 import time
 from typing import Dict, List, Any, Optional, Set
 
-from .base_block import BaseBlock
-from ..core.cognitive_chunk import CognitiveChunk
+from src.blocks.base_block import BaseBlock
+from src.core.cognitive_chunk import CognitiveChunk
 
 class InternalCommunicationBlock(BaseBlock):
     """

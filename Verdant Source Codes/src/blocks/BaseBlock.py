@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from ..core.cognitive_chunk import CognitiveChunk
+from src.core.cognitive_chunk import CognitiveChunk
 
 class BaseBlock:
     """

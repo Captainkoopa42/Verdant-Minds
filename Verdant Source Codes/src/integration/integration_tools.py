@@ -1,8 +1,8 @@
 """Utility functions for wiring integration components into the Unified System."""
 
-from .BlockIntegrationManager import BlockIntegrationManager
-from .SystemIntegrationFramework import SystemIntegrationFramework
-from .IntegrationTestSuite import IntegrationTestSuite
+from src.integration.BlockIntegrationManager import BlockIntegrationManager
+from src.integration.SystemIntegrationFramework import SystemIntegrationFramework
+from src.integration.IntegrationTestSuite import IntegrationTestSuite
 
 
 def integrate_system_tools(system):

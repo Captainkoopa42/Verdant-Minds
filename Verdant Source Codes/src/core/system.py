@@ -3,23 +3,23 @@ import time
 from typing import Dict, List, Any, Optional, Tuple
 import logging
 
-from .cognitive_chunk import CognitiveChunk
-from ..memory.memory_web import MemoryWeb
-from ..memory.ecwf_core import ECWFCore
-from ..memory.memory_ecwf_bridge import MemoryECWFBridge
-from ..blocks.sensory_input_block import SensoryInputBlock
-from ..blocks.pattern_recognition_block import PatternRecognitionBlock
-from ..blocks.internal_communication_block import InternalCommunicationBlock
-from ..blocks.memory_storage_block import MemoryStorageBlock
-from ..blocks.reasoning_planning_block import ReasoningPlanningBlock
-from ..blocks.ethics_values_block import EthicsValuesBlock
-from ..blocks.action_selection_block import ActionSelectionBlock
-from ..blocks.language_processing_block import LanguageProcessingBlock
-from ..blocks.continual_learning_block import ContinualLearningBlock
-from ..kings.three_kings_layer import ThreeKingsLayer
-from ..core.system_learning import SystemWideLearning
-from ..integration.integration_tools import integrate_system_tools
-from ..utils.logging_utils import setup_logger
+from src.core.cognitive_chunk import CognitiveChunk
+from src.memory.memory_web import MemoryWeb
+from src.memory.ecwf_core import ECWFCore
+from src.memory.memory_ecwf_bridge import MemoryECWFBridge
+from src.blocks.sensory_input_block import SensoryInputBlock
+from src.blocks.pattern_recognition_block import PatternRecognitionBlock
+from src.blocks.internal_communication_block import InternalCommunicationBlock
+from src.blocks.memory_storage_block import MemoryStorageBlock
+from src.blocks.reasoning_planning_block import ReasoningPlanningBlock
+from src.blocks.ethics_values_block import EthicsValuesBlock
+from src.blocks.action_selection_block import ActionSelectionBlock
+from src.blocks.language_processing_block import LanguageProcessingBlock
+from src.blocks.continual_learning_block import ContinualLearningBlock
+from src.kings.three_kings_layer import ThreeKingsLayer
+from src.core.system_learning import SystemWideLearning
+from src.integration.integration_tools import integrate_system_tools
+from src.utils.logging_utils import setup_logger
 
 class UnifiedSystem:
     """

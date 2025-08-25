@@ -2,10 +2,10 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Optional, Any
 
-from core.cognitive_chunk import CognitiveChunk
-from .data_king import DataKing
-from .forefront_king import ForefrontKing
-from .ethics_king import EthicsKing
+from src.core.cognitive_chunk import CognitiveChunk
+from src.kings.data_king import DataKing
+from src.kings.forefront_king import ForefrontKing
+from src.kings.ethics_king import EthicsKing
 
 class ThreeKingsLayer:
     """

@@ -1,3 +1,3 @@
-from .MemoryECWFBridge import MemoryECWFBridge
+from src.memory.MemoryECWFBridge import MemoryECWFBridge
 
 __all__ = ["MemoryECWFBridge"]

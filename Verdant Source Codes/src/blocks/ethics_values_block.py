@@ -1,3 +1,3 @@
-from .EthicsValuesBlock import EthicsValuesBlock
+from src.blocks.EthicsValuesBlock import EthicsValuesBlock
 
 __all__ = ["EthicsValuesBlock"]

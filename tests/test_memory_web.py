@@ -7,9 +7,9 @@ pytest.importorskip("networkx")
 pytest.importorskip("numpy")
 
 # Add source code path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Verdant Source Codes', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Verdant Source Codes'))
 
-from memory.memory_web import MemoryWeb
+from src.memory.memory_web import MemoryWeb
 
 def test_add_thought_avoids_self_connection():
     """Adding a new thought should not create a self-referential connection."""

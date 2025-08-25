@@ -3,8 +3,8 @@ import logging
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Verdant Source Codes', 'src'))
-from utils.logging_utils import setup_logger
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Verdant Source Codes'))
+from src.utils.logging_utils import setup_logger
 
 
 def test_setup_logger_disables_propagation():

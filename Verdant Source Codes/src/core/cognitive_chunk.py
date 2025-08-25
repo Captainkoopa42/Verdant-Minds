@@ -1,3 +1,3 @@
-from .CognitiveChunk import CognitiveChunk
+from src.core.CognitiveChunk import CognitiveChunk
 
 __all__ = ["CognitiveChunk"]

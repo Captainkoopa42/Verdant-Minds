@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Tuple, Optional, Any, Set
 
-from core.cognitive_chunk import CognitiveChunk
+from src.core.cognitive_chunk import CognitiveChunk
 
 class BaseKing:
     """

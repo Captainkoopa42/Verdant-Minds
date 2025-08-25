@@ -2,7 +2,7 @@ import numpy as np
 import time
 from typing import Dict, List, Tuple, Optional, Any, Set
 
-from .cognitive_chunk import CognitiveChunk
+from src.core.cognitive_chunk import CognitiveChunk
 
 class SystemWideLearning:
     """

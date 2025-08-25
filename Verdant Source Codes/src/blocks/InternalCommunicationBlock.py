@@ -151,8 +151,9 @@ class InternalCommunicationBlock(BaseBlock):
                 analysis["information_sources"][concept] = "pattern_recognition"
         
         # Extract concepts from memory data
-        if "retrieved_concepts" in memory_data:
-            for concept in memory_data["retrieved_concepts"]:
+        retrieved_concepts = memory_data.get("retrieved_concepts") or []
+        if retrieved_concepts:
+            for concept in retrieved_concepts:
                 if isinstance(concept, tuple) and len(concept) >= 2:
                     concept_value, relevance = concept
                     if concept_value not in analysis["primary_concepts"] and relevance > 0.5:
@@ -401,6 +402,9 @@ class InternalCommunicationBlock(BaseBlock):
             "confidence_scores": information_analysis["confidence_scores"],
             "context_markers": information_analysis["context_markers"]
         }
+
+        # Retrieve memory data safely
+        memory_data = chunk.get_section_content("memory_section") or {}
         
         # Add ethical flags if available
         ethics_data = chunk.get_section_content("ethics_king_section") or {}
@@ -427,8 +431,9 @@ class InternalCommunicationBlock(BaseBlock):
             integrated_context["key_inferences"] = key_inferences
         
         # Add memory activation levels if available
-        if "activation_levels" in memory_data:
-            integrated_context["memory_activation"] = memory_data["activation_levels"]
+        activation_levels = memory_data.get("activation_levels")
+        if activation_levels:
+            integrated_context["memory_activation"] = activation_levels
         
         return integrated_context
     
@@ -456,12 +461,13 @@ class InternalCommunicationBlock(BaseBlock):
         reasoning_data = chunk.get_section_content("reasoning_section") or {}
         
         # Check for ethics-memory resonance
-        if memory_data.get("retrieved_concepts") and ethics_data.get("evaluation"):
+        retrieved_concepts = memory_data.get("retrieved_concepts") or []
+        if retrieved_concepts and ethics_data.get("evaluation"):
             ethical_concerns = ethics_data["evaluation"].get("concerns", [])
-            
+
             # Check if any ethical concerns directly relate to retrieved memory concepts
             overlapping_concepts = set(
-                [c[0] if isinstance(c, tuple) else c for c in memory_data["retrieved_concepts"]]
+                [c[0] if isinstance(c, tuple) else c for c in retrieved_concepts]
             ).intersection(ethical_concerns)
             
             if overlapping_concepts:

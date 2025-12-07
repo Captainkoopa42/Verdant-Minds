@@ -1,4 +1,114 @@
-numpy
-tensorflow
-networkx
-torch
+# ============================================================================
+# Verdant-Minds (Unified Synthetic Mind) - Python Dependencies
+# ============================================================================
+# This file contains all required Python packages for the Unified Synthetic
+# Mind AI system. Organized by category for clarity and maintainability.
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Core Scientific Computing & Numerical Operations
+# ----------------------------------------------------------------------------
+# NumPy is heavily used throughout the system for:
+# - Wave function calculations in ECWF (Extended Cognitive Wave Function)
+# - Cognitive state representations
+# - Ethical field operator computations
+# - Pattern recognition and statistical analysis
+numpy>=1.24.0,<2.0.0
+
+# ----------------------------------------------------------------------------
+# Machine Learning & Deep Learning Frameworks
+# ----------------------------------------------------------------------------
+# TensorFlow for potential neural network implementations
+# Note: Currently not directly imported but may be used for future
+# quantum-inspired neural architectures or deep learning models
+tensorflow>=2.13.0,<3.0.0
+
+# PyTorch for flexible neural network implementations
+# Note: Currently not directly imported but may be used for future
+# advanced cognitive modeling or emergent behavior simulations
+torch>=2.0.0,<3.0.0
+
+# ----------------------------------------------------------------------------
+# Graph Theory & Network Analysis
+# ----------------------------------------------------------------------------
+# NetworkX for Memory Web implementation:
+# - Semantic knowledge graph representation
+# - Concept relationship mapping
+# - Community detection in thought networks
+# - Centrality analysis for concept importance
+networkx>=3.0,<4.0
+
+# Python-Louvain for community detection algorithms:
+# - Used with NetworkX for clustering related concepts
+# - Identifies emergent conceptual communities in Memory Web
+python-louvain>=0.16
+
+# ----------------------------------------------------------------------------
+# Data Visualization & Reporting
+# ----------------------------------------------------------------------------
+# Matplotlib for system performance visualization:
+# - Integration test result plots
+# - Performance metric dashboards
+# - Cross-block information flow diagrams
+# - System state visualizations
+matplotlib>=3.7.0,<4.0.0
+
+# ----------------------------------------------------------------------------
+# Authentication & Security
+# ----------------------------------------------------------------------------
+# PyJWT for JSON Web Token handling:
+# - Secure authentication token generation and validation
+# - API access control
+# - Session management
+PyJWT>=2.8.0,<3.0.0
+
+# Werkzeug for security utilities:
+# - Password hashing (generate_password_hash, check_password_hash)
+# - Secure credential storage
+# - Authentication helpers
+Werkzeug>=3.0.0,<4.0.0
+
+# ----------------------------------------------------------------------------
+# Additional Utilities (Optional but Recommended)
+# ----------------------------------------------------------------------------
+# Recommended for enhanced functionality:
+
+# SciPy for advanced scientific computing (complementary to NumPy)
+# scipy>=1.11.0,<2.0.0
+
+# Pandas for data manipulation and analysis
+# pandas>=2.0.0,<3.0.0
+
+# Scikit-learn for classical machine learning algorithms
+# scikit-learn>=1.3.0,<2.0.0
+
+# tqdm for progress bars during long-running operations
+# tqdm>=4.66.0
+
+# ============================================================================
+# Development Dependencies (install separately with requirements-dev.txt)
+# ============================================================================
+# pytest>=7.4.0          # Unit testing
+# pytest-cov>=4.1.0      # Test coverage
+# black>=23.7.0          # Code formatting
+# flake8>=6.1.0          # Linting
+# mypy>=1.5.0            # Type checking
+# ipython>=8.14.0        # Interactive shell
+# jupyter>=1.0.0         # Notebook interface
+# ============================================================================
+
+# ============================================================================
+# Installation Instructions
+# ============================================================================
+# Basic installation:
+#   pip install -r requirements.txt
+#
+# For development:
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# For GPU support (TensorFlow):
+#   pip install tensorflow[and-cuda]>=2.13.0
+#
+# For GPU support (PyTorch):
+#   Visit https://pytorch.org for platform-specific installation
+# ============================================================================

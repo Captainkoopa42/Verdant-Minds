@@ -26,23 +26,51 @@ The Unified Synthetic Mind is a pioneering artificial intelligence project that 
 
 ### Installation
 
-1. Clone the Unified Synthetic Mind repository:
-git clone . (https://github.com/captainkoopa420/Verdant-Minds.git)
-Copy
-2. Install the required Python packages:
-pip install -r requirements.txt
-Copy
-3. Configure the system settings in `config.py`.
+#### Quick Start (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/captainkoopa420/Verdant-Minds.git
+cd Verdant-Minds
+
+# Install in development mode
+pip install -e .
+```
+
+#### Alternative Methods
+
+1. **Standard Installation**:
+   ```bash
+   pip install .
+   ```
+
+2. **With Development Tools**:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+3. **Manual Installation** (legacy):
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+For detailed installation instructions, GPU support, and troubleshooting, see **[INSTALL.md](INSTALL.md)**.
 
 ### Usage
 
-To start an interactive session with the Unified Synthetic Mind you can simply run:
+To start an interactive session with the Unified Synthetic Mind, you can use any of these commands:
 
 ```bash
+# After pip installation, use the console commands:
+verdant-minds
+# or
+usm
+
+# Or run as a Python module:
 python -m usm
 ```
 
-This will launch a small command line interface. If you prefer to use the API directly:
+This will launch a command line interface. If you prefer to use the API directly in your Python code:
 
 ```python
 from usm import UnifiedSyntheticMind

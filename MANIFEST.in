@@ -1,0 +1,43 @@
+# ============================================================================
+# MANIFEST.in - Specifies additional files to include in distribution
+# ============================================================================
+# This file ensures that non-Python files are included when building the
+# package distribution (sdist and wheel).
+# ============================================================================
+
+# Documentation files
+include README.md
+include LICENSE
+include VERDANT_LICENSE_APPENDIX.md
+
+# Configuration files
+include requirements.txt
+include requirements-dev.txt
+include pyproject.toml
+include setup.py
+include .gitignore
+
+# Verdant Source Codes directory - include all Python source files
+recursive-include Verdant\ Source\ Codes/src *.py
+
+# Include package data
+graft usm
+
+# Documentation (if exists)
+graft docs
+prune docs/_build
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.swp
+global-exclude *.swo
+
+# Exclude development/test artifacts
+prune tests
+prune .git
+prune .github
+exclude .gitignore
+exclude .pre-commit-config.yaml

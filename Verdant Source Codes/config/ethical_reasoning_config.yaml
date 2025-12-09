@@ -1,0 +1,56 @@
+# Ethical Reasoning Focused Configuration
+# ========================================
+# Optimized for ethical decision-making and moral reasoning tasks
+# Use: mind = UnifiedSyntheticMind(config_path="config/ethical_reasoning_config.yaml")
+
+# Enhanced ethical governance
+governance:
+  enabled: true
+  coordination_strategy: "consensus"
+  require_unanimous_approval: true  # All kings must agree
+
+  ethics_king:
+    enabled: true
+    strictness: 0.9  # Very strict ethical evaluation
+    can_veto: true
+    veto_weight: 0.5  # Strong veto power
+
+blocks:
+  ethics_values:
+    enabled: true
+    ethical_sensitivity: 0.85  # High sensitivity to ethical concerns
+    # Increased weight on non-maleficence
+    non_maleficence_weight: 1.2
+    beneficence_weight: 1.0
+    autonomy_weight: 0.9
+    justice_weight: 1.0
+    transparency_weight: 0.95
+    require_ethical_approval: true
+    veto_threshold: 0.4  # Lower threshold = stricter
+
+  # Enhanced pattern recognition for moral concepts
+  pattern_recognition:
+    enabled: true
+    opposition_detection: true
+    tension_computation: true
+    # Detect ethical tensions
+    proximity_window: 30  # Wider window for context
+
+  # Thorough reasoning
+  reasoning_planning:
+    enabled: true
+    deductive_reasoning: true
+    max_hypotheses: 10  # Consider more alternatives
+    hypothesis_threshold: 0.3  # Lower barrier
+
+# More cautious action selection
+blocks:
+  action_selection:
+    min_confidence: 0.6  # Higher confidence required
+    deferral_threshold: 0.4  # Defer more often when uncertain
+
+logging:
+  level: "INFO"
+  file:
+    enabled: true
+    path: "logs/ethical_reasoning.log"

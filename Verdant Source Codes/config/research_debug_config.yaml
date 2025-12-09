@@ -1,0 +1,105 @@
+# Research & Debug Configuration
+# ===============================
+# Maximum verbosity and profiling for research and debugging
+# Use: mind = UnifiedSyntheticMind(config_path="config/research_debug_config.yaml")
+
+system:
+  debug: true  # Enable debug mode
+  profiling_enabled: true  # Enable performance profiling
+  seed: 42  # Fixed seed for reproducibility
+
+# Standard dimensions
+ecwf:
+  cognitive_dimensions: 5
+  ethical_dimensions: 5
+
+# Full logging
+logging:
+  level: "DEBUG"  # Maximum verbosity
+
+  console:
+    enabled: true
+    level: "DEBUG"
+    format: "detailed"  # Detailed format with timestamps
+    colorized: true
+
+  file:
+    enabled: true
+    level: "DEBUG"
+    path: "logs/debug.log"
+    format: "detailed"
+    max_size_mb: 500  # Large log files
+    backup_count: 10
+
+  # Enable structured logging for analysis
+  structured:
+    enabled: true
+    path: "logs/structured_debug.jsonl"
+    include_metadata: true
+
+  # Comprehensive performance logging
+  performance:
+    enabled: true
+    log_block_timings: true
+    log_memory_usage: true
+    log_throughput: true
+    metrics_interval: 1  # Log every chunk
+
+  blocks:
+    log_all_blocks: true
+    log_processing_details: true  # Very verbose - log everything
+    log_errors_only: false
+
+# Enable profiling
+performance:
+  profile_blocks: true
+  profile_output_path: "profiles/research/"
+
+# Validation
+testing:
+  validate_chunk_structure: true
+  validate_section_content: true  # Expensive but thorough
+  strict_mode: true  # Fail on warnings
+
+# All blocks enabled
+blocks:
+  sensory_input:
+    enabled: true
+  pattern_recognition:
+    enabled: true
+    opposition_detection: true
+    tension_computation: true
+    question_classification: true
+    sentiment_analysis: true
+    entity_recognition: true
+  memory_storage:
+    enabled: true
+  internal_communication:
+    enabled: true
+    conflict_detection: true
+  reasoning_planning:
+    enabled: true
+    deductive_reasoning: true
+    inductive_reasoning: true
+    abductive_reasoning: true
+  ethics_values:
+    enabled: true
+  action_selection:
+    enabled: true
+  language_processing:
+    enabled: true
+  continual_learning:
+    enabled: true
+
+# Full governance
+governance:
+  enabled: true
+  coordination_strategy: "consensus"
+  data_king:
+    enabled: true
+    can_veto: true
+  forefront_king:
+    enabled: true
+  ethics_king:
+    enabled: true
+    can_veto: true

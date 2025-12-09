@@ -38,7 +38,7 @@ setup(
     # Package Metadata
     # ========================================================================
     name='verdant-minds',
-    version='0.1.0',
+    version='0.2.0',
     author='captainkoopa420',
     author_email='adamswilliam905@gmail.com',
     description='A cognitive architecture for AI with quantum-inspired thermodynamic knowledge representation',

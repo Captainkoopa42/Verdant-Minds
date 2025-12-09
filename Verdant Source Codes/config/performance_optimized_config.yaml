@@ -1,0 +1,55 @@
+# Performance Optimized Configuration
+# ====================================
+# Optimized for speed and efficiency
+# Use: mind = UnifiedSyntheticMind(config_path="config/performance_optimized_config.yaml")
+
+system:
+  debug: false
+  profiling_enabled: false
+
+# Reduced dimensions for faster computation
+ecwf:
+  cognitive_dimensions: 3  # Reduced from 5
+  ethical_dimensions: 3  # Reduced from 5
+  max_evolution_steps: 50  # Reduced from 100
+
+# Smaller memory graph
+memory_web:
+  max_activation_hops: 2  # Reduced from 3
+  activation_threshold: 0.4  # Higher threshold = fewer nodes activated
+  auto_prune: true  # Remove low-value nodes
+  prune_threshold: 0.1
+  prune_interval: 50
+
+blocks:
+  pattern_recognition:
+    max_keywords: 20  # Reduced from 50
+    entity_recognition: false  # Disable expensive NER
+
+  reasoning_planning:
+    max_plan_steps: 5  # Reduced from 10
+    max_hypotheses: 3  # Reduced from 5
+
+# Simplified governance
+governance:
+  coordination_strategy: "sequential"  # Faster than consensus
+
+# Performance optimizations
+performance:
+  enable_caching: true
+  cache_size_mb: 200  # Larger cache
+  enable_parallel: false  # Set to true if multi-core available
+  num_workers: 4
+  auto_gc: true
+  gc_interval: 50  # More frequent garbage collection
+
+# Minimal logging
+logging:
+  level: "WARNING"  # Only log warnings and errors
+  console:
+    enabled: true
+    level: "WARNING"
+  file:
+    enabled: false  # Disable file logging for speed
+  performance:
+    enabled: false  # Disable performance metrics logging

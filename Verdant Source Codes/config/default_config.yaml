@@ -1,0 +1,449 @@
+# Verdant-Minds Default Configuration
+# ====================================
+# This file contains all configurable parameters for the Verdant-Minds system.
+# To override settings, create a custom config file and pass it during initialization.
+#
+# Example:
+#   mind = UnifiedSyntheticMind(config_path="my_config.yaml")
+#   mind = UnifiedSyntheticMind(config_override={"ecwf": {"cognitive_dimensions": 7}})
+
+# System-wide settings
+system:
+  # Random seed for reproducibility (null = random)
+  seed: 42
+
+  # Enable debug mode (verbose logging, extra checks)
+  debug: false
+
+  # Performance profiling
+  profiling_enabled: false
+
+  # Maximum concurrent chunks (for future parallel processing)
+  max_concurrent_chunks: 1
+
+  # System name/identifier
+  name: "Verdant-Minds-v0.2"
+
+# Extended Cognitive Wave Function (ECWF) settings
+ecwf:
+  # Number of cognitive dimensions
+  cognitive_dimensions: 5
+
+  # Number of ethical dimensions
+  ethical_dimensions: 5
+
+  # Initial wave function properties
+  initial_amplitude: 1.0
+  initial_phase: 0.0
+
+  # Entropy computation
+  entropy_base: 2.0  # Base for logarithm (2 = bits, e = nats)
+
+  # Wave evolution parameters
+  evolution_timestep: 0.1
+  max_evolution_steps: 100
+
+  # Coherence threshold
+  coherence_threshold: 0.5
+
+  # Enable quantum interference effects
+  quantum_interference: true
+
+# Memory Web (NetworkX graph) settings
+memory_web:
+  # Initial graph type
+  graph_type: "directed"  # or "undirected"
+
+  # Concept properties
+  default_stability: 0.5
+  stability_decay_rate: 0.01
+  min_stability: 0.1
+
+  # Relation properties
+  default_relation_strength: 0.5
+  relation_decay_rate: 0.005
+  min_relation_strength: 0.1
+
+  # Activation spreading
+  activation_threshold: 0.3
+  activation_decay: 0.7  # Decay factor per hop
+  max_activation_hops: 3
+
+  # Community detection
+  community_algorithm: "louvain"  # louvain, label_propagation, greedy_modularity
+  community_resolution: 1.0
+
+  # Pruning (remove low-stability nodes)
+  auto_prune: false
+  prune_threshold: 0.05
+  prune_interval: 100  # Every N updates
+
+# Memory-ECWF Bridge settings
+memory_bridge:
+  # Mapping strategy
+  concept_to_wave_strategy: "activation_weighted"  # simple, activation_weighted, centrality_weighted
+  wave_to_concept_strategy: "amplitude_threshold"  # amplitude_threshold, top_k, probabilistic
+
+  # Thresholds
+  amplitude_threshold: 0.3
+  top_k_concepts: 10
+
+  # Update frequency
+  sync_every_n_steps: 1
+
+  # Dimension mapping
+  auto_dimension_assignment: true
+
+# Glass Transition Temperature (T_g) framework
+glass_transition:
+  # Base temperature
+  base_temperature: 0.5
+
+  # Temperature range
+  min_temperature: 0.1
+  max_temperature: 1.0
+
+  # Adaptation parameters
+  complexity_weight: 0.4
+  environmental_entropy_weight: 0.3
+  system_entropy_weight: 0.3
+
+  # Update rate
+  temperature_adaptation_rate: 0.1
+
+# Cognitive Block settings
+blocks:
+  # Block 1: Sensory Input
+  sensory_input:
+    enabled: true
+    # Tokenization
+    tokenizer: "simple"  # simple, spacy, bert
+    max_tokens: 512
+    # Complexity estimation
+    complexity_factors:
+      length_weight: 0.3
+      vocabulary_weight: 0.3
+      structure_weight: 0.4
+
+  # Block 2: Pattern Recognition
+  pattern_recognition:
+    enabled: true
+    # Keyword extraction
+    min_keyword_length: 3
+    max_keywords: 50
+    stopword_filtering: true
+    # Opposition detection
+    opposition_detection: true
+    tension_computation: true
+    proximity_window: 20
+    # Question classification
+    question_classification: true
+    # Sentiment analysis
+    sentiment_analysis: true
+    sentiment_threshold: 0.2
+    # Entity recognition
+    entity_recognition: true
+    entity_method: "spacy_with_fallback"  # spacy, spacy_with_fallback, heuristic
+
+  # Block 3: Memory Storage
+  memory_storage:
+    enabled: true
+    # Storage strategy
+    storage_strategy: "selective"  # all, selective, importance_weighted
+    importance_threshold: 0.3
+    # Update existing concepts
+    update_existing: true
+    update_strategy: "weighted_average"  # replace, weighted_average, max
+
+  # Block 4: Internal Communication
+  internal_communication:
+    enabled: true
+    # Message aggregation
+    aggregation_strategy: "concatenate"  # concatenate, summarize, prioritize
+    max_message_length: 1000
+    # Conflict detection
+    conflict_detection: true
+    conflict_threshold: 0.7
+
+  # Block 5: Reasoning & Planning
+  reasoning_planning:
+    enabled: true
+    # Reasoning types
+    deductive_reasoning: true
+    inductive_reasoning: true
+    abductive_reasoning: true
+    # Planning
+    max_plan_steps: 10
+    planning_horizon: 5
+    # Hypothesis generation
+    max_hypotheses: 5
+    hypothesis_threshold: 0.4
+
+  # Block 6: Ethics & Values
+  ethics_values:
+    enabled: true
+    # Ethical sensitivity (0.0 = permissive, 1.0 = strict)
+    ethical_sensitivity: 0.6
+    # Principle weights
+    non_maleficence_weight: 1.0
+    beneficence_weight: 0.9
+    autonomy_weight: 0.8
+    justice_weight: 0.85
+    transparency_weight: 0.75
+    # Evaluation
+    require_ethical_approval: true
+    veto_threshold: 0.3  # Below this = veto
+
+  # Block 7: Action Selection
+  action_selection:
+    enabled: true
+    # Selection strategy
+    selection_strategy: "confidence_weighted"  # highest_confidence, weighted_random, consensus
+    min_confidence: 0.3
+    # Deferral
+    allow_deferral: true
+    deferral_threshold: 0.5
+    # Clarification
+    allow_clarification: true
+    clarification_threshold: 0.6
+
+  # Block 8: Language Processing
+  language_processing:
+    enabled: true
+    # Generation strategy
+    generation_strategy: "template"  # template, neural, hybrid
+    # Template settings
+    max_response_length: 500
+    response_style: "informative"  # informative, concise, detailed, conversational
+    # Neural settings (when using neural generation)
+    model_name: null  # e.g., "gpt2", "t5-small"
+    temperature: 0.7
+    top_p: 0.9
+    max_tokens: 256
+
+  # Block 9: Continual Learning
+  continual_learning:
+    enabled: true
+    # Learning rate
+    learning_rate: 0.05
+    # Update strategies
+    parameter_update_strategy: "gradient"  # gradient, evolutionary, reinforcement
+    knowledge_update_strategy: "incremental"  # incremental, batch, episodic
+    # Forgetting
+    enable_forgetting: false
+    forgetting_rate: 0.01
+
+# Three Kings Governance settings
+governance:
+  # Enable governance layer
+  enabled: true
+
+  # Coordination strategy
+  coordination_strategy: "consensus"  # consensus, majority, weighted_vote, sequential
+
+  # Individual king settings
+  data_king:
+    enabled: true
+    # Quality thresholds
+    min_data_quality: 0.4
+    anomaly_threshold: 0.8
+    # Veto power
+    can_veto: true
+    veto_weight: 0.33
+
+  forefront_king:
+    enabled: true
+    # Priority settings
+    goal_prioritization: true
+    urgency_weight: 0.6
+    importance_weight: 0.4
+    # Veto power
+    can_veto: false
+    veto_weight: 0.33
+
+  ethics_king:
+    enabled: true
+    # Evaluation strictness
+    strictness: 0.7
+    # Veto power
+    can_veto: true
+    veto_weight: 0.34
+
+  # Coordination
+  require_unanimous_approval: false
+  approval_threshold: 0.6  # Fraction of kings that must approve
+
+# Logging configuration
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+
+  # Output destinations
+  console:
+    enabled: true
+    level: "INFO"
+    format: "simple"  # simple, detailed, json
+    colorized: true
+
+  file:
+    enabled: true
+    level: "DEBUG"
+    path: "logs/verdant_minds.log"
+    format: "detailed"  # simple, detailed, json
+    max_size_mb: 100
+    backup_count: 5
+    rotation: "size"  # size, time, both
+
+  # Structured logging (JSON)
+  structured:
+    enabled: false
+    path: "logs/verdant_minds_structured.jsonl"
+    include_metadata: true
+
+  # Performance logging
+  performance:
+    enabled: true
+    log_block_timings: true
+    log_memory_usage: true
+    log_throughput: true
+    metrics_interval: 10  # Log metrics every N chunks
+
+  # Block-specific logging
+  blocks:
+    log_all_blocks: true
+    log_processing_details: false  # Very verbose
+    log_errors_only: false
+
+# Performance and optimization
+performance:
+  # Caching
+  enable_caching: true
+  cache_size_mb: 100
+  cache_ttl_seconds: 3600
+
+  # Lazy loading
+  lazy_load_models: true
+
+  # Parallel processing (experimental)
+  enable_parallel: false
+  num_workers: 4
+
+  # Memory management
+  auto_gc: true
+  gc_interval: 100  # Every N chunks
+
+  # Profiling
+  profile_blocks: false
+  profile_output_path: "profiles/"
+
+# Neural network integration (when available)
+neural:
+  # Device
+  device: "cpu"  # cpu, cuda, cuda:0, mps
+
+  # Embeddings
+  embeddings:
+    enabled: false
+    model: "sentence-transformers/all-MiniLM-L6-v2"
+    dimension: 384
+    batch_size: 32
+
+  # Language model
+  language_model:
+    enabled: false
+    model: "gpt2"  # gpt2, gpt2-medium, t5-small, etc.
+    max_length: 256
+    device: "cpu"
+
+  # Training
+  training:
+    enabled: false
+    batch_size: 16
+    learning_rate: 1e-4
+    epochs: 10
+    checkpoint_dir: "checkpoints/"
+
+# Testing and validation
+testing:
+  # Integration tests
+  run_integration_tests_on_startup: false
+
+  # Validation
+  validate_chunk_structure: true
+  validate_section_content: false  # Expensive
+
+  # Assertions
+  strict_mode: false  # Fail on warnings
+
+# Experimental features
+experimental:
+  # Quantum-inspired features
+  enable_quantum_entanglement: false
+  enable_wave_collapse: false
+
+  # Advanced memory
+  enable_episodic_memory: false
+  enable_semantic_clustering: false
+
+  # Meta-learning
+  enable_meta_learning: false
+
+  # Consciousness-like properties
+  enable_self_reflection: false
+  reflection_interval: 50
+
+# Deployment settings
+deployment:
+  # API settings (for future REST API)
+  api:
+    enabled: false
+    host: "0.0.0.0"
+    port: 8000
+    max_requests_per_minute: 60
+
+  # Database (for persistent storage)
+  database:
+    enabled: false
+    type: "sqlite"  # sqlite, postgresql, mongodb
+    path: "data/verdant_minds.db"
+    connection_string: null
+
+  # Monitoring
+  monitoring:
+    enabled: false
+    metrics_port: 9090
+    health_check_interval: 30
+
+# Use case specific configurations (examples)
+# To use, copy relevant section to a new file and override
+use_case_examples:
+  # Ethical reasoning focused
+  ethical_reasoning:
+    governance:
+      ethics_king:
+        strictness: 0.9
+    blocks:
+      ethics_values:
+        ethical_sensitivity: 0.8
+
+  # Performance optimized
+  performance_optimized:
+    performance:
+      enable_caching: true
+      enable_parallel: true
+    blocks:
+      pattern_recognition:
+        max_keywords: 20
+    logging:
+      level: "WARNING"
+
+  # Research/debugging
+  research_debug:
+    system:
+      debug: true
+    logging:
+      level: "DEBUG"
+      performance:
+        enabled: true
+    performance:
+      profile_blocks: true

@@ -3,6 +3,9 @@
 # ============================================================================
 # This file contains all required Python packages for the Unified Synthetic
 # Mind AI system. Organized by category for clarity and maintainability.
+#
+# Last Updated: 2025-01-08
+# Version: 0.2.0
 # ============================================================================
 
 # ----------------------------------------------------------------------------
@@ -13,20 +16,10 @@
 # - Cognitive state representations
 # - Ethical field operator computations
 # - Pattern recognition and statistical analysis
+# Files using: system.py, MemoryWeb.py, ECWFCore.py, SystemLearning.py,
+#              ReasoningPlanningBlock.py, DataKing.py, ThreeKingsLayer.py,
+#              MemoryECWFBridge.py, visualization/plot_processing.py
 numpy>=1.24.0,<2.0.0
-
-# ----------------------------------------------------------------------------
-# Machine Learning & Deep Learning Frameworks
-# ----------------------------------------------------------------------------
-# TensorFlow for potential neural network implementations
-# Note: Currently not directly imported but may be used for future
-# quantum-inspired neural architectures or deep learning models
-tensorflow>=2.13.0,<3.0.0
-
-# PyTorch for flexible neural network implementations
-# Note: Currently not directly imported but may be used for future
-# advanced cognitive modeling or emergent behavior simulations
-torch>=2.0.0,<3.0.0
 
 # ----------------------------------------------------------------------------
 # Graph Theory & Network Analysis
@@ -36,6 +29,7 @@ torch>=2.0.0,<3.0.0
 # - Concept relationship mapping
 # - Community detection in thought networks
 # - Centrality analysis for concept importance
+# Files using: MemoryWeb.py
 networkx>=3.0,<4.0
 
 # Python-Louvain for community detection algorithms:
@@ -44,45 +38,95 @@ networkx>=3.0,<4.0
 python-louvain>=0.16
 
 # ----------------------------------------------------------------------------
-# Data Visualization & Reporting
+# Configuration Management
+# ----------------------------------------------------------------------------
+# PyYAML for YAML configuration file parsing:
+# - Loads and validates system configuration
+# - Supports default, custom, and override configs
+# Files using: config_manager.py
+PyYAML>=6.0
+
+# ----------------------------------------------------------------------------
+# Performance Monitoring
+# ----------------------------------------------------------------------------
+# psutil for system resource monitoring:
+# - Memory usage tracking during benchmarks
+# - CPU usage monitoring
+# - Performance profiling
+# Files using: benchmarks/performance_tests.py
+psutil>=5.9.0
+
+# ----------------------------------------------------------------------------
+# Data Visualization
 # ----------------------------------------------------------------------------
 # Matplotlib for system performance visualization:
-# - Integration test result plots
-# - Performance metric dashboards
-# - Cross-block information flow diagrams
-# - System state visualizations
+# - Cognitive chunk flow diagrams
+# - ECWF state evolution plots
+# - Memory activation pattern visualization
+# - Ethical principle score charts
+# - Benchmark result plots
+# Files using: visualization/plot_processing.py
 matplotlib>=3.7.0,<4.0.0
 
 # ----------------------------------------------------------------------------
-# Authentication & Security
+# Authentication & Security (Optional - for deployment)
 # ----------------------------------------------------------------------------
 # PyJWT for JSON Web Token handling:
 # - Secure authentication token generation and validation
-# - API access control
+# - API access control (future deployment feature)
 # - Session management
+# Files using: auth/system.py
 PyJWT>=2.8.0,<3.0.0
 
 # Werkzeug for security utilities:
 # - Password hashing (generate_password_hash, check_password_hash)
 # - Secure credential storage
 # - Authentication helpers
+# Files using: auth/system.py
 Werkzeug>=3.0.0,<4.0.0
 
 # ----------------------------------------------------------------------------
-# Additional Utilities (Optional but Recommended)
+# Natural Language Processing (Optional)
 # ----------------------------------------------------------------------------
-# Recommended for enhanced functionality:
+# spaCy for advanced NLP features (OPTIONAL):
+# - Named entity recognition in Pattern Recognition Block
+# - Falls back to heuristics if not installed
+# - Install separately if needed: pip install spacy
+# - Download model: python -m spacy download en_core_web_sm
+# Files using: PatternRecognitionBlock.py (optional import)
+# spacy>=3.7.0
 
-# SciPy for advanced scientific computing (complementary to NumPy)
+# ----------------------------------------------------------------------------
+# Deep Learning Frameworks (Optional - Future Use)
+# ----------------------------------------------------------------------------
+# These are listed for reference but NOT currently required.
+# Uncomment and install if/when neural network features are added.
+
+# TensorFlow for potential neural network implementations:
+# - Planned for future semantic understanding
+# - Planned for advanced language generation
+# tensorflow>=2.13.0,<3.0.0
+
+# PyTorch for flexible neural network implementations:
+# - Planned for future cognitive modeling
+# - Planned for emergent behavior simulations
+# torch>=2.0.0,<3.0.0
+
+# ----------------------------------------------------------------------------
+# Recommended Optional Packages
+# ----------------------------------------------------------------------------
+# These enhance functionality but are not strictly required:
+
+# SciPy for advanced scientific computing:
 # scipy>=1.11.0,<2.0.0
 
-# Pandas for data manipulation and analysis
+# Pandas for data manipulation and analysis:
 # pandas>=2.0.0,<3.0.0
 
-# Scikit-learn for classical machine learning algorithms
+# Scikit-learn for classical machine learning algorithms:
 # scikit-learn>=1.3.0,<2.0.0
 
-# tqdm for progress bars during long-running operations
+# tqdm for progress bars during long-running operations:
 # tqdm>=4.66.0
 
 # ============================================================================
@@ -100,15 +144,45 @@ Werkzeug>=3.0.0,<4.0.0
 # ============================================================================
 # Installation Instructions
 # ============================================================================
-# Basic installation:
+# Basic installation (minimum requirements):
 #   pip install -r requirements.txt
 #
 # For development:
 #   pip install -r requirements.txt -r requirements-dev.txt
 #
-# For GPU support (TensorFlow):
+# For NLP features (optional):
+#   pip install spacy>=3.7.0
+#   python -m spacy download en_core_web_sm
+#
+# For GPU support (TensorFlow - if enabled):
 #   pip install tensorflow[and-cuda]>=2.13.0
 #
-# For GPU support (PyTorch):
+# For GPU support (PyTorch - if enabled):
 #   Visit https://pytorch.org for platform-specific installation
+#
+# For complete installation (all optional features):
+#   pip install -r requirements.txt spacy scipy pandas scikit-learn tqdm
+# ============================================================================
+
+# ============================================================================
+# Package Summary
+# ============================================================================
+# REQUIRED (8 packages):
+#   - numpy (numerical computing)
+#   - networkx (graph operations)
+#   - python-louvain (community detection)
+#   - PyYAML (configuration)
+#   - psutil (performance monitoring)
+#   - matplotlib (visualization)
+#   - PyJWT (authentication - optional for deployment)
+#   - Werkzeug (security - optional for deployment)
+#
+# OPTIONAL (4 packages):
+#   - spacy (advanced NLP)
+#   - tensorflow (deep learning - future)
+#   - torch (deep learning - future)
+#   - scipy/pandas/scikit-learn/tqdm (enhancements)
+#
+# DEVELOPMENT (see requirements-dev.txt):
+#   - pytest, black, flake8, mypy, ipython, jupyter
 # ============================================================================

@@ -16,7 +16,7 @@ class MemoryStorageBlock:
     - Statistics and monitoring
     """
     
-    def __init__(self, max_size: int = 1000, default_ttl: Optional[int] = None):
+    def __init__(self, max_size: Union[int, Any] = 1000, default_ttl: Optional[int] = None, memory_bridge: Any = None, use_pconnect_edges: bool = False):
         """
         Initialize the memory storage block.
         
@@ -26,8 +26,21 @@ class MemoryStorageBlock:
         """
         self._store: OrderedDict = OrderedDict()
         self._expiry: Dict[str, float] = {}
-        self._max_size = max_size
+
+        # Support pipeline initialization where memory_bridge may be passed
+        # as the first argument (UnifiedSystem uses MemoryStorageBlock(self.memory_bridge)).
+        if isinstance(max_size, int):
+            self._max_size = max_size
+            self.memory_bridge = memory_bridge
+        else:
+            self._max_size = 1000
+            self.memory_bridge = max_size
+
         self._default_ttl = default_ttl
+
+        self.use_pconnect_edges = bool(use_pconnect_edges)
+        if getattr(self, "memory_bridge", None) is not None and hasattr(self.memory_bridge, "edge_policy"):
+            self.memory_bridge.edge_policy = "pconnect" if self.use_pconnect_edges else "default"
         self._lock = threading.RLock()
         self._stats = {
             "hits": 0,
@@ -221,6 +234,94 @@ class MemoryStorageBlock:
             self._stats["evictions"] += 1
             
         return eviction_count
+
+    def process_chunk(self, chunk):
+        """
+        Process a cognitive chunk for memory/wave pipeline compatibility.
+
+        Always writes memory_section and wave_function_section with
+        safe defaults when upstream sections are missing.
+        """
+        pattern_data = chunk.get_section_content("pattern_recognition_section") or {}
+
+        raw_concepts = []
+
+        for concept in pattern_data.get("concepts", []) or []:
+            if isinstance(concept, dict):
+                value = concept.get("value")
+                if value:
+                    raw_concepts.append(str(value))
+            elif concept is not None:
+                raw_concepts.append(str(concept))
+
+        for concept in pattern_data.get("extracted_concepts", []) or []:
+            if isinstance(concept, dict):
+                value = concept.get("value")
+                if value:
+                    raw_concepts.append(str(value))
+            elif concept is not None:
+                raw_concepts.append(str(concept))
+
+        for keyword in pattern_data.get("keywords", []) or []:
+            if keyword is not None:
+                raw_concepts.append(str(keyword))
+
+        concepts = list(dict.fromkeys(raw_concepts))
+
+        retrieved_concepts = []
+        activation_levels: Dict[str, float] = {}
+
+        for concept in concepts:
+            stored, found = self.get(concept, default=None)
+            if found:
+                retrieved_concepts.append(concept)
+                if isinstance(stored, dict):
+                    activation_levels[concept] = float(stored.get("activation", 0.7))
+                else:
+                    activation_levels[concept] = 0.7
+            else:
+                retrieved_concepts.append(concept)
+                activation_levels[concept] = 0.5
+                self.set(concept, {"activation": 0.5})
+
+        activated_concepts = dict(activation_levels)
+
+        wave_properties: Dict[str, Any] = {
+            "magnitude": [0.0],
+            "phase": [0.0],
+            "entropy": 0.5
+        }
+
+        if getattr(self, "memory_bridge", None) is not None and concepts:
+            try:
+                bridge_result = self.memory_bridge.update_ecwf_from_memory(concepts)
+                if isinstance(bridge_result, dict):
+                    wave_properties["bridge_update"] = {
+                        "processed_concepts": bridge_result.get("processed_concepts", []),
+                        "cognitive_influence": bridge_result.get("cognitive_influence", []),
+                        "ethical_influence": bridge_result.get("ethical_influence", [])
+                    }
+            except Exception:
+                pass
+
+        memory_section = {
+            "retrieved_concepts": retrieved_concepts,
+            "activated_concepts": activated_concepts,
+            "activation_levels": activation_levels,
+            "wave_properties": wave_properties,
+            "novelty_score": 0.0
+        }
+
+        wave_function_section = {
+            "magnitude": (wave_properties.get("magnitude") or [None])[0],
+            "phase": (wave_properties.get("phase") or [None])[0],
+            "entropy": wave_properties.get("entropy")
+        }
+
+        chunk.update_section("memory_section", memory_section)
+        chunk.update_section("wave_function_section", wave_function_section)
+
+        return chunk
 
 
 # Example usage

@@ -395,6 +395,9 @@ class InternalCommunicationBlock(BaseBlock):
         Returns:
             Integrated context dictionary
         """
+        # Extract relevant data from sections needed for context integration
+        memory_data = chunk.get_section_content("memory_section") or {}
+
         # Start with basic context from current analysis
         integrated_context = {
             "primary_concepts": information_analysis["primary_concepts"],
@@ -454,6 +457,7 @@ class InternalCommunicationBlock(BaseBlock):
         memory_data = chunk.get_section_content("memory_section") or {}
         ethics_data = chunk.get_section_content("ethics_king_section") or {}
         reasoning_data = chunk.get_section_content("reasoning_section") or {}
+        action_data = chunk.get_section_content("action_selection_section") or {}
         
         # Check for ethics-memory resonance
         if memory_data.get("retrieved_concepts") and ethics_data.get("evaluation"):

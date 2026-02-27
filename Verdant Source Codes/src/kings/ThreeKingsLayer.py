@@ -387,7 +387,9 @@ class ThreeKingsLayer:
         """
         # Extract key information for voting
         action_data = chunk.get_section_content("action_selection_section") or {}
-        ethics_data = chunk.get_section_content("ethics_king_section") or {}
+        ethics_section = chunk.get_section_content("ethics_king_section") or {}
+        evaluation = ethics_section.get("evaluation", {}) if isinstance(ethics_section, dict) else {}
+        ethics_status = evaluation.get("status", "unknown")
         data_king_data = chunk.get_section_content("data_king_section") or {}
         forefront_data = chunk.get_section_content("forefront_king_section") or {}
         

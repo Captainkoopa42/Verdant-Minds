@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import time
 from typing import Dict, List, Any, Optional, Tuple
@@ -51,6 +52,7 @@ class UnifiedSystem:
         
         # Initialize memory components
         self.memory_web = MemoryWeb()
+        self.memory_web.edge_policy = "pconnect" if self.config.get("use_pconnect_edges", True) else "default"
         self.ecwf_core = ECWFCore(
             num_cognitive_dims=self.config.get("cognitive_dimensions", 5),
             num_ethical_dims=self.config.get("ethical_dimensions", 5),
@@ -65,7 +67,8 @@ class UnifiedSystem:
         self.memory_bridge = MemoryECWFBridge(
             memory_web=self.memory_web,
             ecwf_core=self.ecwf_core,
-            influence_factor=self.config.get("bridge_influence_factor", 0.3)
+            influence_factor=self.config.get("bridge_influence_factor", 0.3),
+            edge_policy="pconnect" if self.config.get("use_pconnect_edges", True) else "default"
         )
         
         # Create system learning component
@@ -100,6 +103,10 @@ class UnifiedSystem:
             "glass_transition_temp": 0.5,  # Initial T_g value
             "system_entropy": 0.0
         }
+
+        # Rolling entropy history for coherence diagnostics
+        self._entropy_history: List[float] = []
+        self._entropy_history_maxlen = 20
         
         # Initialize system with integration tools
         self = integrate_system_tools(self)
@@ -130,7 +137,8 @@ class UnifiedSystem:
             "decision_threshold": 0.7,
             "ethical_sensitivity": 0.6,
             "initialize_knowledge": True,
-            "log_level": "INFO"
+            "log_level": "INFO",
+            "use_pconnect_edges": True
         }
         
         # Merge with user config if provided
@@ -160,6 +168,109 @@ class UnifiedSystem:
             }
         )
     
+    def _compute_coherence_invariants(self, chunk: CognitiveChunk) -> Dict[str, Any]:
+        """Compute coherence invariants from wave, ethics, and memory telemetry."""
+        eps = 1e-9
+
+        def to_float(value: Any, default: float = 0.0) -> float:
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return default
+
+        def clamp01(value: Any) -> float:
+            return max(0.0, min(1.0, to_float(value, 0.0)))
+
+        def tau_alpha(a: float, b: float, alpha: float) -> float:
+            return abs(a - b) ** alpha
+
+        def is_triangle_valid(a: float, b: float, c: float, alpha: float) -> bool:
+            d_ab = tau_alpha(a, b, alpha)
+            d_bc = tau_alpha(b, c, alpha)
+            d_ac = tau_alpha(a, c, alpha)
+            return (
+                d_ab <= d_bc + d_ac + eps and
+                d_bc <= d_ab + d_ac + eps and
+                d_ac <= d_ab + d_bc + eps
+            )
+
+        wave_section = chunk.get_section_content("wave_function_section") or {}
+        memory_section = chunk.get_section_content("memory_section") or {}
+        ethics_section = chunk.get_section_content("ethics_king_section") or {}
+        ethics_consid = chunk.get_section_content("ethical_consideration_section") or {}
+        evaluation = ethics_section.get("evaluation", {}) if isinstance(ethics_section, dict) else {}
+
+        mean_delta_e = to_float(ethics_consid.get("mean_delta_e", 0.0), 0.0)
+
+        entropy = clamp01(wave_section.get("entropy", self.metrics.get("system_entropy", 0.0)))
+        phase = clamp01(wave_section.get("phase", 0.0))
+        magnitude = clamp01(wave_section.get("magnitude", 0.0))
+        overall_score = clamp01(evaluation.get("overall_score", 0.0))
+
+        principle_scores = evaluation.get("principle_scores", {}) if isinstance(evaluation, dict) else {}
+        if isinstance(principle_scores, dict) and principle_scores:
+            principle_values = [clamp01(v) for v in principle_scores.values()]
+            principle_mean = sum(principle_values) / len(principle_values)
+        else:
+            principle_values = []
+            principle_mean = 0.0
+
+        activated = memory_section.get("activated_concepts", {})
+        if isinstance(activated, dict):
+            activated_count = len(activated)
+        elif isinstance(activated, list):
+            activated_count = len(activated)
+        else:
+            activated_count = 0
+
+        activated_norm = clamp01(activated_count / 10.0)
+        novelty_score = clamp01(memory_section.get("novelty_score", 0.0))
+
+        self._entropy_history.append(entropy)
+        if len(self._entropy_history) > self._entropy_history_maxlen:
+            self._entropy_history = self._entropy_history[-self._entropy_history_maxlen:]
+
+        entropy_mean = sum(self._entropy_history) / max(1, len(self._entropy_history))
+        entropy_std = float(np.std(self._entropy_history)) if self._entropy_history else 0.0
+        housed_contradiction_index = entropy_std / (entropy_mean + eps)
+
+        sampled_triples = [
+            {"p": entropy, "q": overall_score, "r": magnitude},
+            {"p": entropy, "q": principle_mean, "r": activated_norm},
+            {"p": novelty_score, "q": overall_score, "r": phase},
+            {"p": magnitude, "q": novelty_score, "r": activated_norm},
+            {"p": entropy, "q": clamp01(mean_delta_e / 2.0), "r": overall_score}
+        ]
+
+        alpha_grid = [0.8, 0.9, 1.0, 1.05, 1.1, 1.15, 1.2]
+        violation_rates = {}
+
+        for alpha in alpha_grid:
+            violations = 0
+            for trip in sampled_triples:
+                if not is_triangle_valid(trip["p"], trip["q"], trip["r"], alpha):
+                    violations += 1
+            violation_rates[alpha] = violations / max(1, len(sampled_triples))
+
+        violation_rate = violation_rates.get(1.0, 0.0)
+        triangle_valid_at_alpha1 = violation_rate <= 0.0
+
+        alpha_crit_estimate = None
+        for alpha in alpha_grid:
+            if violation_rates[alpha] > 0.05:
+                alpha_crit_estimate = float(alpha)
+                break
+
+        return {
+            "triangle_valid_at_alpha1": triangle_valid_at_alpha1,
+            "alpha_crit_estimate": alpha_crit_estimate,
+            "alpha_grid_used": alpha_grid,
+            "violation_rate": float(violation_rate),
+            "housed_contradiction_index": float(housed_contradiction_index),
+            "triple_pqr": {"p": entropy, "q": overall_score, "r": magnitude},
+            "sampled_triplets": sampled_triples
+        }
+
     def _initialize_blocks(self) -> Dict[str, Any]:
         """
         Initialize all blocks in the Nine-Block system.
@@ -171,7 +282,10 @@ class UnifiedSystem:
             "SensoryInput": SensoryInputBlock(),
             "PatternRecognition": PatternRecognitionBlock(),
             "InternalCommunication": InternalCommunicationBlock(),
-            "MemoryStorage": MemoryStorageBlock(self.memory_bridge),
+            "MemoryStorage": MemoryStorageBlock(
+                self.memory_bridge,
+                use_pconnect_edges=self.config.get("use_pconnect_edges", True)
+            ),
             "ReasoningPlanning": ReasoningPlanningBlock(self.memory_bridge),
             "EthicsValues": EthicsValuesBlock(self.memory_bridge),
             "ActionSelection": ActionSelectionBlock(),
@@ -238,12 +352,18 @@ class UnifiedSystem:
                 processing_times["ThreeKingsCoordination"] = time.time() - kings_start_time
                 self.metrics["decisions_made"] += 1
         
+        # Compute coherence invariants from end-of-pipeline signals
+        coherence_invariants = self._compute_coherence_invariants(chunk)
+
+        chunk.update_section("coherence_invariants_section", coherence_invariants)
+
         # Add processing time data to chunk
         chunk.update_section("processing_metrics_section", {
             "processing_times": processing_times,
             "total_processing_time": sum(processing_times.values()),
             "glass_transition_temp": self.metrics["glass_transition_temp"],
-            "system_entropy": self.metrics["system_entropy"]
+            "system_entropy": self.metrics["system_entropy"],
+            "coherence_invariants": coherence_invariants
         })
         
         self.logger.info(f"Processing complete. Total time: {sum(processing_times.values()):.3f}s")
@@ -334,6 +454,21 @@ class UnifiedSystem:
         
         return response
     
+    def _compute_semantic_entropy(self, chunk: CognitiveChunk) -> Tuple[float, float]:
+        """Compute semantic/structural environmental and system entropy proxies."""
+        ethics_consid = chunk.get_section_content("ethical_consideration_section") or {}
+        mean_delta_e = float(ethics_consid.get("mean_delta_e", 0.0))
+        h_env = min(1.0, mean_delta_e / 2.0)
+
+        wave = chunk.get_section_content("wave_function_section") or {}
+        wave_entropy = wave.get("entropy", None)
+        if wave_entropy is not None:
+            h_sys = min(1.0, abs(float(wave_entropy)))
+        else:
+            h_sys = float(self.metrics.get("system_entropy", 0.5))
+
+        return h_env, h_sys
+
     def _update_glass_transition_temp(self, chunk: CognitiveChunk):
         """
         Update the system's glass transition temperature based on current state.
@@ -351,23 +486,16 @@ class UnifiedSystem:
         memory_complexity = len(memory_data.get("retrieved_concepts", [])) / 10  # Normalize
         computational_complexity = (input_complexity + memory_complexity) / 2
         
-        # Calculate environmental entropy (E)
-        # Based on input ambiguity and novelty
-        input_ambiguity = sensory_data.get("ambiguity_score", 0.5)
-        novelty_score = memory_data.get("novelty_score", 0.5)
-        environmental_entropy = (input_ambiguity + novelty_score) / 2
-        
-        # Calculate system entropy (H_S)
-        # Based on wave function entropy and reasoning uncertainty
-        wave_data = memory_data.get("wave_properties", {})
-        wave_entropy = wave_data.get("entropy", 0.5)
-        self.metrics["system_entropy"] = wave_entropy
-        
+        # Calculate semantic/structural entropies
+        # H_env: pairwise ethical differential, H_sys: wave entropy
+        h_env, h_sys = self._compute_semantic_entropy(chunk)
+        self.metrics["system_entropy"] = h_sys
+
         # Calculate glass transition temperature
-        # Uses a non-linear function with feedback from system entropy
-        base_t_g = 0.4 + 0.3 * computational_complexity - 0.2 * environmental_entropy
-        entropy_feedback = 0.1 * np.sin(wave_entropy * np.pi)
-        
+        # Uses the same non-linear shape with semantic entropy inputs
+        base_t_g = 0.4 + 0.3 * computational_complexity - 0.2 * h_env
+        entropy_feedback = 0.1 * np.sin(h_sys * np.pi)
+
         t_g = base_t_g + entropy_feedback
         t_g = max(0.1, min(0.9, t_g))  # Ensure it stays in reasonable bounds
         
@@ -707,7 +835,8 @@ class UnifiedSystem:
             system.memory_bridge = MemoryECWFBridge(
                 memory_web=system.memory_web,
                 ecwf_core=system.ecwf_core,
-                influence_factor=system.config.get("bridge_influence_factor", 0.3)
+                influence_factor=system.config.get("bridge_influence_factor", 0.3),
+                edge_policy="pconnect" if system.config.get("use_pconnect_edges", True) else "default"
             )
             
             # Restore metrics
@@ -718,3 +847,44 @@ class UnifiedSystem:
         except Exception as e:
             logging.error(f"Error loading system state: {e}")
             raise
+
+    def to_state_dict(self, include_ecwf_past_states: bool = False) -> Dict[str, Any]:
+        """Serialize unified system state for persistence."""
+        return {
+            "version": 1,
+            "config": dict(self.config),
+            "metrics": dict(self.metrics),
+            "entropy_history": list(self._entropy_history),
+            "entropy_history_maxlen": int(self._entropy_history_maxlen),
+            "memory_web": self.memory_web.to_state_dict(),
+            "ecwf_core": self.ecwf_core.to_state_dict(include_past_states=include_ecwf_past_states),
+        }
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore unified system state from a dictionary."""
+        state = state or {}
+
+        loaded_metrics = state.get("metrics", {}) or {}
+        if loaded_metrics:
+            self.metrics.update(loaded_metrics)
+
+        history = state.get("entropy_history", []) or []
+        self._entropy_history = [float(v) for v in history]
+        self._entropy_history_maxlen = int(state.get("entropy_history_maxlen", self._entropy_history_maxlen))
+
+        memory_state = state.get("memory_web", {}) or {}
+        self.memory_web.from_state_dict(memory_state)
+
+        ecwf_state = state.get("ecwf_core", {}) or {}
+        self.ecwf_core.from_state_dict(ecwf_state)
+
+    def save_state(self, path: str, include_ecwf_past_states: bool = False) -> None:
+        """Persist system state to JSON."""
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.to_state_dict(include_ecwf_past_states=include_ecwf_past_states), f, indent=2)
+
+    def load_state(self, path: str) -> None:
+        """Load system state from JSON."""
+        with open(path, "r", encoding="utf-8") as f:
+            state = json.load(f)
+        self.from_state_dict(state)

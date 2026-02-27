@@ -1,5 +1,6 @@
 import time
 from typing import Dict, Any, List, Optional
+from uuid import uuid4
 
 class CognitiveChunk:
     """
@@ -14,7 +15,7 @@ class CognitiveChunk:
         Args:
             chunk_id: Optional identifier for the chunk
         """
-        self.chunk_id = chunk_id or f"chunk_{int(time.time())}"
+        self.chunk_id = chunk_id or f"chunk_{time.time_ns()}_{uuid4().hex[:8]}"
         self.creation_time = time.time()
         self.sections = {}
         self.processing_log = []

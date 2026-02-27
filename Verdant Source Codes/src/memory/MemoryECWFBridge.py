@@ -11,7 +11,7 @@ class MemoryECWFBridge:
     for integrating associative memory with mathematical reasoning under uncertainty.
     """
     
-    def __init__(self, memory_web, ecwf_core, influence_factor=0.3):
+    def __init__(self, memory_web, ecwf_core, influence_factor=0.3, edge_policy: str = "default"):
         """
         Initialize the bridge between memory web and ECWF.
         
@@ -23,6 +23,7 @@ class MemoryECWFBridge:
         self.memory_web = memory_web
         self.ecwf_core = ecwf_core
         self.influence_factor = influence_factor
+        self.edge_policy = edge_policy
         
         # Map concepts to dimensions for translation between systems
         self.concept_dimension_mapping = {}
@@ -221,10 +222,12 @@ class MemoryECWFBridge:
                     connection_strength = min(activation1, activation2)
                     
                     # Create or strengthen connection
+                    effective_policy = getattr(self.memory_web, "edge_policy", self.edge_policy)
                     new_connection = self.memory_web.connect_thoughts(
                         concept1, 
                         concept2, 
-                        initial_weight=connection_strength
+                        initial_weight=connection_strength,
+                        edge_policy=effective_policy
                     )
                     
                     if new_connection:
@@ -602,7 +605,8 @@ class MemoryECWFBridge:
             
             # Connect to related concepts if any
             for concept in matched_concepts:
-                self.memory_web.connect_thoughts(new_concept, concept, 0.6)
+                effective_policy = getattr(self.memory_web, "edge_policy", self.edge_policy)
+                self.memory_web.connect_thoughts(new_concept, concept, 0.6, edge_policy=effective_policy)
             
             return [new_concept]
         

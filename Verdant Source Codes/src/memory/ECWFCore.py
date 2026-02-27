@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Any
 
@@ -47,6 +48,16 @@ class ECWFCore:
         # Dimension meanings (can be set later)
         self.dimension_meanings = {}
     
+    def create_wave_function(self, x_input: Optional[np.ndarray] = None,
+                             e_input: Optional[np.ndarray] = None,
+                             t: float = 0.0) -> np.ndarray:
+        """Backward-compatible wrapper that returns an ECWF state tensor."""
+        if x_input is None:
+            x_input = np.zeros((1, self.num_cognitive_dims), dtype=float)
+        if e_input is None:
+            e_input = np.zeros((1, self.num_ethical_dims), dtype=float)
+        return self.compute_ecwf(x_input, e_input, t)
+
     def _initialize_parameters(self):
         """Initialize wave function parameters."""
         # Cognitive wave numbers (k_i)
@@ -299,6 +310,74 @@ class ECWFCore:
         
         return self.dimension_meanings
     
+    def to_state_dict(self, include_past_states: bool = False) -> Dict[str, Any]:
+        """Serialize ECWFCore parameters into a JSON-compatible dictionary."""
+        state = {
+            "num_cognitive_dims": self.num_cognitive_dims,
+            "num_ethical_dims": self.num_ethical_dims,
+            "num_facets": self.num_facets,
+            "feedback_factor": self.feedback_factor,
+            "adaptive_rate": self.adaptive_rate,
+            "random_state": self.random_state,
+            "k": self.k.tolist(),
+            "m": self.m.tolist(),
+            "omega": self.omega.tolist(),
+            "phi": self.phi.tolist(),
+            "amplitude_factors": self.amplitude_factors.tolist(),
+            "dimension_meanings": dict(self.dimension_meanings),
+        }
+
+        if include_past_states:
+            serialized_states = []
+            for state_arr in self.past_states:
+                arr = np.asarray(state_arr)
+                serialized_states.append({
+                    "real": np.real(arr).tolist(),
+                    "imag": np.imag(arr).tolist(),
+                })
+            state["past_states"] = serialized_states
+
+        return state
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Load ECWFCore parameters from a dictionary produced by ``to_state_dict``."""
+        state = state or {}
+        self.num_cognitive_dims = int(state.get("num_cognitive_dims", self.num_cognitive_dims))
+        self.num_ethical_dims = int(state.get("num_ethical_dims", self.num_ethical_dims))
+        self.num_facets = int(state.get("num_facets", self.num_facets))
+        self.feedback_factor = float(state.get("feedback_factor", self.feedback_factor))
+        self.adaptive_rate = float(state.get("adaptive_rate", self.adaptive_rate))
+        self.random_state = state.get("random_state", self.random_state)
+        self.rng = np.random.RandomState(self.random_state)
+
+        self.k = np.array(state.get("k", self.k), dtype=float)
+        self.m = np.array(state.get("m", self.m), dtype=float)
+        self.omega = np.array(state.get("omega", self.omega), dtype=float)
+        self.phi = np.array(state.get("phi", self.phi), dtype=float)
+        self.amplitude_factors = np.array(state.get("amplitude_factors", self.amplitude_factors), dtype=float)
+
+        self.cognitive_dim_names = [f"C{i+1}" for i in range(self.num_cognitive_dims)]
+        self.ethical_dim_names = [f"E{i+1}" for i in range(self.num_ethical_dims)]
+        self.dimension_meanings = dict(state.get("dimension_meanings", self.dimension_meanings) or {})
+
+        loaded_states = []
+        for past in state.get("past_states", []) or []:
+            real = np.array(past.get("real", []), dtype=float)
+            imag = np.array(past.get("imag", []), dtype=float)
+            loaded_states.append(real + 1j * imag)
+        self.past_states = loaded_states
+
+    def save_state(self, path: str, include_past_states: bool = False) -> None:
+        """Persist ECWFCore state to disk."""
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.to_state_dict(include_past_states=include_past_states), f, indent=2)
+
+    def load_state(self, path: str) -> None:
+        """Load ECWFCore state from disk."""
+        with open(path, "r", encoding="utf-8") as f:
+            state = json.load(f)
+        self.from_state_dict(state)
+
     def get_state_summary(self) -> Dict[str, Any]:
         """
         Get a summary of the current ECWF state.

@@ -3,8 +3,9 @@ import time
 from typing import Dict, List, Tuple, Optional, Any, Set
 
 from ..core.cognitive_chunk import CognitiveChunk
+from .base_king import BaseKing
 
-class ForefrontKing:
+class ForefrontKing(BaseKing):
     """
     The Forefront King manages executive function, attention allocation, and decision-making.
     
@@ -43,8 +44,6 @@ class ForefrontKing:
         self.goal_history = []
         
         # Oversight metrics
-        self.influence_history = []
-        self.oversight_metrics = {}
         self.blocks_supervised = ["InternalCommunication", "ReasoningPlanning", "ActionSelection"]
     
     def oversee_processing(self, chunk: CognitiveChunk) -> CognitiveChunk:
@@ -536,7 +535,7 @@ class ForefrontKing:
                 action_modified = True
         
         # Check for ethical concerns that might have been missed
-        ethical_flags = chunk.get_section_content("ethical_consideration_section", {}).get("concerns", [])
+        ethical_flags = (chunk.get_section_content("ethical_consideration_section") or {}).get("concerns", [])
         if ethical_flags and selected_action not in ["defer_decision", "ask_clarification"]:
             selected_action = "defer_decision"
             action_confidence = 0.8  # High confidence in deferring for ethical reasons
@@ -580,7 +579,7 @@ class ForefrontKing:
             Updated emotional state
         """
         # Get sensory data for sentiment analysis
-        sensory_data = chunk.get_section_content("sensory_input_section", {})
+        sensory_data = chunk.get_section_content("sensory_input_section") or {}
         sentiment = sensory_data.get("sentiment", {})
         
         # Current emotional state
@@ -684,9 +683,9 @@ class ForefrontKing:
             Updated goal information
         """
         # Extract action parameters and reasoning
-        action_data = chunk.get_section_content("action_selection_section", {})
+        action_data = chunk.get_section_content("action_selection_section") or {}
         action_params = action_data.get("action_parameters", {})
-        reasoning_data = chunk.get_section_content("reasoning_section", {})
+        reasoning_data = chunk.get_section_content("reasoning_section") or {}
         
         # Check if we need to create a new goal
         created_goal = None

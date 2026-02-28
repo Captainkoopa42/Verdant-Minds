@@ -3,8 +3,9 @@ import time
 from typing import Dict, List, Tuple, Optional, Any, Set
 
 from ..core.cognitive_chunk import CognitiveChunk
+from .base_king import BaseKing
 
-class ForefrontKing:
+class ForefrontKing(BaseKing):
     """
     The Forefront King manages executive function, attention allocation, and decision-making.
     
@@ -43,8 +44,6 @@ class ForefrontKing:
         self.goal_history = []
         
         # Oversight metrics
-        self.influence_history = []
-        self.oversight_metrics = {}
         self.blocks_supervised = ["InternalCommunication", "ReasoningPlanning", "ActionSelection"]
     
     def oversee_processing(self, chunk: CognitiveChunk) -> CognitiveChunk:
@@ -64,6 +63,11 @@ class ForefrontKing:
         
         # Get integrated context
         integrated_context = comm_data.get("integrated_context", {})
+
+        coherence_section = chunk.get_section_content("coherence_invariants_section") or {}
+        housed_contradiction_index = self._safe_float(coherence_section.get("housed_contradiction_index", 0.0), 0.0)
+        triangle_valid_at_alpha1 = bool(coherence_section.get("triangle_valid_at_alpha1", True))
+        violation_rate = self._safe_float(coherence_section.get("violation_rate", 0.0), 0.0)
         
         # Focus attention on the most relevant concepts
         focus_result = self._allocate_attention(integrated_context, chunk)
@@ -76,6 +80,26 @@ class ForefrontKing:
         
         # Adjust decision threshold based on cognitive load and context
         threshold_result = self._adjust_decision_threshold(load_result["cognitive_load"], integrated_context)
+
+        t_g, phase_state, phase_threshold, capacity_multiplier = self._derive_phase_controls(chunk)
+
+        threshold_result["decision_threshold"] = max(0.4, min(0.9, threshold_result["decision_threshold"]))
+
+        coherence_threshold_adjustment = 0.0
+        if housed_contradiction_index > 0.5:
+            coherence_threshold_adjustment += 0.05
+
+        if not triangle_valid_at_alpha1:
+            phase_state = "coherence_strained"
+            capacity_multiplier = max(0.5, capacity_multiplier - 0.1)
+
+        if coherence_threshold_adjustment:
+            threshold_result["decision_threshold"] = max(
+                0.4,
+                min(0.9, threshold_result["decision_threshold"] + coherence_threshold_adjustment)
+            )
+
+        self.cognitive_capacity = max(0.5, capacity_multiplier)
         
         # Refine action selection if needed
         action_result = self._refine_action_selection(chunk, action_data, threshold_result["decision_threshold"])
@@ -92,12 +116,27 @@ class ForefrontKing:
             "cognitive_load": load_result["cognitive_load"],
             "working_memory": memory_result["active_concepts"],
             "decision_threshold": threshold_result["decision_threshold"],
+            "phase_state": phase_state,
+            "phase_controls": {
+                "glass_transition_temp": t_g,
+                "base_threshold": phase_threshold,
+                "capacity_multiplier": capacity_multiplier
+            },
+            "coherence_influence": {
+                "housed_contradiction_index": housed_contradiction_index,
+                "triangle_valid_at_alpha1": triangle_valid_at_alpha1,
+                "violation_rate": violation_rate,
+                "threshold_adjustment": coherence_threshold_adjustment
+            },
             "executive_assessment": action_result["assessment"],
             "emotional_state": emotion_result,
             "active_goals": goal_result["active_goals"],
             "oversight_timestamp": time.time()
         }
         
+        if violation_rate > 0.4:
+            forefront_king_oversight["high_geometric_tension"] = True
+
         # Create or update a dedicated section for the Forefront King
         chunk.update_section("forefront_king_section", forefront_king_oversight)
         
@@ -127,6 +166,30 @@ class ForefrontKing:
         
         return chunk
     
+    def _safe_float(self, value: Any, default: float = 0.0) -> float:
+        """Safely convert values to float."""
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    def _derive_phase_controls(self, chunk: CognitiveChunk) -> Tuple[float, str, float, float]:
+        """Derive phase state, threshold, and capacity multiplier from glass-transition telemetry."""
+        metrics_data = chunk.get_section_content("processing_metrics_section") or {}
+        forefront_data = chunk.get_section_content("forefront_king_section") or {}
+
+        raw_tg = metrics_data.get("glass_transition_temp", forefront_data.get("glass_transition_temp", 0.5))
+        try:
+            t_g = float(raw_tg)
+        except (TypeError, ValueError):
+            t_g = 0.5
+
+        if t_g < 0.4:
+            return t_g, "Rigid", 0.80, 0.8
+        if t_g <= 0.6:
+            return t_g, "Flexible", 0.65, 1.0
+        return t_g, "Chaotic", 0.55, 1.2
+
     def _allocate_attention(self, integrated_context: Dict[str, Any], chunk: CognitiveChunk) -> Dict[str, Any]:
         """
         Allocate attention to the most relevant concepts or patterns based on multi-headed attention.
@@ -536,7 +599,7 @@ class ForefrontKing:
                 action_modified = True
         
         # Check for ethical concerns that might have been missed
-        ethical_flags = chunk.get_section_content("ethical_consideration_section", {}).get("concerns", [])
+        ethical_flags = (chunk.get_section_content("ethical_consideration_section") or {}).get("concerns", [])
         if ethical_flags and selected_action not in ["defer_decision", "ask_clarification"]:
             selected_action = "defer_decision"
             action_confidence = 0.8  # High confidence in deferring for ethical reasons
@@ -580,7 +643,7 @@ class ForefrontKing:
             Updated emotional state
         """
         # Get sensory data for sentiment analysis
-        sensory_data = chunk.get_section_content("sensory_input_section", {})
+        sensory_data = chunk.get_section_content("sensory_input_section") or {}
         sentiment = sensory_data.get("sentiment", {})
         
         # Current emotional state
@@ -684,9 +747,9 @@ class ForefrontKing:
             Updated goal information
         """
         # Extract action parameters and reasoning
-        action_data = chunk.get_section_content("action_selection_section", {})
+        action_data = chunk.get_section_content("action_selection_section") or {}
         action_params = action_data.get("action_parameters", {})
-        reasoning_data = chunk.get_section_content("reasoning_section", {})
+        reasoning_data = chunk.get_section_content("reasoning_section") or {}
         
         # Check if we need to create a new goal
         created_goal = None
@@ -853,3 +916,38 @@ class ForefrontKing:
         }
         
         return performance_metrics
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize ForefrontKing state."""
+        base_state = super().to_state_dict()
+        base_state.update({
+            "attention_history": list(self.attention_history),
+            "load_history": list(self.load_history),
+            "threshold_history": list(self.threshold_history),
+            "cognitive_load": float(self.cognitive_load),
+            "cognitive_capacity": float(self.cognitive_capacity),
+            "working_memory": dict(self.working_memory),
+            "working_memory_capacity": int(self.working_memory_capacity),
+            "decision_threshold": float(self.decision_threshold),
+            "emotional_state": dict(self.emotional_state),
+            "goals": list(self.goals),
+            "goal_history": list(self.goal_history),
+        })
+        return base_state
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore ForefrontKing state with safe defaults."""
+        super().from_state_dict(state)
+        state = state or {}
+
+        self.attention_history = list(state.get("attention_history", []) or [])
+        self.load_history = list(state.get("load_history", []) or [])
+        self.threshold_history = list(state.get("threshold_history", []) or [])
+        self.cognitive_load = float(state.get("cognitive_load", self.cognitive_load))
+        self.cognitive_capacity = float(state.get("cognitive_capacity", self.cognitive_capacity))
+        self.working_memory = dict(state.get("working_memory", {}) or {})
+        self.working_memory_capacity = int(state.get("working_memory_capacity", self.working_memory_capacity))
+        self.decision_threshold = float(state.get("decision_threshold", self.decision_threshold))
+        self.emotional_state = dict(state.get("emotional_state", self.emotional_state) or self.emotional_state)
+        self.goals = list(state.get("goals", []) or [])
+        self.goal_history = list(state.get("goal_history", []) or [])

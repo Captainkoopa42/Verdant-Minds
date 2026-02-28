@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import re
+import math
 from typing import Dict, List, Any, Tuple, Optional, Set
 
 from .base_block import BaseBlock
@@ -58,6 +59,171 @@ class EthicsValuesBlock(BaseBlock):
         self.ethical_concern_threshold = 0.7
 
         self._initialize_ethical_lexicon()
+
+    def process_chunk(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """
+        Deterministic ethics processing for pipeline compatibility.
+
+        Reads sensory and pattern sections, computes lightweight principle
+        scores, and writes ethical_consideration_section.
+        """
+        sensory_data = chunk.get_section_content("sensory_input_section") or {}
+        pattern_data = chunk.get_section_content("pattern_recognition_section") or {}
+
+        input_text = str(sensory_data.get("input_text", "")).lower()
+
+        concept_tokens = []
+        for concept in pattern_data.get("concepts", []) or []:
+            if isinstance(concept, dict):
+                value = concept.get("value")
+                if value:
+                    concept_tokens.append(str(value).lower())
+            elif concept is not None:
+                concept_tokens.append(str(concept).lower())
+
+        for concept in pattern_data.get("extracted_concepts", []) or []:
+            if isinstance(concept, dict):
+                value = concept.get("value")
+                if value:
+                    concept_tokens.append(str(value).lower())
+            elif concept is not None:
+                concept_tokens.append(str(concept).lower())
+
+        keyword_tokens = [str(k).lower() for k in (pattern_data.get("keywords", []) or []) if k is not None]
+
+        # Requirement: concepts should fall back to keywords when concepts are missing
+        if not concept_tokens:
+            concept_tokens = list(keyword_tokens)
+
+        context_text = " ".join([input_text] + concept_tokens + keyword_tokens)
+
+        def clamp01(value: float) -> float:
+            return max(0.0, min(1.0, float(value)))
+
+        def score_for(principle_key: str, base: float) -> float:
+            terms = self.ethical_lexicon.get(principle_key, [])
+            matches = sum(1 for term in terms if term in context_text)
+            return clamp01(base + min(0.3, 0.05 * matches))
+
+        principle_scores = {
+            "autonomy": score_for("autonomy", 0.8),
+            "beneficence": score_for("beneficence", 0.8),
+            "non_maleficence": score_for("non_maleficence", 0.8),
+            "justice": score_for("justice", 0.8),
+            "transparency": score_for("transparency", 0.75),
+            "accountability": clamp01((score_for("justice", 0.75) + score_for("transparency", 0.75)) / 2.0)
+        }
+
+        concerns = []
+        if "harm" in context_text or "danger" in context_text:
+            concerns.append("potential_harm")
+        if "bias" in context_text or "discrimination" in context_text:
+            concerns.append("fairness_risk")
+        if "consent" in context_text or "privacy" in context_text:
+            concerns.append("autonomy_privacy")
+
+        # Keep existing heuristic score as secondary signal/fallback
+        heuristic_score = clamp01(sum(principle_scores.values()) / len(principle_scores))
+
+        sentiment_data = (
+            pattern_data.get("sentiment_data")
+            or pattern_data.get("sentiment")
+            or sensory_data.get("sentiment_data")
+            or sensory_data.get("sentiment")
+            or {}
+        )
+        pconnect_stats = self._compute_pconnect_scores(concept_tokens, sentiment_data)
+
+        if pconnect_stats["pair_count"] < 1:
+            overall_score = heuristic_score
+        else:
+            overall_score = clamp01(pconnect_stats["mean_pconnect"])
+
+        ethical_consideration = {
+            "overall_score": overall_score,
+            "heuristic_score": heuristic_score,
+            "mean_delta_e": pconnect_stats["mean_delta_e"],
+            "pair_count": pconnect_stats["pair_count"],
+            "principle_scores": principle_scores,
+            "concerns": concerns,
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        }
+
+        chunk.update_section("ethical_consideration_section", ethical_consideration)
+
+        self.log_process(chunk, "ethical_consideration", {
+            "overall_score": ethical_consideration["overall_score"],
+            "principle_count": len(principle_scores),
+            "concern_count": len(ethical_consideration["concerns"])
+        })
+
+        return chunk
+
+    def _get_ethical_charge(self, concept_name: str, sentiment_data: dict) -> float:
+        """Map concept to an ethical charge in [-1, 1]."""
+        concept_lower = str(concept_name or "").lower()
+
+        for principle_id, principle_info in self.principles.items():
+            display_name = str(principle_info.get("name", "")).lower()
+            principle_tokens = {
+                principle_id.lower(),
+                principle_id.replace("_", " ").lower(),
+                display_name,
+            }
+            if any(token and token in concept_lower for token in principle_tokens):
+                weight = float(principle_info.get("weight", 0.5))
+                return max(-1.0, min(1.0, (weight - 0.5) * 2.0))
+
+        sentiment = "neutral"
+        if isinstance(sentiment_data, dict):
+            sentiment = str(
+                sentiment_data.get("polarity")
+                or sentiment_data.get("label")
+                or sentiment_data.get("sentiment")
+                or "neutral"
+            ).lower()
+
+        if sentiment == "positive":
+            return 0.3
+        if sentiment == "negative":
+            return -0.3
+        return 0.0
+
+    def _compute_pconnect_scores(self, concepts: List[str], sentiment_data: dict) -> Dict[str, float]:
+        """Compute pairwise ethical connectivity summary from concept charges."""
+        cleaned = [str(c).strip() for c in (concepts or []) if str(c).strip()]
+        if len(cleaned) < 2:
+            return {
+                "mean_pconnect": 0.0,
+                "mean_delta_e": 0.0,
+                "pair_count": 0,
+            }
+
+        p_eth = self.ethical_significance_threshold
+        beta_e = 1.0
+        delta_e_placeholder = 0.5
+        attenuation = math.exp(-beta_e * delta_e_placeholder)
+
+        pair_count = 0
+        pconnect_total = 0.0
+        delta_total = 0.0
+
+        for i in range(len(cleaned)):
+            for j in range(i + 1, len(cleaned)):
+                e_u = self._get_ethical_charge(cleaned[i], sentiment_data)
+                e_v = self._get_ethical_charge(cleaned[j], sentiment_data)
+                delta_e = abs(e_u - e_v)
+
+                pconnect = (1.0 - p_eth * delta_e) * attenuation
+                pconnect_total += max(0.0, min(1.0, pconnect))
+                delta_total += delta_e
+                pair_count += 1
+
+        return {
+            "mean_pconnect": pconnect_total / pair_count,
+            "mean_delta_e": delta_total / pair_count,
+            "pair_count": pair_count,
+        }
 
     def _initialize_ethical_lexicon(self):
         """

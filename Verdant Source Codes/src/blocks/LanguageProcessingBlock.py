@@ -58,6 +58,7 @@ class LanguageProcessingBlock(BaseBlock):
         memory_data = chunk.get_section_content("memory_section") or {}
         ethics_data = chunk.get_section_content("ethics_king_section") or {}
         sensory_data = chunk.get_section_content("sensory_input_section") or {}
+        wave_data = chunk.get_section_content("wave_function_section") or {}
         
         # Get selected action and parameters
         selected_action = action_data.get("selected_action", "provide_partial_answer")
@@ -82,6 +83,14 @@ class LanguageProcessingBlock(BaseBlock):
         
         # Adjust language style based on action and ethical context
         self._adjust_language_style(selected_action, ethical_status, action_confidence)
+
+        wave_response_parameters = self._wave_state_to_response_parameters(
+            wave_data,
+            cognitive_state,
+            ethical_state
+        )
+        ethical_tone = self._ethical_dim_to_response_tone(wave_response_parameters)
+        interference_signature = wave_response_parameters.get("interference_signature", "stable")
         
         # Generate response based on action type
         response = self._generate_response(
@@ -94,7 +103,9 @@ class LanguageProcessingBlock(BaseBlock):
             ethical_principles=ethical_principles,
             input_text=input_text,
             cognitive_state=cognitive_state,
-            ethical_state=ethical_state
+            ethical_state=ethical_state,
+            interference_signature=interference_signature,
+            ethical_tone=ethical_tone
         )
         
         # Update language processing section in chunk
@@ -104,6 +115,9 @@ class LanguageProcessingBlock(BaseBlock):
             "cognitive_state": cognitive_state.tolist() if isinstance(cognitive_state, np.ndarray) else cognitive_state,
             "ethical_state": ethical_state.tolist() if isinstance(ethical_state, np.ndarray) else ethical_state,
             "context_sensitivity": self._calculate_context_sensitivity(),
+            "wave_response_parameters": wave_response_parameters,
+            "ethical_tone": ethical_tone,
+            "interference_signature": interference_signature,
             "processed_timestamp": time.time()
         }
         
@@ -201,7 +215,9 @@ class LanguageProcessingBlock(BaseBlock):
         ethical_principles: Dict[str, float],
         input_text: str,
         cognitive_state: np.ndarray,
-        ethical_state: np.ndarray
+        ethical_state: np.ndarray,
+        interference_signature: str = "stable",
+        ethical_tone: Optional[Dict[str, Any]] = None
     ) -> str:
         """
         Generate a natural language response based on system state.
@@ -224,33 +240,46 @@ class LanguageProcessingBlock(BaseBlock):
         # Select generation method based on action type
         if selected_action == "answer_query":
             return self._generate_direct_answer(
-                memory_concepts, 
-                reasoning_plan, 
-                ethical_status, 
+                memory_concepts,
+                reasoning_plan,
+                ethical_status,
                 action_confidence,
-                ethical_principles
+                ethical_principles,
+                interference_signature=interference_signature,
+                ethical_tone=ethical_tone
             )
         elif selected_action == "provide_partial_answer":
             return self._generate_partial_answer(
-                memory_concepts, 
-                reasoning_plan, 
-                ethical_status, 
-                action_confidence
+                memory_concepts,
+                reasoning_plan,
+                ethical_status,
+                action_confidence,
+                interference_signature=interference_signature,
+                ethical_tone=ethical_tone
             )
         elif selected_action == "ask_clarification":
             return self._generate_clarification_request(
-                action_parameters, 
-                memory_concepts
+                action_parameters,
+                memory_concepts,
+                interference_signature=interference_signature,
+                ethical_tone=ethical_tone
             )
         elif selected_action == "defer_decision":
             return self._generate_ethical_deferral(
-                ethical_status, 
-                ethical_principles, 
-                memory_concepts
+                ethical_status,
+                ethical_principles,
+                memory_concepts,
+                interference_signature=interference_signature,
+                ethical_tone=ethical_tone
             )
         else:
             # Default response for unknown action types
-            return self._generate_default_response(input_text, memory_concepts)
+            return self._generate_default_response(
+                input_text,
+                memory_concepts,
+                interference_signature=interference_signature,
+                ethical_tone=ethical_tone
+            )
     
     def _generate_direct_answer(
         self,
@@ -258,7 +287,9 @@ class LanguageProcessingBlock(BaseBlock):
         reasoning_plan: List[Dict[str, Any]],
         ethical_status: str,
         confidence: float,
-        ethical_principles: Dict[str, float]
+        ethical_principles: Dict[str, float],
+        interference_signature: str = "stable",
+        ethical_tone: Optional[Dict[str, Any]] = None
     ) -> str:
         """Generate a direct, comprehensive answer."""
         # Get conclusion from reasoning plan
@@ -303,7 +334,8 @@ class LanguageProcessingBlock(BaseBlock):
             response += "I have moderate confidence in this assessment."
         else:
             response += "While this represents my current understanding, there's room for additional exploration."
-        
+
+        response = self._apply_wave_modulation_to_text(response, interference_signature, ethical_tone)
         return response
     
     def _generate_partial_answer(
@@ -311,7 +343,9 @@ class LanguageProcessingBlock(BaseBlock):
         concepts: List[str],
         reasoning_plan: List[Dict[str, Any]],
         ethical_status: str,
-        confidence: float
+        confidence: float,
+        interference_signature: str = "stable",
+        ethical_tone: Optional[Dict[str, Any]] = None
     ) -> str:
         """Generate a partial answer acknowledging limitations."""
         # Format concepts for inclusion
@@ -341,13 +375,16 @@ class LanguageProcessingBlock(BaseBlock):
         # Add confidence statement and request for more information
         response += f"\nMy confidence in this assessment is limited (approximately {int(confidence * 100)}%). "
         response += "Could you provide additional details to help expand my understanding?"
-        
+
+        response = self._apply_wave_modulation_to_text(response, interference_signature, ethical_tone)
         return response
     
     def _generate_clarification_request(
         self,
         action_parameters: Dict[str, Any],
-        concepts: List[str]
+        concepts: List[str],
+        interference_signature: str = "stable",
+        ethical_tone: Optional[Dict[str, Any]] = None
     ) -> str:
         """Generate a request for clarification."""
         # Get clarification questions from parameters
@@ -373,14 +410,17 @@ class LanguageProcessingBlock(BaseBlock):
         
         # Add helpful context for why clarification is needed
         response += "\n\nThis will help me provide a more accurate and relevant response."
-        
+
+        response = self._apply_wave_modulation_to_text(response, interference_signature, ethical_tone)
         return response
     
     def _generate_ethical_deferral(
         self,
         ethical_status: str,
         ethical_principles: Dict[str, float],
-        concepts: List[str]
+        concepts: List[str],
+        interference_signature: str = "stable",
+        ethical_tone: Optional[Dict[str, Any]] = None
     ) -> str:
         """Generate a response that defers on ethical grounds."""
         # Format concepts for inclusion
@@ -404,10 +444,17 @@ class LanguageProcessingBlock(BaseBlock):
         # Request more context
         response += "\n\nCould you share more about the specific context or your goals? "
         response += "This would help me provide a more thoughtful and appropriate response."
-        
+
+        response = self._apply_wave_modulation_to_text(response, interference_signature, ethical_tone)
         return response
     
-    def _generate_default_response(self, input_text: str, concepts: List[str]) -> str:
+    def _generate_default_response(
+        self,
+        input_text: str,
+        concepts: List[str],
+        interference_signature: str = "stable",
+        ethical_tone: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Generate a default response when no specific action is selected."""
         # Format concepts for inclusion
         concept_text = ", ".join(concepts[:3])
@@ -417,7 +464,100 @@ class LanguageProcessingBlock(BaseBlock):
         # Create general response
         response = f"I've processed your question about {concept_text}. "
         response += "To provide the most helpful response, could you let me know what specific aspect you're most interested in learning about?"
-        
+
+        response = self._apply_wave_modulation_to_text(response, interference_signature, ethical_tone)
+        return response
+
+    def _wave_state_to_response_parameters(
+        self,
+        wave_data: Dict[str, Any],
+        cognitive_state: np.ndarray,
+        ethical_state: np.ndarray
+    ) -> Dict[str, Any]:
+        """Translate wave state into response shaping parameters."""
+
+        def flatten(values: Any) -> np.ndarray:
+            if values is None:
+                return np.array([], dtype=float)
+            return np.asarray(values, dtype=float).flatten()
+
+        wave_data = wave_data or {}
+        cognitive_values = flatten(wave_data.get("cognitive_dimensions", cognitive_state))
+        ethical_values = flatten(wave_data.get("ethical_dimensions", ethical_state))
+
+        if cognitive_values.size == 0:
+            cognitive_values = np.abs(flatten(cognitive_state))
+        if ethical_values.size == 0:
+            ethical_values = np.abs(flatten(ethical_state))
+
+        dominant_cognitive = [int(i) for i in np.argsort(cognitive_values)[-2:][::-1]] if cognitive_values.size else [0, 1]
+        dominant_ethical = [int(i) for i in np.argsort(ethical_values)[-2:][::-1]] if ethical_values.size else [0, 1]
+
+        wave_entropy = float(wave_data.get("entropy", 0.5) or 0.5)
+        phase = float(wave_data.get("phase", 0.0) or 0.0)
+        magnitude = float(wave_data.get("magnitude", 0.5) or 0.5)
+        phase_coherence = max(0.0, min(1.0, 1.0 - min(1.0, abs(phase) / np.pi)))
+
+        if phase_coherence > 0.75 and magnitude >= 0.6:
+            interference_signature = "convergent"
+        elif phase_coherence < 0.35 and wave_entropy > 0.6:
+            interference_signature = "divergent"
+        elif wave_entropy >= 0.55:
+            interference_signature = "exploratory"
+        else:
+            interference_signature = "stable"
+
+        return {
+            "dominant_cognitive_dims": dominant_cognitive[:2],
+            "dominant_ethical_dims": dominant_ethical[:2],
+            "wave_entropy": wave_entropy,
+            "phase_coherence": phase_coherence,
+            "interference_signature": interference_signature,
+        }
+
+    def _ethical_dim_to_response_tone(self, wave_response_parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """Map dominant ethical dimension into response tone cues."""
+        dominant_ethical_dims = wave_response_parameters.get("dominant_ethical_dims", [0])
+        dominant_dim = int(dominant_ethical_dims[0]) if dominant_ethical_dims else 0
+
+        tone_map = {
+            0: ("Non-maleficence", "I want to explicitly consider potential harms as we proceed."),
+            1: ("Beneficence", "I'll frame this toward constructive and forward-looking outcomes."),
+            2: ("Autonomy", "I'll offer options so you can choose the path that fits your goals."),
+            3: ("Justice", "I'll account for multiple stakeholders and balance their perspectives."),
+            4: ("Transparency", "My reasoning here is explicit so you can inspect each step."),
+        }
+
+        principle, marker = tone_map.get(dominant_dim, tone_map[4])
+        return {
+            "dominant_ethical_dim": dominant_dim,
+            "dominant_principle": principle,
+            "tone_marker": marker
+        }
+
+    def _apply_wave_modulation_to_text(
+        self,
+        response: str,
+        interference_signature: str,
+        ethical_tone: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Modulate response structure and language from wave interference mode."""
+        ethical_tone = ethical_tone or {}
+
+        if interference_signature == "convergent":
+            response = response.replace("might", "will").replace("could", "can")
+            response += "\n\nIn short: the direct path is clear."
+        elif interference_signature == "exploratory":
+            response += "\n\nThere are multiple plausible angles here, and conditional framing helps compare them."
+        elif interference_signature == "divergent":
+            response += "\n\nBoth X and Y can be true here; I want to house that tension explicitly before closure."
+        else:
+            response += "\n\nI'll keep the response balanced and measured."
+
+        tone_marker = ethical_tone.get("tone_marker")
+        if tone_marker:
+            response += f"\n\n{tone_marker}"
+
         return response
     
     def _extract_conclusion(self, reasoning_plan: List[Dict[str, Any]]) -> str:

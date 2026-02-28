@@ -1,3 +1,6 @@
+import json
+import math
+import random
 import networkx as nx
 import numpy as np
 import time
@@ -16,6 +19,7 @@ class MemoryWeb:
         self.memory_store = {}
         self.thought_clusters = {}
         self.activation_history = {}
+        self.edge_policy = "default"
         
         # Memory performance metrics
         self.metrics = {
@@ -26,6 +30,14 @@ class MemoryWeb:
             "last_access_timestamp": time.time()
         }
     
+    def add_concept(self, label: str, stability: float = 0.5, metadata: Dict[str, Any] = None):
+        """Backward-compatible alias for ``add_thought``."""
+        return self.add_thought(label=label, stability=stability, metadata=metadata)
+
+    def get_concept(self, label: str) -> Optional[Dict[str, Any]]:
+        """Backward-compatible alias returning concept details."""
+        return self.get_concept_details(label)
+
     def add_thought(self, label: str, stability: float = 0.5, metadata: Dict[str, Any] = None):
         """
         Add a concept to memory with specified stability.
@@ -61,7 +73,7 @@ class MemoryWeb:
                 )[:3]  # Connect to top 3 stable thoughts
                 
                 for conn in sorted_thoughts:
-                    self.connect_thoughts(label, conn)
+                    self.connect_thoughts(label, conn, edge_policy=self.edge_policy)
             
             # Update metrics
             self.metrics["total_concepts"] += 1
@@ -85,7 +97,25 @@ class MemoryWeb:
         # Update last access time
         self.metrics["last_access_timestamp"] = time.time()
     
-    def connect_thoughts(self, label1: str, label2: str, initial_weight: float = 0.5) -> bool:
+    def _get_ethical_charge(self, concept_name: str) -> float:
+        """Map concept names to ethical charge in [-1, 1] using principle lookup."""
+        principles = {
+            "non_maleficence": 0.9,
+            "beneficence": 0.8,
+            "autonomy": 0.8,
+            "justice": 0.8,
+            "transparency": 0.7,
+        }
+
+        name = str(concept_name or "").lower()
+        for principle, weight in principles.items():
+            principle_tokens = {principle, principle.replace("_", " ")}
+            if any(token in name for token in principle_tokens):
+                return max(-1.0, min(1.0, (float(weight) - 0.5) * 2.0))
+
+        return 0.0
+
+    def connect_thoughts(self, label1: str, label2: str, initial_weight: float = 0.5, edge_policy: str = "default") -> bool:
         """
         Links two thoughts together with a dynamic connection weight.
         
@@ -105,6 +135,19 @@ class MemoryWeb:
                      (self.memory_store[label1]["stability"] + 
                       self.memory_store[label2]["stability"]) / 2)
         
+        delta_e = None
+        if edge_policy == "pconnect":
+            e_a = self._get_ethical_charge(label1)
+            e_b = self._get_ethical_charge(label2)
+            delta_e = abs(e_a - e_b)
+            delta_E = 1.0 - weight
+            p_eth = 0.6
+            beta_E = 1.0
+            prob = (1.0 - p_eth * delta_e) * math.exp(-beta_E * delta_E)
+            prob = max(0.0, min(1.0, prob))
+            if random.random() > prob:
+                return False
+
         # Check if connection already exists
         new_connection = True
         
@@ -137,8 +180,13 @@ class MemoryWeb:
             current_weight = self.graph.get_edge_data(label1, label2)["weight"]
             new_weight = current_weight * 0.7 + weight * 0.3
             self.graph[label1][label2]["weight"] = new_weight
+            if delta_e is not None:
+                self.graph[label1][label2]["delta_e"] = float(delta_e)
         else:
-            self.graph.add_edge(label1, label2, weight=weight)
+            edge_attrs = {"weight": weight}
+            if delta_e is not None:
+                edge_attrs["delta_e"] = float(delta_e)
+            self.graph.add_edge(label1, label2, **edge_attrs)
             self.metrics["total_connections"] += 1
             
         # Update metrics
@@ -452,6 +500,94 @@ class MemoryWeb:
                 
         return concept_data
     
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize MemoryWeb state to a JSON-compatible dictionary."""
+        serial_memory_store = {}
+        for label, data in self.memory_store.items():
+            entry = dict(data)
+            connections = entry.get("connections", [])
+            entry["connections"] = [
+                [str(conn_label), float(weight)] for conn_label, weight in connections
+            ]
+            serial_memory_store[str(label)] = entry
+
+        edge_list = []
+        for source, target, attrs in self.graph.edges(data=True):
+            edge_list.append({
+                "source": str(source),
+                "target": str(target),
+                "weight": float(attrs.get("weight", 0.0)),
+                "delta_e": attrs.get("delta_e"),
+            })
+
+        node_stability = {
+            str(node): float(attrs.get("stability", 0.0))
+            for node, attrs in self.graph.nodes(data=True)
+        }
+
+        return {
+            "memory_store": serial_memory_store,
+            "metrics": dict(self.metrics),
+            "thought_clusters": dict(self.thought_clusters),
+            "activation_history": dict(self.activation_history),
+            "graph": {
+                "nodes": node_stability,
+                "edges": edge_list,
+            },
+        }
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Load MemoryWeb state from a dictionary produced by ``to_state_dict``."""
+        state = state or {}
+        self.graph = nx.Graph()
+
+        loaded_store = state.get("memory_store", {}) or {}
+        self.memory_store = {}
+        for label, data in loaded_store.items():
+            entry = dict(data)
+            connections = entry.get("connections", [])
+            entry["connections"] = [
+                (str(conn_label), float(weight)) for conn_label, weight in connections
+            ]
+            self.memory_store[str(label)] = entry
+
+        graph_state = state.get("graph", {}) or {}
+        nodes = graph_state.get("nodes", {}) or {}
+        for label, data in self.memory_store.items():
+            stability = float(data.get("stability", nodes.get(label, 0.0)))
+            self.graph.add_node(label, stability=stability)
+
+        for edge in graph_state.get("edges", []) or []:
+            source = str(edge.get("source"))
+            target = str(edge.get("target"))
+            if source in self.memory_store and target in self.memory_store and source != target:
+                edge_attrs = {"weight": float(edge.get("weight", 0.0))}
+                if edge.get("delta_e") is not None:
+                    edge_attrs["delta_e"] = float(edge.get("delta_e"))
+                self.graph.add_edge(source, target, **edge_attrs)
+
+        self.thought_clusters = dict(state.get("thought_clusters", {}) or {})
+        self.activation_history = dict(state.get("activation_history", {}) or {})
+        self.metrics = dict(state.get("metrics", {}) or {})
+
+        # Keep derived metrics coherent after load
+        self.metrics.setdefault("created_timestamp", time.time())
+        self.metrics["last_access_timestamp"] = self.metrics.get("last_access_timestamp", time.time())
+        self.metrics["total_concepts"] = len(self.memory_store)
+        self.metrics["total_connections"] = self.graph.number_of_edges()
+        self._update_average_stability()
+
+    def save_state(self, path: str) -> None:
+        """Persist MemoryWeb state to disk as JSON."""
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.to_state_dict(), f, indent=2)
+
+    def load_state(self, path: str) -> None:
+        """Load MemoryWeb state from disk."""
+        with open(path, "r", encoding="utf-8") as f:
+            state = json.load(f)
+        self.from_state_dict(state)
+
     def _update_average_stability(self):
         """Update average stability metric."""
         if not self.memory_store:

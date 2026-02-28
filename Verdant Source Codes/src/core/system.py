@@ -107,6 +107,9 @@ class UnifiedSystem:
         # Rolling entropy history for coherence diagnostics
         self._entropy_history: List[float] = []
         self._entropy_history_maxlen = 20
+
+        # Carry coherence telemetry forward across cycles for feedback control
+        self._last_coherence_invariants: Dict[str, Any] = {}
         
         # Initialize system with integration tools
         self = integrate_system_tools(self)
@@ -312,6 +315,10 @@ class UnifiedSystem:
         
         # Create input chunk
         chunk = self.blocks["SensoryInput"].create_chunk_from_input(input_text, metadata)
+
+        # Seed this cycle with previous coherence telemetry for closed-loop governance
+        if self._last_coherence_invariants:
+            chunk.update_section("coherence_invariants_section", dict(self._last_coherence_invariants))
         
         # Calculate current glass transition temperature
         self._update_glass_transition_temp(chunk)
@@ -356,6 +363,7 @@ class UnifiedSystem:
         coherence_invariants = self._compute_coherence_invariants(chunk)
 
         chunk.update_section("coherence_invariants_section", coherence_invariants)
+        self._last_coherence_invariants = dict(coherence_invariants)
 
         # Add processing time data to chunk
         chunk.update_section("processing_metrics_section", {
@@ -850,14 +858,30 @@ class UnifiedSystem:
 
     def to_state_dict(self, include_ecwf_past_states: bool = False) -> Dict[str, Any]:
         """Serialize unified system state for persistence."""
+        continual_learning_state = {}
+        if "ContinualLearning" in self.blocks and hasattr(self.blocks["ContinualLearning"], "to_state_dict"):
+            continual_learning_state = self.blocks["ContinualLearning"].to_state_dict()
+
+        system_learning_state = {}
+        if hasattr(self.system_learning, "to_state_dict"):
+            system_learning_state = self.system_learning.to_state_dict()
+
         return {
             "version": 1,
             "config": dict(self.config),
             "metrics": dict(self.metrics),
             "entropy_history": list(self._entropy_history),
             "entropy_history_maxlen": int(self._entropy_history_maxlen),
+            "last_coherence_invariants": dict(self._last_coherence_invariants),
             "memory_web": self.memory_web.to_state_dict(),
             "ecwf_core": self.ecwf_core.to_state_dict(include_past_states=include_ecwf_past_states),
+            "continual_learning": continual_learning_state,
+            "system_learning": system_learning_state,
+            "kings": {
+                "data_king": self.three_kings_layer.data_king.to_state_dict() if hasattr(self.three_kings_layer.data_king, "to_state_dict") else {},
+                "forefront_king": self.three_kings_layer.forefront_king.to_state_dict() if hasattr(self.three_kings_layer.forefront_king, "to_state_dict") else {},
+                "ethics_king": self.three_kings_layer.ethics_king.to_state_dict() if hasattr(self.three_kings_layer.ethics_king, "to_state_dict") else {},
+            },
         }
 
     def from_state_dict(self, state: Dict[str, Any]) -> None:
@@ -871,12 +895,35 @@ class UnifiedSystem:
         history = state.get("entropy_history", []) or []
         self._entropy_history = [float(v) for v in history]
         self._entropy_history_maxlen = int(state.get("entropy_history_maxlen", self._entropy_history_maxlen))
+        self._last_coherence_invariants = dict(state.get("last_coherence_invariants", self._last_coherence_invariants) or self._last_coherence_invariants)
 
         memory_state = state.get("memory_web", {}) or {}
         self.memory_web.from_state_dict(memory_state)
 
         ecwf_state = state.get("ecwf_core", {}) or {}
         self.ecwf_core.from_state_dict(ecwf_state)
+
+        continual_learning_state = state.get("continual_learning", {}) or {}
+        if "ContinualLearning" in self.blocks and hasattr(self.blocks["ContinualLearning"], "from_state_dict"):
+            self.blocks["ContinualLearning"].from_state_dict(continual_learning_state)
+
+        system_learning_state = state.get("system_learning", {}) or {}
+        if hasattr(self.system_learning, "from_state_dict"):
+            self.system_learning.from_state_dict(system_learning_state)
+
+        kings_state = state.get("kings", {}) or {}
+        if isinstance(kings_state, dict):
+            data_king_state = kings_state.get("data_king", {}) or {}
+            if hasattr(self.three_kings_layer.data_king, "from_state_dict"):
+                self.three_kings_layer.data_king.from_state_dict(data_king_state)
+
+            forefront_king_state = kings_state.get("forefront_king", {}) or {}
+            if hasattr(self.three_kings_layer.forefront_king, "from_state_dict"):
+                self.three_kings_layer.forefront_king.from_state_dict(forefront_king_state)
+
+            ethics_king_state = kings_state.get("ethics_king", {}) or {}
+            if hasattr(self.three_kings_layer.ethics_king, "from_state_dict"):
+                self.three_kings_layer.ethics_king.from_state_dict(ethics_king_state)
 
     def save_state(self, path: str, include_ecwf_past_states: bool = False) -> None:
         """Persist system state to JSON."""

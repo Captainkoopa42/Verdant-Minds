@@ -304,11 +304,54 @@ class MemoryStorageBlock:
             except Exception:
                 pass
 
+        # Thermodynamic phase-aware memory management from current T_g
+        processing_metrics = chunk.get_section_content("processing_metrics_section") or {}
+        raw_tg = processing_metrics.get("glass_transition_temp", 0.5)
+        try:
+            t_g = float(raw_tg)
+        except (TypeError, ValueError):
+            t_g = 0.5
+
+        if t_g < 0.4:
+            phase = "Rigid"
+            decay_factor = 0.005
+            reinforcement_amount = 0.05
+        elif t_g <= 0.6:
+            phase = "Flexible"
+            decay_factor = 0.01
+            reinforcement_amount = 0.1
+        else:
+            phase = "Chaotic"
+            decay_factor = 0.02
+            reinforcement_amount = 0.15
+
+        concepts_reinforced = 0
+        memory_web = getattr(getattr(self, "memory_bridge", None), "memory_web", None)
+        if memory_web is not None:
+            try:
+                memory_web.decay_memories(decay_factor=decay_factor)
+            except Exception:
+                pass
+
+            for concept in activated_concepts.keys():
+                try:
+                    reinforced_value = memory_web.reinforce_memory(concept, amount=reinforcement_amount)
+                    if reinforced_value > 0.0:
+                        concepts_reinforced += 1
+                except Exception:
+                    continue
+
         memory_section = {
             "retrieved_concepts": retrieved_concepts,
             "activated_concepts": activated_concepts,
             "activation_levels": activation_levels,
             "wave_properties": wave_properties,
+            "phase_memory_management": {
+                "phase": phase,
+                "decay_factor_applied": decay_factor,
+                "reinforcement_applied": reinforcement_amount,
+                "concepts_reinforced": concepts_reinforced
+            },
             "novelty_score": 0.0
         }
 

@@ -107,3 +107,25 @@ class BaseKing:
         # Base implementation returns a neutral score
         # Child classes should override with specific evaluation logic
         return 0.5
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize shared king state."""
+        return {
+            "version": 1,
+            "king_name": self.king_name,
+            "influence_history": list(self.influence_history[-100:]),
+            "oversight_metrics": dict(self.oversight_metrics),
+            "blocks_supervised": list(self.blocks_supervised),
+        }
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore shared king state with safe defaults."""
+        state = state or {}
+
+        influence_history = state.get("influence_history", []) or []
+        self.influence_history = list(influence_history)[-100:]
+        self.oversight_metrics = dict(state.get("oversight_metrics", {}) or {})
+
+        blocks = state.get("blocks_supervised")
+        if isinstance(blocks, list):
+            self.blocks_supervised = list(blocks)

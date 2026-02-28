@@ -1,9 +1,12 @@
 import numpy as np
 import time
+import logging
 from typing import Dict, List, Tuple, Optional, Any
 
 from .base_block import BaseBlock
 from ..core.cognitive_chunk import CognitiveChunk
+
+logger = logging.getLogger(__name__)
 
 class ContinualLearningBlock(BaseBlock):
     """
@@ -99,6 +102,8 @@ class ContinualLearningBlock(BaseBlock):
             "cross_learning": cross_learning,
             "learning_rates": self.learning_rates.copy(),
             "reinforcement_cycles": self.reinforcement_cycles,
+            "resonance_patterns": {},
+            "emergent_concepts_created": 0,
             "processed_timestamp": time.time()
         }
         
@@ -123,8 +128,115 @@ class ContinualLearningBlock(BaseBlock):
             
             # Apply system-wide learning
             self.system_learning.apply_feedback(quality_estimates, context={"chunk": chunk})
+
+            # Wire bidirectional bridge hooks into the end of each learning cycle
+            resonance_info = {}
+            emergent_concepts_created = 0
+
+            bridge = self._get_memory_bridge()
+            if bridge is None:
+                warning_message = "memory_bridge not available in system learning context; skipping bridge updates"
+                logger.warning(warning_message)
+                self.log_process(chunk, "warning", {"message": warning_message})
+            else:
+                try:
+                    current_time = time.time()
+                    cognitive_state, ethical_state = self._derive_bridge_states_from_wave(bridge, wave_data)
+                    input_concepts = self._extract_bridge_input_concepts(memory_data)
+
+                    bridge.bidirectional_update(
+                        cognitive_state=cognitive_state,
+                        ethical_state=ethical_state,
+                        input_concepts=input_concepts,
+                        t=current_time
+                    )
+
+                    wave_magnitude = self._safe_float(wave_data.get("magnitude", 0.0), 0.0)
+                    if wave_magnitude > 0.6:
+                        wave_output = bridge.ecwf_core.compute_ecwf(cognitive_state, ethical_state, current_time)
+                        emergent_concepts = bridge.detect_and_create_emergent_concepts(wave_output, current_time)
+                        emergent_concepts_created = len(emergent_concepts)
+
+                    resonance_info = bridge.get_resonance_info() or {}
+                except Exception as exc:
+                    warning_message = f"bridge update failed in continual learning cycle: {exc}"
+                    logger.warning(warning_message)
+                    self.log_process(chunk, "warning", {"message": warning_message})
+
+            updated_learning_data = chunk.get_section_content("continual_learning_section") or {}
+            updated_learning_data["resonance_patterns"] = resonance_info
+            updated_learning_data["emergent_concepts_created"] = emergent_concepts_created
+            chunk.update_section("continual_learning_section", updated_learning_data)
         
         return chunk
+
+    def _get_memory_bridge(self):
+        """Safely resolve the memory bridge from system-learning context."""
+        if not self.system_learning:
+            return None
+
+        if hasattr(self.system_learning, "unified_system"):
+            unified_system = getattr(self.system_learning, "unified_system", None)
+            if unified_system is not None and hasattr(unified_system, "memory_bridge"):
+                return getattr(unified_system, "memory_bridge", None)
+
+        if hasattr(self.system_learning, "system"):
+            system_obj = getattr(self.system_learning, "system", None)
+            if system_obj is not None and hasattr(system_obj, "memory_bridge"):
+                return getattr(system_obj, "memory_bridge", None)
+
+        return getattr(self.system_learning, "memory_bridge", None)
+
+    def _derive_bridge_states_from_wave(self, bridge, wave_data: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray]:
+        """Build bridge state tensors from wave-function section values."""
+        magnitude = self._safe_float(wave_data.get("magnitude", 0.0), 0.0)
+        phase = self._safe_float(wave_data.get("phase", 0.0), 0.0)
+        entropy = self._safe_float(wave_data.get("entropy", 0.5), 0.5)
+
+        cognitive_dims = max(1, int(getattr(bridge.ecwf_core, "num_cognitive_dims", 1)))
+        ethical_dims = max(1, int(getattr(bridge.ecwf_core, "num_ethical_dims", 1)))
+
+        cognitive_value = magnitude * np.cos(phase)
+        ethical_value = np.clip(1.0 - entropy, 0.0, 1.0)
+
+        cognitive_state = np.full((1, 1, cognitive_dims), cognitive_value, dtype=float)
+        ethical_state = np.full((1, 1, ethical_dims), ethical_value, dtype=float)
+
+        return cognitive_state, ethical_state
+
+    def _extract_bridge_input_concepts(self, memory_data: Dict[str, Any]) -> List[str]:
+        """Collect concepts to drive memory→ECWF updates."""
+        concepts: List[str] = []
+
+        retrieved = memory_data.get("retrieved_concepts", [])
+        if isinstance(retrieved, list):
+            for concept in retrieved:
+                if concept is not None:
+                    concepts.append(str(concept))
+
+        activated = memory_data.get("activated_concepts", {})
+        if isinstance(activated, dict):
+            concepts.extend(str(key) for key in activated.keys())
+        elif isinstance(activated, list):
+            for concept in activated:
+                if concept is not None:
+                    concepts.append(str(concept))
+
+        deduped = []
+        seen = set()
+        for concept in concepts:
+            if concept not in seen:
+                seen.add(concept)
+                deduped.append(concept)
+
+        return deduped
+
+    def _safe_float(self, value: Any, default: float = 0.0) -> float:
+        """Coerce values to float safely."""
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
     
     def _update_memory_patterns(self, memory_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -573,3 +685,29 @@ class ContinualLearningBlock(BaseBlock):
             "reasoning_quality": reasoning_confidence,
             "action_quality": action_confidence
         }
+
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize continual-learning state for persistence."""
+        return {
+            "version": 1,
+            "adaptive_memory": dict(self.adaptive_memory),
+            "learning_rates": dict(self.learning_rates),
+            "reinforcement_cycles": int(self.reinforcement_cycles),
+        }
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore continual-learning state with safe defaults."""
+        state = state or {}
+        self.adaptive_memory = dict(state.get("adaptive_memory", self.adaptive_memory) or self.adaptive_memory)
+
+        loaded_rates = state.get("learning_rates", {}) or {}
+        if isinstance(loaded_rates, dict) and loaded_rates:
+            for key, value in loaded_rates.items():
+                if key in self.learning_rates:
+                    try:
+                        self.learning_rates[key] = float(value)
+                    except (TypeError, ValueError):
+                        pass
+
+        self.reinforcement_cycles = int(state.get("reinforcement_cycles", self.reinforcement_cycles))

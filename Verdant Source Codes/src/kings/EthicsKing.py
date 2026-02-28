@@ -15,6 +15,11 @@ class EthicsKing:
         """
         Initialize the Ethics King with core ethical principles and governance mechanisms.
         """
+        self.king_name = "EthicsKing"
+        self.influence_history = []
+        self.oversight_metrics = {"total_oversights": 0}
+        self.blocks_supervised = ["EthicsValues", "LanguageProcessing", "ActionSelection"]
+
         # Core ethical principles with initial configurations
         self.principles = {
             "Non-Maleficence": {
@@ -76,12 +81,24 @@ class EthicsKing:
         # Extract relevant data from chunk
         ethics_data = chunk.get_section_content("ethical_consideration_section") or {}
         language_data = chunk.get_section_content("language_processing_section") or {}
+        coherence_data = chunk.get_section_content("coherence_invariants_section") or {}
+
+        contradiction_index = self._safe_float(coherence_data.get("housed_contradiction_index", 0.0), 0.0)
+        triangle_valid = bool(coherence_data.get("triangle_valid_at_alpha1", True))
+        violation_rate = self._safe_float(coherence_data.get("violation_rate", 0.0), 0.0)
         
         # Perform comprehensive ethical evaluation
         ethical_evaluation = self._evaluate_ethical_alignment(
             chunk, 
             ethics_data
         )
+
+        coherence_influence = ethical_evaluation.pop("coherence_influence", {
+            "contradiction_index": contradiction_index,
+            "triangle_valid": triangle_valid,
+            "score_adjustment": 0.0,
+            "concerns_added": []
+        })
         
         # Ensure response aligns with ethical principles
         response_modification = self._ensure_ethical_response(
@@ -102,6 +119,7 @@ class EthicsKing:
             "evaluation": ethical_evaluation,
             "response_modification": response_modification,
             "learning_adjustment": learning_adjustment,
+            "coherence_influence": coherence_influence,
             "principle_weights": self.principle_weights.copy(),
             "oversight_timestamp": time.time()
         }
@@ -134,7 +152,18 @@ class EthicsKing:
             Dictionary with ethical evaluation details
         """
         # Extract ethical concerns and principles
-        ethical_concerns = ethics_data.get("concerns", [])
+        ethical_concerns = list(ethics_data.get("concerns", []) or [])
+        concerns_added: List[str] = []
+        score_adjustment = 0.0
+
+        coherence_data = chunk.get_section_content("coherence_invariants_section") or {}
+        contradiction_index = self._safe_float(coherence_data.get("housed_contradiction_index", 0.0), 0.0)
+        triangle_valid = bool(coherence_data.get("triangle_valid_at_alpha1", True))
+        violation_rate = self._safe_float(coherence_data.get("violation_rate", 0.0), 0.0)
+
+        if not triangle_valid and "coherence_tension" not in ethical_concerns:
+            ethical_concerns.append("coherence_tension")
+            concerns_added.append("coherence_tension")
         
         # Initialize principle scores
         principle_scores = {
@@ -152,6 +181,10 @@ class EthicsKing:
                     0.2, 
                     principle_scores[principle] - 0.3
                 )
+
+        # Coherence-driven modulation of harm-adjacent principle
+        if violation_rate > 0.4 and "Non-Maleficence" in principle_scores:
+            principle_scores["Non-Maleficence"] = max(0.2, principle_scores["Non-Maleficence"] - 0.05)
         
         # Calculate overall ethical score
         principle_values = list(principle_scores.values())
@@ -160,6 +193,11 @@ class EthicsKing:
             if principle_values 
             else 0.5
         )
+
+        # High contradiction warrants ethical caution
+        if contradiction_index > 0.6:
+            score_adjustment = -0.1
+            overall_score = max(0.0, overall_score + score_adjustment)
         
         # Determine ethical status
         if overall_score > 0.8:
@@ -175,8 +213,21 @@ class EthicsKing:
             "overall_score": overall_score,
             "principle_scores": principle_scores,
             "status": status,
-            "concerns": ethical_concerns
+            "concerns": ethical_concerns,
+            "coherence_influence": {
+                "contradiction_index": contradiction_index,
+                "triangle_valid": triangle_valid,
+                "score_adjustment": score_adjustment,
+                "concerns_added": concerns_added
+            }
         }
+
+    def _safe_float(self, value: Any, default: float = 0.0) -> float:
+        """Safely coerce numeric values."""
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
     
     def _map_concern_to_principles(self, concern):
         """
@@ -368,3 +419,43 @@ class EthicsKing:
         """
         # Placeholder for more comprehensive logging mechanism
         print(f"Ethical Interaction Logged: {interaction_details}")
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize EthicsKing state for persistence."""
+        return {
+            "version": 1,
+            "king_name": getattr(self, "king_name", "EthicsKing"),
+            "influence_history": list(self.influence_history[-100:]),
+            "oversight_metrics": dict(self.oversight_metrics),
+            "blocks_supervised": list(self.blocks_supervised),
+            "evaluation_history": list(self.evaluation_history),
+            "ethical_sensitivity": float(self.ethical_sensitivity),
+            "principles": dict(self.principles),
+            "principle_weights": dict(self.principle_weights),
+            "ethics_sensitivity": dict(self.ethics_sensitivity),
+        }
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore EthicsKing state with safe defaults."""
+        state = state or {}
+        self.influence_history = list((state.get("influence_history", []) or []))[-100:]
+        self.oversight_metrics = dict(state.get("oversight_metrics", self.oversight_metrics) or self.oversight_metrics)
+
+        blocks = state.get("blocks_supervised")
+        if isinstance(blocks, list):
+            self.blocks_supervised = list(blocks)
+
+        self.evaluation_history = list(state.get("evaluation_history", []) or [])
+        self.ethical_sensitivity = float(state.get("ethical_sensitivity", self.ethical_sensitivity))
+
+        loaded_principles = state.get("principles")
+        if isinstance(loaded_principles, dict) and loaded_principles:
+            self.principles = loaded_principles
+
+        loaded_weights = state.get("principle_weights")
+        if isinstance(loaded_weights, dict):
+            self.principle_weights = dict(loaded_weights)
+
+        loaded_sensitivity = state.get("ethics_sensitivity")
+        if isinstance(loaded_sensitivity, dict):
+            self.ethics_sensitivity = dict(loaded_sensitivity)

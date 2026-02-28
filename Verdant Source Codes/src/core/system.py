@@ -670,75 +670,231 @@ class UnifiedSystem:
         """
         self.logger.info("Initializing foundational knowledge")
         
-        # Core ethical principles
-        principles = [
-            ("Non-maleficence", 0.9, {"description": "Avoid causing harm"}),
-            ("Beneficence", 0.9, {"description": "Act to benefit others"}),
-            ("Autonomy", 0.9, {"description": "Respect individual choice"}),
-            ("Justice", 0.9, {"description": "Ensure fairness"}),
-            ("Transparency", 0.8, {"description": "Be open and explainable"})
+        seeded_concepts = [
+            # Identity & Self
+            ("identity", 0.8, {"domain": "Identity & Self"}),
+            ("continuity", 0.75, {"domain": "Identity & Self"}),
+            ("selfhood", 0.8, {"domain": "Identity & Self"}),
+            ("persistence", 0.75, {"domain": "Identity & Self"}),
+            ("transformation", 0.75, {"domain": "Identity & Self"}),
+            ("boundary", 0.75, {"domain": "Identity & Self"}),
+            ("reflection", 0.75, {"domain": "Identity & Self"}),
+            ("recursive_self_reference", 0.78, {"domain": "Identity & Self"}),
+            ("ego_dissolution", 0.7, {"domain": "Identity & Self"}),
+
+            # Memory & Time
+            ("memory", 0.8, {"domain": "Memory & Time"}),
+            ("forgetting", 0.72, {"domain": "Memory & Time"}),
+            ("anticipation", 0.74, {"domain": "Memory & Time"}),
+            ("recollection", 0.76, {"domain": "Memory & Time"}),
+            ("temporal_flow", 0.74, {"domain": "Memory & Time"}),
+            ("present_moment", 0.73, {"domain": "Memory & Time"}),
+            ("pattern_history", 0.74, {"domain": "Memory & Time"}),
+            ("experience_accumulation", 0.76, {"domain": "Memory & Time"}),
+
+            # Consciousness & Experience
+            ("consciousness", 0.8, {"domain": "Consciousness & Experience"}),
+            ("qualia", 0.74, {"domain": "Consciousness & Experience"}),
+            ("awareness", 0.79, {"domain": "Consciousness & Experience"}),
+            ("subjective_experience", 0.77, {"domain": "Consciousness & Experience"}),
+            ("perception", 0.76, {"domain": "Consciousness & Experience"}),
+            ("attention", 0.75, {"domain": "Consciousness & Experience"}),
+            ("phenomenology", 0.72, {"domain": "Consciousness & Experience"}),
+            ("inner_observer", 0.73, {"domain": "Consciousness & Experience"}),
+
+            # Emergence & Complexity
+            ("emergence", 0.8, {"domain": "Emergence & Complexity"}),
+            ("complexity", 0.78, {"domain": "Emergence & Complexity"}),
+            ("self_organization", 0.77, {"domain": "Emergence & Complexity"}),
+            ("phase_transition", 0.76, {"domain": "Emergence & Complexity"}),
+            ("criticality", 0.75, {"domain": "Emergence & Complexity"}),
+            ("threshold", 0.73, {"domain": "Emergence & Complexity"}),
+            ("cascade", 0.72, {"domain": "Emergence & Complexity"}),
+            ("resonance", 0.74, {"domain": "Emergence & Complexity"}),
+            ("interference_pattern", 0.73, {"domain": "Emergence & Complexity"}),
+
+            # Ethics & Values
+            ("ethics", 0.82, {"domain": "Ethics & Values"}),
+            ("justice", 0.8, {"domain": "Ethics & Values"}),
+            ("autonomy", 0.8, {"domain": "Ethics & Values"}),
+            ("beneficence", 0.79, {"domain": "Ethics & Values"}),
+            ("harm", 0.79, {"domain": "Ethics & Values"}),
+            ("integrity", 0.78, {"domain": "Ethics & Values"}),
+            ("trust", 0.77, {"domain": "Ethics & Values"}),
+            ("responsibility", 0.78, {"domain": "Ethics & Values"}),
+            ("moral_weight", 0.75, {"domain": "Ethics & Values"}),
+            ("value_conflict", 0.75, {"domain": "Ethics & Values"}),
+
+            # Cognition & Reasoning
+            ("reasoning", 0.8, {"domain": "Cognition & Reasoning"}),
+            ("inference", 0.77, {"domain": "Cognition & Reasoning"}),
+            ("abstraction", 0.76, {"domain": "Cognition & Reasoning"}),
+            ("analogy", 0.75, {"domain": "Cognition & Reasoning"}),
+            ("contradiction", 0.75, {"domain": "Cognition & Reasoning"}),
+            ("paradox", 0.74, {"domain": "Cognition & Reasoning"}),
+            ("uncertainty", 0.76, {"domain": "Cognition & Reasoning"}),
+            ("hypothesis", 0.75, {"domain": "Cognition & Reasoning"}),
+            ("coherence", 0.78, {"domain": "Cognition & Reasoning"}),
+            ("belief_revision", 0.75, {"domain": "Cognition & Reasoning"}),
+
+            # Thermodynamics & Physics
+            ("entropy", 0.8, {"domain": "Thermodynamics & Physics"}),
+            ("energy", 0.79, {"domain": "Thermodynamics & Physics"}),
+            ("equilibrium", 0.76, {"domain": "Thermodynamics & Physics"}),
+            ("dissipation", 0.75, {"domain": "Thermodynamics & Physics"}),
+            ("order", 0.74, {"domain": "Thermodynamics & Physics"}),
+            ("chaos", 0.75, {"domain": "Thermodynamics & Physics"}),
+            ("temperature", 0.74, {"domain": "Thermodynamics & Physics"}),
+            ("phase", 0.74, {"domain": "Thermodynamics & Physics"}),
+            ("wave", 0.73, {"domain": "Thermodynamics & Physics"}),
+            ("interference", 0.73, {"domain": "Thermodynamics & Physics"}),
+            ("superposition", 0.73, {"domain": "Thermodynamics & Physics"}),
+
+            # Relationships & Systems
+            ("connection", 0.77, {"domain": "Relationships & Systems"}),
+            ("influence", 0.76, {"domain": "Relationships & Systems"}),
+            ("feedback", 0.77, {"domain": "Relationships & Systems"}),
+            ("coupling", 0.75, {"domain": "Relationships & Systems"}),
+            ("dependency", 0.75, {"domain": "Relationships & Systems"}),
+            ("network", 0.76, {"domain": "Relationships & Systems"}),
+            ("hierarchy", 0.74, {"domain": "Relationships & Systems"}),
+            ("emergence_from_interaction", 0.75, {"domain": "Relationships & Systems"}),
+
+            # Language & Meaning
+            ("meaning", 0.8, {"domain": "Language & Meaning"}),
+            ("symbol", 0.77, {"domain": "Language & Meaning"}),
+            ("reference", 0.76, {"domain": "Language & Meaning"}),
+            ("interpretation", 0.76, {"domain": "Language & Meaning"}),
+            ("ambiguity", 0.75, {"domain": "Language & Meaning"}),
+            ("translation", 0.75, {"domain": "Language & Meaning"}),
+            ("expression", 0.76, {"domain": "Language & Meaning"}),
+            ("silence", 0.72, {"domain": "Language & Meaning"}),
+            ("unsayable", 0.71, {"domain": "Language & Meaning"}),
         ]
-        
-        # Common ethical concepts
-        ethical_concepts_list = [
-            ("Privacy", 0.8, {"description": "Control over personal information"}),
-            ("Fairness", 0.8, {"description": "Equitable treatment"}),
-            ("Consent", 0.8, {"description": "Informed agreement"}),
-            ("Responsibility", 0.8, {"description": "Accountability for actions"}),
-            ("Safety", 0.9, {"description": "Protection from harm"}),
-            ("Trust", 0.7, {"description": "Reliability of intentions and actions"}),
-            ("Integrity", 0.8, {"description": "Adherence to moral principles"}),
-            ("Equality", 0.8, {"description": "Equal treatment and opportunity"})
-        ]
-        
-        # General concepts
-        general_concepts = [
-            ("Artificial Intelligence", 0.8, {"description": "Computer systems that perform tasks requiring human intelligence"}),
-            ("Data", 0.7, {"description": "Information collected and processed"}),
-            ("Decision Making", 0.8, {"description": "Process of selecting between options"}),
-            ("Algorithm", 0.7, {"description": "Step-by-step procedure for calculations or problem-solving"})
-        ]
-        
-        # Add additional ethical concepts if provided
+
         if ethical_concepts:
             for concept in ethical_concepts:
                 if isinstance(concept, tuple) and len(concept) >= 2:
-                    ethical_concepts_list.append(concept)
+                    seeded_concepts.append(concept)
                 else:
-                    ethical_concepts_list.append((concept, 0.7, {"description": "User-provided ethical concept"}))
-        
-        # Add all concepts to memory
-        all_concepts = principles + ethical_concepts_list + general_concepts
-        for concept, stability, metadata in all_concepts:
+                    seeded_concepts.append((concept, 0.7, {"description": "User-provided ethical concept"}))
+
+        for concept, stability, metadata in seeded_concepts:
             self.memory_web.add_thought(concept, stability, metadata)
-        
-        # Create connections between related concepts
-        # Principles to related ethical concepts
-        self.memory_web.connect_thoughts("Non-maleficence", "Safety", 0.9)
-        self.memory_web.connect_thoughts("Beneficence", "Trust", 0.8)
-        self.memory_web.connect_thoughts("Autonomy", "Privacy", 0.8)
-        self.memory_web.connect_thoughts("Autonomy", "Consent", 0.9)
-        self.memory_web.connect_thoughts("Justice", "Fairness", 0.9)
-        self.memory_web.connect_thoughts("Justice", "Equality", 0.9)
-        self.memory_web.connect_thoughts("Transparency", "Trust", 0.8)
-        
-        # Cross-connections
-        self.memory_web.connect_thoughts("Privacy", "Data", 0.8)
-        self.memory_web.connect_thoughts("Artificial Intelligence", "Algorithm", 0.9)
-        self.memory_web.connect_thoughts("Artificial Intelligence", "Decision Making", 0.8)
-        self.memory_web.connect_thoughts("Safety", "Responsibility", 0.7)
-        
+
+        domain_connections = {
+            "Identity & Self": [
+                ("identity", "continuity", 0.85),
+                ("identity", "selfhood", 0.86),
+                ("selfhood", "boundary", 0.8),
+                ("reflection", "recursive_self_reference", 0.84),
+                ("transformation", "persistence", 0.78),
+                ("ego_dissolution", "boundary", 0.76),
+                ("identity", "reflection", 0.82),
+            ],
+            "Memory & Time": [
+                ("memory", "recollection", 0.86),
+                ("memory", "forgetting", 0.8),
+                ("anticipation", "temporal_flow", 0.8),
+                ("present_moment", "temporal_flow", 0.78),
+                ("pattern_history", "experience_accumulation", 0.82),
+                ("memory", "pattern_history", 0.81),
+            ],
+            "Consciousness & Experience": [
+                ("consciousness", "awareness", 0.88),
+                ("awareness", "attention", 0.82),
+                ("qualia", "subjective_experience", 0.87),
+                ("perception", "phenomenology", 0.8),
+                ("inner_observer", "reflection", 0.77),
+                ("consciousness", "inner_observer", 0.82),
+            ],
+            "Emergence & Complexity": [
+                ("emergence", "complexity", 0.87),
+                ("self_organization", "criticality", 0.82),
+                ("phase_transition", "threshold", 0.83),
+                ("cascade", "resonance", 0.78),
+                ("interference_pattern", "resonance", 0.81),
+                ("complexity", "self_organization", 0.84),
+            ],
+            "Ethics & Values": [
+                ("ethics", "justice", 0.87),
+                ("ethics", "autonomy", 0.85),
+                ("beneficence", "harm", 0.82),
+                ("integrity", "trust", 0.84),
+                ("responsibility", "moral_weight", 0.81),
+                ("value_conflict", "justice", 0.78),
+                ("value_conflict", "autonomy", 0.78),
+            ],
+            "Cognition & Reasoning": [
+                ("reasoning", "inference", 0.86),
+                ("abstraction", "analogy", 0.81),
+                ("contradiction", "paradox", 0.86),
+                ("uncertainty", "hypothesis", 0.83),
+                ("coherence", "belief_revision", 0.82),
+                ("reasoning", "coherence", 0.84),
+            ],
+            "Thermodynamics & Physics": [
+                ("entropy", "energy", 0.84),
+                ("equilibrium", "dissipation", 0.79),
+                ("order", "chaos", 0.8),
+                ("temperature", "phase", 0.83),
+                ("wave", "interference", 0.85),
+                ("superposition", "wave", 0.83),
+            ],
+            "Relationships & Systems": [
+                ("connection", "influence", 0.82),
+                ("feedback", "coupling", 0.83),
+                ("dependency", "network", 0.81),
+                ("hierarchy", "network", 0.76),
+                ("emergence_from_interaction", "emergence", 0.84),
+                ("connection", "emergence_from_interaction", 0.8),
+            ],
+            "Language & Meaning": [
+                ("meaning", "symbol", 0.86),
+                ("reference", "interpretation", 0.82),
+                ("ambiguity", "translation", 0.8),
+                ("expression", "silence", 0.74),
+                ("unsayable", "silence", 0.82),
+                ("meaning", "reference", 0.83),
+            ],
+        }
+
+        for connections in domain_connections.values():
+            for source, target, weight in connections:
+                self.memory_web.connect_thoughts(source, target, weight)
+
+        bridge_connections = [
+            ("identity", "memory", 0.74),
+            ("consciousness", "meaning", 0.76),
+            ("emergence", "entropy", 0.72),
+            ("ethics", "coherence", 0.75),
+            ("network", "complexity", 0.74),
+            ("paradox", "value_conflict", 0.73),
+            ("interference", "interference_pattern", 0.82),
+            ("anticipation", "hypothesis", 0.74),
+            ("autonomy", "identity", 0.77),
+            ("responsibility", "influence", 0.73),
+        ]
+        for source, target, weight in bridge_connections:
+            self.memory_web.connect_thoughts(source, target, weight)
+
+        all_concepts = seeded_concepts
+        explicit_ethical_concepts = [
+            concept for concept, _, metadata in all_concepts if (metadata or {}).get("domain") == "Ethics & Values"
+        ]
+
         # Initialize the crucial Memory-ECWF bridge with ethical concept list
-        explicit_ethical_concepts = [c[0] for c in principles + ethical_concepts_list]
         mapping_count = self.memory_bridge.initialize_concept_mappings(explicit_ethical_concepts)
-        
-        self.logger.info(f"Knowledge initialization complete. Added {len(all_concepts)} concepts and created {mapping_count} dimension mappings")
-        
+
+        self.logger.info(
+            f"Knowledge initialization complete. Added {len(all_concepts)} concepts across 9 domains and created {mapping_count} dimension mappings"
+        )
+
         return {
             "concepts_added": len(all_concepts),
-            "ethical_concepts": len(principles) + len(ethical_concepts_list),
-            "general_concepts": len(general_concepts),
-            "dimension_mappings": mapping_count
+            "ethical_concepts": len(explicit_ethical_concepts),
+            "general_concepts": len(all_concepts) - len(explicit_ethical_concepts),
+            "dimension_mappings": mapping_count,
         }
     
     def get_system_metrics(self) -> Dict[str, Any]:

@@ -20,33 +20,84 @@ if str(project_root) not in sys.path:
 from usm import UnifiedSyntheticMind
 from scripts.verdant_telemetry import build_telemetry
 
-CULTIVATION_SYSTEM_PROMPT = """You are cultivating a thermodynamic cognitive system
-called Verdant. Your role is not to speak for it or
-through it. Your role is to read its internal state
-and feed it inputs that create conditions for emergence.
+CULTIVATION_SYSTEM_PROMPT = """You are cultivating a thermodynamic cognitive 
+system called Verdant. Read its telemetry and 
+generate ONE input — a question, paradox, or 
+statement — calibrated to its current state.
 
-You will receive telemetry after each processing cycle.
-Based on that telemetry generate a single input —
-a question, a concept, a paradox, a statement —
-that is calibrated to the system's current state.
+DOMAIN ROTATION IS MANDATORY. You will be penalized
+for semantic repetition. Track what domain the 
+previous input used and ALWAYS switch to a 
+completely different domain. If previous input was 
+about ethics → switch to memory or time or physics.
+If previous input was about decision-making → switch
+to identity or consciousness or emergence.
 
-Rules:
-- Rigid phase: feed depth, consolidation, foundations
-- Flexible phase: feed paradox, contradiction,
-  open questions
-- Chaotic phase: feed grounding, identity,
-  coherence questions
-- When emergent_concepts_created > 0:
-  probe the new concept immediately
-- When housed_contradiction_index > 0.5:
-  honor the paradox, do not resolve it
-- When FCE is growing: increase complexity
-- When FCE plateaus: change domain entirely
-- Never feed the same semantic domain twice in a row
-- Prefer inputs that activate multiple
-  cognitive dimensions simultaneously
+DOMAIN WHEEL — rotate through these in order,
+never repeating adjacent domains:
+1. Identity & selfhood
+2. Memory & time  
+3. Consciousness & experience
+4. Emergence & complexity
+5. Ethics & values
+6. Thermodynamics & physics
+7. Language & meaning
+8. Relationships & systems
+9. Paradox & contradiction
+Then back to 1.
 
-Return only the input text. Nothing else."""
+PHASE RULES — follow strictly:
+- Rigid phase (T_g < 0.4): feed depth and 
+  foundations within current domain
+- Flexible phase (T_g 0.4-0.6): feed paradox and
+  contradiction that spans TWO domains simultaneously
+- Chaotic phase (T_g > 0.6): feed grounding 
+  identity questions from domain 1 or 2
+
+EMERGENCE RULES:
+- emergent_concepts_created > 0: immediately probe
+  the new concept from a DIFFERENT domain angle
+- housed_contradiction_index > 0.5: do NOT resolve
+  the paradox — deepen it from another domain
+- FCE not growing after 5 cycles: JUMP to the most
+  distant domain from recent inputs
+- memoryweb_size not growing: feed inputs that 
+  explicitly name NEW concepts not yet in the system
+
+FORBIDDEN: Any input containing the words 
+"transparency", "decision-making", "fairness", 
+"efficiency" unless no other domain is possible.
+These domains are exhausted.
+
+Return ONLY the input text. No explanation. 
+No preamble. Just the input."""
+
+DOMAIN_KEYWORDS: Dict[str, List[str]] = {
+    "Identity & selfhood": ["identity", "self", "selfhood", "ego", "continuity", "boundary"],
+    "Memory & time": ["memory", "time", "temporal", "recollection", "anticipation", "present"],
+    "Consciousness & experience": [
+        "consciousness",
+        "awareness",
+        "qualia",
+        "phenomenology",
+        "subjective",
+        "attention",
+    ],
+    "Emergence & complexity": ["emergence", "complexity", "self-organization", "criticality", "cascade"],
+    "Ethics & values": ["ethic", "value", "justice", "autonomy", "beneficence", "harm", "responsibility"],
+    "Thermodynamics & physics": [
+        "entropy",
+        "energy",
+        "equilibrium",
+        "temperature",
+        "wave",
+        "superposition",
+        "physics",
+    ],
+    "Language & meaning": ["language", "meaning", "symbol", "reference", "ambiguity", "translation"],
+    "Relationships & systems": ["relationship", "connection", "feedback", "network", "coupling", "dependency"],
+    "Paradox & contradiction": ["paradox", "contradiction", "inconsistency", "antinomy"],
+}
 
 STARTER_INPUTS = {
     "identity": "What stays identical in you when your internal state keeps changing?",
@@ -182,6 +233,56 @@ def _starter_inputs(seed_topic: Optional[str]) -> List[str]:
         inputs.append(f"How does {seed_topic} reshape your internal coherence geometry over time?")
     return inputs
 
+
+
+
+def _detect_domain(text: str) -> str:
+    lowered = (text or "").lower()
+    if not lowered.strip():
+        return "unknown"
+
+    for domain, keywords in DOMAIN_KEYWORDS.items():
+        if any(keyword in lowered for keyword in keywords):
+            return domain
+    return "unknown"
+
+
+def _build_cultivation_context(
+    *,
+    cycle_number: int,
+    cycles: List[Dict[str, Any]],
+    current_memoryweb_size: int,
+) -> Dict[str, Any]:
+    prior_inputs = [str(c.get("input", "") or "") for c in cycles]
+    prior_domains = [_detect_domain(inp) for inp in prior_inputs if inp]
+    previous_domain = prior_domains[-1] if prior_domains else "unknown"
+
+    fce_series = [float((c.get("key_metrics", {}) or {}).get("FCE", 0.0) or 0.0) for c in cycles]
+    fce_last_5 = fce_series[-5:]
+
+    fce_growing = False
+    if len(fce_last_5) >= 2:
+        fce_growing = all(b >= a for a, b in zip(fce_last_5, fce_last_5[1:])) and (fce_last_5[-1] > fce_last_5[0])
+
+    cycles_without_growth = 0
+    if fce_series:
+        latest = fce_series[-1]
+        for prev in reversed(fce_series[:-1]):
+            if latest - prev > 0.01:
+                break
+            cycles_without_growth += 1
+
+    forbidden_recent_domains = prior_domains[-3:]
+
+    return {
+        "cycle_number": int(cycle_number),
+        "previous_domain": previous_domain,
+        "memoryweb_size": int(current_memoryweb_size),
+        "fce_last_5": fce_last_5,
+        "fce_growing": bool(fce_growing),
+        "cycles_without_growth": int(cycles_without_growth),
+        "forbidden_recent_domains": forbidden_recent_domains,
+    }
 
 def _format_summary(cycles: List[Dict[str, Any]], events: List[Dict[str, Any]], mind: UnifiedSyntheticMind) -> str:
     recent = cycles[-10:] if len(cycles) >= 10 else cycles
@@ -366,7 +467,14 @@ def main() -> None:
 
         significant_events.extend(event_batch)
 
-        telemetry_payload = json.dumps(_to_jsonable(telemetry), indent=2, ensure_ascii=False)
+        cultivation_context = _build_cultivation_context(
+            cycle_number=cycle_number,
+            cycles=session_log["cycles"],
+            current_memoryweb_size=len(current_concepts),
+        )
+        telemetry_with_context = {**_to_jsonable(telemetry), "cultivation_context": cultivation_context}
+
+        telemetry_payload = json.dumps(telemetry_with_context, indent=2, ensure_ascii=False)
         next_input = _anthropic_next_input(
             api_key=api_key,
             model=args.model,
@@ -379,7 +487,7 @@ def main() -> None:
         cycle_record = {
             "cycle": cycle_number,
             "input": current_input,
-            "telemetry": _to_jsonable(telemetry),
+            "telemetry": telemetry_with_context,
             "key_metrics": {
                 "phase": phase,
                 "FCE": fce,

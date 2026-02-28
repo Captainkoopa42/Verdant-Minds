@@ -715,7 +715,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 **Have questions about project status or want to contribute?**
 
 - 📧 Email: adamswilliam905@gmail.com
-- 🐛 Issues: [GitHub Issues](https://github.com/captainkoopa420/Verdant-Minds/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/captainkoopa42/Verdant-Minds/issues)
 - 💬 Discussions: (Coming soon)
 
 ---
@@ -724,7 +724,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 **Verdant-Minds** • *Honest research, ambitious goals*
 
-[🏠 Home](https://github.com/captainkoopa420/Verdant-Minds) •
+[🏠 Home](https://github.com/captainkoopa42/Verdant-Minds) •
 [📖 Docs](README.md) •
 [🤝 Contributing](CONTRIBUTING.md)
 

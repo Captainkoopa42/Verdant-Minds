@@ -430,7 +430,7 @@ A graph-based semantic memory using NetworkX:
 
 ```bash
 # Clone the repository
-git clone https://github.com/captainkoopa420/Verdant-Minds.git
+git clone https://github.com/captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
 
 # Install in development mode (recommended)
@@ -803,7 +803,7 @@ We welcome contributions from the AI research community! This is an experimental
 
 ### How to Contribute
 
-1. **Report Issues**: Found a bug? [Open an issue](https://github.com/captainkoopa420/Verdant-Minds/issues)
+1. **Report Issues**: Found a bug? [Open an issue](https://github.com/captainkoopa42/Verdant-Minds/issues)
 
 2. **Propose Features**: Have an idea? Start a discussion in issues
 
@@ -889,9 +889,9 @@ If you use this work in your research, please cite:
 ```bibtex
 @software{verdant_minds_2025,
   title={Verdant-Minds: A Quantum-Inspired Cognitive Architecture for AGI},
-  author={captainkoopa420},
+  author={captainkoopa42},
   year={2025},
-  url={https://github.com/captainkoopa420/Verdant-Minds},
+  url={https://github.com/captainkoopa42/Verdant-Minds},
   note={Experimental research prototype exploring thermodynamic knowledge
         representation and embedded ethical reasoning}
 }
@@ -901,13 +901,13 @@ If you use this work in your research, please cite:
 
 ## 📬 Contact
 
-**Project Maintainer**: captainkoopa420
+**Project Maintainer**: captainkoopa42
 **Email**: adamswilliam905@gmail.com
-**GitHub**: [@captainkoopa420](https://github.com/captainkoopa420)
+**GitHub**: [@captainkoopa42](https://github.com/captainkoopa42)
 
 ### Get Involved
 
-- 🐛 **Issues**: [Report bugs or request features](https://github.com/captainkoopa420/Verdant-Minds/issues)
+- 🐛 **Issues**: [Report bugs or request features](https://github.com/captainkoopa42/Verdant-Minds/issues)
 - 💬 **Discussions**: Join the conversation (discussions TBD)
 - 📧 **Email**: For research collaboration or questions
 
@@ -946,8 +946,8 @@ Special thanks to researchers who've explored quantum cognition, thermodynamic c
 
 ⭐ Star this repo if you find it interesting!
 
-[🏠 Home](https://github.com/captainkoopa420/Verdant-Minds) •
+[🏠 Home](https://github.com/captainkoopa42/Verdant-Minds) •
 [📖 Docs](INSTALL.md) •
-[🐛 Issues](https://github.com/captainkoopa420/Verdant-Minds/issues)
+[🐛 Issues](https://github.com/captainkoopa42/Verdant-Minds/issues)
 
 </div>

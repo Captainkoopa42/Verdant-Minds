@@ -39,16 +39,16 @@ setup(
     # ========================================================================
     name='verdant-minds',
     version='0.2.0',
-    author='captainkoopa420',
+    author='captainkoopa42',
     author_email='adamswilliam905@gmail.com',
     description='A cognitive architecture for AI with quantum-inspired thermodynamic knowledge representation',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/captainkoopa420/Verdant-Minds',
+    url='https://github.com/captainkoopa42/Verdant-Minds',
     project_urls={
-        'Bug Tracker': 'https://github.com/captainkoopa420/Verdant-Minds/issues',
-        'Documentation': 'https://github.com/captainkoopa420/Verdant-Minds#readme',
-        'Source Code': 'https://github.com/captainkoopa420/Verdant-Minds',
+        'Bug Tracker': 'https://github.com/captainkoopa42/Verdant-Minds/issues',
+        'Documentation': 'https://github.com/captainkoopa42/Verdant-Minds#readme',
+        'Source Code': 'https://github.com/captainkoopa42/Verdant-Minds',
     },
 
     # ========================================================================

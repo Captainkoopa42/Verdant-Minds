@@ -522,7 +522,7 @@ usm           # Works ✓
 
 For questions about this audit:
 - **Email:** adamswilliam905@gmail.com
-- **GitHub:** [@captainkoopa420](https://github.com/captainkoopa420)
+- **GitHub:** [@captainkoopa42](https://github.com/captainkoopa42)
 
 ---
 

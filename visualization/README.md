@@ -510,7 +510,7 @@ If you use these visualizations in publications:
   title = {Verdant-Minds Visualization Suite},
   author = {Verdant-Minds Development Team},
   year = {2025},
-  url = {https://github.com/captainkoopa420/Verdant-Minds}
+  url = {https://github.com/captainkoopa42/Verdant-Minds}
 }
 ```
 
@@ -524,7 +524,7 @@ MIT License - See `../LICENSE` for details.
 
 ## Support
 
-**Issues:** https://github.com/captainkoopa420/Verdant-Minds/issues
+**Issues:** https://github.com/captainkoopa42/Verdant-Minds/issues
 **Documentation:** See main `README.md` and `docs/`
 **Examples:** See `demos/` directory
 

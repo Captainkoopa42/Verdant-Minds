@@ -1158,7 +1158,7 @@ except Exception as e:
 ## Support
 
 For questions or issues:
-- **GitHub Issues**: [Report bugs or request features](https://github.com/captainkoopa420/Verdant-Minds/issues)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/captainkoopa42/Verdant-Minds/issues)
 - **Email**: adamswilliam905@gmail.com
 
 ---

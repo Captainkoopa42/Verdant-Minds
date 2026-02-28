@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A cognitive architecture for AI with quantum-inspired thermodynamic knowledge representation"
 readme = "README.md"
 authors = [
-    {name = "captainkoopa420", email = "adamswilliam905@gmail.com"}
+    {name = "captainkoopa42", email = "adamswilliam905@gmail.com"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -75,10 +75,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/captainkoopa420/Verdant-Minds"
-Documentation = "https://github.com/captainkoopa420/Verdant-Minds#readme"
-Repository = "https://github.com/captainkoopa420/Verdant-Minds"
-"Bug Tracker" = "https://github.com/captainkoopa420/Verdant-Minds/issues"
+Homepage = "https://github.com/captainkoopa42/Verdant-Minds"
+Documentation = "https://github.com/captainkoopa42/Verdant-Minds#readme"
+Repository = "https://github.com/captainkoopa42/Verdant-Minds"
+"Bug Tracker" = "https://github.com/captainkoopa42/Verdant-Minds/issues"
 
 [project.scripts]
 verdant-minds = "usm.__main__:main"

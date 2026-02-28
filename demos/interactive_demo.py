@@ -691,5 +691,5 @@ if __name__ == "__main__":
         sys.exit(0)
     except Exception as e:
         print(f"\n\nError: {e}")
-        print("Please report issues at: https://github.com/captainkoopa420/Verdant-Minds/issues\n")
+        print("Please report issues at: https://github.com/captainkoopa42/Verdant-Minds/issues\n")
         sys.exit(1)

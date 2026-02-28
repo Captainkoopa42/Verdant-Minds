@@ -482,7 +482,7 @@ pytest --help
 ```
 
 **Issues:**
-Report issues at: https://github.com/captainkoopa420/Verdant-Minds/issues
+Report issues at: https://github.com/captainkoopa42/Verdant-Minds/issues
 
 ---
 

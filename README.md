@@ -57,6 +57,25 @@ Ethics in Verdant is embedded in wave-function geometry via **Ethomorphism**, ra
 
 `scripts/verdant_llm_cultivator.py` provides a live cultivation loop where an external LLM reads telemetry and injects one next input per cycle. The loop now includes explicit cultivation context (recent domain usage, FCE trend slices, growth windows, and memory growth context) to reduce semantic repetition and improve emergence conditions.
 
+### Provider setup and rate-limit behavior
+
+- Configure providers with environment variables:
+  - `GROQ_API_KEY` + optional `GROQ_MODEL` (default follows `--model`).
+  - `ANTHROPIC_API_KEY` + optional `ANTHROPIC_MODEL`.
+  - `VERDANT_PROVIDER_CHAIN` (default: `groq,anthropic,local_fallback`).
+- On HTTP 429 / tokens-per-day exhaustion, the loop now retries with exponential backoff + jitter, logs a warning, and falls back to local prompt generation instead of crashing.
+- Each cycle is appended to `outputs/cultivation_cycles_*.jsonl` with: cycle number, input, phase, FCE, HCI, emergent metrics, provider used, errors, and timestamp.
+- Runs auto-resume from the latest cycle log unless `--fresh` is passed.
+- Forced phase perturbation is enabled by default (`--perturbation-interval`, default 15) to prevent long Flexible-only plateaus; disable with `--no-perturbation`.
+
+### Example
+
+```bash
+export GROQ_API_KEY=... 
+export GROQ_MODEL=llama-3.3-70b-versatile
+python scripts/verdant_llm_cultivator.py --max-cycles 120 --max-tokens-per-call 96 --budget-mode light --perturbation-interval 15
+```
+
 ## Run Verdant
 
 ```bash

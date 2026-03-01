@@ -305,6 +305,102 @@ def _max_prompt_chars() -> int:
         return int(default_chars)
 
 
+def _hci_trend(hci_values: List[float]) -> str:
+    if len(hci_values) < 5:
+        return "flat"
+    start = float(hci_values[0])
+    end = float(hci_values[-1])
+    delta = end - start
+    if delta > 0.01:
+        return "up"
+    if delta < -0.01:
+        return "down"
+    return "flat"
+
+
+def _curriculum_config() -> Dict[str, Any]:
+    mode = str(os.environ.get("VERDANT_CURRICULUM_MODE", "approach") or "approach").strip().lower()
+    if mode not in {"approach", "cross"}:
+        mode = "approach"
+
+    def _env_float(name: str, default: str) -> float:
+        raw = os.environ.get(name, default)
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            return float(default)
+
+    def _env_int(name: str, default: str) -> int:
+        raw = os.environ.get(name, default)
+        try:
+            return max(1, int(raw))
+        except (TypeError, ValueError):
+            return int(default)
+
+    return {
+        "mode": mode,
+        "hci_target_low": _env_float("VERDANT_HCI_TARGET_LOW", "0.40"),
+        "hci_target_high": _env_float("VERDANT_HCI_TARGET_HIGH", "0.49"),
+        "repeat_penalty": _env_truthy(os.environ.get("VERDANT_REPEAT_PENALTY", "1")),
+        "multi_domain": _env_truthy(os.environ.get("VERDANT_MULTI_DOMAIN", "1")),
+        "recent_window": _env_int("VERDANT_RECENT_WINDOW", "5"),
+    }
+
+
+def _build_mistral_tutor_contract(
+    *,
+    key_metrics: Dict[str, Any],
+    hci_trend: str,
+    curriculum: Dict[str, Any],
+    last_prompt: str,
+    recent_prompts: List[str],
+    hci_below_target_streak: int,
+) -> str:
+    phase = str(key_metrics.get("phase", "Flexible"))
+    fce = float(key_metrics.get("FCE", 0.0) or 0.0)
+    hci = float(key_metrics.get("housed_contradiction_index", 0.0) or 0.0)
+    low = float(curriculum["hci_target_low"])
+    high = float(curriculum["hci_target_high"])
+    mode = str(curriculum["mode"])
+
+    if mode == "approach":
+        objective = f"Target objective: keep HCI within [{low:.2f}, {high:.2f}] and do not exceed 0.50."
+    else:
+        intensity_clause = (
+            "HCI has been below target for 10+ cycles, increase contradiction intensity."
+            if hci_below_target_streak >= 10
+            else f"If HCI stays below {low:.2f} for 10 cycles, increase contradiction intensity."
+        )
+        objective = f"Target objective: push HCI > 0.50 occasionally. {intensity_clause}"
+
+    multi_domain_rule = (
+        "Mix 2–3 domains (e.g., identity+ethics, memory+causality, autonomy+transparency)."
+        if curriculum.get("multi_domain", True)
+        else "Domain mixing is optional this cycle."
+    )
+    repeat_rule = (
+        "Do NOT reuse the same template as any of the recent prompts listed below."
+        if curriculum.get("repeat_penalty", True)
+        else "Template repetition constraint is relaxed this cycle."
+    )
+    recent_block = "\n".join(f"- {prompt}" for prompt in recent_prompts) if recent_prompts else "- (none)"
+
+    return (
+        "Tutor Contract for Verdant closed-loop curriculum steering:\n"
+        f"Current telemetry: phase={phase}, FCE={fce:.3f}, HCI={hci:.3f}, HCI_trend={hci_trend}.\n"
+        f"last_prompt: {last_prompt if last_prompt else '(none)'}\n"
+        f"curriculum_mode={mode}, hci_target_low={low:.2f}, hci_target_high={high:.2f}.\n"
+        f"{objective}\n"
+        "Diversity constraints:\n"
+        "- Generate a prompt that forces at least two competing claims (A and not-A) OR two conflicting principles.\n"
+        f"- {multi_domain_rule}\n"
+        f"- {repeat_rule}\n"
+        "Recent prompts (negative examples):\n"
+        f"{recent_block}\n"
+        "Return ONLY the next prompt as a single sentence. No preface, no numbering, no explanations."
+    )
+
+
 def _build_groq_prompt(
     *,
     telemetry_payload: str,
@@ -376,6 +472,7 @@ def _next_input_with_fallback(
     temperature: float,
     max_tokens: int,
     budget_mode: str,
+    curriculum_context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[str, str, Optional[str], Dict[str, Any]]:
     chain = _provider_chain()
     shrink_level = 0
@@ -489,18 +586,27 @@ def _next_input_with_fallback(
             if not api_key:
                 continue
             payload = _prepare_telemetry_payload(telemetry_with_context, budget_mode, shrink_level)
+            curriculum = curriculum_context or {}
+            tutor_contract = _build_mistral_tutor_contract(
+                key_metrics=key_metrics,
+                hci_trend=str(curriculum.get("hci_trend", "flat")),
+                curriculum=curriculum.get("config", _curriculum_config()),
+                last_prompt=str(curriculum.get("last_prompt", "") or ""),
+                recent_prompts=list(curriculum.get("recent_prompts", []) or []),
+                hci_below_target_streak=int(curriculum.get("hci_below_target_streak", 0) or 0),
+            )
             body = {
                 "model": os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
                 "max_tokens": max_tokens,
                 "temperature": temperature,
                 "messages": [
-                    {"role": "system", "content": CULTIVATION_SYSTEM_PROMPT},
+                    {"role": "system", "content": tutor_contract},
                     {
                         "role": "user",
                         "content": (
                             "Cultivation telemetry (JSON):\n"
-                            f"{payload}"
-                            "\n\nReturn only the next input prompt (one sentence)."
+                            f"{payload}\n\n"
+                            "Generate the next Verdant prompt now."
                         ),
                     },
                 ],
@@ -623,6 +729,12 @@ def main() -> None:
     }
     significant_events: List[Dict[str, Any]] = []
 
+    curriculum_config = _curriculum_config()
+    recent_window = int(curriculum_config["recent_window"])
+    recent_prompts: List[str] = []
+    hci_history: List[float] = []
+    hci_below_target_streak = 0
+
     cycle_index = 0
     current_input: Optional[str] = None
 
@@ -649,6 +761,16 @@ def main() -> None:
         if prior_cycles:
             current_input = str(prior_cycles[-1].get("next_input", "") or "")
             fce_history = [float(c.get("FCE", 0.0) or 0.0) for c in prior_cycles]
+            hci_history = [float(c.get("housed_contradiction_index", 0.0) or 0.0) for c in prior_cycles]
+            prior_prompts = [str(c.get("llm_next_input", "") or c.get("next_input", "") or "") for c in prior_cycles]
+            recent_prompts = [p for p in prior_prompts if p][-recent_window:]
+            low_target = float(curriculum_config["hci_target_low"])
+            hci_below_target_streak = 0
+            for value in reversed(hci_history):
+                if value < low_target:
+                    hci_below_target_streak += 1
+                else:
+                    break
             phase_series = [str(c.get("phase", "Flexible")) for c in prior_cycles]
             for p in reversed(phase_series):
                 if p == "Flexible":
@@ -714,6 +836,14 @@ def main() -> None:
             "memoryweb_size": len(current_concepts),
         }
 
+        hci_series_for_trend = (hci_history + [hci])[-5:]
+        hci_trend = _hci_trend(hci_series_for_trend)
+        low_target = float(curriculum_config["hci_target_low"])
+        if hci < low_target:
+            hci_below_target_streak += 1
+        else:
+            hci_below_target_streak = 0
+
         llm_next_input, provider_used, provider_error, llm_call_meta = _next_input_with_fallback(
             telemetry_with_context=telemetry_with_context,
             current_input=current_input,
@@ -722,9 +852,22 @@ def main() -> None:
             temperature=float(args.temperature),
             max_tokens=int(args.max_tokens),
             budget_mode=str(args.budget_mode),
+            curriculum_context={
+                "config": curriculum_config,
+                "hci_trend": hci_trend,
+                "recent_prompts": list(recent_prompts),
+                "last_prompt": recent_prompts[-1] if recent_prompts else "",
+                "hci_below_target_streak": hci_below_target_streak,
+            },
         )
 
+        if llm_next_input:
+            recent_prompts.append(str(llm_next_input))
+            if len(recent_prompts) > recent_window:
+                recent_prompts = recent_prompts[-recent_window:]
+
         fce_history.append(fce)
+        hci_history.append(hci)
         perturbation: Optional[Dict[str, Any]] = None
         next_input = llm_next_input
 
@@ -776,6 +919,11 @@ def main() -> None:
             "groq_max_tokens": llm_call_meta.get("groq_max_tokens"),
             "groq_temperature": llm_call_meta.get("groq_temperature"),
             "prompt_chars": llm_call_meta.get("prompt_chars"),
+            "curriculum_mode": curriculum_config["mode"],
+            "hci_target_low": curriculum_config["hci_target_low"],
+            "hci_target_high": curriculum_config["hci_target_high"],
+            "hci_trend": hci_trend,
+            "recent_window": recent_window,
         }
         _write_jsonl_record(cycle_log_path, cycle_record)
         session_log["cycles"].append(cycle_record)

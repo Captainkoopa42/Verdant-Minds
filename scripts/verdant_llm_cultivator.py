@@ -336,6 +336,12 @@ def _next_input_with_fallback(
                 "Produce only the next input text for Verdant."
             )
             try:
+                prompt = (
+                    f"{CULTIVATION_SYSTEM_PROMPT}\n\n"
+                    "Cultivation telemetry (JSON):\n"
+                    f"{payload}\n\n"
+                    "Produce only the next input text for Verdant."
+                )
                 text = groq_next_input(
                     prompt,
                     model=groq_model,

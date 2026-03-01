@@ -192,3 +192,52 @@ def test_perturbation_interval_and_bank_selection():
     assert bank == "rigid"
     assert reason == "flexible_streak_interval"
     assert flip is False
+
+
+def test_budget_mode_trims_prompt_and_uses_env_groq_call_args(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "groq")
+    monkeypatch.setenv("VERDANT_BUDGET_MODE", "1")
+    monkeypatch.setenv("VERDANT_MAX_PROMPT_CHARS", "200")
+    monkeypatch.setenv("GROQ_MAX_TOKENS", "42")
+    monkeypatch.setenv("GROQ_TEMPERATURE", "0.13")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.55, "details": "x" * 800},
+            "coherence_invariants": {"housed_contradiction_index": 0.2, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0, "blob": "y" * 800},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+
+    captured = {}
+
+    def fake_groq_next_input(prompt, **kwargs):
+        captured["prompt"] = prompt
+        captured["kwargs"] = kwargs
+        return "Budget-safe prompt"
+
+    monkeypatch.setattr(cultivator, "groq_next_input", fake_groq_next_input)
+    monkeypatch.setattr("sys.argv", ["verdant_llm_cultivator.py", "--cycles", "1", "--fresh", "--no-perturbation"])
+
+    cultivator.main()
+
+    stdout = capsys.readouterr().out
+    cycle_logs = sorted((tmp_path / "outputs").glob("cultivation_cycles_*.jsonl"))
+    assert cycle_logs
+    record = json.loads(cycle_logs[-1].read_text(encoding="utf-8").strip().splitlines()[-1])
+
+    assert captured["kwargs"]["max_tokens"] == 42
+    assert captured["kwargs"]["temperature"] == 0.13
+    assert len(captured["prompt"]) <= 200
+    assert "seed_topic=" in captured["prompt"]
+    assert "phase=" in captured["prompt"]
+    assert "FCE=" in captured["prompt"]
+    assert "Return only the next input prompt (one sentence)." in captured["prompt"]
+    assert "event=prompt_trim" in stdout or (record.get("prompt_chars") is not None and record["prompt_chars"] <= 200)
+    assert record["groq_max_tokens"] == 42
+    assert record["groq_temperature"] == 0.13
+    assert record["prompt_chars"] <= 200

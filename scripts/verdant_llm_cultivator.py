@@ -289,6 +289,65 @@ def _provider_chain() -> List[str]:
     return [p.strip().lower() for p in raw.split(",") if p.strip()]
 
 
+def _env_truthy(value: Optional[str]) -> bool:
+    if value is None:
+        return False
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _max_prompt_chars() -> int:
+    budget_enabled = _env_truthy(os.environ.get("VERDANT_BUDGET_MODE", "0"))
+    default_chars = "900" if budget_enabled else "2500"
+    raw_limit = os.environ.get("VERDANT_MAX_PROMPT_CHARS", default_chars)
+    try:
+        return max(1, int(raw_limit))
+    except (TypeError, ValueError):
+        return int(default_chars)
+
+
+def _build_groq_prompt(
+    *,
+    telemetry_payload: str,
+    telemetry_with_context: Dict[str, Any],
+    key_metrics: Dict[str, Any],
+) -> Tuple[str, int, bool]:
+    instruction = "Return only the next input prompt (one sentence)."
+    prompt = (
+        f"{CULTIVATION_SYSTEM_PROMPT}\n\n"
+        "Cultivation telemetry (JSON):\n"
+        f"{telemetry_payload}\n\n"
+        "Produce only the next input text for Verdant."
+    )
+    max_chars = _max_prompt_chars()
+    if len(prompt) <= max_chars:
+        return prompt, len(prompt), False
+
+    context = telemetry_with_context.get("cultivation_context", {}) or {}
+    seed_topic = context.get("seed_topic")
+    phase = key_metrics.get("phase", context.get("phase", "Flexible"))
+    fce = float(key_metrics.get("FCE", 0.0) or 0.0)
+
+    summary = (
+        "Most recent cycle summary: "
+        f"seed_topic={seed_topic if seed_topic is not None else 'none'}; "
+        f"phase={phase}; FCE={fce:.3f}."
+    )
+    header = (
+        "Instructions: Generate one next input prompt for Verdant from telemetry.\n"
+        f"{summary}\n"
+        f"{instruction}"
+    )
+
+    if len(header) >= max_chars:
+        trimmed_prompt = header[:max_chars]
+    else:
+        remaining = max_chars - len(header) - 2
+        tail = prompt[-remaining:] if remaining > 0 else ""
+        trimmed_prompt = f"{header}\n\n{tail}"
+
+    return trimmed_prompt, len(trimmed_prompt), True
+
+
 def _find_latest_cycle_log(outputs_dir: Path) -> Optional[Path]:
     logs = sorted(outputs_dir.glob("cultivation_cycles_*.jsonl"))
     return logs[-1] if logs else None
@@ -317,10 +376,11 @@ def _next_input_with_fallback(
     temperature: float,
     max_tokens: int,
     budget_mode: str,
-) -> Tuple[str, str, Optional[str]]:
+) -> Tuple[str, str, Optional[str], Dict[str, Any]]:
     chain = _provider_chain()
     shrink_level = 0
     last_error: Optional[str] = None
+    call_meta: Dict[str, Any] = {}
 
     for provider in chain:
         if provider == "groq":
@@ -328,27 +388,35 @@ def _next_input_with_fallback(
             groq_model = os.environ.get("GROQ_MODEL", model)
             if not api_key:
                 continue
+            groq_max_tokens = int(os.getenv("GROQ_MAX_TOKENS", "256"))
+            groq_temperature = float(os.getenv("GROQ_TEMPERATURE", "0.7"))
             payload = _prepare_telemetry_payload(telemetry_with_context, budget_mode, shrink_level)
-            prompt = (
-                f"{CULTIVATION_SYSTEM_PROMPT}\n\n"
-                "Cultivation telemetry (JSON):\n"
-                f"{payload}\n\n"
-                "Produce only the next input text for Verdant."
+            prompt, prompt_chars, was_trimmed = _build_groq_prompt(
+                telemetry_payload=payload,
+                telemetry_with_context=telemetry_with_context,
+                key_metrics=key_metrics,
             )
-            try:
-                prompt = (
+            call_meta = {
+                "groq_max_tokens": groq_max_tokens,
+                "groq_temperature": groq_temperature,
+                "prompt_chars": prompt_chars,
+            }
+            if was_trimmed:
+                chars_before = len(
                     f"{CULTIVATION_SYSTEM_PROMPT}\n\n"
                     "Cultivation telemetry (JSON):\n"
                     f"{payload}\n\n"
                     "Produce only the next input text for Verdant."
                 )
+                print(f"event=prompt_trim chars_before={chars_before} chars_after={prompt_chars}")
+            try:
                 text = groq_next_input(
                     prompt,
                     model=groq_model,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
+                    temperature=groq_temperature,
+                    max_tokens=groq_max_tokens,
                 )
-                return text, "groq", None
+                return text, "groq", None, call_meta
             except GroqRateLimitError as exc:
                 delay = _extract_retry_delay_seconds(str(exc))
                 max_sleep = float(os.environ.get("VERDANT_MAX_RATE_LIMIT_SLEEP", "180") or "180")
@@ -360,10 +428,10 @@ def _next_input_with_fallback(
                         text = groq_next_input(
                             prompt,
                             model=groq_model,
-                            temperature=temperature,
-                            max_tokens=max_tokens,
+                            temperature=groq_temperature,
+                            max_tokens=groq_max_tokens,
                         )
-                        return text, "groq", None
+                        return text, "groq", None, call_meta
                     except RuntimeError as retry_exc:
                         last_error = f"groq:{retry_exc}"
                         if any(tok in str(retry_exc).lower() for tok in ["429", "rate", "context", "length"]):
@@ -395,7 +463,7 @@ def _next_input_with_fallback(
                         temperature=temperature,
                         max_tokens=max_tokens,
                     )
-                    return text, "anthropic", None
+                    return text, "anthropic", None, call_meta
                 except urllib.error.HTTPError as exc:
                     detail = exc.read().decode("utf-8", errors="replace") if exc.fp else str(exc)
                     if exc.code == 429:
@@ -421,9 +489,10 @@ def _next_input_with_fallback(
                 _local_fallback_next_input(current_input, key_metrics, "provider_chain_exhausted"),
                 "local_fallback",
                 last_error,
+                call_meta,
             )
 
-    return _local_fallback_next_input(current_input, key_metrics, "provider_not_configured"), "local_fallback", last_error
+    return _local_fallback_next_input(current_input, key_metrics, "provider_not_configured"), "local_fallback", last_error, call_meta
 
 
 def main() -> None:
@@ -440,10 +509,16 @@ def main() -> None:
         type=int,
         default=int(os.environ.get("VERDANT_MAX_TOKENS_PER_CALL", "128")),
     )
+    env_budget_mode = os.environ.get("VERDANT_BUDGET_MODE", "0")
+    if env_budget_mode in {"off", "light", "aggressive"}:
+        budget_mode_default = env_budget_mode
+    else:
+        budget_mode_default = "light" if _env_truthy(env_budget_mode) else "off"
+
     parser.add_argument(
         "--budget-mode",
         choices=["off", "light", "aggressive"],
-        default=os.environ.get("VERDANT_BUDGET_MODE", "light"),
+        default=budget_mode_default,
     )
     parser.add_argument("--perturbation-interval", type=int, default=PERTURBATION_INTERVAL)
     parser.add_argument("--no-perturbation", action="store_true", help="Disable forced phase perturbation")
@@ -554,6 +629,7 @@ def main() -> None:
                 "memoryweb_size": len(current_concepts),
                 "phase": phase,
                 "flexible_streak": flexible_streak,
+                "seed_topic": args.seed_topic,
             },
         }
         key_metrics = {
@@ -564,7 +640,7 @@ def main() -> None:
             "memoryweb_size": len(current_concepts),
         }
 
-        llm_next_input, provider_used, provider_error = _next_input_with_fallback(
+        llm_next_input, provider_used, provider_error, llm_call_meta = _next_input_with_fallback(
             telemetry_with_context=telemetry_with_context,
             current_input=current_input,
             key_metrics=key_metrics,
@@ -623,6 +699,9 @@ def main() -> None:
             "perturbation": perturbation,
             "telemetry": telemetry_with_context,
             "key_metrics": key_metrics,
+            "groq_max_tokens": llm_call_meta.get("groq_max_tokens"),
+            "groq_temperature": llm_call_meta.get("groq_temperature"),
+            "prompt_chars": llm_call_meta.get("prompt_chars"),
         }
         _write_jsonl_record(cycle_log_path, cycle_record)
         session_log["cycles"].append(cycle_record)

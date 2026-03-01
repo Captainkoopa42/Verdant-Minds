@@ -84,6 +84,37 @@ def test_rate_limited_provider_falls_back_without_crashing(monkeypatch, tmp_path
     assert record["next_input"]
 
 
+def test_groq_error_falls_back_without_crashing(monkeypatch, tmp_path):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "groq,local_fallback")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.5},
+            "coherence_invariants": {"housed_contradiction_index": 0.2, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+
+    def raise_groq_error(*args, **kwargs):
+        raise RuntimeError("Groq API error: synthetic test failure")
+
+    monkeypatch.setattr(cultivator, "groq_next_input", raise_groq_error)
+    monkeypatch.setattr("sys.argv", ["verdant_llm_cultivator.py", "--cycles", "1", "--fresh", "--no-perturbation"])
+
+    cultivator.main()
+
+    cycle_logs = sorted((tmp_path / "outputs").glob("cultivation_cycles_*.jsonl"))
+    assert cycle_logs
+    record = json.loads(cycle_logs[-1].read_text(encoding="utf-8").strip().splitlines()[-1])
+    assert record["provider_used"] == "local_fallback"
+    assert record["provider_error"] and "groq:" in record["provider_error"]
+    assert record["next_input"]
+
+
 def test_perturbation_interval_and_bank_selection():
     bank, reason, flip = cultivator._select_perturbation_bank(
         last_cycle_emergent=0,

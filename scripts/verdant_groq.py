@@ -1,13 +1,11 @@
-"""Groq provider adapter with rate-limit handling and safe local fallback."""
+"""Groq provider adapter using the official Groq Python SDK."""
 
 from __future__ import annotations
 
-import json
-import random
-import time
-import urllib.error
-import urllib.request
-from typing import Callable, Optional
+import os
+from typing import Optional
+
+from groq import Groq
 
 
 class GroqRateLimitError(RuntimeError):
@@ -18,99 +16,59 @@ class GroqRateLimitError(RuntimeError):
         self.retry_after_seconds = retry_after_seconds
 
 
-def _extract_retry_after(exc: urllib.error.HTTPError) -> Optional[float]:
-    retry_after = exc.headers.get("Retry-After") if exc.headers else None
-    if retry_after is None:
-        return None
-    try:
-        return float(retry_after)
-    except (TypeError, ValueError):
-        return None
+def _extract_status_code(exc: Exception) -> Optional[int]:
+    for attr in ("status_code", "status"):
+        value = getattr(exc, attr, None)
+        if isinstance(value, int):
+            return value
+    response = getattr(exc, "response", None)
+    for attr in ("status_code", "status"):
+        value = getattr(response, attr, None)
+        if isinstance(value, int):
+            return value
+    return None
+
+
+def _extract_error_detail(exc: Exception) -> str:
+    body = getattr(exc, "body", None)
+    if body:
+        return str(body)
+    return str(exc)
 
 
 def groq_next_input(
+    prompt: str,
     *,
-    api_key: str,
-    model: str,
-    system_prompt: str,
-    telemetry_payload: str,
-    temperature: float,
-    max_tokens: int,
-    retries: int = 3,
-    fallback_fn: Optional[Callable[[str], str]] = None,
+    model: str | None = None,
+    max_tokens: int = 256,
+    temperature: float = 0.7,
 ) -> str:
-    """Generate next input from Groq with retries, jittered backoff, and optional fallback."""
-    body = {
-        "model": model,
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": (
-                    "Cultivation telemetry (JSON):\n"
-                    f"{telemetry_payload}\n\n"
-                    "Produce only the next input text for Verdant."
-                ),
-            },
-        ],
-    }
-    data = json.dumps(body).encode("utf-8")
+    """Generate a Verdant next-input suggestion from Groq."""
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("Missing GROQ_API_KEY environment variable")
 
-    req = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=data,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "content-type": "application/json",
-        },
-        method="POST",
-    )
+    resolved_model = model or os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    client = Groq(api_key=api_key)
 
-    for attempt in range(retries):
-        try:
-            with urllib.request.urlopen(req, timeout=60) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-            choices = payload.get("choices") or []
-            content = ((choices[0] or {}).get("message") or {}).get("content") if choices else None
-            text = str(content or "").strip()
-            if not text:
-                raise RuntimeError(f"Groq API returned empty content: {payload}")
-            return text
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace") if exc.fp else str(exc)
-            if exc.code == 429:
-                retry_after = _extract_retry_after(exc)
-                wait_for = retry_after if retry_after is not None else (2**attempt) + random.uniform(0.0, 0.75)
-                if attempt < retries - 1:
-                    print(
-                        "warning provider=groq event=rate_limited "
-                        f"attempt={attempt + 1}/{retries} retry_after={wait_for:.2f}s"
-                    )
-                    time.sleep(max(0.0, wait_for))
-                    continue
-                print(
-                    "warning provider=groq event=rate_limited "
-                    f"retry_after={retry_after if retry_after is not None else 'unknown'}s fallback=local"
-                )
-                if fallback_fn is not None:
-                    return fallback_fn("groq_rate_limited")
-                raise GroqRateLimitError(f"Groq API HTTP 429: {detail}", retry_after_seconds=retry_after) from exc
-            raise RuntimeError(f"Groq API HTTP error: {exc.code} {detail}") from exc
-        except urllib.error.URLError as exc:
-            if attempt < retries - 1:
-                wait_for = (2**attempt) + random.uniform(0.0, 0.75)
-                print(
-                    "warning provider=groq event=network_error "
-                    f"attempt={attempt + 1}/{retries} retry_after={wait_for:.2f}s"
-                )
-                time.sleep(max(0.0, wait_for))
-                continue
-            if fallback_fn is not None:
-                return fallback_fn("groq_network_error")
-            raise RuntimeError(f"Groq API network error: {exc.reason}") from exc
+    try:
+        completion = client.chat.completions.create(
+            model=resolved_model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+    except Exception as exc:  # noqa: BLE001
+        status_code = _extract_status_code(exc)
+        detail = _extract_error_detail(exc)
+        if status_code == 429:
+            raise GroqRateLimitError(f"Groq API rate limited (429): {detail}") from exc
+        raise RuntimeError(f"Groq API error: {detail}") from exc
 
-    if fallback_fn is not None:
-        return fallback_fn("groq_unknown_error")
-    raise RuntimeError("Groq API request failed after retries")
+    choices = getattr(completion, "choices", None) or []
+    message = getattr(choices[0], "message", None) if choices else None
+    content = getattr(message, "content", None)
+    text = str(content or "").strip()
+    if not text:
+        raise RuntimeError("Groq API returned empty content")
+    return text

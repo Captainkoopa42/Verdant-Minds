@@ -85,6 +85,9 @@ PyJWT>=2.8.0,<3.0.0
 # Files using: auth/system.py
 Werkzeug>=3.0.0,<4.0.0
 
+# Groq SDK for hosted LLM provider integration in the cultivation script.
+groq>=0.11.0
+
 # ----------------------------------------------------------------------------
 # Natural Language Processing (Optional)
 # ----------------------------------------------------------------------------

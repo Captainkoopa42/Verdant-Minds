@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import random
+import re
 import sys
 import time
 import urllib.error
@@ -20,7 +21,7 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from usm import UnifiedSyntheticMind
-from scripts.verdant_groq import groq_next_input
+from scripts.verdant_groq import GroqRateLimitError, groq_next_input
 from scripts.verdant_telemetry import build_telemetry
 
 PERTURBATION_INTERVAL = 15
@@ -132,6 +133,23 @@ def _extract_fce(telemetry: Dict[str, Any]) -> float:
         return float(thermo.get("T_cog", 0.0) or 0.0)
     except (TypeError, ValueError):
         return 0.0
+
+
+def _extract_retry_delay_seconds(error_message: str) -> Optional[float]:
+    patterns = [
+        r"retry\s*after\s*(\d+(?:\.\d+)?)",
+        r"retry_after\s*[=:]?\s*(\d+(?:\.\d+)?)",
+        r"in\s*(\d+(?:\.\d+)?)\s*seconds",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, error_message, flags=re.IGNORECASE)
+        if not match:
+            continue
+        try:
+            return float(match.group(1))
+        except (TypeError, ValueError):
+            continue
+    return None
 
 
 def _extract_http_retry_after(exc: urllib.error.HTTPError) -> Optional[float]:
@@ -311,6 +329,12 @@ def _next_input_with_fallback(
             if not api_key:
                 continue
             payload = _prepare_telemetry_payload(telemetry_with_context, budget_mode, shrink_level)
+            prompt = (
+                f"{CULTIVATION_SYSTEM_PROMPT}\n\n"
+                "Cultivation telemetry (JSON):\n"
+                f"{payload}\n\n"
+                "Produce only the next input text for Verdant."
+            )
             try:
                 prompt = (
                     f"{CULTIVATION_SYSTEM_PROMPT}\n\n"
@@ -325,6 +349,30 @@ def _next_input_with_fallback(
                     max_tokens=max_tokens,
                 )
                 return text, "groq", None
+            except GroqRateLimitError as exc:
+                delay = _extract_retry_delay_seconds(str(exc))
+                max_sleep = float(os.environ.get("VERDANT_MAX_RATE_LIMIT_SLEEP", "180") or "180")
+                if delay is not None:
+                    wait_for = max(0.0, min(delay, max_sleep))
+                    print(f"warning provider=groq event=rate_limit_wait seconds={wait_for:.2f}")
+                    time.sleep(wait_for)
+                    try:
+                        text = groq_next_input(
+                            prompt,
+                            model=groq_model,
+                            temperature=temperature,
+                            max_tokens=max_tokens,
+                        )
+                        return text, "groq", None
+                    except RuntimeError as retry_exc:
+                        last_error = f"groq:{retry_exc}"
+                        if any(tok in str(retry_exc).lower() for tok in ["429", "rate", "context", "length"]):
+                            shrink_level = min(2, shrink_level + 1)
+                        continue
+                last_error = f"groq:{exc}"
+                if any(tok in str(exc).lower() for tok in ["429", "rate", "context", "length"]):
+                    shrink_level = min(2, shrink_level + 1)
+                continue
             except RuntimeError as exc:
                 last_error = f"groq:{exc}"
                 if any(tok in str(exc).lower() for tok in ["429", "rate", "context", "length"]):

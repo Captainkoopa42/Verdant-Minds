@@ -115,6 +115,53 @@ def test_groq_error_falls_back_without_crashing(monkeypatch, tmp_path):
     assert record["next_input"]
 
 
+
+def test_groq_rate_limit_wait_and_retry_once(monkeypatch, tmp_path):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "groq,local_fallback")
+    monkeypatch.setenv("VERDANT_MAX_RATE_LIMIT_SLEEP", "180")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.5},
+            "coherence_invariants": {"housed_contradiction_index": 0.2, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+
+    calls = {"count": 0}
+
+    def fake_groq_next_input(*args, **kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise cultivator.GroqRateLimitError("Groq API rate limited (429): retry after 2.5 seconds")
+        return "Recovered after waiting"
+
+    slept = []
+
+    def fake_sleep(seconds):
+        slept.append(seconds)
+
+    monkeypatch.setattr(cultivator, "groq_next_input", fake_groq_next_input)
+    monkeypatch.setattr(cultivator.time, "sleep", fake_sleep)
+    monkeypatch.setattr("sys.argv", ["verdant_llm_cultivator.py", "--cycles", "1", "--fresh", "--no-perturbation"])
+
+    cultivator.main()
+
+    assert calls["count"] == 2
+    assert slept and slept[0] == 2.5
+
+    cycle_logs = sorted((tmp_path / "outputs").glob("cultivation_cycles_*.jsonl"))
+    assert cycle_logs
+    record = json.loads(cycle_logs[-1].read_text(encoding="utf-8").strip().splitlines()[-1])
+    assert record["provider_used"] == "groq"
+    assert record["provider_error"] is None
+    assert record["next_input"] == "Recovered after waiting"
+
+
 def test_perturbation_interval_and_bank_selection():
     bank, reason, flip = cultivator._select_perturbation_bank(
         last_cycle_emergent=0,

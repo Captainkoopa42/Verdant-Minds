@@ -281,7 +281,7 @@ class UnifiedSystem:
         Returns:
             Dictionary of initialized blocks
         """
-        return {
+        blocks = {
             "SensoryInput": SensoryInputBlock(),
             "PatternRecognition": PatternRecognitionBlock(),
             "InternalCommunication": InternalCommunicationBlock(),
@@ -295,6 +295,12 @@ class UnifiedSystem:
             "LanguageProcessing": LanguageProcessingBlock(self.memory_bridge),
             "ContinualLearning": ContinualLearningBlock(self.system_learning)
         }
+
+        memory_storage_block = blocks.get("MemoryStorage")
+        if memory_storage_block is not None and hasattr(memory_storage_block, "set_memory_bridge"):
+            memory_storage_block.set_memory_bridge(self.memory_bridge)
+
+        return blocks
     
     def process_input(self, input_text: str, metadata: Dict[str, Any] = None) -> CognitiveChunk:
         """

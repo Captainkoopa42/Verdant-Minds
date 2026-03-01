@@ -285,3 +285,61 @@ def test_budget_mode_trims_prompt_and_uses_env_groq_call_args(monkeypatch, tmp_p
     assert record["groq_max_tokens"] == 42
     assert record["groq_temperature"] == 0.13
     assert record["prompt_chars"] <= 200
+
+
+def test_cycle_sleep_flag_calls_sleep(monkeypatch, tmp_path):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "local_fallback")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.5},
+            "coherence_invariants": {"housed_contradiction_index": 0.1, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+
+    slept = []
+
+    def fake_sleep(seconds):
+        slept.append(seconds)
+
+    monkeypatch.setattr(cultivator.time, "sleep", fake_sleep)
+    monkeypatch.setattr(
+        "sys.argv",
+        ["verdant_llm_cultivator.py", "--cycles", "1", "--fresh", "--no-perturbation", "--cycle-sleep", "0.25"],
+    )
+
+    cultivator.main()
+
+    assert slept == [0.25]
+
+
+def test_cycle_sleep_env_default_calls_sleep(monkeypatch, tmp_path):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "local_fallback")
+    monkeypatch.setenv("VERDANT_CYCLE_SLEEP", "0.4")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.5},
+            "coherence_invariants": {"housed_contradiction_index": 0.1, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+
+    slept = []
+
+    def fake_sleep(seconds):
+        slept.append(seconds)
+
+    monkeypatch.setattr(cultivator.time, "sleep", fake_sleep)
+    monkeypatch.setattr("sys.argv", ["verdant_llm_cultivator.py", "--cycles", "1", "--fresh", "--no-perturbation"])
+
+    cultivator.main()
+
+    assert slept == [0.4]

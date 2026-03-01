@@ -591,6 +591,12 @@ def main() -> None:
     parser.add_argument("--perturbation-interval", type=int, default=PERTURBATION_INTERVAL)
     parser.add_argument("--no-perturbation", action="store_true", help="Disable forced phase perturbation")
     parser.add_argument("--initialize-knowledge", action="store_true")
+    parser.add_argument(
+        "--cycle-sleep",
+        type=float,
+        default=float(os.environ.get("VERDANT_CYCLE_SLEEP", "0.0") or "0.0"),
+        help="Seconds to sleep at the end of each cycle",
+    )
     args = parser.parse_args()
 
     outputs_dir = project_root / "outputs"
@@ -778,6 +784,9 @@ def main() -> None:
             f"cycle={cycle_number:03d} | phase={phase} | FCE={fce:.3f} | hci={hci:.3f} | "
             f"emergent={emergent_count} | provider={provider_used}"
         )
+
+        if float(args.cycle_sleep) > 0.0:
+            time.sleep(float(args.cycle_sleep))
 
         current_input = next_input
         cycle_index += 1

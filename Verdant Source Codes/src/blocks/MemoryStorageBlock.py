@@ -1,5 +1,6 @@
 import threading
 import time
+import math
 from typing import Any, Dict, List, Optional, Tuple, Union
 from collections import OrderedDict
 
@@ -26,6 +27,7 @@ class MemoryStorageBlock:
         """
         self._store: OrderedDict = OrderedDict()
         self._expiry: Dict[str, float] = {}
+        self.memory_bridge = None
 
         # Support pipeline initialization where memory_bridge may be passed
         # as the first argument (UnifiedSystem uses MemoryStorageBlock(self.memory_bridge)).
@@ -50,6 +52,12 @@ class MemoryStorageBlock:
             "inserts": 0,
             "updates": 0,
         }
+
+    def set_memory_bridge(self, bridge: Any) -> None:
+        """Attach or update the Memory-ECWF bridge reference."""
+        self.memory_bridge = bridge
+        if self.memory_bridge is not None and hasattr(self.memory_bridge, "edge_policy"):
+            self.memory_bridge.edge_policy = "pconnect" if self.use_pconnect_edges else "default"
     
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """
@@ -296,9 +304,34 @@ class MemoryStorageBlock:
             try:
                 bridge_result = self.memory_bridge.update_ecwf_from_memory(concepts)
                 if isinstance(bridge_result, dict):
+                    cognitive_influence_raw = bridge_result.get("cognitive_influence", [])
+                    cognitive_influence_values = []
+                    for value in cognitive_influence_raw:
+                        try:
+                            numeric_value = float(value)
+                        except (TypeError, ValueError):
+                            continue
+                        if math.isfinite(numeric_value):
+                            cognitive_influence_values.append(numeric_value)
+
+                    if cognitive_influence_values:
+                        wave_properties["magnitude"] = [
+                            float(sum(cognitive_influence_values) / len(cognitive_influence_values))
+                        ]
+
+                        n_values = len(cognitive_influence_values)
+                        abs_values = [abs(v) for v in cognitive_influence_values]
+                        total_abs = sum(abs_values)
+                        if n_values > 1 and total_abs > 0.0:
+                            probabilities = [v / total_abs for v in abs_values if v > 0.0]
+                            entropy = -sum(p * math.log2(p) for p in probabilities)
+                            wave_properties["entropy"] = float(entropy / math.log2(n_values))
+                        elif n_values == 1:
+                            wave_properties["entropy"] = 0.0
+
                     wave_properties["bridge_update"] = {
                         "processed_concepts": bridge_result.get("processed_concepts", []),
-                        "cognitive_influence": bridge_result.get("cognitive_influence", []),
+                        "cognitive_influence": cognitive_influence_values,
                         "ethical_influence": bridge_result.get("ethical_influence", [])
                     }
             except Exception:

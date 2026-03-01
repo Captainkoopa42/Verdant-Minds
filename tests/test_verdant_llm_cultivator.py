@@ -162,6 +162,50 @@ def test_groq_rate_limit_wait_and_retry_once(monkeypatch, tmp_path):
     assert record["next_input"] == "Recovered after waiting"
 
 
+
+def test_mistral_provider_returns_text(monkeypatch, tmp_path):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("MISTRAL_API_KEY", "test-key")
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "mistral,local_fallback")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.5},
+            "coherence_invariants": {"housed_contradiction_index": 0.1, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+
+    class _FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return json.dumps({
+                "choices": [{"message": {"content": "Probe identity from a memory paradox."}}]
+            }).encode("utf-8")
+
+    def fake_urlopen(req, timeout=60):
+        assert req.full_url == "https://api.mistral.ai/v1/chat/completions"
+        return _FakeResponse()
+
+    monkeypatch.setattr(cultivator.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr("sys.argv", ["verdant_llm_cultivator.py", "--cycles", "1", "--fresh", "--no-perturbation"])
+
+    cultivator.main()
+
+    cycle_logs = sorted((tmp_path / "outputs").glob("cultivation_cycles_*.jsonl"))
+    assert cycle_logs
+    record = json.loads(cycle_logs[-1].read_text(encoding="utf-8").strip().splitlines()[-1])
+    assert record["provider_used"] == "mistral"
+    assert record["next_input"] == "Probe identity from a memory paradox."
+
+
 def test_perturbation_interval_and_bank_selection():
     bank, reason, flip = cultivator._select_perturbation_bank(
         last_cycle_emergent=0,

@@ -285,7 +285,7 @@ def _prepare_telemetry_payload(telemetry_with_context: Dict[str, Any], budget_mo
 
 
 def _provider_chain() -> List[str]:
-    raw = os.environ.get("VERDANT_PROVIDER_CHAIN", "groq,anthropic,local_fallback")
+    raw = os.environ.get("VERDANT_PROVIDER_CHAIN", "groq,mistral,local_fallback")
     return [p.strip().lower() for p in raw.split(",") if p.strip()]
 
 
@@ -483,6 +483,74 @@ def _next_input_with_fallback(
                     last_error = f"anthropic:{exc}"
                     break
             continue
+
+        if provider == "mistral":
+            api_key = os.getenv("MISTRAL_API_KEY") or os.getenv("ANTHROPIC_API_KEY")
+            if not api_key:
+                continue
+            payload = _prepare_telemetry_payload(telemetry_with_context, budget_mode, shrink_level)
+            body = {
+                "model": os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+                "messages": [
+                    {"role": "system", "content": CULTIVATION_SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": (
+                            "Cultivation telemetry (JSON):\n"
+                            f"{payload}"
+                            "\n\nReturn only the next input prompt (one sentence)."
+                        ),
+                    },
+                ],
+            }
+            req = urllib.request.Request(
+                "https://api.mistral.ai/v1/chat/completions",
+                data=json.dumps(body).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=60) as response:
+                    result = json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace") if exc.fp else str(exc)
+                if exc.code == 429:
+                    retry_after = _extract_http_retry_after(exc)
+                    max_sleep = float(os.environ.get("VERDANT_MAX_RATE_LIMIT_SLEEP", "180") or "180")
+                    wait_for = max(0.0, min((retry_after if retry_after is not None else 0.0), max_sleep))
+                    print(f"warning provider=mistral event=rate_limit_wait seconds={wait_for:.2f}")
+                    time.sleep(wait_for)
+                    try:
+                        with urllib.request.urlopen(req, timeout=60) as response:
+                            result = json.loads(response.read().decode("utf-8"))
+                    except urllib.error.HTTPError as retry_exc:
+                        retry_detail = (
+                            retry_exc.read().decode("utf-8", errors="replace") if retry_exc.fp else str(retry_exc)
+                        )
+                        last_error = f"mistral:http_{retry_exc.code}:{retry_detail}"
+                        continue
+                    except Exception as retry_exc:  # noqa: BLE001
+                        last_error = f"mistral:{retry_exc}"
+                        continue
+                else:
+                    last_error = f"mistral:http_{exc.code}:{detail}"
+                    continue
+            except Exception as exc:  # noqa: BLE001
+                last_error = f"mistral:{exc}"
+                continue
+
+            choices = result.get("choices", []) if isinstance(result, dict) else []
+            message = choices[0].get("message", {}) if choices and isinstance(choices[0], dict) else {}
+            text = str(message.get("content", "")).strip() if isinstance(message, dict) else ""
+            if not text:
+                last_error = f"mistral:empty_response:{result}"
+                continue
+            return text, "mistral", None, {}
 
         if provider == "local_fallback":
             return (

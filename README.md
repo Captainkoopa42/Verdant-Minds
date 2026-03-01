@@ -62,7 +62,8 @@ Ethics in Verdant is embedded in wave-function geometry via **Ethomorphism**, ra
 - Configure providers with environment variables:
   - `GROQ_API_KEY` + optional `GROQ_MODEL` (default follows `--model`).
   - `ANTHROPIC_API_KEY` + optional `ANTHROPIC_MODEL`.
-  - `VERDANT_PROVIDER_CHAIN` (default: `groq,anthropic,local_fallback`).
+  - `MISTRAL_API_KEY` + optional `MISTRAL_MODEL` (default: `mistral-small-latest`).
+  - `VERDANT_PROVIDER_CHAIN` (default: `groq,mistral,local_fallback`).
 - On HTTP 429 / tokens-per-day exhaustion, the loop now retries with exponential backoff + jitter, logs a warning, and falls back to local prompt generation instead of crashing.
 - Each cycle is appended to `outputs/cultivation_cycles_*.jsonl` with: cycle number, input, phase, FCE, HCI, emergent metrics, provider used, errors, and timestamp.
 - Runs auto-resume from the latest cycle log unless `--fresh` is passed.

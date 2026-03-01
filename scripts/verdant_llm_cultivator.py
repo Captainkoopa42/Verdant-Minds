@@ -312,18 +312,19 @@ def _next_input_with_fallback(
                 continue
             payload = _prepare_telemetry_payload(telemetry_with_context, budget_mode, shrink_level)
             try:
+                prompt = (
+                    f"{CULTIVATION_SYSTEM_PROMPT}\n\n"
+                    "Cultivation telemetry (JSON):\n"
+                    f"{payload}\n\n"
+                    "Produce only the next input text for Verdant."
+                )
                 text = groq_next_input(
-                    api_key=api_key,
+                    prompt,
                     model=groq_model,
-                    system_prompt=CULTIVATION_SYSTEM_PROMPT,
-                    telemetry_payload=payload,
                     temperature=temperature,
                     max_tokens=max_tokens,
-                    retries=3,
-                    fallback_fn=lambda reason: _local_fallback_next_input(current_input, key_metrics, reason),
                 )
-                used = "local_fallback" if text.startswith("[fallback:") else "groq"
-                return text, used, None
+                return text, "groq", None
             except RuntimeError as exc:
                 last_error = f"groq:{exc}"
                 if any(tok in str(exc).lower() for tok in ["429", "rate", "context", "length"]):

@@ -575,18 +575,24 @@ class MemoryECWFBridge:
                     matched_concepts.add(concept)
         
         # Get top matched concepts by activation strength in MemoryWeb
-        scored_concepts = []
-        for concept in matched_concepts:
-            try:
-                node = self.memory_web.graph.nodes.get(concept, {})
-                strength = node.get('stability', 0.5)
-                scored_concepts.append((concept, strength))
-            except Exception:
-                scored_concepts.append((concept, 0.5))
+        try:
+            scored_concepts = []
+            for concept in matched_concepts:
+                try:
+                    node = self.memory_web.graph.nodes.get(concept, {})
+                    try:
+                        strength = float(node.get('stability', 0.5))
+                    except (TypeError, ValueError):
+                        strength = 0.5
+                    scored_concepts.append((concept, strength))
+                except Exception:
+                    scored_concepts.append((concept, 0.5))
 
-        # Sort by strength, take top 3
-        scored_concepts.sort(key=lambda x: x[1], reverse=True)
-        top_concepts = [c for c, _ in scored_concepts[:3]]
+            # Sort by strength, take top 3
+            scored_concepts.sort(key=lambda x: x[1], reverse=True)
+            top_concepts = [c for c, _ in scored_concepts[:3]]
+        except Exception:
+            top_concepts = list(matched_concepts)[:3]
 
         # Create a combination key from top concepts
         combo_key = "_x_".join(sorted(top_concepts))

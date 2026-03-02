@@ -517,7 +517,7 @@ class MemoryECWFBridge:
         
         return ethical_state
     
-    def detect_and_create_emergent_concepts(self, wave_output, t, threshold=0.7):
+    def detect_and_create_emergent_concepts(self, wave_output, t, threshold=0.15):
         """
         Detect and create emergent concepts based on wave patterns that don't
         map to existing concepts.
@@ -538,7 +538,7 @@ class MemoryECWFBridge:
         # Only attempt to create emergent concepts if entropy is in the optimal range
         # Too low: not enough complexity for emergence
         # Too high: too chaotic for meaningful patterns
-        if entropy < 0.8 or entropy > 3.0:
+        if entropy < 0.3 or entropy > 3.0:
             return []
         
         # Identify dimension clusters with high activity

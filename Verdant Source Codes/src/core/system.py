@@ -233,9 +233,14 @@ class UnifiedSystem:
         if len(self._entropy_history) > self._entropy_history_maxlen:
             self._entropy_history = self._entropy_history[-self._entropy_history_maxlen:]
 
-        entropy_mean = sum(self._entropy_history) / max(1, len(self._entropy_history))
-        entropy_std = float(np.std(self._entropy_history)) if self._entropy_history else 0.0
-        housed_contradiction_index = entropy_std / (entropy_mean + eps)
+        if len(principle_values) >= 2:
+            sorted_principles = sorted(principle_values)
+            principle_spread = clamp01(sorted_principles[-1] - sorted_principles[0])
+            housed_contradiction_index = clamp01(principle_spread * magnitude)
+        elif activated_count > 0:
+            housed_contradiction_index = clamp01(entropy * magnitude * 2.0)
+        else:
+            housed_contradiction_index = 0.0
 
         sampled_triples = [
             {"p": entropy, "q": overall_score, "r": magnitude},
@@ -281,7 +286,7 @@ class UnifiedSystem:
         Returns:
             Dictionary of initialized blocks
         """
-        return {
+        blocks = {
             "SensoryInput": SensoryInputBlock(),
             "PatternRecognition": PatternRecognitionBlock(),
             "InternalCommunication": InternalCommunicationBlock(),
@@ -295,6 +300,12 @@ class UnifiedSystem:
             "LanguageProcessing": LanguageProcessingBlock(self.memory_bridge),
             "ContinualLearning": ContinualLearningBlock(self.system_learning)
         }
+
+        memory_storage_block = blocks.get("MemoryStorage")
+        if memory_storage_block is not None and hasattr(memory_storage_block, "set_memory_bridge"):
+            memory_storage_block.set_memory_bridge(self.memory_bridge)
+
+        return blocks
     
     def process_input(self, input_text: str, metadata: Dict[str, Any] = None) -> CognitiveChunk:
         """

@@ -817,18 +817,14 @@ def main() -> None:
     phase_changed_since_last_perturbation = False
 
     resume_source: Optional[Path] = None
-    if not args.fresh:
-        if args.resume is not None:
-            resume_source = _find_latest_cycle_log(outputs_dir) if args.resume == "latest" else Path(args.resume)
-        else:
-            resume_source = _find_latest_cycle_log(outputs_dir)
+    if not args.fresh and args.resume is not None:
+        resume_source = _find_latest_cycle_log(outputs_dir) if args.resume == "latest" else Path(args.resume)
 
     if resume_source is not None and resume_source.exists():
         prior_cycles = _read_jsonl(resume_source)
         session_log["metadata"]["resume_source"] = str(resume_source)
         session_log["cycles"].extend(prior_cycles)
         cycle_index = len(prior_cycles)
-        cycle_log_path = resume_source
         if prior_cycles:
             current_input = str(prior_cycles[-1].get("next_input", "") or "")
             fce_history = [float(c.get("FCE", 0.0) or 0.0) for c in prior_cycles]

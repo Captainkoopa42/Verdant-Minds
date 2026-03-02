@@ -170,6 +170,29 @@ class UnifiedSystem:
                 4: "Transparency"
             }
         )
+
+
+    @staticmethod
+    def _safe_stability(value: Any, default: float = 0.5) -> float:
+        """Coerce heterogeneous stability payloads into a plain float."""
+        raw = value
+        if isinstance(raw, dict):
+            raw = raw.get("value", raw.get("score", default))
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            return float(default)
+
+    def _normalize_memory_web_stability(self) -> None:
+        """Ensure memory-web stability values are always stored as plain floats."""
+        for concept, payload in self.memory_web.memory_store.items():
+            if not isinstance(payload, dict):
+                continue
+            stability = self._safe_stability(payload.get("stability", 0.5))
+            payload["stability"] = stability
+            if concept in self.memory_web.graph.nodes:
+                self.memory_web.graph.nodes[concept]["stability"] = stability
+
     
     def _compute_coherence_invariants(self, chunk: CognitiveChunk) -> Dict[str, Any]:
         """Compute coherence invariants from wave, ethics, and memory telemetry."""
@@ -791,7 +814,7 @@ class UnifiedSystem:
                     seeded_concepts.append((concept, 0.7, {"description": "User-provided ethical concept"}))
 
         for concept, stability, metadata in seeded_concepts:
-            self.memory_web.add_thought(concept, stability, metadata)
+            self.memory_web.add_thought(concept, self._safe_stability(stability), metadata)
 
         domain_connections = {
             "Identity & Self": [
@@ -1004,6 +1027,7 @@ class UnifiedSystem:
             
             # Restore memory and ECWF
             system.memory_web = state['memory_web']
+            system._normalize_memory_web_stability()
             system.ecwf_core = state['ecwf_core']
             
             # Rebuild bridge with restored components
@@ -1066,6 +1090,7 @@ class UnifiedSystem:
 
         memory_state = state.get("memory_web", {}) or {}
         self.memory_web.from_state_dict(memory_state)
+        self._normalize_memory_web_stability()
 
         ecwf_state = state.get("ecwf_core", {}) or {}
         self.ecwf_core.from_state_dict(ecwf_state)

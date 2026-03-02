@@ -25,6 +25,11 @@ from scripts.verdant_groq import GroqRateLimitError, groq_next_input
 from scripts.verdant_telemetry import build_telemetry
 
 PERTURBATION_INTERVAL = 15
+TOPIC_WHEEL = [
+    "contradiction", "identity", "memory", "causality",
+    "ethics", "emergence", "paradox", "time",
+    "consciousness", "autonomy", "perception", "change",
+]
 
 CULTIVATION_SYSTEM_PROMPT = """You are cultivating a thermodynamic cognitive
 system called Verdant. Read its telemetry and
@@ -349,6 +354,18 @@ def _curriculum_config() -> Dict[str, Any]:
     }
 
 
+def _topic_wheel_interval() -> int:
+    raw = os.environ.get("VERDANT_TOPIC_WHEEL_INTERVAL", "4")
+    try:
+        return max(1, int(raw))
+    except (TypeError, ValueError):
+        return 4
+
+
+def _forced_topic_for_cycle(cycle_number: int, interval: int) -> str:
+    return TOPIC_WHEEL[(cycle_number // interval) % len(TOPIC_WHEEL)]
+
+
 def _build_mistral_tutor_contract(
     *,
     key_metrics: Dict[str, Any],
@@ -359,6 +376,7 @@ def _build_mistral_tutor_contract(
     hci_below_target_streak: int,
     crossed_above_050_recently: bool,
     max_pressure_active: bool,
+    forced_topic: str,
 ) -> str:
     phase = str(key_metrics.get("phase", "Flexible"))
     fce = float(key_metrics.get("FCE", 0.0) or 0.0)
@@ -405,6 +423,8 @@ def _build_mistral_tutor_contract(
         f"- {repeat_rule}\n"
         "Recent prompts (negative examples):\n"
         f"{recent_block}\n"
+        f"REQUIRED DOMAIN THIS CYCLE: {forced_topic}\n"
+        f"Your prompt MUST engage with {forced_topic} as a primary concept while still satisfying all contradiction and diversity constraints above.\n"
         "Return ONLY the next prompt as a single sentence. No preface, no numbering, no explanations."
     )
 
@@ -491,6 +511,7 @@ def _next_input_with_fallback(
     temperature: float,
     max_tokens: int,
     budget_mode: str,
+    forced_topic: str,
     curriculum_context: Optional[Dict[str, Any]] = None,
 ) -> Tuple[str, str, Optional[str], Dict[str, Any]]:
     chain = _provider_chain()
@@ -615,6 +636,7 @@ def _next_input_with_fallback(
                 hci_below_target_streak=int(curriculum.get("hci_below_target_streak", 0) or 0),
                 crossed_above_050_recently=bool(curriculum.get("crossed_above_050_recently", False)),
                 max_pressure_active=bool(curriculum.get("max_pressure_active", False)),
+                forced_topic=forced_topic,
             )
             body = {
                 "model": os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
@@ -759,6 +781,7 @@ def main() -> None:
 
     cycle_index = 0
     current_input: Optional[str] = None
+    topic_wheel_interval = _topic_wheel_interval()
 
     fce_history: List[float] = []
     flexible_streak = 0
@@ -826,6 +849,7 @@ def main() -> None:
             current_input = starter_inputs[cycle_index] if cycle_index < len(starter_inputs) else starter_inputs[-1]
 
         cycle_number = cycle_index + 1
+        forced_topic = _forced_topic_for_cycle(cycle_number, topic_wheel_interval)
         chunk = mind.process_input(current_input)
         telemetry = build_telemetry(mind, chunk)
         phase = _phase_from_telemetry(telemetry)
@@ -892,6 +916,7 @@ def main() -> None:
             temperature=float(args.temperature),
             max_tokens=int(args.max_tokens),
             budget_mode=str(args.budget_mode),
+            forced_topic=forced_topic,
             curriculum_context={
                 "config": curriculum_config,
                 "hci_trend": hci_trend,
@@ -972,6 +997,7 @@ def main() -> None:
             "groq_max_tokens": llm_call_meta.get("groq_max_tokens"),
             "groq_temperature": llm_call_meta.get("groq_temperature"),
             "prompt_chars": llm_call_meta.get("prompt_chars"),
+            "forced_topic": forced_topic,
             "curriculum_mode": curriculum_config["mode"],
             "hci_target_low": curriculum_config["hci_target_low"],
             "hci_target_high": curriculum_config["hci_target_high"],

@@ -425,6 +425,7 @@ def _build_mistral_tutor_contract(
         f"{recent_block}\n"
         f"REQUIRED DOMAIN THIS CYCLE: {forced_topic}\n"
         f"Your prompt MUST engage with {forced_topic} as a primary concept while still satisfying all contradiction and diversity constraints above.\n"
+        "Forbidden starts at all times: 'You believe', 'You argue', 'You claim', 'You assert', 'You value', 'You insist', 'You advocate', 'You champion'.\n"
         "Return ONLY the next prompt as a single sentence. No preface, no numbering, no explanations."
     )
 
@@ -434,7 +435,6 @@ def _build_mistral_tutor_contract(
             "- Introduce a THIRD conflicting principle alongside the existing two (e.g., add non-maleficence or justice to transparency+autonomy conflict).\n"
             "- Use explicit logical contradiction structure: \"X is true AND X is false because Y\".\n"
             "- Reference Verdant's own wave state directly, including: \"Your magnitude is low — intensify the conflict\".\n"
-            "- Forbidden starts: 'You believe', 'You argue', 'You claim', 'You assert', 'You value'."
         )
 
     return contract
@@ -891,7 +891,7 @@ def main() -> None:
         hci_series_for_trend = (hci_history + [hci])[-5:]
         hci_trend = _hci_trend(hci_series_for_trend)
 
-        if 0.40 <= hci <= 0.50:
+        if 0.15 <= hci <= 0.50:
             max_pressure_streak += 1
         else:
             max_pressure_streak = 0

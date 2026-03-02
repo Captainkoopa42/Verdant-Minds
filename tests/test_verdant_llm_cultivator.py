@@ -415,6 +415,7 @@ def test_mistral_tutor_contract_mode_specific_050_constraints():
         recent_prompts=["Prompt A", "Prompt B"],
         hci_below_target_streak=0,
         crossed_above_050_recently=False,
+        max_pressure_active=False,
     )
     assert "do not exceed 0.50" in approach_contract.lower()
 
@@ -433,6 +434,39 @@ def test_mistral_tutor_contract_mode_specific_050_constraints():
         recent_prompts=["Prompt A", "Prompt B"],
         hci_below_target_streak=0,
         crossed_above_050_recently=False,
+        max_pressure_active=False,
     )
     assert "do not exceed" not in cross_contract.lower()
     assert "above 0.50" in cross_contract
+
+
+def test_mistral_tutor_contract_max_pressure_instructions_present_when_active():
+    key_metrics = {
+        "phase": "Flexible",
+        "FCE": 0.48,
+        "housed_contradiction_index": 0.45,
+    }
+
+    contract = cultivator._build_mistral_tutor_contract(
+        key_metrics=key_metrics,
+        hci_trend="flat",
+        curriculum={
+            "mode": "cross",
+            "hci_target_low": 0.40,
+            "hci_target_high": 0.49,
+            "cross_interval": 10,
+            "repeat_penalty": True,
+            "multi_domain": True,
+        },
+        last_prompt="Prior contradiction prompt",
+        recent_prompts=["Prompt 1", "Prompt 2"],
+        hci_below_target_streak=0,
+        crossed_above_050_recently=False,
+        max_pressure_active=True,
+    )
+
+    assert "MAXIMUM PRESSURE MODE (ACTIVE)" in contract
+    assert "THIRD conflicting principle" in contract
+    assert '"X is true AND X is false because Y"' in contract
+    assert "Your magnitude is low — intensify the conflict" in contract
+    assert "Forbidden starts" in contract

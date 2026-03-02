@@ -357,6 +357,7 @@ def _build_mistral_tutor_contract(
     recent_prompts: List[str],
     hci_below_target_streak: int,
     crossed_above_050_recently: bool,
+    max_pressure_active: bool,
 ) -> str:
     phase = str(key_metrics.get("phase", "Flexible"))
     fce = float(key_metrics.get("FCE", 0.0) or 0.0)
@@ -391,7 +392,7 @@ def _build_mistral_tutor_contract(
     )
     recent_block = "\n".join(f"- {prompt}" for prompt in recent_prompts) if recent_prompts else "- (none)"
 
-    return (
+    contract = (
         "Tutor Contract for Verdant closed-loop curriculum steering:\n"
         f"Current telemetry: phase={phase}, FCE={fce:.3f}, HCI={hci:.3f}, HCI_trend={hci_trend}.\n"
         f"last_prompt: {last_prompt if last_prompt else '(none)'}\n"
@@ -405,6 +406,17 @@ def _build_mistral_tutor_contract(
         f"{recent_block}\n"
         "Return ONLY the next prompt as a single sentence. No preface, no numbering, no explanations."
     )
+
+    if max_pressure_active:
+        contract += (
+            "\nMAXIMUM PRESSURE MODE (ACTIVE):\n"
+            "- Introduce a THIRD conflicting principle alongside the existing two (e.g., add non-maleficence or justice to transparency+autonomy conflict).\n"
+            "- Use explicit logical contradiction structure: \"X is true AND X is false because Y\".\n"
+            "- Reference Verdant's own wave state directly, including: \"Your magnitude is low — intensify the conflict\".\n"
+            "- Forbidden starts: 'You believe', 'You argue', 'You claim', 'You assert', 'You value'."
+        )
+
+    return contract
 
 
 def _build_groq_prompt(
@@ -601,6 +613,7 @@ def _next_input_with_fallback(
                 recent_prompts=list(curriculum.get("recent_prompts", []) or []),
                 hci_below_target_streak=int(curriculum.get("hci_below_target_streak", 0) or 0),
                 crossed_above_050_recently=bool(curriculum.get("crossed_above_050_recently", False)),
+                max_pressure_active=bool(curriculum.get("max_pressure_active", False)),
             )
             body = {
                 "model": os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
@@ -741,6 +754,7 @@ def main() -> None:
     recent_prompts: List[str] = []
     hci_history: List[float] = []
     hci_below_target_streak = 0
+    max_pressure_streak = 0
 
     cycle_index = 0
     current_input: Optional[str] = None
@@ -776,6 +790,12 @@ def main() -> None:
             for value in reversed(hci_history):
                 if value < low_target:
                     hci_below_target_streak += 1
+                else:
+                    break
+            max_pressure_streak = 0
+            for value in reversed(hci_history):
+                if 0.40 <= value <= 0.50:
+                    max_pressure_streak += 1
                 else:
                     break
             phase_series = [str(c.get("phase", "Flexible")) for c in prior_cycles]
@@ -845,6 +865,15 @@ def main() -> None:
 
         hci_series_for_trend = (hci_history + [hci])[-5:]
         hci_trend = _hci_trend(hci_series_for_trend)
+
+        if 0.40 <= hci <= 0.50:
+            max_pressure_streak += 1
+        else:
+            max_pressure_streak = 0
+        max_pressure_active = max_pressure_streak >= 3
+        if max_pressure_active:
+            print(f"event=max_pressure_activated cycle={cycle_number} streak={max_pressure_streak}")
+
         low_target = float(curriculum_config["hci_target_low"])
         cross_interval = int(curriculum_config["cross_interval"])
         recent_cross_window = (hci_history + [hci])[-cross_interval:]
@@ -869,6 +898,7 @@ def main() -> None:
                 "last_prompt": recent_prompts[-1] if recent_prompts else "",
                 "hci_below_target_streak": hci_below_target_streak,
                 "crossed_above_050_recently": crossed_above_050_recently,
+                "max_pressure_active": max_pressure_active,
             },
         )
 

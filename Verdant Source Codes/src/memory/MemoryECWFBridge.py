@@ -657,12 +657,15 @@ class MemoryECWFBridge:
         Returns:
             Dictionary with resonance information
         """
-        # Sort patterns by frequency
-        sorted_patterns = sorted(
-            self.resonance_patterns.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
+        # Sort patterns by creation timestamp when available, with a safe fallback
+        try:
+            sorted_patterns = sorted(
+                self.resonance_patterns.items(),
+                key=lambda x: x[1].get("created_at", 0) if isinstance(x[1], dict) else 0,
+                reverse=True
+            )
+        except (TypeError, AttributeError):
+            sorted_patterns = list(self.resonance_patterns.items())
         
         return {
             "top_patterns": sorted_patterns[:10],

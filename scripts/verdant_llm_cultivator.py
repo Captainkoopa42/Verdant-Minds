@@ -759,6 +759,8 @@ def main() -> None:
     parser.add_argument("--perturbation-interval", type=int, default=PERTURBATION_INTERVAL)
     parser.add_argument("--no-perturbation", action="store_true", help="Disable forced phase perturbation")
     parser.add_argument("--initialize-knowledge", action="store_true")
+    parser.add_argument("--save-state", type=str, default=None, help="Path to save JSON state")
+    parser.add_argument("--load-state", type=str, default=None, help="Path to load JSON state")
     parser.add_argument(
         "--cycle-sleep",
         type=float,
@@ -776,7 +778,12 @@ def main() -> None:
     state_path = outputs_dir / f"cultivation_state_{now}.json"
     cycle_log_path = outputs_dir / f"cultivation_cycles_{now}.jsonl"
 
-    mind = UnifiedSyntheticMind(config={"initialize_knowledge": bool(args.initialize_knowledge)})
+    initialize_knowledge = bool(args.initialize_knowledge) and not bool(args.load_state)
+    mind = UnifiedSyntheticMind(config={"initialize_knowledge": initialize_knowledge})
+    if args.load_state:
+        mind.load_state(str(args.load_state))
+
+    print(f"memoryweb_size_start={len(getattr(mind.memory_web, 'memory_store', {}))}")
     session_log: Dict[str, Any] = {
         "metadata": {
             "created_utc": datetime.utcnow().isoformat() + "Z",
@@ -857,9 +864,10 @@ def main() -> None:
                 later_phases = [str(c.get("phase", "Flexible")) for c in prior_cycles if int(c.get("cycle", 0) or 0) > last_perturbation_cycle]
                 phase_changed_since_last_perturbation = any(p != phase_at_last_perturbation for p in later_phases)
 
-        state_candidates = sorted(outputs_dir.glob("cultivation_state_*.json"))
-        if state_candidates:
-            mind.load_state(str(state_candidates[-1]))
+        if not args.load_state:
+            state_candidates = sorted(outputs_dir.glob("cultivation_state_*.json"))
+            if state_candidates:
+                mind.load_state(str(state_candidates[-1]))
 
     starter_inputs = _starter_inputs(args.seed_topic)
 
@@ -1037,6 +1045,10 @@ def main() -> None:
         current_input = next_input
         cycle_index += 1
 
+    print(f"memoryweb_size_end={len(getattr(mind.memory_web, 'memory_store', {}))}")
+
+    if args.save_state:
+        mind.save_state(str(args.save_state), include_ecwf_past_states=False)
     mind.save_state(str(state_path), include_ecwf_past_states=False)
     session_path.write_text(json.dumps(_to_jsonable(session_log), indent=2, ensure_ascii=False), encoding="utf-8")
     events_path.write_text(json.dumps(_to_jsonable(significant_events), indent=2, ensure_ascii=False), encoding="utf-8")

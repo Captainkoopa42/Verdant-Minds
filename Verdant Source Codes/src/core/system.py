@@ -1057,6 +1057,21 @@ class UnifiedSystem:
         if hasattr(self.system_learning, "to_state_dict"):
             system_learning_state = self.system_learning.to_state_dict()
 
+        emergent_concepts = []
+        for label, payload in self.memory_web.memory_store.items():
+            metadata = payload.get("metadata", {}) if isinstance(payload, dict) else {}
+            if isinstance(metadata, dict) and metadata.get("origin") == "wave_emergence":
+                emergent_concepts.append(
+                    {
+                        "label": str(label),
+                        "connections": [
+                            [str(conn_label), float(weight)]
+                            for conn_label, weight in payload.get("connections", [])
+                        ],
+                        "metadata": metadata,
+                    }
+                )
+
         return {
             "version": 1,
             "config": dict(self.config),
@@ -1065,6 +1080,19 @@ class UnifiedSystem:
             "entropy_history_maxlen": int(self._entropy_history_maxlen),
             "last_coherence_invariants": dict(self._last_coherence_invariants),
             "memory_web": self.memory_web.to_state_dict(),
+            "memory_bridge": {
+                "concept_dimension_mapping": {
+                    str(concept): [
+                        [str(mapping_type), int(dim_idx), float(weight)]
+                        for mapping_type, dim_idx, weight in mappings
+                    ]
+                    for concept, mappings in self.memory_bridge.concept_dimension_mapping.items()
+                },
+                "activation_history": dict(self.memory_bridge.activation_history),
+                "resonance_patterns": dict(self.memory_bridge.resonance_patterns),
+                "metrics": dict(self.memory_bridge.metrics),
+                "emergent_concepts": emergent_concepts,
+            },
             "ecwf_core": self.ecwf_core.to_state_dict(include_past_states=include_ecwf_past_states),
             "continual_learning": continual_learning_state,
             "system_learning": system_learning_state,
@@ -1091,6 +1119,39 @@ class UnifiedSystem:
         memory_state = state.get("memory_web", {}) or {}
         self.memory_web.from_state_dict(memory_state)
         self._normalize_memory_web_stability()
+
+        bridge_state = state.get("memory_bridge", {}) or {}
+        if isinstance(bridge_state, dict):
+            concept_mapping = bridge_state.get("concept_dimension_mapping", {}) or {}
+            self.memory_bridge.concept_dimension_mapping = {
+                str(concept): [
+                    (str(mapping_type), int(dim_idx), float(weight))
+                    for mapping_type, dim_idx, weight in mappings
+                ]
+                for concept, mappings in concept_mapping.items()
+            }
+            self.memory_bridge.activation_history = dict(bridge_state.get("activation_history", {}) or {})
+            self.memory_bridge.resonance_patterns = dict(bridge_state.get("resonance_patterns", {}) or {})
+            self.memory_bridge.metrics.update(dict(bridge_state.get("metrics", {}) or {}))
+
+            for emergent in bridge_state.get("emergent_concepts", []) or []:
+                if not isinstance(emergent, dict):
+                    continue
+                label = str(emergent.get("label", ""))
+                if not label or label not in self.memory_web.memory_store:
+                    continue
+                stored_connections = self.memory_web.memory_store[label].get("connections", [])
+                for connected_label, weight in emergent.get("connections", []) or []:
+                    if str(connected_label) == label:
+                        continue
+                    if (str(connected_label), float(weight)) not in stored_connections:
+                        effective_policy = getattr(self.memory_web, "edge_policy", self.memory_bridge.edge_policy)
+                        self.memory_web.connect_thoughts(
+                            label,
+                            str(connected_label),
+                            initial_weight=float(weight),
+                            edge_policy=effective_policy,
+                        )
 
         ecwf_state = state.get("ecwf_core", {}) or {}
         self.ecwf_core.from_state_dict(ecwf_state)
@@ -1127,3 +1188,4 @@ class UnifiedSystem:
         with open(path, "r", encoding="utf-8") as f:
             state = json.load(f)
         self.from_state_dict(state)
+        self.config["initialize_knowledge"] = False

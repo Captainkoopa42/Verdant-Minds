@@ -576,14 +576,21 @@ class MemoryECWFBridge:
         
         # Get top matched concepts by activation strength in MemoryWeb
         try:
+            def _safe_stability(node):
+                raw = node.get('stability', 0.5)
+                if isinstance(raw, dict):
+                    # stability stored as object, try common keys
+                    raw = raw.get('value', raw.get('score', 0.5))
+                try:
+                    return float(raw)
+                except (TypeError, ValueError):
+                    return 0.5
+
             scored_concepts = []
             for concept in matched_concepts:
                 try:
                     node = self.memory_web.graph.nodes.get(concept, {})
-                    try:
-                        strength = float(node.get('stability', 0.5))
-                    except (TypeError, ValueError):
-                        strength = 0.5
+                    strength = _safe_stability(node)
                     scored_concepts.append((concept, strength))
                 except Exception:
                     scored_concepts.append((concept, 0.5))

@@ -574,17 +574,33 @@ class MemoryECWFBridge:
                 elif mapping_type == "ethical" and dim_idx in eth_strongest:
                     matched_concepts.add(concept)
         
-        # If strong pattern doesn't match existing concepts well, create a new one
-        if len(matched_concepts) < 2 and magnitude_scalar > threshold:
-            # Create emergent concept name based on related concepts
-            if matched_concepts:
-                related_concept = list(matched_concepts)[0]
-                concept_base = f"Emergent_{related_concept}"
-            else:
-                # Create completely new concept
-                concept_base = f"Emergent_Concept_{len(self.resonance_patterns) + 1}"
-            
-            # Add timestamp to make name unique
+        # Get top matched concepts by activation strength in MemoryWeb
+        scored_concepts = []
+        for concept in matched_concepts:
+            try:
+                node = self.memory_web.graph.nodes.get(concept, {})
+                strength = node.get('stability', 0.5)
+                scored_concepts.append((concept, strength))
+            except Exception:
+                scored_concepts.append((concept, 0.5))
+
+        # Sort by strength, take top 3
+        scored_concepts.sort(key=lambda x: x[1], reverse=True)
+        top_concepts = [c for c, _ in scored_concepts[:3]]
+
+        # Create a combination key from top concepts
+        combo_key = "_x_".join(sorted(top_concepts))
+
+        # Only create emergent concept if this combination is new
+        if combo_key not in self.resonance_patterns and magnitude_scalar > threshold:
+            self.resonance_patterns[combo_key] = {
+                "concepts": top_concepts,
+                "created_at": time.time(),
+                "magnitude": magnitude_scalar
+            }
+
+            # Name the emergent concept after the combination
+            concept_base = f"Emergent_{'_'.join(top_concepts[:2])}"
             timestamp = int(time.time())
             new_concept = f"{concept_base}_{timestamp}"
             

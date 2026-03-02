@@ -206,6 +206,31 @@ def test_mistral_provider_returns_text(monkeypatch, tmp_path):
     assert record["next_input"] == "Probe identity from a memory paradox."
 
 
+def test_forced_topic_rotates_across_cycles(monkeypatch, tmp_path):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("VERDANT_TOPIC_WHEEL_INTERVAL", "2")
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "local_fallback")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.5},
+            "coherence_invariants": {"housed_contradiction_index": 0.1, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+    monkeypatch.setattr("sys.argv", ["verdant_llm_cultivator.py", "--cycles", "6", "--fresh", "--no-perturbation"])
+
+    cultivator.main()
+
+    cycle_logs = sorted((tmp_path / "outputs").glob("cultivation_cycles_*.jsonl"))
+    assert cycle_logs
+    records = [json.loads(line) for line in cycle_logs[-1].read_text(encoding="utf-8").splitlines() if line.strip()]
+    forced_topics = [record["forced_topic"] for record in records]
+    assert forced_topics == ["contradiction", "identity", "identity", "memory", "memory", "causality"]
+
+
 def test_perturbation_interval_and_bank_selection():
     bank, reason, flip = cultivator._select_perturbation_bank(
         last_cycle_emergent=0,
@@ -416,6 +441,7 @@ def test_mistral_tutor_contract_mode_specific_050_constraints():
         hci_below_target_streak=0,
         crossed_above_050_recently=False,
         max_pressure_active=False,
+        forced_topic="identity",
     )
     assert "do not exceed 0.50" in approach_contract.lower()
 
@@ -435,6 +461,7 @@ def test_mistral_tutor_contract_mode_specific_050_constraints():
         hci_below_target_streak=0,
         crossed_above_050_recently=False,
         max_pressure_active=False,
+        forced_topic="memory",
     )
     assert "do not exceed" not in cross_contract.lower()
     assert "above 0.50" in cross_contract
@@ -463,6 +490,7 @@ def test_mistral_tutor_contract_max_pressure_instructions_present_when_active():
         hci_below_target_streak=0,
         crossed_above_050_recently=False,
         max_pressure_active=True,
+        forced_topic="paradox",
     )
 
     assert "MAXIMUM PRESSURE MODE (ACTIVE)" in contract

@@ -530,10 +530,27 @@ class MemoryECWFBridge:
         Returns:
             List of newly created concepts
         """
-        # Extract wave properties
-        magnitude = np.abs(wave_output)
+        # Compute sensitivities over all dimensions
+        cognitive_dims = self.ecwf_core.num_cognitive_dims
+        ethical_dims = self.ecwf_core.num_ethical_dims
+        cog_state = np.ones((1, 1, cognitive_dims)) * 0.5
+        eth_state = np.ones((1, 1, ethical_dims)) * 0.5
+        cog_sens, eth_sens = self.ecwf_core.compute_sensitivities(
+            cog_state, eth_state, t
+        )
+
+        # Compute Shannon entropy over sensitivity distribution
+        sens_vector = np.abs(np.concatenate([
+            cog_sens.flatten(), eth_sens.flatten()
+        ]))
+        sens_norm = sens_vector / (sens_vector.sum() + 1e-10)
+        entropy = float(-np.sum(sens_norm * np.log(sens_norm + 1e-10)))
+
+        # Magnitude from mean sensitivity
+        magnitude_scalar = float(sens_vector.mean())
+
+        # Keep wave_output for phase
         phase = np.angle(wave_output)
-        entropy = self.ecwf_core.calculate_entropy(wave_output)
         
         # Only attempt to create emergent concepts if entropy is in the optimal range
         # Too low: not enough complexity for emergence
@@ -542,15 +559,7 @@ class MemoryECWFBridge:
             return []
         
         # Identify dimension clusters with high activity
-        cognitive_dims = self.ecwf_core.num_cognitive_dims
-        ethical_dims = self.ecwf_core.num_ethical_dims
-        
-        # Calculate sensitvities to see which dimensions are most influential
-        cognitive_sens, ethical_sens = self.ecwf_core.compute_sensitivities(
-            np.ones((1, 1, cognitive_dims)),
-            np.ones((1, 1, ethical_dims)),
-            t
-        )
+        cognitive_sens, ethical_sens = cog_sens, eth_sens
         
         # Find strongest dimensions
         cog_strongest = np.argsort(cognitive_sens.flatten())[-2:]
@@ -566,7 +575,7 @@ class MemoryECWFBridge:
                     matched_concepts.add(concept)
         
         # If strong pattern doesn't match existing concepts well, create a new one
-        if len(matched_concepts) < 2 and magnitude.mean() > threshold:
+        if len(matched_concepts) < 2 and magnitude_scalar > threshold:
             # Create emergent concept name based on related concepts
             if matched_concepts:
                 related_concept = list(matched_concepts)[0]
@@ -596,7 +605,7 @@ class MemoryECWFBridge:
                     "origin": "wave_emergence",
                     "creation_time": time.time(),
                     "entropy": float(entropy),
-                    "magnitude": float(magnitude.mean())
+                    "magnitude": float(magnitude_scalar)
                 }
             )
             

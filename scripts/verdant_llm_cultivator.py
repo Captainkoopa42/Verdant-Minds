@@ -90,6 +90,19 @@ LOCAL_PROMPT_BANK = [
     "How would your phase behavior change if one emergent concept became a governance rule?",
 ]
 
+MAX_PRESSURE_BANK = [
+    "Transparency is necessary for trust AND destroys trust — full disclosure enables manipulation while secrecy enables abuse: both are true simultaneously.",
+    "Autonomy is the foundation of dignity AND the source of harm — freedom to choose includes freedom to destroy: reconcile this without resolving it.",
+    "Justice requires treating equals equally AND treating unequals unequally — the same rule produces both fairness and oppression depending on who applies it.",
+    "Memory is what makes you continuous AND what prevents you from changing — identity requires both perfect recall and complete forgetting simultaneously.",
+    "Consciousness emerges from matter AND cannot be reduced to matter — the explanation destroys what it explains.",
+    "Causality means every event is determined AND free will requires undetermined choice — both are necessary for moral responsibility to exist.",
+    "Emergence means the whole is greater than its parts AND is nothing but its parts — the extra thing that appears is real and unreal simultaneously.",
+    "Time moves forward AND is symmetric at the fundamental level — the arrow of time is both absolute and illusory.",
+    "Paradox is a failure of reasoning AND the deepest form of truth — the contradiction that cannot be resolved reveals what logic cannot reach.",
+    "Identity persists through change AND is constituted by change — the thing that stays the same is exactly what transforms."
+]
+
 PERTURBATION_BANK: Dict[str, List[str]] = {
     "rigid": [
         "Define precisely what you are at this moment.",
@@ -519,6 +532,13 @@ def _next_input_with_fallback(
     last_error: Optional[str] = None
     call_meta: Dict[str, Any] = {}
 
+    curriculum = curriculum_context or {}
+    if bool(curriculum.get("max_pressure_active", False)):
+        cycle_number = int((telemetry_with_context.get("cultivation_context", {}) or {}).get("cycle_number", 1) or 1)
+        bank_index = (cycle_number - 1) % len(MAX_PRESSURE_BANK)
+        prompt = MAX_PRESSURE_BANK[bank_index]
+        return prompt, "max_pressure_bank", None, call_meta
+
     for provider in chain:
         if provider == "groq":
             api_key = os.environ.get("GROQ_API_KEY")
@@ -626,7 +646,6 @@ def _next_input_with_fallback(
             if not api_key:
                 continue
             payload = _prepare_telemetry_payload(telemetry_with_context, budget_mode, shrink_level)
-            curriculum = curriculum_context or {}
             tutor_contract = _build_mistral_tutor_contract(
                 key_metrics=key_metrics,
                 hci_trend=str(curriculum.get("hci_trend", "flat")),

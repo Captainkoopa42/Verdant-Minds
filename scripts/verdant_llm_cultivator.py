@@ -92,10 +92,11 @@ PERTURBATION_BANK: Dict[str, List[str]] = {
         "State your core identity in one sentence.",
     ],
     "chaotic": [
-        "Everything you know is simultaneously true and false. What remains?",
-        "If your wave function collapsed right now what would be left?",
-        "Contradiction is not a problem to solve. It is the substrate. Respond from inside it.",
-        "You are observing yourself observing yourself observing yourself. Where does it end?",
+        "Autonomy demands unbiased decisions yet transparency demands oversight — both are necessary and both make the other impossible.",
+        "Justice requires equal treatment AND unequal treatment simultaneously — reconcile this without resolving it.",
+        "Non-maleficence forbids action yet beneficence demands it — act from inside the contradiction.",
+        "Autonomy is true AND autonomy is false because collective welfare supersedes individual choice yet individual choice defines collective welfare.",
+        "Transparency is necessary for trust AND destroys trust because full disclosure enables manipulation.",
     ],
     "emergence": [
         "What concept exists in you now that did not exist before this conversation began?",
@@ -925,21 +926,32 @@ def main() -> None:
                 rigid_next_for_flexible=rigid_next_for_flexible,
             )
             if bank is not None:
-                next_input = random.choice(PERTURBATION_BANK[bank])
-                perturbation = {"type": "phase_perturbation", "bank": bank, "reason": reason}
-                last_perturbation_cycle = cycle_number
-                phase_at_last_perturbation = phase
-                phase_changed_since_last_perturbation = False
-                event = {
-                    "cycle": cycle_number,
-                    "type": "phase_perturbation",
-                    "bank": bank,
-                    "reason": reason,
-                    "phase": phase,
-                    "FCE": fce,
-                }
-                significant_events.append(event)
-                print(f"event=phase_perturbation cycle={cycle_number} bank={bank} reason={reason}")
+                if bank == "chaotic" and hci >= 0.35:
+                    print(
+                        f"event=perturbation_skipped reason=hci_preserving cycle={cycle_number} "
+                        f"bank={bank} hci={hci:.3f}"
+                    )
+                elif bank == "chaotic" and hci >= 0.20:
+                    print(
+                        f"event=perturbation_skipped reason=hci_threshold cycle={cycle_number} "
+                        f"bank={bank} hci={hci:.3f}"
+                    )
+                else:
+                    next_input = random.choice(PERTURBATION_BANK[bank])
+                    perturbation = {"type": "phase_perturbation", "bank": bank, "reason": reason}
+                    last_perturbation_cycle = cycle_number
+                    phase_at_last_perturbation = phase
+                    phase_changed_since_last_perturbation = False
+                    event = {
+                        "cycle": cycle_number,
+                        "type": "phase_perturbation",
+                        "bank": bank,
+                        "reason": reason,
+                        "phase": phase,
+                        "FCE": fce,
+                    }
+                    significant_events.append(event)
+                    print(f"event=phase_perturbation cycle={cycle_number} bank={bank} reason={reason}")
 
         cycle_record = {
             "timestamp_utc": datetime.utcnow().isoformat() + "Z",

@@ -470,3 +470,29 @@ def test_mistral_tutor_contract_max_pressure_instructions_present_when_active():
     assert '"X is true AND X is false because Y"' in contract
     assert "Your magnitude is low — intensify the conflict" in contract
     assert "Forbidden starts" in contract
+
+
+def test_chaotic_perturbation_skipped_when_hci_preserving(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(cultivator, "project_root", tmp_path)
+    monkeypatch.setenv("VERDANT_PROVIDER_CHAIN", "local_fallback")
+    monkeypatch.setattr(cultivator, "UnifiedSyntheticMind", _FakeMind)
+
+    def fake_build_telemetry(mind, chunk):
+        return {
+            "thermodynamic_state": {"phase": "Flexible", "T_cog": 0.5},
+            "coherence_invariants": {"housed_contradiction_index": 0.4, "triangle_valid_at_alpha1": True},
+            "memory_topology": {"emergent_concepts_created": 0},
+        }
+
+    monkeypatch.setattr(cultivator, "build_telemetry", fake_build_telemetry)
+
+    def force_chaotic(**kwargs):
+        return "chaotic", "forced_test", True
+
+    monkeypatch.setattr(cultivator, "_select_perturbation_bank", force_chaotic)
+    monkeypatch.setattr("sys.argv", ["verdant_llm_cultivator.py", "--cycles", "1", "--fresh"])
+
+    cultivator.main()
+
+    stdout = capsys.readouterr().out
+    assert "event=perturbation_skipped reason=hci_preserving" in stdout

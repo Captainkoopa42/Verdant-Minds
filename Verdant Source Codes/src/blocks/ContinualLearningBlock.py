@@ -152,7 +152,7 @@ class ContinualLearningBlock(BaseBlock):
                     )
 
                     wave_magnitude = self._safe_float(wave_data.get("magnitude", 0.0), 0.0)
-                    if wave_magnitude > 0.6:
+                    if wave_magnitude > 0.15:
                         wave_output = bridge.ecwf_core.compute_ecwf(cognitive_state, ethical_state, current_time)
                         emergent_concepts = bridge.detect_and_create_emergent_concepts(wave_output, current_time)
                         emergent_concepts_created = len(emergent_concepts)

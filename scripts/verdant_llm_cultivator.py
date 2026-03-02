@@ -341,6 +341,7 @@ def _curriculum_config() -> Dict[str, Any]:
         "mode": mode,
         "hci_target_low": _env_float("VERDANT_HCI_TARGET_LOW", "0.40"),
         "hci_target_high": _env_float("VERDANT_HCI_TARGET_HIGH", "0.49"),
+        "cross_interval": _env_int("VERDANT_CROSS_INTERVAL", "10"),
         "repeat_penalty": _env_truthy(os.environ.get("VERDANT_REPEAT_PENALTY", "1")),
         "multi_domain": _env_truthy(os.environ.get("VERDANT_MULTI_DOMAIN", "1")),
         "recent_window": _env_int("VERDANT_RECENT_WINDOW", "5"),
@@ -355,6 +356,7 @@ def _build_mistral_tutor_contract(
     last_prompt: str,
     recent_prompts: List[str],
     hci_below_target_streak: int,
+    crossed_above_050_recently: bool,
 ) -> str:
     phase = str(key_metrics.get("phase", "Flexible"))
     fce = float(key_metrics.get("FCE", 0.0) or 0.0)
@@ -366,12 +368,16 @@ def _build_mistral_tutor_contract(
     if mode == "approach":
         objective = f"Target objective: keep HCI within [{low:.2f}, {high:.2f}] and do not exceed 0.50."
     else:
-        intensity_clause = (
-            "HCI has been below target for 10+ cycles, increase contradiction intensity."
-            if hci_below_target_streak >= 10
-            else f"If HCI stays below {low:.2f} for 10 cycles, increase contradiction intensity."
+        cross_interval = int(curriculum.get("cross_interval", 10) or 10)
+        cadence_clause = (
+            f"Attempt to drive HCI above 0.50 at least once every {cross_interval} cycles."
         )
-        objective = f"Target objective: push HCI > 0.50 occasionally. {intensity_clause}"
+        intensity_clause = (
+            "In the last window, HCI never exceeded 0.50, so increase contradiction intensity via multi-domain collision and explicit A AND not-A structure."
+            if not crossed_above_050_recently
+            else "If a future window fails to exceed 0.50, increase contradiction intensity via multi-domain collision and explicit A AND not-A structure."
+        )
+        objective = f"Target objective: {cadence_clause} {intensity_clause}"
 
     multi_domain_rule = (
         "Mix 2–3 domains (e.g., identity+ethics, memory+causality, autonomy+transparency)."
@@ -594,6 +600,7 @@ def _next_input_with_fallback(
                 last_prompt=str(curriculum.get("last_prompt", "") or ""),
                 recent_prompts=list(curriculum.get("recent_prompts", []) or []),
                 hci_below_target_streak=int(curriculum.get("hci_below_target_streak", 0) or 0),
+                crossed_above_050_recently=bool(curriculum.get("crossed_above_050_recently", False)),
             )
             body = {
                 "model": os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
@@ -839,6 +846,9 @@ def main() -> None:
         hci_series_for_trend = (hci_history + [hci])[-5:]
         hci_trend = _hci_trend(hci_series_for_trend)
         low_target = float(curriculum_config["hci_target_low"])
+        cross_interval = int(curriculum_config["cross_interval"])
+        recent_cross_window = (hci_history + [hci])[-cross_interval:]
+        crossed_above_050_recently = any(value > 0.50 for value in recent_cross_window)
         if hci < low_target:
             hci_below_target_streak += 1
         else:
@@ -858,6 +868,7 @@ def main() -> None:
                 "recent_prompts": list(recent_prompts),
                 "last_prompt": recent_prompts[-1] if recent_prompts else "",
                 "hci_below_target_streak": hci_below_target_streak,
+                "crossed_above_050_recently": crossed_above_050_recently,
             },
         )
 

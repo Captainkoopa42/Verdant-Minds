@@ -391,3 +391,48 @@ def test_mistral_tutor_contract_includes_curriculum_targets(monkeypatch, tmp_pat
     assert "hci_target_low=0.40" in prompt
     assert "hci_target_high=0.49" in prompt
     assert "Return ONLY the next prompt as a single sentence" in prompt
+
+
+def test_mistral_tutor_contract_mode_specific_050_constraints():
+    key_metrics = {
+        "phase": "Flexible",
+        "FCE": 0.52,
+        "housed_contradiction_index": 0.46,
+    }
+
+    approach_contract = cultivator._build_mistral_tutor_contract(
+        key_metrics=key_metrics,
+        hci_trend="flat",
+        curriculum={
+            "mode": "approach",
+            "hci_target_low": 0.40,
+            "hci_target_high": 0.49,
+            "cross_interval": 10,
+            "repeat_penalty": True,
+            "multi_domain": True,
+        },
+        last_prompt="Test last prompt",
+        recent_prompts=["Prompt A", "Prompt B"],
+        hci_below_target_streak=0,
+        crossed_above_050_recently=False,
+    )
+    assert "do not exceed 0.50" in approach_contract.lower()
+
+    cross_contract = cultivator._build_mistral_tutor_contract(
+        key_metrics=key_metrics,
+        hci_trend="up",
+        curriculum={
+            "mode": "cross",
+            "hci_target_low": 0.40,
+            "hci_target_high": 0.49,
+            "cross_interval": 7,
+            "repeat_penalty": True,
+            "multi_domain": True,
+        },
+        last_prompt="Test last prompt",
+        recent_prompts=["Prompt A", "Prompt B"],
+        hci_below_target_streak=0,
+        crossed_above_050_recently=False,
+    )
+    assert "do not exceed" not in cross_contract.lower()
+    assert "above 0.50" in cross_contract

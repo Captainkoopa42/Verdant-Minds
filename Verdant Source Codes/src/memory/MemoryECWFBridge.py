@@ -18,6 +18,112 @@ try:
 except ImportError:
     _HAS_SKLEARN = False
 
+CONCEPT_DESCRIPTIONS: Dict[str, str] = {
+    "identity": "the persistent sense of self and personal continuity",
+    "continuity": "unbroken connection across time and change",
+    "selfhood": "the quality constituting one's individual nature and identity",
+    "persistence": "enduring existence despite transformation",
+    "transformation": "fundamental change in structure, state, or identity",
+    "boundary": "the limit that separates self from environment or others",
+    "reflection": "introspective examination of thought, action, and self",
+    "recursive_self_reference": "self-modeling through repeated loops of self-reference",
+    "ego_dissolution": "temporary weakening of rigid self-boundaries",
+    "memory": "retention and recall of past experience and information",
+    "forgetting": "loss or inaccessibility of previously stored information",
+    "anticipation": "prospective orientation toward possible future states",
+    "recollection": "active retrieval of stored memories into awareness",
+    "temporal_flow": "the perceived passage and ordering of time",
+    "present_moment": "immediate lived experience in the now",
+    "pattern_history": "record of recurring structures across prior states",
+    "experience_accumulation": "gradual build-up of knowledge through repeated experience",
+    "consciousness": "subjective awareness of self, world, and mental activity",
+    "qualia": "subjective conscious experience and inner sensation",
+    "awareness": "conscious attention and perceptual sensitivity",
+    "subjective_experience": "first-person felt character of mental life",
+    "perception": "interpretation of sensory input into meaningful experience",
+    "attention": "selective allocation of cognitive resources to salient signals",
+    "phenomenology": "systematic description of lived conscious experience",
+    "inner_observer": "metacognitive stance that monitors internal states",
+    "emergence": "novel properties arising from component interactions",
+    "complexity": "rich interdependence among many interacting elements",
+    "self_organization": "spontaneous order formed without central control",
+    "phase_transition": "abrupt qualitative change between system regimes",
+    "criticality": "edge-of-transition condition enabling large adaptive responses",
+    "threshold": "minimum condition required for state change",
+    "cascade": "chain reaction where local changes propagate globally",
+    "resonance": "amplification through aligned frequencies or patterns",
+    "interference_pattern": "composite structure formed by overlapping waves or signals",
+    "ethics": "principles guiding right action and moral judgment",
+    "justice": "fairness and equitable treatment of all parties",
+    "autonomy": "self-directed agency and independent choice",
+    "beneficence": "commitment to promote well-being and prevent harm",
+    "harm": "damage or suffering imposed on persons or systems",
+    "integrity": "consistency between values, commitments, and behavior",
+    "trust": "confidence in reliability, honesty, and good intent",
+    "responsibility": "accountability for choices, impacts, and obligations",
+    "moral_weight": "relative ethical significance assigned to outcomes",
+    "value_conflict": "tension between competing moral priorities",
+    "reasoning": "structured thinking that derives conclusions from premises",
+    "inference": "deriving likely conclusions from available evidence",
+    "abstraction": "generalizing from specifics to higher-level concepts",
+    "analogy": "mapping relational similarity between different domains",
+    "contradiction": "incompatibility between claims that cannot both hold",
+    "paradox": "seemingly valid reasoning producing counterintuitive conflict",
+    "uncertainty": "limited confidence about states, causes, or outcomes",
+    "hypothesis": "testable explanatory proposal about observed patterns",
+    "coherence": "internal consistency and mutual support among beliefs",
+    "belief_revision": "updating convictions in light of new evidence",
+    "entropy": "the degree of disorder or uncertainty in a cognitive system",
+    "energy": "capacity to perform work or drive change",
+    "equilibrium": "balanced state where opposing influences stabilize",
+    "dissipation": "dispersion of structured energy into less usable forms",
+    "order": "structured arrangement with low randomness",
+    "chaos": "sensitive dynamics that appear unpredictable over time",
+    "temperature": "measure of average energetic activity in a system",
+    "phase": "distinct macroscopic state with characteristic properties",
+    "wave": "oscillatory propagation of energy or information",
+    "interference": "interaction of waves producing reinforcement or cancellation",
+    "superposition": "coexistence of multiple potential states before resolution",
+    "connection": "linkage that enables interaction between entities",
+    "influence": "capacity of one element to alter another",
+    "feedback": "return of outputs as inputs to shape future behavior",
+    "coupling": "degree of interdependence between system components",
+    "dependency": "reliance of one process or element on another",
+    "network": "interconnected structure of nodes and relations",
+    "hierarchy": "layered organization with ranked levels of control",
+    "emergence_from_interaction": "higher-order structure arising from relational dynamics",
+    "meaning": "significance assigned to symbols, events, or experiences",
+    "symbol": "representational token standing for something else",
+    "reference": "relation by which language points to entities or ideas",
+    "interpretation": "construction of meaning from ambiguous or complex signals",
+    "ambiguity": "presence of multiple plausible meanings",
+    "translation": "mapping content between representational systems",
+    "expression": "external articulation of internal states or ideas",
+    "silence": "absence of explicit signal carrying contextual significance",
+    "unsayable": "content resistant to complete linguistic articulation",
+}
+
+
+def _concept_to_encoding_phrase(concept: str) -> str:
+    """Return a context-rich phrase for semantic embedding."""
+    description = CONCEPT_DESCRIPTIONS.get(concept)
+    if description:
+        return f"{concept.replace('_', ' ')}: {description}"
+
+    concept_words = concept.replace("_", " ")
+    if concept.startswith("Emergent_"):
+        emergent_terms = concept[len("Emergent_"):].split("_")
+        if emergent_terms:
+            if len(emergent_terms) == 1:
+                combo = emergent_terms[0]
+            elif len(emergent_terms) == 2:
+                combo = f"{emergent_terms[0]} and {emergent_terms[1]}"
+            else:
+                combo = ", ".join(emergent_terms[:-1]) + f", and {emergent_terms[-1]}"
+            return f"{concept_words}: emergent concept combining {combo}"
+
+    return concept_words
+
 class MemoryECWFBridge:
     """
     Bridge between MemoryWeb and ECWFCore for the Unified Synthetic Mind.
@@ -114,8 +220,9 @@ class MemoryECWFBridge:
             if self._encoder is None:
                 self._encoder = SentenceTransformer("all-MiniLM-L6-v2")
 
-            # Encode all concept names
-            embeddings = self._encoder.encode(concepts, show_progress_bar=False)
+            # Encode context-rich concept phrases for stronger semantic signal
+            concept_texts = [_concept_to_encoding_phrase(concept) for concept in concepts]
+            embeddings = self._encoder.encode(concept_texts, show_progress_bar=False)
             embeddings = np.array(embeddings, dtype=np.float64)
 
             # Cache raw embeddings

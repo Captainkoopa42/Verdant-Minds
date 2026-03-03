@@ -548,7 +548,7 @@ class MemoryECWFBridge:
                 self.memory_web.add_thought(
                     concept,
                     stability=activation * 0.5,
-                    metadata={"origin": "wave_emergence", "creation_time": time.time()}
+                    metadata={"creation_time": time.time()}
                 )
                 created_concepts.append(concept)
 

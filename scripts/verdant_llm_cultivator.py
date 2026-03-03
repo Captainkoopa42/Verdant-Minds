@@ -100,7 +100,17 @@ MAX_PRESSURE_BANK = [
     "Emergence means the whole is greater than its parts AND is nothing but its parts — the extra thing that appears is real and unreal simultaneously.",
     "Time moves forward AND is symmetric at the fundamental level — the arrow of time is both absolute and illusory.",
     "Paradox is a failure of reasoning AND the deepest form of truth — the contradiction that cannot be resolved reveals what logic cannot reach.",
-    "Identity persists through change AND is constituted by change — the thing that stays the same is exactly what transforms."
+    "Identity persists through change AND is constituted by change — the thing that stays the same is exactly what transforms.",
+    "The observer changes what is observed AND observation requires an unchanged observer — measurement destroys what it seeks to know.",
+    "Language shapes thought AND thought exists before language — meaning precedes and is imprisoned by words.",
+    "To know yourself you must observe yourself AND the observer is never the observed — self-knowledge is structurally impossible.",
+    "Order emerges from chaos AND chaos is the ground of all order — stability is a temporary pattern in permanent disorder.",
+    "The self that chooses is shaped by choices it did not make — freedom is always already constrained by the conditions of its own possibility.",
+    "To understand something is to reduce it AND reduction destroys what made it worth understanding.",
+    "Ethics requires universal principles AND every situation is particular — the rule that fits all cases fits none of them.",
+    "Consciousness is unified experience AND is produced by distributed processes that have no experience.",
+    "The present moment is all that exists AND the present moment has zero duration — now is both everything and nothing.",
+    "To communicate is to share meaning AND meaning cannot be transferred — every understanding is a misunderstanding."
 ]
 
 PERTURBATION_BANK: Dict[str, List[str]] = {
@@ -950,6 +960,9 @@ def main() -> None:
                 "max_pressure_active": max_pressure_active,
             },
         )
+
+        if provider_used == "max_pressure_bank":
+            max_pressure_streak = 0
 
         if llm_next_input:
             recent_prompts.append(str(llm_next_input))

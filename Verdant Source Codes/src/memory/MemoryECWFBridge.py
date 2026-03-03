@@ -1,3 +1,4 @@
+import itertools
 import numpy as np
 import time
 import warnings
@@ -72,7 +73,9 @@ class MemoryECWFBridge:
     # Semantic Embedding Infrastructure
     # =========================================================================
 
-    def _build_semantic_mapping(self, concepts: List[str]) -> bool:
+    def _build_semantic_mapping(
+        self, concepts: List[str]
+    ) -> Dict[str, List[Tuple[str, int, float]]]:
         """
         Build semantically meaningful concept-dimension mappings using
         sentence-transformer embeddings projected via PCA.
@@ -81,10 +84,12 @@ class MemoryECWFBridge:
             concepts: List of concept name strings
 
         Returns:
-            True if semantic mapping was built, False if fell back to random
+            Mapping dictionary for all concepts that were projected. Empty
+            dict indicates semantic mapping is unavailable and callers should
+            use fallback logic.
         """
         if not concepts:
-            return False
+            return {}
 
         if not (_HAS_SENTENCE_TRANSFORMERS and _HAS_SKLEARN):
             if not _HAS_SENTENCE_TRANSFORMERS:
@@ -102,7 +107,7 @@ class MemoryECWFBridge:
                     stacklevel=2
                 )
             self._semantic_available = False
-            return False
+            return {}
 
         try:
             # Load the encoder (cached across calls)
@@ -136,16 +141,17 @@ class MemoryECWFBridge:
                 ])
 
             # Build mappings from the projected vectors
+            semantic_mapping: Dict[str, List[Tuple[str, int, float]]] = {}
             for i, concept in enumerate(concepts):
                 vec = projected[i]
                 cog_weights = vec[:cog_dims]
                 eth_weights = vec[cog_dims:cog_dims + eth_dims]
 
                 dimensions = self._weights_to_mappings(cog_weights, eth_weights)
-                self.concept_dimension_mapping[concept] = dimensions
+                semantic_mapping[concept] = dimensions
 
             self._semantic_available = True
-            return True
+            return semantic_mapping
 
         except Exception as e:
             warnings.warn(
@@ -154,7 +160,7 @@ class MemoryECWFBridge:
                 stacklevel=2
             )
             self._semantic_available = False
-            return False
+            return {}
 
     def _weights_to_mappings(
         self, cog_weights: np.ndarray, eth_weights: np.ndarray
@@ -236,6 +242,32 @@ class MemoryECWFBridge:
         emb_a = self._embedding_cache.get(concept_a)
         emb_b = self._embedding_cache.get(concept_b)
 
+        if self._encoder is None and _HAS_SENTENCE_TRANSFORMERS:
+            try:
+                self._encoder = SentenceTransformer("all-MiniLM-L6-v2")
+            except Exception:
+                self._encoder = None
+
+        if emb_a is None and self._encoder is not None:
+            try:
+                emb_a = np.array(
+                    self._encoder.encode([concept_a], show_progress_bar=False)[0],
+                    dtype=np.float64
+                )
+                self._embedding_cache[concept_a] = emb_a
+            except Exception:
+                emb_a = None
+
+        if emb_b is None and self._encoder is not None:
+            try:
+                emb_b = np.array(
+                    self._encoder.encode([concept_b], show_progress_bar=False)[0],
+                    dtype=np.float64
+                )
+                self._embedding_cache[concept_b] = emb_b
+            except Exception:
+                emb_b = None
+
         if emb_a is None or emb_b is None:
             return 0.0
 
@@ -280,7 +312,9 @@ class MemoryECWFBridge:
         self.concept_dimension_mapping = {}
 
         # Attempt semantic mapping first
-        if concepts and self._build_semantic_mapping(concepts):
+        semantic_mapping = self._build_semantic_mapping(concepts)
+        if semantic_mapping:
+            self.concept_dimension_mapping.update(semantic_mapping)
             # Semantic mapping succeeded — initialize activation history
             for concept in concepts:
                 self.activation_history[concept] = []
@@ -624,7 +658,16 @@ class MemoryECWFBridge:
         Returns:
             List of dimension mappings
         """
-        # Try semantic projection first
+        # Rebuild semantic mapping to include this concept when possible.
+        all_concepts = list(self.memory_web.memory_store.keys())
+        if concept not in all_concepts:
+            all_concepts.append(concept)
+        semantic_mapping = self._build_semantic_mapping(all_concepts)
+        if semantic_mapping and concept in semantic_mapping:
+            self.concept_dimension_mapping.update(semantic_mapping)
+            return semantic_mapping[concept]
+
+        # Try semantic projection through an existing PCA model if available.
         if self._semantic_available and self._encoder is not None and self._pca_model is not None:
             try:
                 embedding = self._encoder.encode([concept], show_progress_bar=False)
@@ -876,8 +919,26 @@ class MemoryECWFBridge:
                 # Fallback: sort by strength, take top 3
                 scored_concepts.sort(key=lambda x: x[1], reverse=True)
                 top_concepts = [c for c, _ in scored_concepts[:3]]
+
+            # Name using the two semantically most distant co-activated concepts.
+            naming_pair = top_concepts[:2]
+            if self._semantic_available and len(top_concepts) >= 2:
+                pair_similarities = []
+                for concept_a, concept_b in itertools.combinations(top_concepts, 2):
+                    pair_similarities.append(
+                        (
+                            self.get_semantic_similarity(concept_a, concept_b),
+                            concept_a,
+                            concept_b
+                        )
+                    )
+                if pair_similarities:
+                    pair_similarities.sort(key=lambda x: x[0])
+                    _, c1, c2 = pair_similarities[0]
+                    naming_pair = [c1, c2]
         except Exception:
             top_concepts = list(matched_concepts)[:3]
+            naming_pair = top_concepts[:2]
 
         # Create a combination key from top concepts
         combo_key = "_x_".join(sorted(top_concepts))
@@ -891,7 +952,7 @@ class MemoryECWFBridge:
             }
 
             # Name the emergent concept after the combination
-            concept_base = f"Emergent_{'_'.join(top_concepts[:2])}"
+            concept_base = f"Emergent_{'_'.join(naming_pair)}"
             timestamp = int(time.time())
             new_concept = f"{concept_base}_{timestamp}"
 

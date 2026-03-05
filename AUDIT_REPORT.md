@@ -11,6 +11,10 @@
 
 The following implementation gaps identified during the original audit are now closed:
 
+- ✅ Whitepaper published with temporal scaffolding evidence (z≈3.71)
+- ✅ Ethomorphic core extracted as independent package (Phase 1 complete)
+- ✅ Dual coherence proxy ambiguity documented in whitepaper limitations
+- ✅ Ethical distance underspecification documented in whitepaper limitations
 - ✅ T_g wired into ForefrontKing and ActionSelection
 - ✅ Bidirectional bridge activated
 - ✅ Emergent concept detection firing

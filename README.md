@@ -8,6 +8,8 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Status: ~95% Complete](https://img.shields.io/badge/Status-~95%25%20Complete-brightgreen.svg)]()
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18870656.svg)](https://doi.org/10.5281/zenodo.18870656)
+
 </div>
 
 Verdant-Minds is a **working thermodynamic cognitive architecture**. It is not positioned here as a toy prototype: the full core loop, governance, memory-wave bridge, persistence stack, telemetry path, and LLM cultivation loop are implemented and runnable in this repository.
@@ -18,6 +20,23 @@ Verdant-Minds is a **working thermodynamic cognitive architecture**. It is not p
 - **Processing core:** operational end-to-end across all core cognitive stages.
 - **Cultivation:** LLM-in-the-loop cultivation is operational.
 - **Persistence:** session state, governance state, and learning traces persist across runs.
+
+## Research paper
+
+The first Verdant-Minds whitepaper is available in `paper/`:
+
+**Verdant-Minds: A Hybrid Cognitive Architecture with Graph Memory,
+Wave-State Dynamics, and Measurable Emergent Concept Scaffolding**
+
+Key finding: In a 91-cycle cultivation run (119 concepts, 37 emergent),
+emergent→emergent edges show a strong temporal scaffolding bias — newer
+emergent concepts preferentially link to older emergent concepts
+(earlier-share 0.807 vs shuffle baseline 0.499±0.083, z≈3.71).
+
+- LaTeX source: [`paper/verdant_whitepaper.tex`](paper/verdant_whitepaper.tex)
+- Plain text: [`paper/verdant_whitepaper_plaintext.txt`](paper/verdant_whitepaper_plaintext.txt)
+- Figures: [`paper/figures/`](paper/figures/)
+- **DOI:** [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
 
 ## What Verdant is
 

@@ -1,152 +1,201 @@
-# Colab Startup Kit (Drive-Persistent)
+# Verdant-Minds Colab Guide (Drive-Persistent, Code-Aligned)
 
-Use this guide to run Verdant-Minds in Google Colab with persistent state and outputs in Google Drive.
+This guide matches:
 
-## What you get
-
-- Idempotent clone/update into `/content/Verdant-Minds`
-- Dependency installation for Verdant + analysis tools
-- Google Drive mount + persistent folder setup
-- Resume-if-state-exists, otherwise fresh initialization
-- Multi-run cultivation loop
-- Post-run quick summary and scaffolding plots
-
-Notebook: `notebooks/colab_startup_kit.ipynb`
+- `notebooks/colab_startup_kit.ipynb`
+- `scripts/colab_bootstrap.py`
+- `scripts/verdant_llm_cultivator.py`
 
 ---
 
-## 1) Open the notebook in Colab
+## Table of Contents
 
-1. In GitHub, open `notebooks/colab_startup_kit.ipynb`.
-2. Click **Open in Colab** (or copy notebook into Colab manually).
-3. Run cells top-to-bottom.
-
-The notebook uses `scripts/colab_bootstrap.py` so setup logic stays centralized.
+- [1. Canonical Colab layout](#1-canonical-colab-layout)
+- [2. What bootstrap does](#2-what-bootstrap-does)
+- [3. Secure provider configuration](#3-secure-provider-configuration)
+- [4. Resume vs fresh runtime semantics](#4-resume-vs-fresh-runtime-semantics)
+- [5. Commands used by notebook/bootstrap](#5-commands-used-by-notebookbootstrap)
+- [6. Output artifacts and file locations](#6-output-artifacts-and-file-locations)
+- [7. Scaffolding analysis in Colab](#7-scaffolding-analysis-in-colab)
+- [8. Troubleshooting and failure modes](#8-troubleshooting-and-failure-modes)
 
 ---
 
-## 2) Configure API keys safely (no hardcoded secrets)
+## 1. Canonical Colab layout
 
-Do **not** place keys directly in notebook cells.
+The standard layout used by helper scripts is:
 
-Use one of these:
+- Repo: `/content/Verdant-Minds`
+- Drive root: `/content/drive/MyDrive/Verdant/`
+- Persistent state: `/content/drive/MyDrive/Verdant/verdant_persistent_state.json`
+- Outputs root: `/content/drive/MyDrive/Verdant/outputs/`
+- Per-run output directory: `/content/drive/MyDrive/Verdant/outputs/<timestamp>/`
 
-- **Colab Secrets** (recommended), or
-- Runtime prompt via `getpass`:
+These paths are produced by `mount_drive_and_prepare()` in `scripts/colab_bootstrap.py`.
 
-```python
-import getpass, os
-os.environ["MISTRAL_API_KEY"] = getpass.getpass("MISTRAL_API_KEY: ")
-```
+---
 
-The notebook prompts only for missing keys and supports:
+## 2. What bootstrap does
+
+### `ensure_repo()` behavior
+
+What this does:
+
+- If `/content/Verdant-Minds/.git` exists: runs `git pull --ff-only`.
+- If directory exists but is not a repo: raises an error.
+- Else: clones from repo URL into `/content/Verdant-Minds`.
+
+### `install_deps()` behavior
+
+What this does:
+
+1. Installs `requirements.txt` if present.
+2. Installs Colab helper dependencies:
+   - `networkx`
+   - `python-louvain`
+   - `PyYAML`
+   - `psutil`
+   - `sentence-transformers`
+   - `scikit-learn`
+   - `groq`
+   - `mistralai`
+   - `matplotlib`
+
+### `mount_drive_and_prepare()` behavior
+
+What this does:
+
+- Mounts Google Drive at `/content/drive` when running under Colab.
+- Creates Drive root and `outputs/` directories if missing.
+- Returns `drive_root`, `state_path`, `baseline_path`, and `outputs_root`.
+
+---
+
+## 3. Secure provider configuration
+
+Do **not** place API keys directly in notebook source.
+
+Recommended options:
+
+1. Colab Secrets / runtime environment variables.
+2. Runtime `getpass` prompts for missing keys.
+
+Supported keys in notebook helper cell:
 
 - `MISTRAL_API_KEY`
 - `GROQ_API_KEY`
 - `ANTHROPIC_API_KEY`
 - `OPENAI_API_KEY`
 
-Provider ordering is controlled by:
+Provider ordering uses:
 
 - `VERDANT_PROVIDER_CHAIN` (example: `mistral,groq,anthropic,openai,local`)
 
 ---
 
-## 3) Drive persistence layout
+## 4. Resume vs fresh runtime semantics
 
-Base folder:
+Bootstrap `run_cultivator_loop()` logic:
 
-- `/content/drive/MyDrive/Verdant`
+- If persistent state file exists:
+  - pass `--load-state <state_path>` (resume from state)
+  - continue with existing graph/ECWF trajectory from that state file
+- Else:
+  - pass `--initialize-knowledge --fresh` (new run)
 
-Default files/folders:
+Implementation note: in cultivator code, initialization is only enabled when `--initialize-knowledge` is set and `--load-state` is not set.
 
-- State: `/content/drive/MyDrive/Verdant/verdant_persistent_state.json`
-- Optional baseline reference: `/content/drive/MyDrive/Verdant/verdant_v1_baseline_verified_16emergents.json`
-- Outputs root: `/content/drive/MyDrive/Verdant/outputs/<timestamp>/`
+Every run additionally passes:
 
-If the folder does not exist, bootstrap creates it.
+- `--save-state <state_path>`
+- `--output-dir <run_out_dir>`
 
----
+Interpretation rule:
 
-## 4) Resume vs fresh behavior
-
-Each run always writes:
-
-- `--save-state /content/drive/MyDrive/Verdant/verdant_persistent_state.json`
-
-Startup mode is automatic:
-
-- If state exists: uses `--load-state <state>` (resume)
-- If state does not exist: uses `--initialize-knowledge --fresh` (new run)
-
-This makes reruns safe and idempotent.
+- A resumed 20-cycle segment is a continuation over persisted graph and history. It is **not** equivalent to a fresh 20-cycle run.
 
 ---
 
-## 5) Run loop settings
+## 5. Commands used by notebook/bootstrap
 
-Notebook exposes these settings (env-driven):
+### Cultivation command pattern
 
-- `VERDANT_N_RUNS` (default `2`)
-- `VERDANT_CYCLES` (default `40`)
-- `VERDANT_SEED_TOPIC` (default `contradiction`)
-- `VERDANT_PERTURB_INTERVAL` (default `10`)
-
-Underlying command per run:
+What this does: executes one run with configured cycle budget and output directory.
 
 ```bash
 python /content/Verdant-Minds/scripts/verdant_llm_cultivator.py \
   --cycles 40 \
   --seed-topic contradiction \
   --perturbation-interval 10 \
-  [--load-state <state> OR --initialize-knowledge --fresh] \
   --save-state /content/drive/MyDrive/Verdant/verdant_persistent_state.json \
-  --output-dir /content/drive/MyDrive/Verdant/outputs/<timestamp>
+  --output-dir /content/drive/MyDrive/Verdant/outputs/<timestamp> \
+  [--load-state /content/drive/MyDrive/Verdant/verdant_persistent_state.json \
+   OR --initialize-knowledge --fresh]
+```
+
+### Optional scaffolding command
+
+What this does: computes emergent scaffolding metrics and writes two PNGs.
+
+```bash
+python /content/Verdant-Minds/scripts/analysis/scaffolding_from_state.py \
+  --state /content/drive/MyDrive/Verdant/verdant_persistent_state.json \
+  --topk 6 \
+  --trials 500
 ```
 
 ---
 
-## 6) Quick checks and analysis
+## 6. Output artifacts and file locations
 
-After runs, notebook helper prints:
+With `--output-dir /content/drive/MyDrive/Verdant/outputs/<timestamp>`, each cultivation run writes:
 
-- total memory concepts
-- top `access_count` concepts
-- wave-emergent concept list ordered by `creation_time`
+- `cultivation_session_<stamp>.json`
+- `cultivation_cycles_<stamp>.jsonl`
+- `cultivation_state_<stamp>.json`
+- `significant_events_<stamp>.json`
 
-For scaffolding metrics + plots:
+And also writes persistent state to:
 
-```bash
-python scripts/analysis/scaffolding_from_state.py --state <path-to-state> --topk 6 --trials 500
-```
+- `/content/drive/MyDrive/Verdant/verdant_persistent_state.json` via `--save-state`
 
-Outputs saved near the state file by default:
+---
+
+## 7. Scaffolding analysis in Colab
+
+`scripts/analysis/scaffolding_from_state.py` specifics:
+
+- Creation time source: `metadata.creation_time` first.
+- Fallback: parse timestamp-like numeric suffix in concept label.
+- Graph model: weighted undirected graph from memory connections.
+- Backbone: top-k weighted incident edges per node, then largest connected component.
+- EE selection: only emergent↔emergent edges in backbone are analyzed.
+- Metric: `earlier-share` (newer→older orientation share, excluding exact ties).
+- Baseline: shuffled creation-time trials with fixed edge structure.
+
+Outputs (by default near state file unless `--outdir` is provided):
 
 - `emergent_scaffolding.png`
 - `link_age_gaps.png`
 
 ---
 
-## 7) Troubleshooting
+## 8. Troubleshooting and failure modes
 
-### Drive mount fails or disconnects
+### Drive mount instability
 
-- Re-run the mount/configure cell.
-- Ensure Colab has permission to access your Google Drive.
-- If mount seems stale, restart runtime and run setup cells again.
+- Re-run mount cell.
+- If still unstable, restart runtime and execute notebook from top.
 
-### `pip` dependency conflicts
+### Dependency conflicts
 
-- Re-run dependency cell once.
-- If still conflicted, use a fresh runtime and run cells from the top.
+- Restart runtime and rerun install cell.
+- Keep notebook/install sequence unchanged to avoid partial environment drift.
 
-### Repo already exists errors
+### Repo folder conflict
 
-- Bootstrap checks `/content/Verdant-Minds`.
-- If it is a valid git repo, it runs `git pull --ff-only`.
-- If the directory exists but is not a repo, remove/rename the folder and rerun clone/update cell.
+If `/content/Verdant-Minds` exists without `.git`, remove/rename it before rerunning clone/update cell.
 
-### Missing baseline warning
+### Provider limits / rate limits
 
-- The baseline file is optional.
-- Place `verdant_v1_baseline_verified_16emergents.json` in `MyDrive/Verdant/` if you need baseline comparisons.
+Cultivator has fallback handling; still record provider errors in run notes for reproducibility.

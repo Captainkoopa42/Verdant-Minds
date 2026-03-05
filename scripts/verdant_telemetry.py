@@ -220,7 +220,7 @@ def render_text(telemetry: Dict[str, Any]) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Verdant real-time telemetry display")
+    parser = argparse.ArgumentParser(description="Verdant real-time telemetry display (includes T_cog = 1 - T_g + system_entropy)")
     parser.add_argument("--json", action="store_true", dest="as_json", help="Output telemetry as JSON")
     parser.add_argument("--initialize-knowledge", action="store_true", help="Initialize knowledge base")
     args = parser.parse_args()

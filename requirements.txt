@@ -85,6 +85,23 @@ PyJWT>=2.8.0,<3.0.0
 # Files using: auth/system.py
 Werkzeug>=3.0.0,<4.0.0
 
+# Groq SDK for hosted LLM provider integration in the cultivation script.
+groq>=0.11.0
+
+# ----------------------------------------------------------------------------
+# Semantic Embeddings for Concept-Dimension Mapping
+# ----------------------------------------------------------------------------
+# sentence-transformers for encoding concept names into dense embeddings
+# used by MemoryECWFBridge to build semantically meaningful dimension mappings.
+# Falls back to random mapping if not installed.
+# Files using: MemoryECWFBridge.py
+sentence-transformers>=2.2.0
+
+# scikit-learn for PCA projection of embeddings into ECWF dimension space.
+# Required alongside sentence-transformers for semantic mapping.
+# Files using: MemoryECWFBridge.py
+scikit-learn>=1.3.0
+
 # ----------------------------------------------------------------------------
 # Natural Language Processing (Optional)
 # ----------------------------------------------------------------------------
@@ -167,7 +184,7 @@ Werkzeug>=3.0.0,<4.0.0
 # ============================================================================
 # Package Summary
 # ============================================================================
-# REQUIRED (8 packages):
+# REQUIRED (10 packages):
 #   - numpy (numerical computing)
 #   - networkx (graph operations)
 #   - python-louvain (community detection)
@@ -176,6 +193,8 @@ Werkzeug>=3.0.0,<4.0.0
 #   - matplotlib (visualization)
 #   - PyJWT (authentication - optional for deployment)
 #   - Werkzeug (security - optional for deployment)
+#   - sentence-transformers (semantic embeddings)
+#   - scikit-learn (PCA for dimension mapping)
 #
 # OPTIONAL (4 packages):
 #   - spacy (advanced NLP)

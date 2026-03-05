@@ -680,3 +680,30 @@ class DataKing(BaseKing):
             Dictionary of metrics
         """
         return self.oversight_metrics
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize DataKing state."""
+        base_state = super().to_state_dict()
+        base_state.update({
+            "information_quality_threshold": self.information_quality_threshold,
+            "novelty_threshold": self.novelty_threshold,
+            "relevance_cache": dict(self.relevance_cache),
+            "quality_assessment_params": dict(self.quality_assessment_params),
+            "oversight_metrics": dict(self.oversight_metrics),
+        })
+        return base_state
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore DataKing state with safe defaults."""
+        super().from_state_dict(state)
+        state = state or {}
+
+        self.information_quality_threshold = float(
+            state.get("information_quality_threshold", self.information_quality_threshold)
+        )
+        self.novelty_threshold = float(state.get("novelty_threshold", self.novelty_threshold))
+        self.relevance_cache = dict(state.get("relevance_cache", {}) or {})
+        self.quality_assessment_params = dict(
+            state.get("quality_assessment_params", self.quality_assessment_params) or self.quality_assessment_params
+        )
+        self.oversight_metrics.update(dict(state.get("oversight_metrics", {}) or {}))

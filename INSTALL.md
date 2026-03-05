@@ -49,7 +49,7 @@ For development or if you want to modify the code:
 
 ```bash
 # Clone the repository
-git clone https://github.com/captainkoopa420/Verdant-Minds.git
+git clone https://github.com/captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
 
 # Install in editable mode with development dependencies
@@ -67,7 +67,7 @@ For regular use without development tools:
 
 ```bash
 # Clone the repository
-git clone https://github.com/captainkoopa420/Verdant-Minds.git
+git clone https://github.com/captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
 
 # Install the package
@@ -201,7 +201,7 @@ pip install -e .
 
 If you encounter issues:
 
-1. **Check the Issues**: Visit [GitHub Issues](https://github.com/captainkoopa420/Verdant-Minds/issues)
+1. **Check the Issues**: Visit [GitHub Issues](https://github.com/captainkoopa42/Verdant-Minds/issues)
 2. **Read the Documentation**: See [README.md](README.md)
 3. **Contact**: Email adamswilliam905@gmail.com
 

@@ -16,8 +16,8 @@ It is meant to empower emergent, recursively ethical AI — aligned with human i
 Any fork, derivative work, or system inspired by this repository must include visible attribution:
 
 ```
-Inspired by Verdant: (CaptainKoopa420)  
-[https://github.com/your/repo](https://github.com/captainkoopa420/Verdant-Minds/)
+Inspired by Verdant: (CaptainKoopa42)  
+[https://github.com/your/repo](https://github.com/captainkoopa42/Verdant-Minds/)
 ```
 
 ---

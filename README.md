@@ -2,6 +2,121 @@
 
 <div align="center">
 
+**A thermodynamic cognitive architecture with active governance, coherence geometry, and cultivation tooling**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Status: ~95% Complete](https://img.shields.io/badge/Status-~95%25%20Complete-brightgreen.svg)]()
+
+</div>
+
+Verdant-Minds is a **working thermodynamic cognitive architecture**. It is not positioned here as a toy prototype: the full core loop, governance, memory-wave bridge, persistence stack, telemetry path, and LLM cultivation loop are implemented and runnable in this repository.
+
+## Current state
+
+- **Completion:** ~95% complete at the architecture/infrastructure level.
+- **Processing core:** operational end-to-end across all core cognitive stages.
+- **Cultivation:** LLM-in-the-loop cultivation is operational.
+- **Persistence:** session state, governance state, and learning traces persist across runs.
+
+## What Verdant is
+
+Verdant combines symbolic memory, wave-based cognition, and thermodynamic phase control into one loop:
+
+1. **Nine-block pipeline** for perception → interpretation → memory → reasoning → ethics → action → language → learning.
+2. **Three Kings governance** (Data King, Forefront King, Ethics King) for coordinated decision authority.
+3. **ECWF (Extended Cognitive Wave Function)** as the system’s continuous cognitive state representation.
+4. **MemoryWeb with pconnect dynamics** for concept topology and weighted memory interaction.
+5. **Bidirectional Memory–ECWF bridge** for symbol↔wave translation and emergent concept formation.
+
+## Thermodynamic processing governs every cycle
+
+Verdant uses **glass-transition style regulation (`T_g`)** as a first-class control signal:
+
+- **Rigid** phase: stabilization, consistency, constraint-sensitive behavior.
+- **Flexible** phase: balanced exploration/exploitation.
+- **Chaotic** phase: broader exploratory dynamics with grounding checks.
+
+These phases directly influence processing and action-selection behavior, not just reporting.
+
+## Coherence geometry and contradiction handling
+
+Every cycle includes coherence self-monitoring signals such as:
+
+- **H¹ cohomology-informed coherence checks**
+- **Housed contradiction index**
+- **Triangle validity signals**
+
+These are fed back into governance each cycle, so contradiction/coherence metrics influence decision dynamics in-loop.
+
+## Ethics as geometry (Ethomorphism)
+
+Ethics in Verdant is embedded in wave-function geometry via **Ethomorphism**, rather than added as an external post-hoc constraint layer.
+
+## LLM cultivation loop
+
+`scripts/verdant_llm_cultivator.py` provides a live cultivation loop where an external LLM reads telemetry and injects one next input per cycle. The loop now includes explicit cultivation context (recent domain usage, FCE trend slices, growth windows, and memory growth context) to reduce semantic repetition and improve emergence conditions.
+
+### Provider setup and rate-limit behavior
+
+- Configure providers with environment variables:
+  - `GROQ_API_KEY` + optional `GROQ_MODEL` (default follows `--model`).
+  - `ANTHROPIC_API_KEY` + optional `ANTHROPIC_MODEL`.
+  - `MISTRAL_API_KEY` + optional `MISTRAL_MODEL` (default: `mistral-small-latest`).
+  - `VERDANT_PROVIDER_CHAIN` (default: `groq,mistral,local_fallback`).
+- On HTTP 429 / tokens-per-day exhaustion, the loop now retries with exponential backoff + jitter, logs a warning, and falls back to local prompt generation instead of crashing.
+- Each cycle is appended to `outputs/cultivation_cycles_*.jsonl` with: cycle number, input, phase, FCE, HCI, emergent metrics, provider used, errors, and timestamp.
+- Runs auto-resume from the latest cycle log unless `--fresh` is passed.
+- Forced phase perturbation is enabled by default (`--perturbation-interval`, default 15) to prevent long Flexible-only plateaus; disable with `--no-perturbation`.
+
+### Example
+
+```bash
+export GROQ_API_KEY=... 
+export GROQ_MODEL=llama-3.3-70b-versatile
+python scripts/verdant_llm_cultivator.py --max-cycles 120 --max-tokens-per-call 96 --budget-mode light --perturbation-interval 15
+```
+
+## Run Verdant
+
+```bash
+git clone <repo-url>
+cd Verdant-Minds
+pip install -r requirements.txt
+python scripts/verdant_repl.py
+```
+
+## Core scripts
+
+- `scripts/verdant_repl.py` — interactive loop for direct engagement.
+- `scripts/verdant_telemetry.py` — telemetry inspection/reporting.
+- `scripts/kernel_loop.py --demo` — demo trajectory for the thermodynamic kernel loop.
+- `scripts/verdant_llm_cultivator.py` — Anthropic-driven cultivation loop.
+
+## Theoretical foundation
+
+Verdant’s conceptual basis includes:
+
+- **Soul Equation**
+- **Verdant Hierarchy**
+- **Ethomorphism**
+
+Whitepaper materials in-repo:
+
+- `Verdant Outline/Verdant Paper/I. EXECUTIVE SUMMARY.txt`
+- `Verdant Outline/Verdant Paper/II. THEORETICAL FOUNDATIONS.txt`
+- `Verdant Outline/Verdant Paper/III. ARCHITECTURAL DESIGN.txt`
+
+---
+
+## Legacy README content (retained)
+
+The original README sections are preserved below for historical context and detailed background.
+
+# Verdant-Minds
+
+<div align="center">
+
 **A Quantum-Inspired Cognitive Architecture for Artificial General Intelligence**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -335,7 +450,7 @@ A graph-based semantic memory using NetworkX:
 
 ```bash
 # Clone the repository
-git clone https://github.com/captainkoopa420/Verdant-Minds.git
+git clone https://github.com/captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
 
 # Install in development mode (recommended)
@@ -708,7 +823,7 @@ We welcome contributions from the AI research community! This is an experimental
 
 ### How to Contribute
 
-1. **Report Issues**: Found a bug? [Open an issue](https://github.com/captainkoopa420/Verdant-Minds/issues)
+1. **Report Issues**: Found a bug? [Open an issue](https://github.com/captainkoopa42/Verdant-Minds/issues)
 
 2. **Propose Features**: Have an idea? Start a discussion in issues
 
@@ -794,9 +909,9 @@ If you use this work in your research, please cite:
 ```bibtex
 @software{verdant_minds_2025,
   title={Verdant-Minds: A Quantum-Inspired Cognitive Architecture for AGI},
-  author={captainkoopa420},
+  author={captainkoopa42},
   year={2025},
-  url={https://github.com/captainkoopa420/Verdant-Minds},
+  url={https://github.com/captainkoopa42/Verdant-Minds},
   note={Experimental research prototype exploring thermodynamic knowledge
         representation and embedded ethical reasoning}
 }
@@ -806,13 +921,13 @@ If you use this work in your research, please cite:
 
 ## 📬 Contact
 
-**Project Maintainer**: captainkoopa420
+**Project Maintainer**: captainkoopa42
 **Email**: adamswilliam905@gmail.com
-**GitHub**: [@captainkoopa420](https://github.com/captainkoopa420)
+**GitHub**: [@captainkoopa42](https://github.com/captainkoopa42)
 
 ### Get Involved
 
-- 🐛 **Issues**: [Report bugs or request features](https://github.com/captainkoopa420/Verdant-Minds/issues)
+- 🐛 **Issues**: [Report bugs or request features](https://github.com/captainkoopa42/Verdant-Minds/issues)
 - 💬 **Discussions**: Join the conversation (discussions TBD)
 - 📧 **Email**: For research collaboration or questions
 
@@ -851,8 +966,8 @@ Special thanks to researchers who've explored quantum cognition, thermodynamic c
 
 ⭐ Star this repo if you find it interesting!
 
-[🏠 Home](https://github.com/captainkoopa420/Verdant-Minds) •
+[🏠 Home](https://github.com/captainkoopa42/Verdant-Minds) •
 [📖 Docs](INSTALL.md) •
-[🐛 Issues](https://github.com/captainkoopa420/Verdant-Minds/issues)
+[🐛 Issues](https://github.com/captainkoopa42/Verdant-Minds/issues)
 
 </div>

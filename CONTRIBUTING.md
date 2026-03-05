@@ -94,7 +94,7 @@ git clone https://github.com/YOUR_USERNAME/Verdant-Minds.git
 cd Verdant-Minds
 
 # Add upstream remote
-git remote add upstream https://github.com/captainkoopa420/Verdant-Minds.git
+git remote add upstream https://github.com/captainkoopa42/Verdant-Minds.git
 ```
 
 ### Step 2: Create Virtual Environment
@@ -1113,7 +1113,7 @@ We're actively seeking contributions in these areas:
 
 ### Communication Channels
 
-- **GitHub Issues**: [Open an issue](https://github.com/captainkoopa420/Verdant-Minds/issues) for bugs or questions
+- **GitHub Issues**: [Open an issue](https://github.com/captainkoopa42/Verdant-Minds/issues) for bugs or questions
 - **Email**: adamswilliam905@gmail.com for research collaboration
 - **Discussions**: (Coming soon) GitHub Discussions for community chat
 
@@ -1183,9 +1183,9 @@ mypy usm/                           # Type check
 
 ### Key Contacts
 
-- **Maintainer**: captainkoopa420
+- **Maintainer**: captainkoopa42
 - **Email**: adamswilliam905@gmail.com
-- **GitHub**: [@captainkoopa420](https://github.com/captainkoopa420)
+- **GitHub**: [@captainkoopa42](https://github.com/captainkoopa42)
 
 ---
 
@@ -1193,8 +1193,8 @@ mypy usm/                           # Type check
 
 **Verdant-Minds** • *Building the future of cognitive AI together*
 
-[🏠 Home](https://github.com/captainkoopa420/Verdant-Minds) •
+[🏠 Home](https://github.com/captainkoopa42/Verdant-Minds) •
 [📖 Docs](INSTALL.md) •
-[🐛 Issues](https://github.com/captainkoopa420/Verdant-Minds/issues)
+[🐛 Issues](https://github.com/captainkoopa42/Verdant-Minds/issues)
 
 </div>

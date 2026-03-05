@@ -1,5 +1,6 @@
 import threading
 import time
+import math
 from typing import Any, Dict, List, Optional, Tuple, Union
 from collections import OrderedDict
 
@@ -26,6 +27,7 @@ class MemoryStorageBlock:
         """
         self._store: OrderedDict = OrderedDict()
         self._expiry: Dict[str, float] = {}
+        self.memory_bridge = None
 
         # Support pipeline initialization where memory_bridge may be passed
         # as the first argument (UnifiedSystem uses MemoryStorageBlock(self.memory_bridge)).
@@ -50,6 +52,12 @@ class MemoryStorageBlock:
             "inserts": 0,
             "updates": 0,
         }
+
+    def set_memory_bridge(self, bridge: Any) -> None:
+        """Attach or update the Memory-ECWF bridge reference."""
+        self.memory_bridge = bridge
+        if self.memory_bridge is not None and hasattr(self.memory_bridge, "edge_policy"):
+            self.memory_bridge.edge_policy = "pconnect" if self.use_pconnect_edges else "default"
     
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """
@@ -296,19 +304,87 @@ class MemoryStorageBlock:
             try:
                 bridge_result = self.memory_bridge.update_ecwf_from_memory(concepts)
                 if isinstance(bridge_result, dict):
+                    cognitive_influence_raw = bridge_result.get("cognitive_influence", [])
+                    cognitive_influence_values = []
+                    for value in cognitive_influence_raw:
+                        try:
+                            numeric_value = float(value)
+                        except (TypeError, ValueError):
+                            continue
+                        if math.isfinite(numeric_value):
+                            cognitive_influence_values.append(numeric_value)
+
+                    if cognitive_influence_values:
+                        wave_properties["magnitude"] = [
+                            float(sum(cognitive_influence_values) / len(cognitive_influence_values))
+                        ]
+
+                        n_values = len(cognitive_influence_values)
+                        abs_values = [abs(v) for v in cognitive_influence_values]
+                        total_abs = sum(abs_values)
+                        if n_values > 1 and total_abs > 0.0:
+                            probabilities = [v / total_abs for v in abs_values if v > 0.0]
+                            entropy = -sum(p * math.log2(p) for p in probabilities)
+                            wave_properties["entropy"] = float(entropy / math.log2(n_values))
+                        elif n_values == 1:
+                            wave_properties["entropy"] = 0.0
+
                     wave_properties["bridge_update"] = {
                         "processed_concepts": bridge_result.get("processed_concepts", []),
-                        "cognitive_influence": bridge_result.get("cognitive_influence", []),
+                        "cognitive_influence": cognitive_influence_values,
                         "ethical_influence": bridge_result.get("ethical_influence", [])
                     }
             except Exception:
                 pass
+
+        # Thermodynamic phase-aware memory management from current T_g
+        processing_metrics = chunk.get_section_content("processing_metrics_section") or {}
+        raw_tg = processing_metrics.get("glass_transition_temp", 0.5)
+        try:
+            t_g = float(raw_tg)
+        except (TypeError, ValueError):
+            t_g = 0.5
+
+        if t_g < 0.4:
+            phase = "Rigid"
+            decay_factor = 0.005
+            reinforcement_amount = 0.05
+        elif t_g <= 0.6:
+            phase = "Flexible"
+            decay_factor = 0.01
+            reinforcement_amount = 0.1
+        else:
+            phase = "Chaotic"
+            decay_factor = 0.02
+            reinforcement_amount = 0.15
+
+        concepts_reinforced = 0
+        memory_web = getattr(getattr(self, "memory_bridge", None), "memory_web", None)
+        if memory_web is not None:
+            try:
+                memory_web.decay_memories(decay_factor=decay_factor)
+            except Exception:
+                pass
+
+            for concept in activated_concepts.keys():
+                try:
+                    reinforced_value = memory_web.reinforce_memory(concept, amount=reinforcement_amount)
+                    if reinforced_value > 0.0:
+                        concepts_reinforced += 1
+                except Exception:
+                    continue
 
         memory_section = {
             "retrieved_concepts": retrieved_concepts,
             "activated_concepts": activated_concepts,
             "activation_levels": activation_levels,
             "wave_properties": wave_properties,
+            "phase_memory_management": {
+                "phase": phase,
+                "decay_factor_applied": decay_factor,
+                "reinforcement_applied": reinforcement_amount,
+                "concepts_reinforced": concepts_reinforced
+            },
             "novelty_score": 0.0
         }
 

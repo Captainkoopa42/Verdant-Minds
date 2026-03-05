@@ -133,6 +133,25 @@ class ActionSelectionBlock(BaseBlock):
         
         return chunk
     
+    def _apply_phase_bias(self, action_scores: Dict[str, Dict[str, Any]], phase_state: str) -> Dict[str, Dict[str, Any]]:
+        """Apply phase-dependent confidence shaping to action scores."""
+        phase = str(phase_state or "Flexible")
+
+        def scale(action: str, factor: float):
+            if action in action_scores:
+                action_scores[action]["score"] = max(0.0, min(1.0, action_scores[action]["score"] * factor))
+
+        if phase == "Rigid":
+            scale("answer_query", 1.15)
+            scale("provide_partial_answer", 1.10)
+            scale("ask_clarification", 0.85)
+        elif phase == "Chaotic":
+            scale("ask_clarification", 1.20)
+            scale("defer_decision", 1.20)
+            scale("answer_query", 0.80)
+
+        return action_scores
+
     def _extract_concepts(self, pattern_data: Dict[str, Any]) -> List[str]:
         """Extract concepts from pattern data."""
         concepts = []

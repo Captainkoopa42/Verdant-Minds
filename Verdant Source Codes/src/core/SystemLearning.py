@@ -584,3 +584,44 @@ class SystemWideLearning:
         
         # Normalize to -1 to 1 range
         return max(-1.0, min(1.0, m * n * 5))  # Scale factor to make trends more visible
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize system-wide learning state."""
+        return {
+            "version": 1,
+            "learning_rates": dict(self.learning_rates),
+            "t_glass": float(self.t_glass),
+            "phase_state": self.phase_state,
+            "performance_history": dict(self.performance_trends),
+            "learning_history": list(self.learning_history),
+            "total_learning_cycles": int(self.total_learning_cycles),
+            "last_learning_time": float(self.last_learning_time),
+        }
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore system-wide learning state with safe defaults."""
+        state = state or {}
+
+        loaded_rates = state.get("learning_rates", {}) or {}
+        if isinstance(loaded_rates, dict) and loaded_rates:
+            for key, value in loaded_rates.items():
+                if key in self.learning_rates:
+                    try:
+                        self.learning_rates[key] = float(value)
+                    except (TypeError, ValueError):
+                        pass
+
+        self.t_glass = float(state.get("t_glass", self.t_glass))
+        self.phase_state = str(state.get("phase_state", self.phase_state))
+
+        performance_history = state.get("performance_history", {}) or {}
+        if isinstance(performance_history, dict):
+            merged = dict(self.performance_trends)
+            for key, values in performance_history.items():
+                if isinstance(values, list):
+                    merged[key] = list(values)
+            self.performance_trends = merged
+
+        self.learning_history = list(state.get("learning_history", []) or [])
+        self.total_learning_cycles = int(state.get("total_learning_cycles", self.total_learning_cycles))
+        self.last_learning_time = float(state.get("last_learning_time", self.last_learning_time))

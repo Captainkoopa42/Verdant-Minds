@@ -1,4 +1,8 @@
-"""Utilities for running Verdant-Minds in Google Colab with Drive persistence."""
+"""Utilities for running Verdant-Minds in Google Colab with Drive persistence.
+
+These helpers assume repo path /content/Verdant-Minds and Drive root
+/content/drive/MyDrive/Verdant/.
+"""
 
 from __future__ import annotations
 
@@ -120,7 +124,10 @@ def run_cultivator_loop(
     perturb_interval: int,
     env_overrides: Optional[Dict[str, str]] = None,
 ) -> List[str]:
-    """Run the LLM cultivator repeatedly with resume/fresh logic and Drive output folders."""
+    """Run the LLM cultivator repeatedly with resume/fresh logic and Drive output folders.
+
+If state exists, each run resumes from persisted state; otherwise the first run starts fresh.
+"""
     repo_path = Path(repo_dir)
     state = Path(state_path)
     outputs: List[str] = []

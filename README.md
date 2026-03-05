@@ -19,6 +19,22 @@ Verdant-Minds is a **working thermodynamic cognitive architecture**. It is not p
 - **Cultivation:** LLM-in-the-loop cultivation is operational.
 - **Persistence:** session state, governance state, and learning traces persist across runs.
 
+## Research paper
+
+The first Verdant-Minds whitepaper is available in `paper/`:
+
+**Verdant-Minds: A Hybrid Cognitive Architecture with Graph Memory,
+Wave-State Dynamics, and Measurable Emergent Concept Scaffolding**
+
+Key finding: In a 91-cycle cultivation run (119 concepts, 37 emergent),
+emergent→emergent edges show a strong temporal scaffolding bias — newer
+emergent concepts preferentially link to older emergent concepts
+(earlier-share 0.807 vs shuffle baseline 0.499±0.083, z≈3.71).
+
+- LaTeX source: [`paper/verdant_whitepaper.tex`](paper/verdant_whitepaper.tex)
+- Plain text: [`paper/verdant_whitepaper_plaintext.txt`](paper/verdant_whitepaper_plaintext.txt)
+- Figures: [`paper/figures/`](paper/figures/)
+
 ## What Verdant is
 
 Verdant combines symbolic memory, wave-based cognition, and thermodynamic phase control into one loop:

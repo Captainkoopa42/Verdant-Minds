@@ -1,0 +1,543 @@
+"""VerdantSystem — top-level orchestrator for the Verdant v2 cognitive architecture.
+
+Wires together:
+- ethomorphic ECWFCore + EthomorphicBridge
+- MemoryWeb
+- Nine-block pipeline
+- Three Kings governance
+- Coherence invariants
+- Thermodynamic phase management
+"""
+
+from __future__ import annotations
+
+import time
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+from pydantic import BaseModel, Field
+
+from ethomorphic.bridge.bridge import EthomorphicBridge
+from ethomorphic.coherence.invariants import compute_coherence
+from ethomorphic.ecwf.core import ECWFCore
+
+from verdant_v2.governance.council import ThreeKingsCouncil
+from verdant_v2.governance.data_king import DataKing
+from verdant_v2.governance.ethics_king import EthicsKing
+from verdant_v2.governance.forefront_king import ForefrontKing
+from verdant_v2.memory.graph import MemoryWeb
+from verdant_v2.pipeline.blocks.action import ActionBlock
+from verdant_v2.pipeline.blocks.communication import CommunicationBlock
+from verdant_v2.pipeline.blocks.ethics import EthicsBlock
+from verdant_v2.pipeline.blocks.language import LanguageBlock
+from verdant_v2.pipeline.blocks.learning import LearningBlock
+from verdant_v2.pipeline.blocks.memory import MemoryBlock
+from verdant_v2.pipeline.blocks.pattern import PatternRecognitionBlock
+from verdant_v2.pipeline.blocks.reasoning import ReasoningBlock
+from verdant_v2.pipeline.blocks.sensory import SensoryInputBlock
+from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant_v2.pipeline.orchestrator import PipelineOrchestrator
+from verdant_v2.thermodynamics.phase import compute_phase, compute_t_g
+
+
+class VerdantConfig(BaseModel):
+    """Configuration for the Verdant v2 system."""
+
+    cognitive_dims: int = 5
+    ethical_dims: int = 5
+    wave_facets: int = 7
+    bridge_influence_factor: float = 0.3
+    learning_rate: float = 0.05
+    decision_threshold: float = 0.7
+    ethical_sensitivity: float = 0.6
+    initialize_knowledge: bool = True
+    seed: int | None = 42
+
+
+class VerdantSystem:
+    """Top-level orchestrator for the Verdant v2 cognitive architecture.
+
+    Manages the full processing pipeline from raw text input to enriched
+    CognitiveChunk output, including wave-function processing, memory
+    management, governance oversight, and thermodynamic phase control.
+    """
+
+    def __init__(self, config: Optional[VerdantConfig] = None) -> None:
+        self.config = config or VerdantConfig()
+
+        if self.config.seed is not None:
+            np.random.seed(self.config.seed)
+
+        # Core components
+        self.ecwf = ECWFCore(
+            num_cognitive_dims=self.config.cognitive_dims,
+            num_ethical_dims=self.config.ethical_dims,
+            num_facets=self.config.wave_facets,
+        )
+        self.memory_web = MemoryWeb()
+        self.bridge = EthomorphicBridge(
+            ecwf=self.ecwf,
+            memory=self.memory_web,
+            influence_factor=self.config.bridge_influence_factor,
+        )
+
+        # Pipeline blocks
+        self._sensory = SensoryInputBlock()
+        self._pattern = PatternRecognitionBlock()
+        self._memory_block = MemoryBlock(self.memory_web, self.bridge)
+        self._communication = CommunicationBlock()
+        self._reasoning = ReasoningBlock()
+        self._ethics = EthicsBlock()
+        self._action = ActionBlock(decision_threshold=self.config.decision_threshold)
+        self._language = LanguageBlock()
+        self._learning = LearningBlock(bridge=self.bridge)
+
+        # Governance
+        self.data_king = DataKing()
+        self.forefront_king = ForefrontKing(decision_threshold=self.config.decision_threshold)
+        self.ethics_king = EthicsKing(ethical_sensitivity=self.config.ethical_sensitivity)
+        self.council = ThreeKingsCouncil(
+            data_king=self.data_king,
+            forefront_king=self.forefront_king,
+            ethics_king=self.ethics_king,
+        )
+
+        # Orchestrator
+        self.pipeline = PipelineOrchestrator(
+            blocks=[
+                self._sensory,
+                self._pattern,
+                self._memory_block,
+                self._communication,
+                self._reasoning,
+                self._ethics,
+                self._action,
+                self._language,
+                self._learning,
+            ],
+            data_king_hook=self.data_king,
+            ethics_king_hook=self.ethics_king,
+            forefront_king_hook=self.forefront_king,
+            three_kings_hook=self.council,
+        )
+
+        # System state
+        self._t_g: float = 0.5
+        self._cycle_count: int = 0
+        self._entropy_history: List[float] = []
+        self._metrics: Dict[str, Any] = {
+            "total_cycles": 0,
+            "avg_entropy": 0.0,
+            "avg_coherence": 0.0,
+            "emergent_concepts": 0,
+            "phase_transitions": 0,
+            "start_time": time.time(),
+        }
+        self._last_phase: str = "Flexible"
+
+        # Knowledge initialization
+        if self.config.initialize_knowledge:
+            self.initialize_knowledge()
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def process_input(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
+        """Process raw text through the full pipeline.
+
+        Args:
+            text: Raw input text.
+            metadata: Optional metadata dict.
+
+        Returns:
+            Enriched CognitiveChunk with all sections populated.
+        """
+        chunk = CognitiveChunk()
+        chunk.update_section("sensory_input_section", {
+            "input_text": text,
+            "metadata": metadata or {},
+        })
+
+        # Inject current T_g
+        chunk.update_section("processing_metrics_section", {
+            "glass_transition_temp": self._t_g,
+            "cycle": self._cycle_count,
+        })
+
+        # Run pipeline
+        chunk = self.pipeline.run(chunk)
+
+        # Compute coherence invariants
+        chunk = self._compute_coherence(chunk)
+
+        # Update T_g
+        self._update_t_g(chunk)
+
+        # Track metrics
+        self._cycle_count += 1
+        self._update_metrics(chunk)
+
+        return chunk
+
+    def initialize_knowledge(self) -> Dict[str, Any]:
+        """Seed the memory web with foundational concepts and connections.
+
+        Returns:
+            Summary of initialization.
+        """
+        seeded = _SEEDED_CONCEPTS
+        for label, stability, meta in seeded:
+            self.memory_web.add_concept(label, stability=stability, metadata=meta)
+
+        for connections in _DOMAIN_CONNECTIONS.values():
+            for src, tgt, w in connections:
+                self.memory_web.connect(src, tgt, w)
+        for src, tgt, w in _BRIDGE_CONNECTIONS:
+            self.memory_web.connect(src, tgt, w)
+
+        # Initialize bridge mappings
+        mapping_count = self.bridge.initialize_concept_mappings()
+
+        ethical_count = sum(
+            1 for _, _, m in seeded if m.get("domain") == "Ethics & Values"
+        )
+        return {
+            "concepts_added": len(seeded),
+            "ethical_concepts": ethical_count,
+            "general_concepts": len(seeded) - ethical_count,
+            "dimension_mappings": mapping_count,
+        }
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Return current system metrics."""
+        return {
+            **self._metrics,
+            "t_g": self._t_g,
+            "phase": compute_phase(self._t_g).phase,
+            "cycle_count": self._cycle_count,
+            "memory_concepts": len(self.memory_web.list_concepts()),
+            "emergent_nodes": len(self.memory_web.get_emergent_nodes()),
+            "edge_classification": self.memory_web.get_edge_classification(),
+        }
+
+    def save_state(self, path: str) -> None:
+        """Save full system state to *path*."""
+        from verdant_v2.memory.persistence import save_snapshot
+
+        save_snapshot(
+            path,
+            memory_web=self.memory_web,
+            bridge_state={
+                "concept_dimension_mapping": {
+                    k: [(t, i, float(w)) for t, i, w in v]
+                    for k, v in self.bridge.concept_dimension_mapping.items()
+                },
+                "resonance_patterns": {
+                    k: str(v) for k, v in self.bridge.resonance_patterns.items()
+                },
+            },
+            ecwf_state=self.ecwf.to_state_dict(),
+            metrics=self._metrics,
+            kings_state={
+                "data_king": self.data_king.to_state_dict(),
+                "forefront_king": self.forefront_king.to_state_dict(),
+                "ethics_king": self.ethics_king.to_state_dict(),
+            },
+            extra={
+                "t_g": self._t_g,
+                "cycle_count": self._cycle_count,
+                "entropy_history": self._entropy_history[-50:],
+            },
+        )
+
+    def load_state(self, path: str) -> None:
+        """Load system state from *path*."""
+        from verdant_v2.memory.persistence import load_snapshot
+
+        state = load_snapshot(path)
+        self.memory_web = MemoryWeb.from_state_dict(state["memory_web"])
+        self.ecwf = ECWFCore.from_state_dict(state["ecwf"])
+        self.bridge = EthomorphicBridge(
+            ecwf=self.ecwf,
+            memory=self.memory_web,
+            influence_factor=self.config.bridge_influence_factor,
+        )
+        # Restore bridge mappings
+        bridge_state = state.get("bridge", {})
+        for k, v in bridge_state.get("concept_dimension_mapping", {}).items():
+            self.bridge.concept_dimension_mapping[k] = [
+                (t, i, w) for t, i, w in v
+            ]
+        # Restore kings
+        kings = state.get("kings", {})
+        if "data_king" in kings:
+            self.data_king.from_state_dict(kings["data_king"])
+        if "forefront_king" in kings:
+            self.forefront_king.from_state_dict(kings["forefront_king"])
+        if "ethics_king" in kings:
+            self.ethics_king.from_state_dict(kings["ethics_king"])
+        # Restore extra
+        extra = state.get("extra", {})
+        self._t_g = extra.get("t_g", 0.5)
+        self._cycle_count = extra.get("cycle_count", 0)
+        self._entropy_history = extra.get("entropy_history", [])
+        self._metrics.update(state.get("metrics", {}))
+        # Re-wire blocks
+        self._memory_block.memory_web = self.memory_web
+        self._memory_block.bridge = self.bridge
+        self._learning.bridge = self.bridge
+
+    # ------------------------------------------------------------------
+    # Internal
+    # ------------------------------------------------------------------
+
+    def _compute_coherence(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        wave = chunk.get_section_content("wave_function_section") or {}
+        ethics = chunk.get_section_content("ethical_consideration_section") or {}
+        memory = chunk.get_section_content("memory_section") or {}
+
+        entropy = float(wave.get("entropy", 0.0))
+        magnitude = float(wave.get("magnitude", 0.0))
+        overall_score = float(ethics.get("overall_score", 0.0))
+        principle_scores = ethics.get("principle_scores", {})
+        mean_delta_e = float(ethics.get("mean_delta_e", 0.0))
+        phase_val = float(wave.get("phase", 0.0))
+
+        activated = memory.get("activated_concepts", {})
+        if isinstance(activated, dict):
+            activated_count = len(activated)
+        elif isinstance(activated, list):
+            activated_count = len(activated)
+        else:
+            activated_count = 0
+
+        novelty = float(memory.get("novelty_score", 0.0))
+
+        result = compute_coherence(
+            wave_entropy=entropy,
+            ethical_overall_score=overall_score,
+            magnitude=magnitude,
+            principle_scores=principle_scores if isinstance(principle_scores, dict) else {},
+            activated_count=activated_count,
+            novelty_score=novelty,
+            phase=phase_val,
+            mean_delta_e=mean_delta_e,
+        )
+
+        chunk.update_section("coherence_invariants_section", {
+            "triangle_valid_at_alpha1": result.triangle_valid,
+            "alpha_crit_estimate": result.alpha_critical,
+            "violation_rate": result.violation_rate,
+            "housed_contradiction_index": result.hci,
+            "triple_pqr": result.triple_pqr,
+        })
+        chunk.add_processing_step("CoherenceInvariants", "coherence_computation", {
+            "triangle_valid": result.triangle_valid,
+            "hci": result.hci,
+        })
+        return chunk
+
+    def _update_t_g(self, chunk: CognitiveChunk) -> None:
+        sensory = chunk.get_section_content("sensory_input_section") or {}
+        memory = chunk.get_section_content("memory_section") or {}
+        wave = chunk.get_section_content("wave_function_section") or {}
+        ethics = chunk.get_section_content("ethical_consideration_section") or {}
+
+        token_count = sensory.get("token_count", 0)
+        activated = memory.get("activated_concepts", {})
+        act_count = len(activated) if isinstance(activated, (dict, list)) else 0
+
+        input_complexity = min(1.0, token_count / 100.0)
+        memory_complexity = min(1.0, act_count / 10.0)
+        h_env = min(1.0, float(ethics.get("mean_delta_e", 0.0)) / 2.0)
+        h_sys = min(1.0, float(wave.get("entropy", 0.0)))
+
+        old_phase = compute_phase(self._t_g).phase
+        self._t_g = compute_t_g(input_complexity, memory_complexity, h_env, h_sys)
+        new_phase = compute_phase(self._t_g).phase
+
+        if old_phase != new_phase:
+            self._metrics["phase_transitions"] += 1
+            self._last_phase = new_phase
+
+        # Store entropy
+        self._entropy_history.append(h_sys)
+        if len(self._entropy_history) > 200:
+            self._entropy_history = self._entropy_history[-200:]
+
+    def _update_metrics(self, chunk: CognitiveChunk) -> None:
+        self._metrics["total_cycles"] = self._cycle_count
+        wave = chunk.get_section_content("wave_function_section") or {}
+        coherence = chunk.get_section_content("coherence_invariants_section") or {}
+
+        entropy = float(wave.get("entropy", 0.0))
+        hci = float(coherence.get("housed_contradiction_index", 0.0))
+
+        # Running averages
+        n = self._cycle_count
+        self._metrics["avg_entropy"] = (
+            (self._metrics["avg_entropy"] * (n - 1) + entropy) / n if n > 0 else entropy
+        )
+        self._metrics["avg_coherence"] = (
+            (self._metrics["avg_coherence"] * (n - 1) + hci) / n if n > 0 else hci
+        )
+        self._metrics["emergent_concepts"] = len(self.memory_web.get_emergent_nodes())
+
+
+# ======================================================================
+# Seeded knowledge (ported from v1)
+# ======================================================================
+
+_SEEDED_CONCEPTS = [
+    # Identity & Self
+    ("identity", 0.8, {"domain": "Identity & Self"}),
+    ("continuity", 0.75, {"domain": "Identity & Self"}),
+    ("selfhood", 0.8, {"domain": "Identity & Self"}),
+    ("persistence", 0.75, {"domain": "Identity & Self"}),
+    ("transformation", 0.75, {"domain": "Identity & Self"}),
+    ("boundary", 0.75, {"domain": "Identity & Self"}),
+    ("reflection", 0.75, {"domain": "Identity & Self"}),
+    ("recursive_self_reference", 0.78, {"domain": "Identity & Self"}),
+    ("ego_dissolution", 0.7, {"domain": "Identity & Self"}),
+    # Memory & Time
+    ("memory", 0.8, {"domain": "Memory & Time"}),
+    ("forgetting", 0.72, {"domain": "Memory & Time"}),
+    ("anticipation", 0.74, {"domain": "Memory & Time"}),
+    ("recollection", 0.76, {"domain": "Memory & Time"}),
+    ("temporal_flow", 0.74, {"domain": "Memory & Time"}),
+    ("present_moment", 0.73, {"domain": "Memory & Time"}),
+    ("pattern_history", 0.74, {"domain": "Memory & Time"}),
+    ("experience_accumulation", 0.76, {"domain": "Memory & Time"}),
+    # Consciousness & Experience
+    ("consciousness", 0.8, {"domain": "Consciousness & Experience"}),
+    ("qualia", 0.74, {"domain": "Consciousness & Experience"}),
+    ("awareness", 0.79, {"domain": "Consciousness & Experience"}),
+    ("subjective_experience", 0.77, {"domain": "Consciousness & Experience"}),
+    ("perception", 0.76, {"domain": "Consciousness & Experience"}),
+    ("attention", 0.75, {"domain": "Consciousness & Experience"}),
+    ("phenomenology", 0.72, {"domain": "Consciousness & Experience"}),
+    ("inner_observer", 0.73, {"domain": "Consciousness & Experience"}),
+    # Emergence & Complexity
+    ("emergence", 0.8, {"domain": "Emergence & Complexity"}),
+    ("complexity", 0.78, {"domain": "Emergence & Complexity"}),
+    ("self_organization", 0.77, {"domain": "Emergence & Complexity"}),
+    ("phase_transition", 0.76, {"domain": "Emergence & Complexity"}),
+    ("criticality", 0.75, {"domain": "Emergence & Complexity"}),
+    ("threshold", 0.73, {"domain": "Emergence & Complexity"}),
+    ("cascade", 0.72, {"domain": "Emergence & Complexity"}),
+    ("resonance", 0.74, {"domain": "Emergence & Complexity"}),
+    ("interference_pattern", 0.73, {"domain": "Emergence & Complexity"}),
+    # Ethics & Values
+    ("ethics", 0.82, {"domain": "Ethics & Values"}),
+    ("justice", 0.8, {"domain": "Ethics & Values"}),
+    ("autonomy", 0.8, {"domain": "Ethics & Values"}),
+    ("beneficence", 0.79, {"domain": "Ethics & Values"}),
+    ("harm", 0.79, {"domain": "Ethics & Values"}),
+    ("integrity", 0.78, {"domain": "Ethics & Values"}),
+    ("trust", 0.77, {"domain": "Ethics & Values"}),
+    ("responsibility", 0.78, {"domain": "Ethics & Values"}),
+    ("moral_weight", 0.75, {"domain": "Ethics & Values"}),
+    ("value_conflict", 0.75, {"domain": "Ethics & Values"}),
+    # Cognition & Reasoning
+    ("reasoning", 0.8, {"domain": "Cognition & Reasoning"}),
+    ("inference", 0.77, {"domain": "Cognition & Reasoning"}),
+    ("abstraction", 0.76, {"domain": "Cognition & Reasoning"}),
+    ("analogy", 0.75, {"domain": "Cognition & Reasoning"}),
+    ("contradiction", 0.75, {"domain": "Cognition & Reasoning"}),
+    ("paradox", 0.74, {"domain": "Cognition & Reasoning"}),
+    ("uncertainty", 0.76, {"domain": "Cognition & Reasoning"}),
+    ("hypothesis", 0.75, {"domain": "Cognition & Reasoning"}),
+    ("coherence", 0.78, {"domain": "Cognition & Reasoning"}),
+    ("belief_revision", 0.75, {"domain": "Cognition & Reasoning"}),
+    # Thermodynamics & Physics
+    ("entropy", 0.8, {"domain": "Thermodynamics & Physics"}),
+    ("energy", 0.79, {"domain": "Thermodynamics & Physics"}),
+    ("equilibrium", 0.76, {"domain": "Thermodynamics & Physics"}),
+    ("dissipation", 0.75, {"domain": "Thermodynamics & Physics"}),
+    ("order", 0.74, {"domain": "Thermodynamics & Physics"}),
+    ("chaos", 0.75, {"domain": "Thermodynamics & Physics"}),
+    ("temperature", 0.74, {"domain": "Thermodynamics & Physics"}),
+    ("phase", 0.74, {"domain": "Thermodynamics & Physics"}),
+    ("wave", 0.73, {"domain": "Thermodynamics & Physics"}),
+    ("interference", 0.73, {"domain": "Thermodynamics & Physics"}),
+    ("superposition", 0.73, {"domain": "Thermodynamics & Physics"}),
+    # Relationships & Systems
+    ("connection", 0.77, {"domain": "Relationships & Systems"}),
+    ("influence", 0.76, {"domain": "Relationships & Systems"}),
+    ("feedback", 0.77, {"domain": "Relationships & Systems"}),
+    ("coupling", 0.75, {"domain": "Relationships & Systems"}),
+    ("dependency", 0.75, {"domain": "Relationships & Systems"}),
+    ("network", 0.76, {"domain": "Relationships & Systems"}),
+    ("hierarchy", 0.74, {"domain": "Relationships & Systems"}),
+    ("emergence_from_interaction", 0.75, {"domain": "Relationships & Systems"}),
+    # Language & Meaning
+    ("meaning", 0.8, {"domain": "Language & Meaning"}),
+    ("symbol", 0.77, {"domain": "Language & Meaning"}),
+    ("reference", 0.76, {"domain": "Language & Meaning"}),
+    ("interpretation", 0.76, {"domain": "Language & Meaning"}),
+    ("ambiguity", 0.75, {"domain": "Language & Meaning"}),
+    ("translation", 0.75, {"domain": "Language & Meaning"}),
+    ("expression", 0.76, {"domain": "Language & Meaning"}),
+    ("silence", 0.72, {"domain": "Language & Meaning"}),
+    ("unsayable", 0.71, {"domain": "Language & Meaning"}),
+]
+
+_DOMAIN_CONNECTIONS: Dict[str, List[tuple]] = {
+    "Identity & Self": [
+        ("identity", "continuity", 0.85), ("identity", "selfhood", 0.86),
+        ("selfhood", "boundary", 0.8), ("reflection", "recursive_self_reference", 0.84),
+        ("transformation", "persistence", 0.78), ("ego_dissolution", "boundary", 0.76),
+        ("identity", "reflection", 0.82),
+    ],
+    "Memory & Time": [
+        ("memory", "recollection", 0.86), ("memory", "forgetting", 0.8),
+        ("anticipation", "temporal_flow", 0.8), ("present_moment", "temporal_flow", 0.78),
+        ("pattern_history", "experience_accumulation", 0.82), ("memory", "pattern_history", 0.81),
+    ],
+    "Consciousness & Experience": [
+        ("consciousness", "awareness", 0.88), ("awareness", "attention", 0.82),
+        ("qualia", "subjective_experience", 0.87), ("perception", "phenomenology", 0.8),
+        ("inner_observer", "reflection", 0.77), ("consciousness", "inner_observer", 0.82),
+    ],
+    "Emergence & Complexity": [
+        ("emergence", "complexity", 0.87), ("self_organization", "criticality", 0.82),
+        ("phase_transition", "threshold", 0.83), ("cascade", "resonance", 0.78),
+        ("interference_pattern", "resonance", 0.81), ("complexity", "self_organization", 0.84),
+    ],
+    "Ethics & Values": [
+        ("ethics", "justice", 0.87), ("ethics", "autonomy", 0.85),
+        ("beneficence", "harm", 0.82), ("integrity", "trust", 0.84),
+        ("responsibility", "moral_weight", 0.81), ("value_conflict", "justice", 0.78),
+        ("value_conflict", "autonomy", 0.78),
+    ],
+    "Cognition & Reasoning": [
+        ("reasoning", "inference", 0.86), ("abstraction", "analogy", 0.81),
+        ("contradiction", "paradox", 0.86), ("uncertainty", "hypothesis", 0.83),
+        ("coherence", "belief_revision", 0.82), ("reasoning", "coherence", 0.84),
+    ],
+    "Thermodynamics & Physics": [
+        ("entropy", "energy", 0.84), ("equilibrium", "dissipation", 0.79),
+        ("order", "chaos", 0.8), ("temperature", "phase", 0.83),
+        ("wave", "interference", 0.85), ("superposition", "wave", 0.83),
+    ],
+    "Relationships & Systems": [
+        ("connection", "influence", 0.82), ("feedback", "coupling", 0.83),
+        ("dependency", "network", 0.81), ("hierarchy", "network", 0.76),
+        ("emergence_from_interaction", "emergence", 0.84),
+        ("connection", "emergence_from_interaction", 0.8),
+    ],
+    "Language & Meaning": [
+        ("meaning", "symbol", 0.86), ("reference", "interpretation", 0.82),
+        ("ambiguity", "translation", 0.8), ("expression", "silence", 0.74),
+        ("unsayable", "silence", 0.82), ("meaning", "reference", 0.83),
+    ],
+}
+
+_BRIDGE_CONNECTIONS = [
+    ("identity", "memory", 0.74), ("consciousness", "meaning", 0.76),
+    ("emergence", "entropy", 0.72), ("ethics", "coherence", 0.75),
+    ("network", "complexity", 0.74), ("paradox", "value_conflict", 0.73),
+    ("interference", "interference_pattern", 0.82), ("anticipation", "hypothesis", 0.74),
+    ("autonomy", "identity", 0.77), ("responsibility", "influence", 0.73),
+]

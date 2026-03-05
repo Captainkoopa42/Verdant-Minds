@@ -49,6 +49,7 @@ def _dim_name(mind: UnifiedSyntheticMind, prefix: str, idx: int) -> str:
 
 
 def _compute_fce(mind: UnifiedSyntheticMind) -> Any:
+    """Demo-only FCE estimate heuristic used by `--demo` reporting."""
     node_count = len(mind.memory_web.memory_store)
     if node_count <= 1:
         return None
@@ -160,9 +161,9 @@ def _write_demo_outputs(trajectory: List[Dict[str, Any]], final_fce: Any) -> Non
         summary_lines.append("No emergent concepts were observed in this run, though resonance telemetry was still recorded.")
 
     if final_fce is not None:
-        summary_lines.append(f"Final Fractal Cognitive Entropy (FCE) estimate: {final_fce:.6f}.")
+        summary_lines.append(f"Final demo FCE estimate heuristic: {final_fce:.6f}.")
     else:
-        summary_lines.append("Final Fractal Cognitive Entropy (FCE) estimate: not computable from current graph state.")
+        summary_lines.append("Final demo FCE estimate heuristic: not computable from current graph state.")
 
     summary_lines.append(
         "Overall, Verdant demonstrated coherence-aware governance, wave-modulated response dynamics, and phase-sensitive memory behavior in a single reproducible sequence."
@@ -279,7 +280,7 @@ def run_default_kernel_loop(mind: UnifiedSyntheticMind, iterations: int = 100) -
 
 def main():
     parser = argparse.ArgumentParser(description="Verdant kernel loop and structured demo runner")
-    parser.add_argument("--demo", action="store_true", help="Run the 5-step structured demonstration sequence")
+    parser.add_argument("--demo", action="store_true", help="Run the 5-step structured demo sequence (includes demo-only FCE estimate heuristic)")
     parser.add_argument("--iterations", type=int, default=100, help="Loop iterations for default kernel mode")
     args = parser.parse_args()
 

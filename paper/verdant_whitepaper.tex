@@ -55,11 +55,7 @@ action selection.
 We report evidence from cultivation runs that emergent concepts---concepts 
 created autonomously by the system's wave dynamics rather than seeded by 
 designers---not only appear, but preferentially link to earlier emergent 
-concepts in the memory backbone. In a representative run (119 concepts, 37 
-emergent nodes), emergent$\to$emergent edges in a sparsified backbone exhibit 
-a strong timing bias toward linking newer emergents to older emergents 
-(observed earlier-share 0.807; shuffle baseline $\sim$0.499$\pm$0.083; 
-$z \approx 3.71$), suggesting temporal scaffolding during concept formation. 
+concepts in the memory backbone. In representative runs, emergent$\to$emergent edges in a sparsified backbone often show a timing bias toward linking newer emergents to older emergents (example-run values are reported in run artifacts), suggesting temporal scaffolding during concept formation. 
 These results are not claims of consciousness; they are measurable structural 
 properties of an evolving concept graph coupled to a state-dynamics core.
 \end{abstract}
@@ -291,12 +287,13 @@ metrics. Full system state is persisted as JSON at configurable intervals.
 
 \subsection{Representative Run Parameters}
 
-The results reported below are drawn from a representative cultivation run 
-with the following parameters:
+The example outputs below should be treated as run-specific illustrations.
+When reporting results, include seed, provider, cycle count, and whether the run
+was fresh or resumed.
 
 \begin{itemize}[nosep]
     \item Seed: 42 (NumPy RNG + ECWF random state)
-    \item Cycles: 91
+    \item Cycles: (example run; see outputs/ for exact value)
     \item Provider: Groq (llama-3.3-70b-versatile)
     \item Perturbation interval: 15 cycles
     \item ECWF dimensions: 5 cognitive + 5 ethical
@@ -308,14 +305,12 @@ with the following parameters:
 
 \subsection{Run Summary}
 
-At the conclusion of the representative run:
+At the conclusion of an example run:
 
 \begin{itemize}[nosep]
-    \item Total concepts: 119 (82 seeded + 37 emergent)
-    \item MemoryWeb backbone: 513 edges (top-6 edges per node sparsification)
-    \item Self-cluster average access count: 2895.2
-    \item Non-self-cluster average access count: 8.4
-    \item Access count ratio: 345$\times$
+    \item Total concepts: (example run; see outputs/ for exact values)
+    \item MemoryWeb backbone edges: (example run; depends on top-k setting)
+    \item Access-count summaries: run-dependent example outputs
 \end{itemize}
 
 \subsection{Key Finding: Preferential Attachment to Earlier Emergent Concepts}
@@ -333,16 +328,15 @@ EE edge is oriented newer~$\to$~older. We observed:
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Observed earlier-share & 0.807 \\
-Shuffle baseline (mean) & $\sim$0.499 \\
-Shuffle baseline (std) & $\pm$0.083 \\
-$z$-score & $\approx$3.71 \\
+Observed earlier-share & (example run; see outputs/) \\
+Shuffle baseline (mean) & (example run; trials dependent) \\
+Shuffle baseline (std) & (example run; trials dependent) \\
+$z$-score & (example run) \\
 \bottomrule
 \end{tabular}
 \caption{Temporal bias in emergent$\to$emergent link direction. The observed 
-earlier-share substantially exceeds the shuffle baseline, indicating that 
-newer emergent concepts preferentially link to older emergent concepts 
-($p < 0.001$ under the shuffle null).}
+earlier-share can exceed the shuffle baseline in representative runs,
+consistent with a newer$\to$older temporal bias in emergent link structure.}
 \label{tab:scaffolding}
 \end{table}
 
@@ -376,7 +370,7 @@ evolving concept graph, not a claim about consciousness or understanding.
         \label{fig:agegaps}
     \end{subfigure}
     \caption{Emergent concept scaffolding structure from the representative 
-    91-cycle cultivation run.}
+    cultivation run (example output).}
     \label{fig:results}
 \end{figure}
 
@@ -402,6 +396,14 @@ We note the following limitations to maintain defensibility:
           from a representative run. Multi-seed, multi-provider replication 
           with distributional statistics (mean $\pm$ sd) is needed before 
           strong structural claims.
+    \item \textbf{Logging schema dependence}: analysis scripts assume current JSON
+          state/log field names (for example,
+          \texttt{memory\_web.memory\_store} and
+          \texttt{metadata.creation\_time}). Schema drift can change reported
+          metrics unless adapters are updated.
+    \item \textbf{Resume effects}: resumed segments continue from persisted graph
+          state and cycle history. A resumed 20-cycle segment is not equivalent
+          to a fresh 20-cycle run.
     \item \textbf{No benchmark comparisons}: The architecture has not yet been 
           evaluated against standardized cognitive architecture benchmarks.
     \item \textbf{Dimensional constraints}: The current 5+5 dimensional ECWF 

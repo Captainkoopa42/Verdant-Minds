@@ -1,152 +1,91 @@
-# Colab Startup Kit (Drive-Persistent)
+# Colab startup guide (Drive-persistent)
 
-Use this guide to run Verdant-Minds in Google Colab with persistent state and outputs in Google Drive.
+This guide matches `notebooks/colab_startup_kit.ipynb` and `scripts/colab_bootstrap.py`.
 
-## What you get
+## Paths used by default
 
-- Idempotent clone/update into `/content/Verdant-Minds`
-- Dependency installation for Verdant + analysis tools
-- Google Drive mount + persistent folder setup
-- Resume-if-state-exists, otherwise fresh initialization
-- Multi-run cultivation loop
-- Post-run quick summary and scaffolding plots
+- Repo path: `/content/Verdant-Minds`
+- Drive root: `/content/drive/MyDrive/Verdant/`
+- Persistent state file: `/content/drive/MyDrive/Verdant/verdant_persistent_state.json`
+- Per-run outputs: `/content/drive/MyDrive/Verdant/outputs/<timestamp>/`
+
+## 1) Open notebook and run top-to-bottom
+
+What this does: clones/updates the repo, installs dependencies, mounts Drive, runs cultivator loops, and prints a post-run summary.
 
 Notebook: `notebooks/colab_startup_kit.ipynb`
 
----
+## 2) Configure API keys safely
 
-## 1) Open the notebook in Colab
+What this does: reads keys from environment/Colab Secrets and prompts only for missing keys.
 
-1. In GitHub, open `notebooks/colab_startup_kit.ipynb`.
-2. Click **Open in Colab** (or copy notebook into Colab manually).
-3. Run cells top-to-bottom.
+Do **not** put keys in plain text notebook cells.
 
-The notebook uses `scripts/colab_bootstrap.py` so setup logic stays centralized.
-
----
-
-## 2) Configure API keys safely (no hardcoded secrets)
-
-Do **not** place keys directly in notebook cells.
-
-Use one of these:
-
-- **Colab Secrets** (recommended), or
-- Runtime prompt via `getpass`:
-
-```python
-import getpass, os
-os.environ["MISTRAL_API_KEY"] = getpass.getpass("MISTRAL_API_KEY: ")
-```
-
-The notebook prompts only for missing keys and supports:
+Supported keys:
 
 - `MISTRAL_API_KEY`
 - `GROQ_API_KEY`
 - `ANTHROPIC_API_KEY`
 - `OPENAI_API_KEY`
 
-Provider ordering is controlled by:
+Provider order is controlled by `VERDANT_PROVIDER_CHAIN` (example: `mistral,groq,anthropic,openai,local`).
 
-- `VERDANT_PROVIDER_CHAIN` (example: `mistral,groq,anthropic,openai,local`)
+## 3) Fresh vs resume behavior
 
----
+What this does: decides whether each run starts from existing state.
 
-## 3) Drive persistence layout
+- If state file exists: run uses `--load-state <state>` (resume).
+- If state file is missing: run uses `--initialize-knowledge --fresh`.
+- Every run writes `--save-state /content/drive/MyDrive/Verdant/verdant_persistent_state.json`.
 
-Base folder:
+Important interpretation note:
 
-- `/content/drive/MyDrive/Verdant`
+- A resumed 20-cycle segment analyzes the persisted graph and history. It is **not** equivalent to a new 20-cycle from-scratch experiment.
 
-Default files/folders:
+## 4) Cultivator command used
 
-- State: `/content/drive/MyDrive/Verdant/verdant_persistent_state.json`
-- Optional baseline reference: `/content/drive/MyDrive/Verdant/verdant_v1_baseline_verified_16emergents.json`
-- Outputs root: `/content/drive/MyDrive/Verdant/outputs/<timestamp>/`
-
-If the folder does not exist, bootstrap creates it.
-
----
-
-## 4) Resume vs fresh behavior
-
-Each run always writes:
-
-- `--save-state /content/drive/MyDrive/Verdant/verdant_persistent_state.json`
-
-Startup mode is automatic:
-
-- If state exists: uses `--load-state <state>` (resume)
-- If state does not exist: uses `--initialize-knowledge --fresh` (new run)
-
-This makes reruns safe and idempotent.
-
----
-
-## 5) Run loop settings
-
-Notebook exposes these settings (env-driven):
-
-- `VERDANT_N_RUNS` (default `2`)
-- `VERDANT_CYCLES` (default `40`)
-- `VERDANT_SEED_TOPIC` (default `contradiction`)
-- `VERDANT_PERTURB_INTERVAL` (default `10`)
-
-Underlying command per run:
+What this does: runs one cycle loop and writes outputs/state.
 
 ```bash
 python /content/Verdant-Minds/scripts/verdant_llm_cultivator.py \
   --cycles 40 \
   --seed-topic contradiction \
   --perturbation-interval 10 \
-  [--load-state <state> OR --initialize-knowledge --fresh] \
   --save-state /content/drive/MyDrive/Verdant/verdant_persistent_state.json \
-  --output-dir /content/drive/MyDrive/Verdant/outputs/<timestamp>
+  --output-dir /content/drive/MyDrive/Verdant/outputs/<timestamp> \
+  [--load-state <state> OR --initialize-knowledge --fresh]
 ```
 
----
+## 5) Scaffolding analysis command
 
-## 6) Quick checks and analysis
-
-After runs, notebook helper prints:
-
-- total memory concepts
-- top `access_count` concepts
-- wave-emergent concept list ordered by `creation_time`
-
-For scaffolding metrics + plots:
+What this does: measures temporal orientation in emergent↔emergent backbone edges and generates two plots.
 
 ```bash
-python scripts/analysis/scaffolding_from_state.py --state <path-to-state> --topk 6 --trials 500
+python /content/Verdant-Minds/scripts/analysis/scaffolding_from_state.py \
+  --state /content/drive/MyDrive/Verdant/verdant_persistent_state.json \
+  --topk 6 \
+  --trials 500
 ```
 
-Outputs saved near the state file by default:
+Method details:
 
-- `emergent_scaffolding.png`
-- `link_age_gaps.png`
+- Creation time source: `metadata.creation_time` primary; label timestamp fallback.
+- Backbone construction: top-k weighted incident edges per node, then largest connected component.
+- `earlier-share`: among emergent↔emergent backbone edges, share oriented from newer to older.
+- Shuffling: randomizes emergent creation times across fixed edge structure to estimate baseline.
 
----
+## 6) Reproducibility checklist
+
+When reporting outcomes, include:
+
+- run mode (`fresh` or `resume`)
+- cycle count
+- provider chain
+- `topk` and shuffle `trials` for scaffolding analysis
+- whether results are single-run examples or distribution summaries
 
 ## 7) Troubleshooting
 
-### Drive mount fails or disconnects
-
-- Re-run the mount/configure cell.
-- Ensure Colab has permission to access your Google Drive.
-- If mount seems stale, restart runtime and run setup cells again.
-
-### `pip` dependency conflicts
-
-- Re-run dependency cell once.
-- If still conflicted, use a fresh runtime and run cells from the top.
-
-### Repo already exists errors
-
-- Bootstrap checks `/content/Verdant-Minds`.
-- If it is a valid git repo, it runs `git pull --ff-only`.
-- If the directory exists but is not a repo, remove/rename the folder and rerun clone/update cell.
-
-### Missing baseline warning
-
-- The baseline file is optional.
-- Place `verdant_v1_baseline_verified_16emergents.json` in `MyDrive/Verdant/` if you need baseline comparisons.
+- Re-run mount cell if Drive disconnects.
+- If dependencies conflict, restart runtime and rerun from cell 1.
+- If `/content/Verdant-Minds` exists but is not a git repo, remove/rename it before rerunning.

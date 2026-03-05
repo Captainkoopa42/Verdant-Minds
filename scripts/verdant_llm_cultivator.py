@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LLM-in-the-loop cultivation loop with provider fallback, budgeting, resume safety, and phase perturbation."""
+"""LLM-in-the-loop cultivation loop with provider fallback, budgeting, save/load state, and optional output directory."""
 
 from __future__ import annotations
 
@@ -771,6 +771,7 @@ def main() -> None:
     parser.add_argument("--initialize-knowledge", action="store_true")
     parser.add_argument("--save-state", type=str, default=None, help="Path to save JSON state")
     parser.add_argument("--load-state", type=str, default=None, help="Path to load JSON state")
+    parser.add_argument("--output-dir", type=str, default=None, help="Directory for session/cycle/state artifacts")
     parser.add_argument(
         "--cycle-sleep",
         type=float,
@@ -779,7 +780,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    outputs_dir = project_root / "outputs"
+    outputs_dir = Path(args.output_dir).expanduser().resolve() if args.output_dir else (project_root / "outputs")
     outputs_dir.mkdir(parents=True, exist_ok=True)
 
     now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")

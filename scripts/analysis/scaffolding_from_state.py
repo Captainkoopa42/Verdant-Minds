@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Analyze emergent scaffolding structure from a Verdant state JSON file.
 
+Method summary:
 - Uses metadata.creation_time as primary ordering.
-- Falls back to parsing the last 9+ digit timestamp token anywhere in the label.
-- Treats MemoryWeb as an undirected weighted graph; constructs a top-k backbone.
-- Builds an emergent-only directed scaffold graph oriented newer -> older.
+- Falls back to parsing the last 9+ digit timestamp token in the concept label.
+- Treats MemoryWeb as an undirected weighted graph; constructs a top-k backbone per node.
+- Counts only emergent↔emergent (EE) edges found in that backbone.
+- Reports earlier-share: fraction of EE edges oriented newer -> older (excluding equal-time ties).
+- Runs shuffle trials by permuting creation times across emergent nodes while keeping EE edges fixed.
 """
 
 from __future__ import annotations
@@ -275,10 +278,10 @@ def _plot_age_gaps(age_gaps: Sequence[float], output_path: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Emergent scaffolding metrics from Verdant state")
+    parser = argparse.ArgumentParser(description="Emergent scaffolding metrics from a persisted Verdant state")
     parser.add_argument("--state", required=True, help="Path to Verdant JSON state")
     parser.add_argument("--topk", type=int, default=6, help="Top-k backbone edges per node")
-    parser.add_argument("--trials", type=int, default=500, help="Shuffle trial count")
+    parser.add_argument("--trials", type=int, default=500, help="Shuffle trial count for earlier-share baseline")
     parser.add_argument("--outdir", default=None, help="Optional output directory for PNGs")
     args = parser.parse_args()
 

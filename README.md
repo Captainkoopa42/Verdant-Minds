@@ -107,6 +107,7 @@ python scripts/verdant_repl.py
 
 ## Core scripts
 
+- `docs/colab.md` — Google Colab startup kit with Drive-persistent state/output workflow.
 - `scripts/verdant_repl.py` — interactive loop for direct engagement.
 - `scripts/verdant_telemetry.py` — telemetry inspection/reporting.
 - `scripts/kernel_loop.py --demo` — demo trajectory for the thermodynamic kernel loop.

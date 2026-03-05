@@ -1,0 +1,500 @@
+Verdant-Minds: A Hybrid Cognitive Architecture with Graph Memory,
+Wave-State Dynamics, and Measurable Emergent Concept Scaffolding
+
+William Adams
+Independent Researcher
+March 2026
+
+========================================================================
+ABSTRACT
+========================================================================
+
+Verdant-Minds is a research-grade cognitive architecture that processes
+text through a structured nine-stage pipeline (sensory → pattern →
+memory → communication → reasoning → ethics → action → language →
+learning). The system maintains a symbolic MemoryWeb (graph memory)
+coupled bidirectionally to an Extended Cognitive Wave Function (ECWF), a
+compact, configurable wave-state model whose entropy, magnitude, and
+phase influence memory reinforcement, decay, and concept formation. A
+governance layer ("Three Kings") provides oversight across data quality,
+ethics, and action selection.
+
+We report evidence from cultivation runs that emergent concepts—concepts
+created autonomously by the system's wave dynamics rather than seeded by
+designers—not only appear, but preferentially link to earlier emergent
+concepts in the memory backbone. In a representative run (119 concepts,
+37 emergent nodes), emergent→emergent edges in a sparsified backbone
+exhibit a strong timing bias toward linking newer emergents to older
+emergents (observed earlier-share 0.807; shuffle baseline ~0.499±0.083;
+z ≈ 3.71), suggesting temporal scaffolding during concept formation.
+These results are not claims of consciousness; they are measurable
+structural properties of an evolving concept graph coupled to a
+state-dynamics core.
+
+Keywords: cognitive architecture, emergent concepts, graph memory,
+wave-state dynamics, ethomorphism, temporal scaffolding
+
+========================================================================
+1. MOTIVATION
+========================================================================
+
+Modern AI systems are dominated by large neural models that are powerful
+but opaque. Verdant-Minds explores an alternate route: a modular
+cognitive pipeline with explicit memory, governance, and measurable
+internal state dynamics. The goal is not to replace large language models
+but to create an architecture where:
+
+  - memory is explicit and inspectable,
+  - ethics and action gating are first-class processing stages,
+  - internal state evolution can be instrumented and measured,
+  - and emergent structure can be observed and quantified over time.
+
+The project is developed under the banner of Ethomorphic AI—the
+principle that ethical reasoning is geometrically embedded in cognitive
+state space rather than applied as an external constraint. Verdant-Minds
+is the first implementation of this principle.
+
+========================================================================
+2. SYSTEM OVERVIEW
+========================================================================
+
+Verdant-Minds is organized as five interacting subsystems:
+
+  1. Nine-block cognitive pipeline: deterministic sequencing of
+     processing stages from sensory input through continual learning.
+  2. MemoryWeb: graph-based concept memory with reinforcement, decay,
+     and spreading activation retrieval.
+  3. ECWF core: multi-facet complex-valued wave state representing
+     cognitive and ethical dimensions; produces entropy, magnitude, and
+     phase signals.
+  4. Memory↔ECWF Bridge: bidirectional coupling where memory influences
+     wave parameters and wave outputs reinforce memory and generate new
+     concepts.
+  5. Three Kings governance: oversight and conflict resolution at key
+     points in the pipeline.
+
+This architecture is designed to be inspected, instrumented, and
+adapted—closer in lineage to cognitive architectures such as SOAR
+(Laird, 2012), ACT-R (Anderson et al., 2004), and OpenCog (Goertzel
+et al., 2014) than to chat-style applications.
+
+========================================================================
+3. ARCHITECTURE DETAILS
+========================================================================
+
+3.1 Nine-Block Pipeline
+
+Each input is wrapped into a shared state container (CognitiveChunk)
+that accumulates sections and a processing log. Blocks read prior
+sections and write their own, yielding a traceable per-input "cognitive
+episode."
+
+Processing order: Sensory Input → Pattern Recognition → Memory Storage
+→ Internal Communication → Reasoning & Planning → Ethics & Values →
+Action Selection → Language Processing → Continual Learning. The final
+block may trigger emergent concept detection.
+
+3.2 MemoryWeb (Graph Memory)
+
+MemoryWeb is a concept graph implemented over NetworkX in which nodes
+store stability scores, access counts, timestamps, metadata, and
+weighted connection lists. Edges may be gated by an ethical-distance-
+dependent probability ("pconnect"):
+
+  p_accept = (1 - p_eth * delta_e) * exp(-beta_E * Delta_E)
+
+where p_eth = 0.6 and beta_E = 1.0 are default constants, delta_e is
+a local ethical distance, and Delta_E is a global ethical distance
+measure. An edge is accepted if a uniform random draw falls below
+p_accept.
+
+3.3 ECWF (Wave-State Core)
+
+The Extended Cognitive Wave Function represents system state as a sum
+of complex facets:
+
+  Psi(x, e, t) = Sum_i M_i(x, e, t) *
+                  exp(j * (2*pi*k_i*x + 2*pi*m_i*e - omega_i*t + phi_i))
+
+where x are cognitive dimensions, e are ethical dimensions, t is time,
+M_i is the amplitude function for facet i, k_i and m_i are wave numbers,
+omega_i is angular frequency, and phi_i is phase shift. The system
+computes Shannon entropy over |Psi|^2 as an uncertainty signal, and
+numerical sensitivity gradients via finite-difference perturbation.
+
+ECWF also maintains short-horizon history coupling through exponentially
+decayed averaging of past states, enabling dynamic dependence on recent
+cognitive history.
+
+3.4 Memory↔ECWF Bridge
+
+The bridge performs two-way coupling each processing cycle:
+
+  - Memory → Wave: active concepts modulate ECWF parameters via
+    influence vectors derived from concept stability and dimension
+    mappings.
+  - Wave → Memory: wave outputs activate concepts through dimension
+    reverse-lookup, reinforce or decay stability based on thermodynamic
+    phase, and detect conditions for emergent concept creation.
+
+Concept-dimension mappings are initialized using sentence-transformer
+embeddings (all-MiniLM-L6-v2) projected via PCA to the ECWF dimension
+space, ensuring that semantically related concepts map to nearby regions
+in the wave function.
+
+3.5 Governance ("Three Kings")
+
+Governance is layered oversight operating at specific pipeline stages:
+
+  - Data King: information quality assessment and anomaly detection
+    (operates at Block 4).
+  - Ethics King: ethical evaluation and response modulation,
+    incorporating coherence tension signals (operates at Block 6).
+  - Forefront King: phase-aware attention allocation, capacity controls,
+    and decision threshold management (operates at Block 7).
+
+The Three Kings Council coordinates conflict resolution for critical
+decisions via weighted influence and consensus mechanisms.
+
+3.6 Thermodynamic Phase Control
+
+The system employs a glass-transition temperature parameter (T_g) as a
+first-class control signal that modulates processing behavior:
+
+  - Rigid (T_g < 0.4): low decay, low reinforcement, high decision
+    thresholds — stabilization behavior.
+  - Flexible (0.4 <= T_g <= 0.6): balanced exploration/exploitation.
+  - Chaotic (T_g > 0.6): high decay, high reinforcement, low decision
+    thresholds — exploratory behavior.
+
+3.7 Coherence Geometry
+
+Each cycle computes coherence invariants from wave, ethics, and memory
+telemetry. The system constructs a generalized metric
+tau_alpha(a,b) = |a - b|^alpha and checks triangle inequality validity
+across an alpha-grid. The Housed Contradiction Index (HCI) quantifies
+internal cognitive tension. These signals feed back into governance:
+the Forefront King adjusts its decision threshold under coherence
+strain, and the Ethics King modulates its overall score when geometric
+tension is detected.
+
+========================================================================
+4. EMERGENT CONCEPT FORMATION
+========================================================================
+
+4.1 Trigger Conditions
+
+Emergent concept creation is gated by multiple conditions that must all
+be satisfied simultaneously:
+
+  1. Magnitude gate: wave magnitude must exceed a minimum threshold
+     (default 0.15) at the callsite in the continual learning block.
+  2. Entropy window: sensitivity entropy must fall within [0.3, 3.0],
+     rejecting states that are too ordered or too chaotic for meaningful
+     pattern formation.
+  3. Strength gate: mean sensitivity magnitude must exceed the detector
+     threshold (default 0.15).
+  4. Novelty gate: the combination key (sorted top-3 concept
+     identifiers) must not have been seen before.
+
+When semantic embeddings are available, candidate ranking blends
+stability with inverse semantic similarity ("surprise"). This biases
+the system toward creating concepts that bridge semantically distant
+parents — non-obvious combinations that pure graph proximity would not
+surface.
+
+4.2 Creation and Integration
+
+New emergent concepts are added to the MemoryWeb with structured
+metadata (origin, creation time, entropy, magnitude) and connected to
+their parent concepts. Critically, emergent concepts receive dimension
+mappings in the ECWF space, making them visible to future wave dynamics.
+This means emergent concepts can participate in the activation of
+subsequent emergent concepts, enabling second-order associative
+structure.
+
+========================================================================
+5. EXPERIMENTAL SETUP
+========================================================================
+
+5.1 Cultivation Loop
+
+An external LLM provider (Groq, Anthropic, or Mistral) acts as a
+cultivation tutor, generating inputs designed to produce cognitive
+tension in the system. The cultivator monitors HCI, phase state, and
+emergent concept generation. It employs a domain rotation wheel (9
+domains), phase-aware input selection (rigid → depth, flexible →
+paradox, chaotic → grounding), and forced perturbation at configurable
+intervals to prevent phase plateaus.
+
+Each cycle, the system processes the input through the full nine-block
+pipeline, updates memory and wave state, and logs structured telemetry
+to a JSONL cycle log.
+
+5.2 Instrumentation
+
+For each cycle we capture: MemoryWeb size and topology, emergent concept
+count and identities, coherence invariants (HCI, triangle validity,
+violation rate, alpha-critical), thermodynamic phase state, and per-block
+processing metrics. Full system state is persisted as JSON at
+configurable intervals.
+
+5.3 Representative Run Parameters
+
+  - Seed: 42 (NumPy RNG + ECWF random state)
+  - Cycles: 91
+  - Provider: Groq (llama-3.3-70b-versatile)
+  - Perturbation interval: 15 cycles
+  - ECWF dimensions: 5 cognitive + 5 ethical
+  - Initial knowledge base: 82 seeded concepts across 9 domains
+
+========================================================================
+6. RESULTS: TEMPORAL SCAFFOLDING IN EMERGENT CONCEPT LINKS
+========================================================================
+
+6.1 Run Summary
+
+  - Total concepts: 119 (82 seeded + 37 emergent)
+  - MemoryWeb backbone: 513 edges (top-6 per node sparsification)
+  - Self-cluster average access count: 2895.2
+  - Non-self-cluster average access count: 8.4
+  - Access count ratio: 345x
+
+6.2 Key Finding: Preferential Attachment to Earlier Emergent Concepts
+
+We analyzed emergent→emergent (EE) edges in the sparsified backbone and
+oriented each edge by creation order. Ordering is determined primarily
+from the creation_time field stored in each emergent concept's metadata
+(a float timestamp written at concept birth); where metadata is
+unavailable, the integer timestamp suffix in the concept name is used
+as a fallback. Each EE edge is oriented newer → older. We observed:
+
+  Observed earlier-share:   0.807
+  Shuffle baseline (mean):  ~0.499
+  Shuffle baseline (std):   ±0.083
+  z-score:                  ~3.71
+
+Interpretation: Emergent concepts in this run linked to older emergents
+substantially more than expected under random timing, consistent with a
+temporal "scaffolding" effect in which later concepts build upon earlier
+emergent structure. This is a structural property of the evolving
+concept graph, not a claim about consciousness or understanding.
+
+6.3 Visual Evidence
+
+[Figure 1a: Emergent scaffold graph (directed newer → older). Node color
+indicates creation time (dark = early, bright = late). Edge direction
+shows the temporal orientation of emergent→emergent links in the
+backbone.]
+
+[Figure 1b: Distribution of time gaps (seconds) between linked emergent
+concepts. The concentration at small gaps (<1000s) indicates temporally
+proximate scaffolding, with a secondary cluster at larger gaps suggesting
+cross-epoch bridging.]
+
+========================================================================
+7. LIMITATIONS
+========================================================================
+
+We note the following limitations to maintain defensibility:
+
+  1. Language output: The system's language generation block is currently
+     template-based. Output text quality does not reflect the
+     sophistication of internal state dynamics.
+
+  2. Timestamp ordering: Temporal ordering of emergent concepts uses
+     stored creation_time metadata as the primary source of truth, with
+     the name-encoded timestamp suffix as a fallback. Future work should
+     verify consistency between these two sources across all runs and
+     flag any discrepancies.
+
+  3. Single-run evidence: The scaffolding results are drawn from a
+     representative run. Multi-seed, multi-provider replication with
+     distributional statistics (mean ± sd) is needed before strong
+     structural claims.
+
+  4. No benchmark comparisons: The architecture has not yet been
+     evaluated against standardized cognitive architecture benchmarks.
+
+  5. Dimensional constraints: The current 5+5 dimensional ECWF space
+     creates concept aliasing at scale. The v2 architecture (in
+     progress) supports configurable dimensionality up to 64+64.
+
+  6. Temperature heuristic: T_g is derived from input complexity
+     features, not from an energy functional. True thermodynamic
+     grounding requires defining T = (dE/dS)^-1 over a system energy
+     functional.
+
+  7. Dual coherence proxies: The system currently maintains two distinct
+     coherence measures — a wave-derived scalar (cognitive temperature)
+     and a graph-derived density proxy (growth * stability * log(N)) —
+     which are not yet formally disambiguated. Future work should assign
+     distinct names and roles to each, and clarify which is appropriate
+     for which analytical context.
+
+  8. Ethical distance underspecification: The global ethical distance
+     Delta_E in the pconnect edge policy is currently approximated from
+     edge weight rather than computed from a stable system-wide ethical
+     field. Formalizing this quantity is needed for the thermodynamic
+     framing to be fully rigorous.
+
+========================================================================
+8. RELATED WORK
+========================================================================
+
+Verdant-Minds shares structural elements with several existing
+frameworks while differing in its combination of wave-state dynamics
+with symbolic graph memory.
+
+Cognitive architectures: SOAR (Laird, 2012) and ACT-R (Anderson et al.,
+2004) provide modular cognitive pipelines with explicit memory systems.
+Verdant differs in its continuous wave-state representation and
+bidirectional bridge between symbolic and subsymbolic layers.
+
+Global Workspace Theory: The CognitiveChunk flowing through governance-
+gated blocks resembles the global workspace paradigm (Baars, 1988), with
+the Three Kings playing the role of attentional gatekeepers.
+
+Conceptual Spaces: The ECWF dimension space where concepts are mapped
+via embeddings is structurally a conceptual space (Gärdenfors, 2000),
+with emergent concept formation finding novel regions through wave
+dynamics.
+
+Integrated Information Theory: The coherence geometry — particularly HCI
+and triangle validity checks — attempts something functionally similar
+to IIT's Phi measure (Tononi, 2004): quantifying the degree to which a
+system's state is integrated.
+
+The key architectural novelty is the bidirectional bridge between a
+symbolic concept graph and a continuous wave function, with emergent
+concepts arising from wave dynamics and feeding back into the symbolic
+layer. This combination is not present in any of the above frameworks.
+
+========================================================================
+9. ROADMAP
+========================================================================
+
+Near-term: Clean packaging (v2 extraction of ethomorphic core as
+separable package), stable chunked persistence, API server and dashboard
+for demonstration, benchmark harnesses.
+
+Medium-term: Multiple-run statistical validation, controlled ablations
+(disable bridge, disable pconnect, vary entropy window), dimensional
+scaling experiments (16+16, 32+32, 64+64).
+
+Long-term: Integration with external reasoning backends (LLM-powered
+language block), application to safety-sensitive domains requiring
+auditable cognition, and exploration of the ethomorphic core as a
+general-purpose module for embedding ethical geometry in other AI
+systems.
+
+========================================================================
+10. CONCLUSION
+========================================================================
+
+Verdant-Minds demonstrates a modular cognitive architecture with
+explicit memory, governance, and a wave-state core that yields
+measurable internal dynamics. Cultivation runs show not only emergent
+concept creation but evidence of temporal scaffolding among emergent
+concepts in the MemoryWeb backbone. This suggests the system is forming
+higher-order structure over time — an engineering property that can be
+instrumented, tested, and improved.
+
+The separation of the ethomorphic core (wave engine, bridge, coherence
+geometry, ethical embedding) as an independent package establishes a
+foundation for applying the Ethomorphic AI principle to systems beyond
+the current Verdant architecture.
+
+========================================================================
+APPENDIX A — REPRODUCIBILITY AND IMPLEMENTATION NOTES
+========================================================================
+
+A.1 Environment and Entry Points
+
+The cultivation runner is located at scripts/verdant_llm_cultivator.py.
+The core system initializes with a deterministic seed (default: 42)
+applied to NumPy and ECWF random state. Emergence is invoked from the
+continual learning block when wave magnitude exceeds 0.15, then filtered
+by the detector-level entropy window and magnitude threshold.
+
+A.2 Reproduction Commands
+
+  pip install -r requirements.txt
+  export GROQ_API_KEY=...
+  export GROQ_MODEL=llama-3.3-70b-versatile
+
+  # Fresh run
+  python scripts/verdant_llm_cultivator.py \
+    --fresh --max-cycles 120 \
+    --max-tokens-per-call 96 \
+    --budget-mode light \
+    --perturbation-interval 15
+
+  # Resume
+  python scripts/verdant_llm_cultivator.py --resume
+
+  # Load explicit state
+  python scripts/verdant_llm_cultivator.py \
+    --load-state outputs/cultivation_state_<stamp>.json
+
+A.3 Output Artifacts
+
+A single cultivation run produces timestamped outputs under outputs/:
+
+  - cultivation_cycles_<stamp>.jsonl — per-cycle records
+  - cultivation_state_<stamp>.json — final system state
+  - cultivation_session_<stamp>.json — session summary
+  - significant_events_<stamp>.json — major events
+
+A.4 Emergence Gating Parameters
+
+  Gate                 Condition                        Default
+  ───────────────────  ───────────────────────────────  ────────
+  Callsite magnitude   wave_magnitude > threshold       0.15
+  Entropy window       sensitivity entropy in [lo, hi]  [0.3, 3.0]
+  Strength gate        mean sensitivity > threshold     0.15
+  Novelty gate         combo_key unseen                 —
+  Surprise criterion   stability * inverse similarity   optional
+
+A.5 Determinism Notes
+
+Even with a fixed core seed, strict run-to-run equivalence is not
+guaranteed due to: LLM provider nondeterminism, cultivator perturbation
+timing, and external API fallback chains. When reporting structural
+findings, we recommend distributional results across multiple runs
+(mean ± sd) rather than single-run claims.
+
+A.6 Minimum Reproducibility Pack
+
+For full reproducibility, attach: the JSONL cycle log, final state JSON,
+session summary, significant events log, the exact CLI command used,
+provider model string(s), and the git commit hash at run time.
+
+========================================================================
+REFERENCES
+========================================================================
+
+Anderson, J. R., Bothell, D., Byrne, M. D., Douglass, S., Lebiere, C.,
+  & Qin, Y. (2004). An integrated theory of the mind. Psychological
+  Review, 111(4), 1036-1060.
+
+Baars, B. J. (1988). A Cognitive Theory of Consciousness. Cambridge
+  University Press.
+
+Gärdenfors, P. (2000). Conceptual Spaces: The Geometry of Thought.
+  MIT Press.
+
+Goertzel, B., Pennachin, C., & Geiger, N. (2014). Engineering General
+  Intelligence. Atlantis Press.
+
+Laird, J. E. (2012). The Soar Cognitive Architecture. MIT Press.
+
+Tononi, G. (2004). An information integration theory of consciousness.
+  BMC Neuroscience, 5(1), 42.
+
+========================================================================
+REPOSITORY
+========================================================================
+
+Source code: https://github.com/Captainkoopa42/Verdant-Minds
+License: MIT (with Ethical Use Appendix)

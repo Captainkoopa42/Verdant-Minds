@@ -132,3 +132,7 @@ dmypy.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Verdant v2 cleanup
+outputs/
+*.pkl

@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "verdant_v2"
 version = "0.1.0"
 description = "Verdant v2 cognitive architecture"
+authors = [{ name = "William Adams" }]
+license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
     "ethomorphic",
@@ -20,3 +22,6 @@ dev = ["pytest>=7.0"]
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["verdant_v2*"]
+
+[project.urls]
+DOI = "https://doi.org/10.5281/zenodo.18870656"

@@ -88,7 +88,7 @@ def detect_and_create_emergent_concepts(
 
     # Score concepts – stability from memory
     scored: List[Tuple[str, float]] = []
-    for concept in matched_concepts:
+    for concept in sorted(matched_concepts):
         data = memory.get_concept(concept)
         stability = 0.5
         if data is not None:
@@ -116,7 +116,7 @@ def detect_and_create_emergent_concepts(
         surprise_scored.sort(key=lambda x: x[1], reverse=True)
         top_concepts = [c for c, _ in surprise_scored[:3]]
     else:
-        scored.sort(key=lambda x: x[1], reverse=True)
+        scored.sort(key=lambda x: (-x[1], x[0]))
         top_concepts = [c for c, _ in scored[:3]]
 
     # Naming pair – most distant pair if semantic available

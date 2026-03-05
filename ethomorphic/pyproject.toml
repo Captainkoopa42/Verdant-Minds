@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "ethomorphic"
 version = "0.1.0"
 description = "Ethomorphic AI – ethical cognitive wave function core"
+authors = [{ name = "William Adams" }]
+license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.24",
@@ -24,3 +26,6 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = ["ethomorphic*"]
+
+[project.urls]
+DOI = "https://doi.org/10.5281/zenodo.18870656"

@@ -169,7 +169,10 @@ When sharing results, include at minimum:
 
 Prefer distributions across repeated runs (multi-seed and/or multi-provider) over single-run claims.
 
----
+- Creation time source is `metadata.creation_time` first, with label timestamp fallback.
+- Backbone is built as **top-k weighted edges per node** (union), then largest connected component.
+- `earlier-share` compares temporal orientation among emergent↔emergent backbone edges.
+- Shuffle trials randomize emergent creation times across the same edge set to estimate a baseline.
 
 ## Project layout
 

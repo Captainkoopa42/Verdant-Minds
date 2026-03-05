@@ -91,7 +91,7 @@ Provider ordering uses:
 
 - `VERDANT_PROVIDER_CHAIN` (example: `mistral,groq,anthropic,openai,local`)
 
----
+## 3) Fresh vs resume behavior
 
 ## 4. Resume vs fresh runtime semantics
 
@@ -175,10 +175,12 @@ And also writes persistent state to:
 
 Outputs (by default near state file unless `--outdir` is provided):
 
-- `emergent_scaffolding.png`
-- `link_age_gaps.png`
+- Creation time source: `metadata.creation_time` primary; label timestamp fallback.
+- Backbone construction: top-k weighted incident edges per node, then largest connected component.
+- `earlier-share`: among emergent↔emergent backbone edges, share oriented from newer to older.
+- Shuffling: randomizes emergent creation times across fixed edge structure to estimate baseline.
 
----
+## 6) Reproducibility checklist
 
 ## 8. Troubleshooting and failure modes
 

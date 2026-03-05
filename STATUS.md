@@ -7,6 +7,33 @@
 ---
 
 
+## 🔄 2026-03-04 Whitepaper and v2 Architecture Update
+
+### Whitepaper published
+
+- ✅ **First whitepaper completed:** "Verdant-Minds: A Hybrid Cognitive
+  Architecture with Graph Memory, Wave-State Dynamics, and Measurable
+  Emergent Concept Scaffolding"
+- ✅ **Key result:** Temporal scaffolding in emergent concept links
+  (z≈3.71, p<0.001)
+- ✅ **Location:** `paper/` directory
+- ✅ **Formats:** LaTeX (Overleaf-ready) + plain text (Zenodo-ready)
+
+### v2 architecture initiated
+
+- ✅ **Ethomorphic core extracted:** `ethomorphic/` package with zero
+  Verdant dependencies (43/43 tests passing)
+- ✅ **Configurable ECWF dimensionality:** supports 5+5 through 64+64
+- ✅ **MemoryBackend protocol:** bridge decoupled from NetworkX
+- ✅ **Emergent concept naming:** hash suffix prevents name collisions
+
+### Next milestone
+
+- 📈 Complete `verdant_v2/` pipeline (Phase 2) and validate against v1
+  cultivation results
+
+---
+
 ## 🔄 2026-02-28 Implementation Update
 
 ### Post-audit closure status

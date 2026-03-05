@@ -18,6 +18,7 @@
   (z≈3.71, p<0.001)
 - ✅ **Location:** `paper/` directory
 - ✅ **Formats:** LaTeX (Overleaf-ready) + plain text (Zenodo-ready)
+- ✅ **Zenodo DOI:** [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
 
 ### v2 architecture initiated
 

@@ -8,6 +8,8 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Status: ~95% Complete](https://img.shields.io/badge/Status-~95%25%20Complete-brightgreen.svg)]()
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18870656.svg)](https://doi.org/10.5281/zenodo.18870656)
+
 </div>
 
 Verdant-Minds is a **working thermodynamic cognitive architecture**. It is not positioned here as a toy prototype: the full core loop, governance, memory-wave bridge, persistence stack, telemetry path, and LLM cultivation loop are implemented and runnable in this repository.
@@ -34,6 +36,7 @@ emergent concepts preferentially link to older emergent concepts
 - LaTeX source: [`paper/verdant_whitepaper.tex`](paper/verdant_whitepaper.tex)
 - Plain text: [`paper/verdant_whitepaper_plaintext.txt`](paper/verdant_whitepaper_plaintext.txt)
 - Figures: [`paper/figures/`](paper/figures/)
+- **DOI:** [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
 
 ## What Verdant is
 

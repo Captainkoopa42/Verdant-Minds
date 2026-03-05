@@ -68,6 +68,9 @@ properties of an evolving concept graph coupled to a state-dynamics core.
 \noindent\textbf{Keywords:} cognitive architecture, emergent concepts, graph memory, 
 wave-state dynamics, ethomorphism, temporal scaffolding
 
+\vspace{0.5em}
+\noindent\textbf{DOI:} \href{https://doi.org/10.5281/zenodo.18870656}{10.5281/zenodo.18870656}
+
 % ─── 1. Motivation ───────────────────────────────────────────────
 \section{Motivation}
 
@@ -318,8 +321,11 @@ At the conclusion of the representative run:
 \subsection{Key Finding: Preferential Attachment to Earlier Emergent Concepts}
 
 We analyzed emergent$\to$emergent (EE) edges in the sparsified backbone and 
-oriented each edge by the creation timestamp embedded in each emergent 
-concept's name (newer $\to$ older). We observed:
+oriented each edge by creation order. Ordering is determined primarily from 
+the \texttt{creation\_time} field stored in each emergent concept's metadata 
+(a float timestamp written at concept birth); where metadata is unavailable, 
+the integer timestamp suffix in the concept name is used as a fallback. Each 
+EE edge is oriented newer~$\to$~older. We observed:
 
 \begin{table}[H]
 \centering
@@ -387,10 +393,11 @@ We note the following limitations to maintain defensibility:
     \item \textbf{Language output}: The system's language generation block is 
           currently template-based. Output text quality does not reflect the 
           sophistication of internal state dynamics.
-    \item \textbf{Naming reliance on timestamps}: Emergent concept naming 
-          encodes creation timestamps. Future work should validate temporal 
-          ordering against stored \texttt{creation\_time} metadata as the 
-          primary source of truth.
+    \item \textbf{Timestamp ordering}: Temporal ordering of emergent concepts 
+          uses stored \texttt{creation\_time} metadata as the primary source 
+          of truth, with the name-encoded timestamp suffix as a fallback. 
+          Future work should verify consistency between these two sources 
+          across all runs and flag any discrepancies.
     \item \textbf{Single-run evidence}: The scaffolding results are drawn 
           from a representative run. Multi-seed, multi-provider replication 
           with distributional statistics (mean $\pm$ sd) is needed before 
@@ -404,6 +411,18 @@ We note the following limitations to maintain defensibility:
           complexity features, not from an energy functional. True 
           thermodynamic grounding requires defining $T = (\partial E / 
           \partial S)^{-1}$ over a system energy functional.
+    \item \textbf{Dual coherence proxies}: The system currently maintains 
+          two distinct coherence measures---a wave-derived scalar 
+          (cognitive temperature) and a graph-derived density proxy 
+          (growth $\times$ stability $\times$ $\log N$)---which are not 
+          yet formally disambiguated. Future work should assign distinct 
+          names and roles to each, and clarify which is appropriate for 
+          which analytical context.
+    \item \textbf{Ethical distance underspecification}: The global ethical 
+          distance $\Delta_E$ in the pconnect edge policy is currently 
+          approximated from edge weight rather than computed from a 
+          stable system-wide ethical field. Formalizing this quantity is 
+          needed for the thermodynamic framing to be fully rigorous.
 \end{enumerate}
 
 % ─── 8. Related Work ────────────────────────────────────────────

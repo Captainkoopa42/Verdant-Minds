@@ -34,6 +34,9 @@ state-dynamics core.
 Keywords: cognitive architecture, emergent concepts, graph memory,
 wave-state dynamics, ethomorphism, temporal scaffolding
 
+DOI: 10.5281/zenodo.18870656
+https://doi.org/10.5281/zenodo.18870656
+
 ========================================================================
 1. MOTIVATION
 ========================================================================

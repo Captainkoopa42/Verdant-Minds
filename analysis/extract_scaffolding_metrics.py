@@ -24,6 +24,16 @@ def parse_ts(v):
 
 
 
+def _higher_order_emergent_count(emergent_nodes):
+    count = 0
+    for nid in emergent_nodes:
+        name = str(nid)
+        nested = name.count("Emergent_") >= 2
+        separators = sum(name.count(sep) for sep in ("__", ":", "|", "->", "/", "+"))
+        if nested or separators >= 2:
+            count += 1
+    return count
+
 
 def first_present(*values):
     for v in values:
@@ -151,6 +161,7 @@ def main():
         "earlier_share": earlier_share,
         "edge_orientation_mode": args.orientation,
         "basin_count": len(basins),
+        "higher_order_emergent_count": _higher_order_emergent_count(emergent.keys()),
     }
 
     with open(os.path.join(args.outdir, "metrics.json"), "w") as f:

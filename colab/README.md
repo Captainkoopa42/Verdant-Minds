@@ -20,28 +20,65 @@ Copy/paste the cells below into a fresh Colab notebook.
 !pytest tests_v2 -q
 ```
 
-## 4) One-command replication run (20 seeds baseline)
+## 4) Scaffold-ablation experiment commands
+
+Baseline:
 ```bash
-!python -m cultivation.cli run --cycles 120 --provider local --seeds 0-19 --basin-routing --outdir outputs
+!python -m cultivation.cli run \
+  --cycles 80 \
+  --seeds 0-19 \
+  --provider local \
+  --basin-routing \
+  --outdir outputs_baseline
+```
+
+Ablation:
+```bash
+!python -m cultivation.cli run \
+  --cycles 80 \
+  --seeds 0-19 \
+  --provider local \
+  --basin-routing \
+  --outdir outputs_ablation \
+  --intervention-mode ablate_oldest_nodes \
+  --intervention-cycle 40 \
+  --ablation-fraction 0.1 \
+  --intervention-target global
+```
+
+Scramble:
+```bash
+!python -m cultivation.cli run \
+  --cycles 80 \
+  --seeds 0-19 \
+  --provider local \
+  --basin-routing \
+  --outdir outputs_scramble \
+  --intervention-mode scramble_ee_edges \
+  --intervention-cycle 40 \
+  --intervention-target global
+```
+
+Comparison:
+```bash
+!python analysis/compare_intervention_runs.py \
+  --baseline outputs_baseline/<run_stamp> \
+  --ablation outputs_ablation/<run_stamp> \
+  --scramble outputs_scramble/<run_stamp> \
+  --outdir intervention_comparison
 ```
 
 Expected run layout:
-- `outputs/run_<timestamp>/seed_<n>/state.json`
-- `outputs/run_<timestamp>/seed_<n>/cycles.jsonl`
-- `outputs/run_<timestamp>/seed_<n>/summary.json`
+- `outputs_*/run_<timestamp>/seed_<n>/state.json`
+- `outputs_*/run_<timestamp>/seed_<n>/cycles.jsonl`
+- `outputs_*/run_<timestamp>/seed_<n>/summary.json`
 
-## 5) One-command analysis run
-Pick one produced `state.json` path (example uses seed 0):
-```bash
-!python analysis/run_all.py --state outputs/run_<timestamp>/seed_0/state.json --results-root results --n-nulls 1000 --k 6
-```
-
-## 6) Output locations and download targets
-- Cultivation artifacts: under `outputs/run_<timestamp>/seed_<n>/`
-- Analysis artifacts: under `results/<timestamp>/`
-  - Includes `metrics.json`, `null_models.json`, `two_timescale_mixture.json`, `backbone_edges.csv`, and figure files.
+## 5) Output locations and download targets
+- Cultivation artifacts: under `outputs_*/run_<timestamp>/seed_<n>/`
+- Comparison artifacts: under `intervention_comparison/`
+  - Includes `comparison_summary.json` and intervention comparison figures.
 
 In Colab, browse files from the left sidebar or zip outputs for download:
 ```bash
-!zip -r verdant_outputs.zip outputs results
+!zip -r verdant_outputs.zip outputs_baseline outputs_ablation outputs_scramble intervention_comparison
 ```

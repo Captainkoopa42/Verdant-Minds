@@ -23,6 +23,14 @@ def parse_ts(v):
         return None
 
 
+
+
+def first_present(*values):
+    for v in values:
+        if v is not None:
+            return v
+    return None
+
 def _load_snapshot_graph(data):
     mw = data.get("memory_web") or {}
     store = mw.get("memory_store") or {}
@@ -32,7 +40,7 @@ def _load_snapshot_graph(data):
     for nid, payload in store.items():
         md = payload.get("metadata") if isinstance(payload, dict) else {}
         md = md if isinstance(md, dict) else {}
-        ts = parse_ts(md.get("created_at") or md.get("creation_time") or payload.get("first_seen"))
+        ts = parse_ts(first_present(md.get("created_at"), md.get("creation_time"), payload.get("first_seen")))
         nmap[str(nid)] = {"id": str(nid), "timestamp": ts, "raw": payload}
 
     norm_edges = []
@@ -62,7 +70,7 @@ def load_graph(path):
         nid = n.get("id") or n.get("name") or n.get("key")
         if nid is None:
             continue
-        ts = parse_ts(n.get("timestamp") or n.get("created_at") or n.get("time"))
+        ts = parse_ts(first_present(n.get("timestamp"), n.get("created_at"), n.get("time")))
         nmap[str(nid)] = {"id": str(nid), "timestamp": ts, "raw": n}
     norm_edges = []
     for e in edges:
@@ -119,14 +127,17 @@ def main():
                     **e,
                     "src_ts": ts_s,
                     "dst_ts": ts_t,
-                    "older_to_newer": is_older_to_newer,
-                    "newer_to_older": is_newer_to_older,
+                    "is_older_to_newer": is_older_to_newer,
+                    "is_newer_to_older": is_newer_to_older,
                 }
             )
 
     older_to_newer_share = (older_to_newer / comparable) if comparable else None
     newer_to_older_share = (newer_to_older / comparable) if comparable else None
-    earlier_share = older_to_newer_share if args.orientation == "older_to_newer" else newer_to_older_share
+    # In V2, emergent->emergent edges are interpreted as scaffolding (older->newer).
+    # Keep backward-compatible fields, but make reporting explicit and unambiguous.
+    scaffolding_share = older_to_newer_share
+    earlier_share = scaffolding_share
     metrics = {
         "state": args.state,
         "nodes": len(nmap),
@@ -136,6 +147,7 @@ def main():
         "comparable_emergent_edges": comparable,
         "older_to_newer_share": older_to_newer_share,
         "newer_to_older_share": newer_to_older_share,
+        "scaffolding_share": scaffolding_share,
         "earlier_share": earlier_share,
         "edge_orientation_mode": args.orientation,
         "basin_count": len(basins),
@@ -156,8 +168,8 @@ def main():
                 "weight",
                 "src_ts",
                 "dst_ts",
-                "older_to_newer",
-                "newer_to_older",
+                "is_older_to_newer",
+                "is_newer_to_older",
             ],
         )
         w.writeheader()

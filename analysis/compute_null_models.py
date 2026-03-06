@@ -4,19 +4,29 @@ from copy import deepcopy
 from extract_scaffolding_metrics import load_graph
 
 
-def orientation_share(nmap, edges, orientation):
+def orientation_shares(nmap, edges):
     em = {k: v for k, v in nmap.items() if k.startswith("Emergent_")}
-    vals = []
+    older_to_newer = 0
+    newer_to_older = 0
+    comparable = 0
     for e in edges:
         s, t = e["source"], e["target"]
         if s in em and t in em:
             ts_s, ts_t = em[s]["timestamp"], em[t]["timestamp"]
             if ts_s is not None and ts_t is not None:
-                if orientation == "older_to_newer":
-                    vals.append(1.0 if ts_s < ts_t else 0.0)
-                else:
-                    vals.append(1.0 if ts_s > ts_t else 0.0)
-    return (sum(vals) / len(vals)) if vals else None
+                comparable += 1
+                older_to_newer += 1 if ts_s < ts_t else 0
+                newer_to_older += 1 if ts_s > ts_t else 0
+    if not comparable:
+        return None, None
+    return older_to_newer / comparable, newer_to_older / comparable
+
+
+def orientation_share(nmap, edges, orientation):
+    older_to_newer, newer_to_older = orientation_shares(nmap, edges)
+    if orientation == "older_to_newer":
+        return older_to_newer
+    return newer_to_older
 
 
 def shuffle_null(nmap, edges, n, orientation):
@@ -62,7 +72,7 @@ def main():
         "--orientation",
         choices=["older_to_newer", "newer_to_older"],
         default="older_to_newer",
-        help="Orientation mode for observed/null share calculations.",
+        help="Orientation override for 'observed' and null share calculations; scaffolding defaults to older->newer.",
     )
     args = ap.parse_args()
     os.makedirs(args.outdir, exist_ok=True)
@@ -70,6 +80,8 @@ def main():
 
     shuffle = shuffle_null(nmap, edges, args.n, args.orientation)
 
+    observed_older_to_newer_share, observed_newer_to_older_share = orientation_shares(nmap, edges)
+    scaffolding_share = observed_older_to_newer_share
     obs = orientation_share(nmap, edges, args.orientation)
     sims = []
     for _ in range(args.n):
@@ -83,6 +95,10 @@ def main():
 
     out = {
         "edge_orientation_mode": args.orientation,
+        "observed_older_to_newer_share": observed_older_to_newer_share,
+        "observed_newer_to_older_share": observed_newer_to_older_share,
+        "scaffolding_share": scaffolding_share,
+        "observed": scaffolding_share,
         "shuffle_null": shuffle,
         "degree_preserving_null": {"observed": obs, "mean": mu, "std": sd, "z": z, "n": len(sims)},
     }

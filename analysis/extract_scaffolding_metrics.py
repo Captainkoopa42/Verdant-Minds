@@ -79,6 +79,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--state", required=True)
     ap.add_argument("--outdir", required=True)
+    ap.add_argument(
+        "--orientation",
+        choices=["older_to_newer", "newer_to_older"],
+        default="older_to_newer",
+        help="Orientation mode used to populate backward-compatible earlier_share.",
+    )
     args = ap.parse_args()
     os.makedirs(args.outdir, exist_ok=True)
 
@@ -93,20 +99,34 @@ def main():
                 basins = [b for b in raw_basins if isinstance(b, dict)]
     emergent = {nid: n for nid, n in nmap.items() if nid.startswith("Emergent_")}
     em_edges = []
-    earlier = 0
+    older_to_newer = 0
+    newer_to_older = 0
     comparable = 0
     for e in edges:
         if e["source"] in emergent and e["target"] in emergent:
             ts_s = emergent[e["source"]]["timestamp"]
             ts_t = emergent[e["target"]]["timestamp"]
-            is_earlier = None
+            is_older_to_newer = None
+            is_newer_to_older = None
             if ts_s is not None and ts_t is not None:
                 comparable += 1
-                is_earlier = ts_s > ts_t
-                earlier += 1 if is_earlier else 0
-            em_edges.append({**e, "src_ts": ts_s, "dst_ts": ts_t, "earlier": is_earlier})
+                is_older_to_newer = ts_s < ts_t
+                is_newer_to_older = ts_s > ts_t
+                older_to_newer += 1 if is_older_to_newer else 0
+                newer_to_older += 1 if is_newer_to_older else 0
+            em_edges.append(
+                {
+                    **e,
+                    "src_ts": ts_s,
+                    "dst_ts": ts_t,
+                    "older_to_newer": is_older_to_newer,
+                    "newer_to_older": is_newer_to_older,
+                }
+            )
 
-    earlier_share = (earlier / comparable) if comparable else None
+    older_to_newer_share = (older_to_newer / comparable) if comparable else None
+    newer_to_older_share = (newer_to_older / comparable) if comparable else None
+    earlier_share = older_to_newer_share if args.orientation == "older_to_newer" else newer_to_older_share
     metrics = {
         "state": args.state,
         "nodes": len(nmap),
@@ -114,7 +134,10 @@ def main():
         "emergent_nodes": len(emergent),
         "emergent_edges": len(em_edges),
         "comparable_emergent_edges": comparable,
+        "older_to_newer_share": older_to_newer_share,
+        "newer_to_older_share": newer_to_older_share,
         "earlier_share": earlier_share,
+        "edge_orientation_mode": args.orientation,
         "basin_count": len(basins),
     }
 
@@ -125,7 +148,18 @@ def main():
         json.dump({"basins": basins}, f, indent=2)
 
     with open(os.path.join(args.outdir, "emergent_edges.csv"), "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["source", "target", "weight", "src_ts", "dst_ts", "earlier"])
+        w = csv.DictWriter(
+            f,
+            fieldnames=[
+                "source",
+                "target",
+                "weight",
+                "src_ts",
+                "dst_ts",
+                "older_to_newer",
+                "newer_to_older",
+            ],
+        )
         w.writeheader()
         w.writerows(em_edges)
 

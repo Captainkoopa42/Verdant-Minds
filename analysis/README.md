@@ -19,13 +19,13 @@ These scripts operate on persisted Verdant state JSON files (example: `verdant_p
 
 ## One-command pipeline
 ```bash
-python analysis/run_all.py --state path/to/state.json
+python analysis/run_all.py --state path/to/state.json --orientation older_to_newer
 ```
 
 ## Manual run
 ```bash
-python analysis/extract_scaffolding_metrics.py --state path/to/state.json --outdir results/run1/
-python analysis/compute_null_models.py --state path/to/state.json --outdir results/run1/ --n 1000
+python analysis/extract_scaffolding_metrics.py --state path/to/state.json --outdir results/run1/ --orientation older_to_newer
+python analysis/compute_null_models.py --state path/to/state.json --outdir results/run1/ --n 1000 --orientation older_to_newer
 python analysis/fit_two_timescale_mixture.py --state path/to/state.json --outdir results/run1/
 python analysis/export_backbone_graph.py --state path/to/state.json --outdir results/run1/ --k 6
 python analysis/make_figures.py --state path/to/state.json --metrics results/run1/metrics.json --nulls results/run1/null_models.json --mixture results/run1/two_timescale_mixture.json --basins results/run1/basins.json --outdir results/run1/
@@ -40,3 +40,8 @@ The scripts try multiple field aliases:
 - edge endpoints: `source/src/from`, `target/dst/to`
 - edge weight: `weight`, `w`, default `1.0`
 - access counts (optional): `access_count`, `access` (fallback is weighted in-degree)
+
+
+## Orientation modes
+Use `--orientation older_to_newer` (default, Verdant v2 serialization) when edges encode parent→child.
+Use `--orientation newer_to_older` only for reverse-orientation comparisons (e.g., legacy v1 analyses).

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import datetime as dt
+import json
 import os
 import subprocess
 import sys
@@ -21,7 +22,7 @@ def main():
         "--orientation",
         choices=["older_to_newer", "newer_to_older"],
         default="older_to_newer",
-        help="Orientation mode for earlier_share and null model calculations.",
+        help="Orientation mode override for null model calculations (metrics always include both shares).",
     )
     args = ap.parse_args()
 
@@ -34,6 +35,14 @@ def main():
     print(f"Using state: {state_path}")
 
     run([py, "analysis/extract_scaffolding_metrics.py", "--state", state_path, "--outdir", outdir, "--orientation", args.orientation])
+    metrics_path = os.path.join(outdir, "metrics.json")
+    with open(metrics_path) as f:
+        metrics = json.load(f)
+    print(
+        "Extracted orientation shares: "
+        f"older_to_newer_share={metrics.get('older_to_newer_share')} "
+        f"newer_to_older_share={metrics.get('newer_to_older_share')}"
+    )
     run([py, "analysis/compute_null_models.py", "--state", state_path, "--outdir", outdir, "--n", str(args.n_nulls), "--orientation", args.orientation])
     run([py, "analysis/fit_two_timescale_mixture.py", "--state", state_path, "--outdir", outdir])
     run([py, "analysis/export_backbone_graph.py", "--state", state_path, "--outdir", outdir, "--k", str(args.k)])

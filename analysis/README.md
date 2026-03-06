@@ -45,3 +45,9 @@ The scripts try multiple field aliases:
 ## Orientation modes
 Use `--orientation older_to_newer` (default, Verdant v2 serialization) when edges encode parent→child.
 Use `--orientation newer_to_older` only for reverse-orientation comparisons (e.g., legacy v1 analyses).
+
+
+## Metrics orientation fields
+`metrics.json` always includes `older_to_newer_share`, `newer_to_older_share`, `scaffolding_share` (v2 default: older→newer), and backward-compatible `earlier_share` (equal to `scaffolding_share`).
+
+`null_models.json` always includes `observed_older_to_newer_share`, `observed_newer_to_older_share`, and `observed` (equal to `scaffolding_share`).

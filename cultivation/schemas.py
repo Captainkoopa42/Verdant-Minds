@@ -29,6 +29,13 @@ class CycleRecord(BaseModel):
     final_action_source: str = "global_default"
     top_proposal_scores: list[dict[str, Any]] = Field(default_factory=list)
     telemetry: dict[str, Any] = Field(default_factory=dict)
+    intervention_applied: bool = False
+    intervention_mode: str = "none"
+    intervention_cycle: int | None = None
+    intervention_target: str | None = None
+    removed_nodes_count: int = 0
+    removed_ee_edges: int = 0
+    scrambled_edge_count: int = 0
 
 
 class SessionSummary(BaseModel):
@@ -46,3 +53,12 @@ class SessionSummary(BaseModel):
     memory_size: int
     state_path: str
     cycles_path: str
+    intervention_mode: str = "none"
+    intervention_cycle: int | None = None
+    ablation_fraction: float = 0.0
+    intervention_target: str | None = None
+    pre_intervention_emergent_count: int = 0
+    post_intervention_emergent_count: int = 0
+    post_intervention_new_emergents: int = 0
+    pre_intervention_basin_count: int = 0
+    post_intervention_basin_count: int = 0

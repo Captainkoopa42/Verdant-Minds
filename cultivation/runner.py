@@ -12,6 +12,11 @@ from typing import Iterable
 from verdant_v2.pipeline.chunk import CognitiveChunk
 
 import numpy as np
+from verdant_v2.memory.basins import detect_basins
+from verdant_v2.memory.interventions import (
+    ablate_oldest_emergent_nodes,
+    scramble_emergent_edges,
+)
 from verdant_v2.system import VerdantConfig, VerdantSystem
 
 from cultivation.providers.anthropic import AnthropicProvider
@@ -72,6 +77,11 @@ class RunnerConfig:
     outdir: str = "outputs_v2"
     pressure_every: int = 5
     basin_routing: bool = False
+    intervention_mode: str = "none"
+    intervention_cycle: int | None = None
+    ablation_fraction: float = 0.1
+    intervention_target: str = "global"
+    intervention_seed: int | None = None
 
 
 class CultivationRunner:
@@ -142,6 +152,12 @@ class CultivationRunner:
             phase_counts: dict[str, int] = {"pressure": 0, "release": 0}
             entropies: list[float] = []
             hcis: list[float] = []
+            pre_intervention_emergent_count = 0
+            post_intervention_emergent_count = 0
+            pre_intervention_basin_count = 0
+            post_intervention_basin_count = 0
+            post_intervention_new_emergents = 0
+            intervention_done = False
 
             with cycles_path.open("w", encoding="utf-8") as handle:
                 for cycle_idx in range(self.config.cycles):
@@ -161,6 +177,54 @@ class CultivationRunner:
                             "provider": self.config.provider,
                         },
                     )
+
+                    intervention_applied = False
+                    removed_nodes_count = 0
+                    removed_ee_edges = 0
+                    scrambled_edge_count = 0
+
+                    if (
+                        not intervention_done
+                        and self.config.intervention_mode != "none"
+                        and self.config.intervention_cycle is not None
+                        and cycle_idx == self.config.intervention_cycle
+                    ):
+                        intervention_done = True
+                        intervention_applied = True
+                        pre_intervention_emergent_count = len(system.memory_web.get_emergent_nodes())
+                        pre_intervention_basin_count = len(detect_basins(system.memory_web, k=system.config.basin_scan_k, min_size=system.config.basin_min_size))
+
+                        basin_nodes: set[str] | None = None
+                        if self.config.intervention_target == "largest_basin":
+                            basins = detect_basins(system.memory_web, k=system.config.basin_scan_k, min_size=system.config.basin_min_size)
+                            if basins:
+                                basin_nodes = set(basins[0].nodes)
+
+                        if self.config.intervention_mode == "ablate_oldest_nodes":
+                            stats = ablate_oldest_emergent_nodes(
+                                system.memory_web,
+                                fraction=self.config.ablation_fraction,
+                                basin_nodes=basin_nodes,
+                            )
+                            removed_nodes_count = int(stats.get("removed_count", 0))
+                            removed_ee_edges = int(stats.get("removed_ee_edges", 0))
+                        elif self.config.intervention_mode == "scramble_ee_edges":
+                            scramble_seed = self.config.intervention_seed if self.config.intervention_seed is not None else seed
+                            stats = scramble_emergent_edges(
+                                system.memory_web,
+                                rng_seed=int(scramble_seed),
+                                basin_nodes=basin_nodes,
+                            )
+                            scrambled_edge_count = int(stats.get("scrambled_edge_count", 0))
+
+                        post_intervention_emergent_count = len(system.memory_web.get_emergent_nodes())
+                        post_intervention_basin_count = len(detect_basins(system.memory_web, k=system.config.basin_scan_k, min_size=system.config.basin_min_size))
+
+                    if intervention_done and self.config.intervention_mode != "none":
+                        post_intervention_new_emergents = max(
+                            0,
+                            len(system.memory_web.get_emergent_nodes()) - post_intervention_emergent_count,
+                        )
 
                     wave = chunk.get_section_content("wave_function_section") or {}
                     coherence = chunk.get_section_content("coherence_invariants_section") or {}
@@ -192,6 +256,13 @@ class CultivationRunner:
                         basin_conflict_detected=basin_conflict_detected,
                         final_action_source=final_action_source,
                         top_proposal_scores=top_proposal_scores,
+                        intervention_applied=intervention_applied,
+                        intervention_mode=self.config.intervention_mode,
+                        intervention_cycle=self.config.intervention_cycle,
+                        intervention_target=self.config.intervention_target,
+                        removed_nodes_count=removed_nodes_count,
+                        removed_ee_edges=removed_ee_edges,
+                        scrambled_edge_count=scrambled_edge_count,
                         telemetry={
                             "phase_label": metrics.get("phase", "Flexible"),
                             "edge_classification": metrics.get("edge_classification", {}),
@@ -216,6 +287,15 @@ class CultivationRunner:
                 memory_size=int(final_metrics.get("memory_concepts", 0)),
                 state_path=str(state_path),
                 cycles_path=str(cycles_path),
+                intervention_mode=self.config.intervention_mode,
+                intervention_cycle=self.config.intervention_cycle,
+                ablation_fraction=self.config.ablation_fraction,
+                intervention_target=self.config.intervention_target,
+                pre_intervention_emergent_count=pre_intervention_emergent_count,
+                post_intervention_emergent_count=post_intervention_emergent_count,
+                post_intervention_new_emergents=post_intervention_new_emergents,
+                pre_intervention_basin_count=pre_intervention_basin_count,
+                post_intervention_basin_count=post_intervention_basin_count,
             )
             (seed_dir / "summary.json").write_text(summary.model_dump_json(indent=2), encoding="utf-8")
         finally:

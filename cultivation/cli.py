@@ -19,6 +19,11 @@ def main() -> None:
     run_p.add_argument("--outdir", default="outputs")
     run_p.add_argument("--pressure-every", type=int, default=5)
     run_p.add_argument("--basin-routing", action="store_true")
+    run_p.add_argument("--intervention-mode", default="none", choices=["none", "ablate_oldest_nodes", "scramble_ee_edges"])
+    run_p.add_argument("--intervention-cycle", type=int, default=None)
+    run_p.add_argument("--ablation-fraction", type=float, default=0.1)
+    run_p.add_argument("--intervention-target", default="global", choices=["global", "largest_basin"])
+    run_p.add_argument("--intervention-seed", type=int, default=None)
 
     args = parser.parse_args()
 
@@ -29,6 +34,11 @@ def main() -> None:
             outdir=args.outdir,
             pressure_every=args.pressure_every,
             basin_routing=args.basin_routing,
+            intervention_mode=args.intervention_mode,
+            intervention_cycle=args.intervention_cycle,
+            ablation_fraction=args.ablation_fraction,
+            intervention_target=args.intervention_target,
+            intervention_seed=args.intervention_seed,
         )
         runner = CultivationRunner(config)
         run_dir = runner.run(parse_seeds(args.seeds))

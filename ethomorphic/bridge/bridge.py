@@ -87,6 +87,7 @@ class EthomorphicBridge:
         self.concept_dimension_mapping: Dict[str, List[Tuple[str, int, float]]] = {}
         self.activation_history: Dict[str, List[Tuple[float, float]]] = {}
         self.resonance_patterns: Dict[str, Any] = {}
+        self._emergent_combo_keys: set[str] = set()
 
         self.metrics: Dict[str, Any] = {
             "memory_to_ecwf_transfers": 0,
@@ -395,3 +396,48 @@ class EthomorphicBridge:
         if mx > 0:
             state /= mx
         return state
+
+    # ------------------------------------------------------------------
+    # Persistence helpers
+    # ------------------------------------------------------------------
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        """Serialize bridge state for persistence."""
+        return {
+            "influence_factor": self.influence_factor,
+            "concept_dimension_mapping": {
+                concept: [list(mapping) for mapping in mappings]
+                for concept, mappings in self.concept_dimension_mapping.items()
+            },
+            "activation_history": {
+                concept: [list(entry) for entry in history]
+                for concept, history in self.activation_history.items()
+            },
+            "resonance_patterns": dict(self.resonance_patterns),
+            "metrics": dict(self.metrics),
+            "emergent_combo_keys": sorted(self._emergent_combo_keys),
+        }
+
+    def from_state_dict(self, state: Dict[str, Any]) -> None:
+        """Restore bridge state from a serialized dict."""
+        self.influence_factor = float(state.get("influence_factor", self.influence_factor))
+
+        mapping_state = state.get("concept_dimension_mapping", {}) or {}
+        self.concept_dimension_mapping = {
+            concept: [
+                (str(mtype), int(dim_idx), float(weight))
+                for mtype, dim_idx, weight in mappings
+            ]
+            for concept, mappings in mapping_state.items()
+        }
+
+        history_state = state.get("activation_history", {}) or {}
+        self.activation_history = {
+            concept: [(float(ts), float(val)) for ts, val in history]
+            for concept, history in history_state.items()
+        }
+
+        self.resonance_patterns = dict(state.get("resonance_patterns", {}) or {})
+        self.metrics = dict(state.get("metrics", self.metrics) or self.metrics)
+        combo_keys = state.get("emergent_combo_keys", []) or []
+        self._emergent_combo_keys = {str(key) for key in combo_keys}

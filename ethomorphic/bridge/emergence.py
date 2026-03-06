@@ -77,6 +77,8 @@ def detect_and_create_emergent_concepts(
     # Concepts matching those dimensions
     matched_concepts: set[str] = set()
     for concept, mappings in bridge.concept_dimension_mapping.items():
+        if concept.startswith("Emergent_"):
+            continue
         for mtype, dim_idx, _weight in mappings:
             if mtype == "cognitive" and dim_idx in cog_strongest:
                 matched_concepts.add(concept)
@@ -113,10 +115,10 @@ def detect_and_create_emergent_concepts(
             avg_sim = float(np.mean(sims)) if sims else 0.0
             blended = 0.5 * strength + 0.5 * (1.0 - avg_sim)
             surprise_scored.append((concept, blended))
-        surprise_scored.sort(key=lambda x: x[1], reverse=True)
+        surprise_scored.sort(key=lambda x: (-x[1], x[0]))
         top_concepts = [c for c, _ in surprise_scored[:3]]
     else:
-        scored.sort(key=lambda x: x[1], reverse=True)
+        scored.sort(key=lambda x: (-x[1], x[0]))
         top_concepts = [c for c, _ in scored[:3]]
 
     # Naming pair – most distant pair if semantic available
@@ -133,18 +135,14 @@ def detect_and_create_emergent_concepts(
     # Deduplication via combo_key
     combo_key = "_x_".join(sorted(top_concepts))
 
-    if combo_key in bridge.resonance_patterns:
+    if combo_key in bridge._emergent_combo_keys:
         return []
 
     if magnitude_scalar <= threshold:
         return []
 
-    # Register the pattern
-    bridge.resonance_patterns[combo_key] = {
-        "concepts": top_concepts,
-        "created_at": time.time(),
-        "magnitude": magnitude_scalar,
-    }
+    # Register emergence combo key before any other writes
+    bridge._emergent_combo_keys.add(combo_key)
 
     # Build unique name with hash suffix
     suffix = _combo_hash(combo_key)

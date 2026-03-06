@@ -6,7 +6,6 @@ Writes: ``memory_section``, ``wave_function_section``
 
 from __future__ import annotations
 
-import time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -39,18 +38,23 @@ class MemoryBlock:
         keywords: List[str] = pattern.get("keywords", [])
         all_concepts = list(dict.fromkeys(concepts + keywords))
 
+        routing = chunk.get_section_content("routing_section") or {}
+        priority = routing.get("priority_seeds", []) if isinstance(routing, dict) else []
+        prioritized = [c for c in priority if isinstance(c, str)] + all_concepts
+        seed_concepts = list(dict.fromkeys(prioritized))
+
         # Spreading activation
-        activations = spread_activation(self.memory_web, all_concepts)
+        activations = spread_activation(self.memory_web, seed_concepts)
 
         # Retrieve related
         related: Dict[str, float] = {}
-        for c in all_concepts[:5]:
+        for c in seed_concepts[:5]:
             for label, rel in self.memory_web.retrieve_related(c, depth=2, limit=5):
                 if label not in related or related[label] < rel:
                     related[label] = rel
 
         # Ensure concepts exist in memory
-        for c in all_concepts:
+        for c in seed_concepts:
             if self.memory_web.get_concept(c) is None:
                 self.memory_web.add_concept(c, stability=0.5)
 
@@ -58,8 +62,9 @@ class MemoryBlock:
         ecwf = self.bridge.ecwf
         cog_state = np.ones((1, 1, ecwf.num_cognitive_dims)) * 0.5
         eth_state = np.ones((1, 1, ecwf.num_ethical_dims)) * 0.5
-        t = time.time() % 1000
-        bridge_result = self.bridge.bidirectional_update(cog_state, eth_state, all_concepts, t)
+        pm = chunk.get_section_content("processing_metrics_section") or {}
+        t = float(pm.get("cycle", 0)) + 1.0
+        bridge_result = self.bridge.bidirectional_update(cog_state, eth_state, seed_concepts, t)
 
         # Extract wave properties
         mem_update = bridge_result.get("memory_update", {})
@@ -81,7 +86,7 @@ class MemoryBlock:
 
         self.memory_web.decay(ps.decay_factor)
         reinforced: List[str] = []
-        for c in all_concepts:
+        for c in seed_concepts:
             if c in activations and activations[c] > 0.3:
                 self.memory_web.reinforce(c, ps.reinforcement_amount)
                 reinforced.append(c)
@@ -92,11 +97,12 @@ class MemoryBlock:
 
         # Novelty score
         known = set(self.memory_web.list_concepts())
-        novel_count = sum(1 for c in all_concepts if c not in known)
-        novelty = min(1.0, novel_count / max(len(all_concepts), 1))
+        novel_count = sum(1 for c in seed_concepts if c not in known)
+        novelty = min(1.0, novel_count / max(len(seed_concepts), 1))
 
         chunk.update_section("memory_section", {
             "retrieved_concepts": related,
+            "routing_priority_count": len(priority),
             "activated_concepts": activations,
             "activation_levels": activations,
             "novelty_score": novelty,

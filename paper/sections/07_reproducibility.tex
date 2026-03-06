@@ -1,0 +1,17 @@
+\section{Reproducibility}
+We provide script-based analysis over persisted state JSON files (e.g., \texttt{verdant\_persistent\_state.json}). The analysis package exports machine-readable metrics, edge tables, and figure assets.
+
+Recommended procedure:
+\begin{enumerate}[leftmargin=*]
+  \item Run seeded simulations and persist final states.
+  \item Execute extraction and null-model scripts for each state.
+  \item Aggregate run-level metrics across 20 seeds.
+  \item Generate final figures and plain-text report.
+\end{enumerate}
+
+Example CLI:
+\begin{verbatim}
+python analysis/extract_scaffolding_metrics.py \
+  --state path/to/state.json \
+  --outdir results/
+\end{verbatim}

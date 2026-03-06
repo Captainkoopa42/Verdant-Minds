@@ -12,6 +12,7 @@ Wires together:
 from __future__ import annotations
 
 import time
+from dataclasses import asdict
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -25,6 +26,8 @@ from verdant_v2.governance.council import ThreeKingsCouncil
 from verdant_v2.governance.data_king import DataKing
 from verdant_v2.governance.ethics_king import EthicsKing
 from verdant_v2.governance.forefront_king import ForefrontKing
+from verdant_v2.memory.basins import BasinInfo, detect_basins
+from verdant_v2.memory.basin_state import BasinState
 from verdant_v2.memory.graph import MemoryWeb
 from verdant_v2.pipeline.blocks.action import ActionBlock
 from verdant_v2.pipeline.blocks.communication import CommunicationBlock
@@ -52,6 +55,11 @@ class VerdantConfig(BaseModel):
     ethical_sensitivity: float = 0.6
     initialize_knowledge: bool = True
     seed: int | None = 42
+    basin_scan_interval: int = 10
+    basin_scan_k: int = 6
+    basin_min_size: int = 5
+    basin_routing: bool = False
+    basin_top_m: int = 2
 
 
 class VerdantSystem:
@@ -73,6 +81,7 @@ class VerdantSystem:
             num_cognitive_dims=self.config.cognitive_dims,
             num_ethical_dims=self.config.ethical_dims,
             num_facets=self.config.wave_facets,
+            random_state=self.config.seed,
         )
         self.memory_web = MemoryWeb()
         self.bridge = EthomorphicBridge(
@@ -119,6 +128,11 @@ class VerdantSystem:
             ethics_king_hook=self.ethics_king,
             forefront_king_hook=self.forefront_king,
             three_kings_hook=self.council,
+            memory_web=self.memory_web,
+            basin_routing=self.config.basin_routing,
+            basin_top_m=self.config.basin_top_m,
+            basin_scan_k=self.config.basin_scan_k,
+            bridge=self.bridge,
         )
 
         # System state
@@ -134,6 +148,8 @@ class VerdantSystem:
             "start_time": time.time(),
         }
         self._last_phase: str = "Flexible"
+        self._last_basins: List[BasinInfo] = []
+        self._basin_states: Dict[str, BasinState] = {}
 
         # Knowledge initialization
         if self.config.initialize_knowledge:
@@ -178,6 +194,41 @@ class VerdantSystem:
         self._cycle_count += 1
         self._update_metrics(chunk)
 
+        # Basin scans (analysis-first telemetry)
+        should_scan = (self._cycle_count % max(1, self.config.basin_scan_interval) == 0)
+        if should_scan:
+            self._last_basins = detect_basins(
+                self.memory_web,
+                k=self.config.basin_scan_k,
+                min_size=self.config.basin_min_size,
+            )
+
+        chunk.update_section("basins_section", {
+            "basins": [b.__dict__ for b in self._last_basins],
+            "scan_k": self.config.basin_scan_k,
+            "scan_interval": self.config.basin_scan_interval,
+            "scanned_this_cycle": should_scan,
+        })
+
+        proposal_section = chunk.get_section_content("basin_proposals_section") or {}
+        proposals = proposal_section.get("proposals", []) if isinstance(proposal_section, dict) else []
+        by_id = {str(p.get("basin_id")): p for p in proposals if isinstance(p, dict)}
+        for basin in self._last_basins:
+            prior = self._basin_states.get(basin.basin_id)
+            proposal = by_id.get(basin.basin_id)
+            self._basin_states[basin.basin_id] = BasinState(
+                basin_id=basin.basin_id,
+                member_nodes=list(basin.nodes),
+                local_metrics={
+                    "size": basin.size,
+                    "internal_density": basin.internal_density,
+                    "emergent_count": basin.emergent_count,
+                },
+                last_local_coherence=(float(proposal.get("coherence")) if isinstance(proposal, dict) and isinstance(proposal.get("coherence"), (int, float)) else (prior.last_local_coherence if prior else None)),
+                last_local_phase=(str(proposal.get("phase_state")) if isinstance(proposal, dict) and proposal.get("phase_state") is not None else (prior.last_local_phase if prior else None)),
+                last_proposal=(proposal if isinstance(proposal, dict) else (prior.last_proposal if prior else None)),
+            )
+
         return chunk
 
     def initialize_knowledge(self) -> Dict[str, Any]:
@@ -219,6 +270,10 @@ class VerdantSystem:
             "memory_concepts": len(self.memory_web.list_concepts()),
             "emergent_nodes": len(self.memory_web.get_emergent_nodes()),
             "edge_classification": self.memory_web.get_edge_classification(),
+            "basin_count": len(self._last_basins),
+            "largest_basin_size": (max((b.size for b in self._last_basins), default=0)),
+            "basins": [b.__dict__ for b in self._last_basins],
+            "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
         }
 
     def save_state(self, path: str) -> None:
@@ -248,6 +303,10 @@ class VerdantSystem:
                 "t_g": self._t_g,
                 "cycle_count": self._cycle_count,
                 "entropy_history": self._entropy_history[-50:],
+                "last_basins": [b.__dict__ for b in self._last_basins],
+                "basin_scan_interval": self.config.basin_scan_interval,
+                "basin_scan_k": self.config.basin_scan_k,
+                "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
             },
         )
 
@@ -283,10 +342,21 @@ class VerdantSystem:
         self._cycle_count = extra.get("cycle_count", 0)
         self._entropy_history = extra.get("entropy_history", [])
         self._metrics.update(state.get("metrics", {}))
+        raw_basins = extra.get("last_basins", [])
+        self._last_basins = [BasinInfo(**b) for b in raw_basins if isinstance(b, dict)]
+        raw_basin_states = extra.get("basin_states", {})
+        if isinstance(raw_basin_states, dict):
+            self._basin_states = {
+                str(k): BasinState(**v)
+                for k, v in raw_basin_states.items()
+                if isinstance(v, dict)
+            }
         # Re-wire blocks
         self._memory_block.memory_web = self.memory_web
         self._memory_block.bridge = self.bridge
         self._learning.bridge = self.bridge
+        self.pipeline.memory_web = self.memory_web
+        self.pipeline.bridge = self.bridge
 
     # ------------------------------------------------------------------
     # Internal

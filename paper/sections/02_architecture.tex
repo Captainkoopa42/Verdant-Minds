@@ -1,0 +1,23 @@
+\section{Architecture (v1 + v2 split)}
+\subsection{System split}
+The repository is intentionally partitioned: locked v1 assets preserve the historical implementation baseline, while v2 hosts active experimental development. This separation supports auditability and controls accidental regression in legacy code.
+
+\subsection{Core architectural elements}
+\paragraph{Graph memory.}
+Concept nodes and weighted relations form the persistent substrate. State snapshots are serialized to JSON for post hoc analysis.
+
+\paragraph{Wave-state dynamics (ECWF).}
+An ECWF layer models dynamic activation and coherence propagation, enabling non-static concept salience and context-sensitive interaction.
+
+\paragraph{Governance (Three Kings).}
+A governance layer regulates admission, stabilization, and policy-constrained transitions; this layer provides guardrails for concept promotion and retention.
+
+\paragraph{Nine-stage pipeline.}
+Verdant v2 organizes cognition-like updates in nine stages: ingest, parse, map, excite, cohere, evaluate, gate, consolidate, and persist. These stages provide deterministic checkpoints for instrumentation.
+
+\subsection{Figure placeholders}
+\begin{figure}[h]
+  \centering
+  \fbox{\parbox{0.9\linewidth}{\centering Placeholder: full architecture diagram (v1/v2 split and data flow).}}
+  \caption{Verdant-Minds architecture and control surfaces.}
+\end{figure}

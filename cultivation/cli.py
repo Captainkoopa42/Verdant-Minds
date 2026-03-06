@@ -16,7 +16,7 @@ def main() -> None:
     run_p.add_argument("--cycles", type=int, default=120)
     run_p.add_argument("--provider", default="local", choices=["local", "anthropic", "groq", "mistral"])
     run_p.add_argument("--seeds", default="0-19", help="Seed range/list, e.g. 0-19 or 0,2,4")
-    run_p.add_argument("--outdir", default="outputs_v2/")
+    run_p.add_argument("--outdir", default="outputs")
     run_p.add_argument("--pressure-every", type=int, default=5)
     run_p.add_argument("--basin-routing", action="store_true")
 
@@ -32,7 +32,7 @@ def main() -> None:
         )
         runner = CultivationRunner(config)
         run_dir = runner.run(parse_seeds(args.seeds))
-        print(f"Cultivation complete: {run_dir}")
+        print(f"Cultivation complete. Run directory: {run_dir.resolve()}")
 
 
 if __name__ == "__main__":

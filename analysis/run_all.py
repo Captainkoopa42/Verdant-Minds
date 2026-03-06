@@ -24,15 +24,18 @@ def main():
     os.makedirs(outdir, exist_ok=True)
 
     py = sys.executable
-    run([py, "analysis/extract_scaffolding_metrics.py", "--state", args.state, "--outdir", outdir])
-    run([py, "analysis/compute_null_models.py", "--state", args.state, "--outdir", outdir, "--n", str(args.n_nulls)])
-    run([py, "analysis/fit_two_timescale_mixture.py", "--state", args.state, "--outdir", outdir])
-    run([py, "analysis/export_backbone_graph.py", "--state", args.state, "--outdir", outdir, "--k", str(args.k)])
+    state_path = os.path.abspath(args.state)
+    print(f"Using state: {state_path}")
+
+    run([py, "analysis/extract_scaffolding_metrics.py", "--state", state_path, "--outdir", outdir])
+    run([py, "analysis/compute_null_models.py", "--state", state_path, "--outdir", outdir, "--n", str(args.n_nulls)])
+    run([py, "analysis/fit_two_timescale_mixture.py", "--state", state_path, "--outdir", outdir])
+    run([py, "analysis/export_backbone_graph.py", "--state", state_path, "--outdir", outdir, "--k", str(args.k)])
     run([
         py,
         "analysis/make_figures.py",
         "--state",
-        args.state,
+        state_path,
         "--metrics",
         os.path.join(outdir, "metrics.json"),
         "--nulls",
@@ -45,7 +48,11 @@ def main():
         os.path.join(outdir, "basins.json"),
     ])
 
-    print(f"\nAll outputs written to: {outdir}")
+    created = sorted(os.listdir(outdir))
+    print(f"\nAll outputs written to: {os.path.abspath(outdir)}")
+    print("Created files:")
+    for name in created:
+        print(f" - {name}")
 
 
 if __name__ == "__main__":

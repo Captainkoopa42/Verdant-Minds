@@ -3,17 +3,19 @@
 Emergent nodes are identified by name prefix \texttt{Emergent\_}. Timestamps are parsed from node metadata, with fallback to persistent state insertion times when explicit fields are absent.
 
 \subsection{Edge orientation and earlier-share}
-For each emergent$\rightarrow$emergent edge, orientation is evaluated against timestamps. If source time is newer than target time, the edge is counted as \emph{earlier-oriented} (newer$\rightarrow$older). Earlier-share is:
+For each emergent$\rightarrow$emergent edge, we compute both orientation shares over comparable timestamped edges:
 \[
-\text{earlier\_share}=\frac{\#(t_{src}>t_{dst})}{\#\text{emergent-emergent edges}}.
+\text{older\_to\_newer\_share}=\frac{\#(t_{src}<t_{dst})}{\#\text{emergent-emergent edges}},\quad
+\text{newer\_to\_older\_share}=\frac{\#(t_{src}>t_{dst})}{\#\text{emergent-emergent edges}}.
 \]
+For backward compatibility, \texttt{earlier\_share} is retained and set by a configurable orientation mode. For v2 analyses we use \texttt{older\_to\_newer}, reflecting serialized parent$\rightarrow$child edges where older emergent concepts scaffold newer ones.
 
 \subsection{Null models}
 \paragraph{1) Shuffle null.}
-Randomly permute emergent node timestamps while preserving graph topology; recompute earlier-share across permutations.
+Randomly permute emergent node timestamps while preserving graph topology; recompute orientation-selected share across permutations.
 
 \paragraph{2) Degree-preserving null.}
-Apply edge swaps (double-edge rewiring) that preserve degree sequence; compute null earlier-share on rewired graphs.
+Apply edge swaps (double-edge rewiring) that preserve degree sequence; compute orientation-selected null share on rewired graphs.
 
 \subsection{Two-timescale mixture}
 Let $\Delta t$ denote edge age gap in seconds. We fit $\log(\Delta t)$ using one-component and two-component Gaussian mixtures and compare BIC. A strongly negative $\Delta \mathrm{BIC}$ (two minus one) supports two timescales.

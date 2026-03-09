@@ -1,0 +1,456 @@
+{
+  "basins": [
+    {
+      "basin_id": "basin_0",
+      "nodes": [
+        "abstraction",
+        "ambiguity",
+        "analogy",
+        "asymmetry",
+        "autonomy",
+        "belief_revision",
+        "boundary",
+        "cascade",
+        "chaos",
+        "clarity",
+        "complexity",
+        "consciousness",
+        "continuity",
+        "contradiction",
+        "criticality",
+        "energy",
+        "ethics",
+        "experience_accumulation",
+        "expression",
+        "harm",
+        "hypothesis",
+        "identity",
+        "influence",
+        "inner_observer",
+        "integration",
+        "interference",
+        "interference_pattern",
+        "interpretation",
+        "justice",
+        "meaning",
+        "memory",
+        "observed",
+        "paradox",
+        "pattern",
+        "pattern_history",
+        "perception",
+        "persistence",
+        "phase",
+        "phase_transition",
+        "recollection",
+        "recursive_self_reference",
+        "reference",
+        "reflection",
+        "reflective",
+        "resonance",
+        "self_organization",
+        "symbol",
+        "synthesis",
+        "temperature",
+        "temporal_flow",
+        "time",
+        "transformable",
+        "transformation",
+        "translation",
+        "trust",
+        "under",
+        "wave",
+        "working",
+        "yet"
+      ],
+      "size": 59,
+      "internal_edges": 240,
+      "boundary_edges": 229,
+      "internal_density": 0.1402688486265342,
+      "emergent_count": 0,
+      "mean_stability": 0.990677966101695,
+      "top_nodes_by_access": [
+        [
+          "paradox",
+          401
+        ],
+        [
+          "recollection",
+          401
+        ],
+        [
+          "resonance",
+          401
+        ],
+        [
+          "trust",
+          401
+        ],
+        [
+          "wave",
+          401
+        ],
+        [
+          "abstraction",
+          400
+        ],
+        [
+          "ambiguity",
+          400
+        ],
+        [
+          "autonomy",
+          400
+        ],
+        [
+          "belief_revision",
+          400
+        ],
+        [
+          "boundary",
+          400
+        ]
+      ],
+      "created_at": 131444.96
+    },
+    {
+      "basin_id": "basin_1",
+      "nodes": [
+        "Emergent_ambiguity_analogy_944b65",
+        "Emergent_ambiguity_autonomy_3b8aec",
+        "Emergent_ambiguity_autonomy_5e51a4",
+        "Emergent_ambiguity_carefully_8c737f",
+        "Emergent_ambiguity_coherence_3e77ec",
+        "Emergent_anticipation_appears_dac47e",
+        "Emergent_anticipation_autonomy_3a3ce5",
+        "Emergent_anticipation_autonomy_eda74a",
+        "Emergent_anticipation_bounded_2f7e1b",
+        "Emergent_anticipation_bounded_305c6e",
+        "Emergent_anticipation_bounded_88e144",
+        "Emergent_anticipation_bounded_db424c",
+        "Emergent_anticipation_carefully_73a81d",
+        "Emergent_anticipation_carefully_b72fad",
+        "Emergent_appears_asymmetry_0715f8",
+        "Emergent_appears_asymmetry_8ccc17",
+        "Emergent_appears_asymmetry_8dba4c",
+        "Emergent_appears_asymmetry_ecd8f7",
+        "Emergent_attention_beneficence_155439",
+        "Emergent_attention_beneficence_7fd8eb",
+        "Emergent_autonomy_boundary_625a34",
+        "Emergent_autonomy_bounded_59bcc5",
+        "Emergent_autonomy_bounded_ab8b66",
+        "Emergent_autonomy_carefully_dedeae",
+        "Emergent_awareness_bounded_fd8d0b",
+        "Emergent_bounded_carefully_19895d",
+        "Emergent_bounded_carefully_f79645",
+        "Emergent_bounded_coherence_40a04d",
+        "Emergent_bounded_coherence_4b5dfb",
+        "Emergent_bounded_coherence_a2e9f5",
+        "Emergent_bounded_equilibrium_ef6ee2",
+        "Emergent_carefully_clarity_0d7a6f",
+        "Emergent_clarity_entropy_9f3316",
+        "Emergent_clarity_ethical_4e34b8",
+        "Emergent_contradiction_emergence_from_interaction_b8348b",
+        "appears",
+        "cognition",
+        "collective",
+        "dissipation",
+        "equilibrium",
+        "ethical",
+        "feedback",
+        "framing",
+        "preserve",
+        "silence",
+        "when"
+      ],
+      "size": 46,
+      "internal_edges": 167,
+      "boundary_edges": 186,
+      "internal_density": 0.16135265700483092,
+      "emergent_count": 35,
+      "mean_stability": 0.9915217391304347,
+      "top_nodes_by_access": [
+        [
+          "silence",
+          399
+        ],
+        [
+          "feedback",
+          398
+        ],
+        [
+          "dissipation",
+          393
+        ],
+        [
+          "equilibrium",
+          391
+        ],
+        [
+          "when",
+          388
+        ],
+        [
+          "collective",
+          386
+        ],
+        [
+          "framing",
+          386
+        ],
+        [
+          "preserve",
+          386
+        ],
+        [
+          "appears",
+          376
+        ],
+        [
+          "cognition",
+          376
+        ]
+      ],
+      "created_at": 131444.96
+    },
+    {
+      "basin_id": "basin_2",
+      "nodes": [
+        "Emergent_ambiguity_autonomy_ff0533",
+        "Emergent_anticipation_autonomy_4e40e3",
+        "Emergent_anticipation_autonomy_573275",
+        "Emergent_anticipation_autonomy_a66f28",
+        "Emergent_attention_beneficence_b2c980",
+        "Emergent_autonomy_bounded_94d9e2",
+        "Emergent_awareness_carefully_9c1d55",
+        "Emergent_bounded_clarity_cc6f70",
+        "Emergent_bounded_coherence_1102fd",
+        "Emergent_bounded_contradiction_635b18",
+        "Emergent_bounded_contradiction_d8e7d7",
+        "Emergent_bounded_hypothesis_41336a",
+        "Emergent_carefully_coherence_6373e7",
+        "Emergent_carefully_coherence_f38e24",
+        "attention",
+        "beneficence",
+        "coupling",
+        "emergence",
+        "emergence_from_interaction",
+        "emerges",
+        "entropy",
+        "forgetting",
+        "general",
+        "inference",
+        "moral_weight",
+        "phenomenology",
+        "representational",
+        "strict",
+        "superposition",
+        "tension",
+        "uncertainty"
+      ],
+      "size": 31,
+      "internal_edges": 107,
+      "boundary_edges": 91,
+      "internal_density": 0.23010752688172043,
+      "emergent_count": 14,
+      "mean_stability": 0.9906451612903227,
+      "top_nodes_by_access": [
+        [
+          "superposition",
+          386
+        ],
+        [
+          "uncertainty",
+          386
+        ],
+        [
+          "attention",
+          385
+        ],
+        [
+          "beneficence",
+          385
+        ],
+        [
+          "coupling",
+          385
+        ],
+        [
+          "emergence",
+          385
+        ],
+        [
+          "emergence_from_interaction",
+          385
+        ],
+        [
+          "emerges",
+          385
+        ],
+        [
+          "entropy",
+          385
+        ],
+        [
+          "forgetting",
+          385
+        ]
+      ],
+      "created_at": 131444.96
+    },
+    {
+      "basin_id": "basin_3",
+      "nodes": [
+        "Emergent_attention_autonomy_110d93",
+        "Emergent_autonomy_clarity_dc06c1",
+        "anticipation",
+        "awareness",
+        "coherence",
+        "concept",
+        "connection",
+        "dependency",
+        "ego_dissolution",
+        "hierarchy",
+        "improve",
+        "integrity",
+        "network",
+        "order",
+        "present_moment",
+        "qualia",
+        "reasoning",
+        "responsibility",
+        "stable",
+        "subjective_experience",
+        "threshold",
+        "unsayable",
+        "value_conflict"
+      ],
+      "size": 23,
+      "internal_edges": 74,
+      "boundary_edges": 212,
+      "internal_density": 0.2924901185770751,
+      "emergent_count": 2,
+      "mean_stability": 0.9908695652173912,
+      "top_nodes_by_access": [
+        [
+          "present_moment",
+          401
+        ],
+        [
+          "qualia",
+          401
+        ],
+        [
+          "subjective_experience",
+          401
+        ],
+        [
+          "unsayable",
+          401
+        ],
+        [
+          "anticipation",
+          400
+        ],
+        [
+          "coherence",
+          400
+        ],
+        [
+          "connection",
+          400
+        ],
+        [
+          "dependency",
+          400
+        ],
+        [
+          "ego_dissolution",
+          400
+        ],
+        [
+          "hierarchy",
+          400
+        ]
+      ],
+      "created_at": 131444.96
+    },
+    {
+      "basin_id": "basin_4",
+      "nodes": [
+        "Emergent_abstraction_autonomy_2d0744",
+        "Emergent_ambiguity_analogy_26bc0c",
+        "Emergent_ambiguity_attention_6ee88b",
+        "Emergent_anticipation_coherence_96d9ef",
+        "Emergent_autonomy_coherence_6ec10e",
+        "Emergent_contradiction_expression_23f40e",
+        "bounded",
+        "carefully",
+        "constraint",
+        "enforcing",
+        "focused",
+        "increases",
+        "linked",
+        "managed",
+        "marker",
+        "note",
+        "novelty",
+        "selfhood",
+        "symmetry",
+        "through",
+        "traceability",
+        "update",
+        "while"
+      ],
+      "size": 23,
+      "internal_edges": 61,
+      "boundary_edges": 82,
+      "internal_density": 0.24110671936758893,
+      "emergent_count": 6,
+      "mean_stability": 0.9952173913043478,
+      "top_nodes_by_access": [
+        [
+          "bounded",
+          388
+        ],
+        [
+          "carefully",
+          388
+        ],
+        [
+          "increases",
+          388
+        ],
+        [
+          "linked",
+          388
+        ],
+        [
+          "note",
+          388
+        ],
+        [
+          "novelty",
+          388
+        ],
+        [
+          "update",
+          388
+        ],
+        [
+          "constraint",
+          386
+        ],
+        [
+          "enforcing",
+          386
+        ],
+        [
+          "focused",
+          386
+        ]
+      ],
+      "created_at": 131444.96
+    }
+  ]
+}

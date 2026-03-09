@@ -1,0 +1,15 @@
+{
+  "state": "Verdant-Minds/outputs_v2_replication/run_20260306T043743Z/seed_11/state.json",
+  "nodes": 187,
+  "edges": 17320,
+  "emergent_nodes": 62,
+  "emergent_edges": 1830,
+  "comparable_emergent_edges": 1830,
+  "older_to_newer_share": 1.0,
+  "newer_to_older_share": 0.0,
+  "scaffolding_share": 1.0,
+  "earlier_share": 1.0,
+  "edge_orientation_mode": "older_to_newer",
+  "basin_count": 2,
+  "higher_order_emergent_count": 0
+}

@@ -1,84 +1,40 @@
-# Verdant V2 in Google Colab
+# Verdant-Minds V2 — Colab Experiment Cells
 
-Copy/paste the cells below into a fresh Colab notebook.
+Reproducible experiment cells for running Verdant V2 cultivation,
+analysis, and intervention experiments in Google Colab.
 
-## 1) Clone repo and checkout `V2`
-```bash
-!git clone https://github.com/Captainkoopa42/Verdant-Minds.git
-%cd Verdant-Minds
-!git checkout V2
+## Quick Start
+
+Open `Verdant_V2_Replication.ipynb` in Colab for the integrated notebook.
+
+Alternatively, paste individual cells from `cells/` in order.
+
+## Cell Order
+
+| Cell | Purpose | ~Time |
+|------|---------|-------|
+| 01 | Clone repo, checkout V2 | 10s |
+| 02 | Create workspace symlink | 1s |
+| 03 | Install ethomorphic + verdant_v2 + cultivation + deps | 30s |
+| 04 | Run V2 test suite | 30s |
+| 05 | Run baseline + ablation + scramble (80 cycles × 20 seeds × 3) | 10min |
+| 06 | Compare intervention runs | 30s |
+| 07 | Print comparison summary | 1s |
+| 08 | Bundle and download all outputs | 10s |
+| 09 | Full scaffold analysis + visualization on a state file | 30s |
+| 10 | Extract a previously downloaded data bundle | 5s |
+
+## Minimum Viable Replication
+
+1. Run cells 01–04 (setup + tests)
+2. Modify cell 05: `--cycles 20 --seeds 0-4` for a fast 5-seed run
+3. Run cell 09 on any produced state.json
+
+## Output Structure
+
 ```
-
-## 2) Install editable packages
-```bash
-!python -m pip install -U pip
-!python -m pip install -e ./ethomorphic -e ./verdant_v2 -e ./cultivation
-```
-
-## 3) Quick sanity test
-```bash
-!pytest tests_v2 -q
-```
-
-## 4) Scaffold-ablation experiment commands
-
-Baseline:
-```bash
-!python -m cultivation.cli run \
-  --cycles 80 \
-  --seeds 0-19 \
-  --provider local \
-  --basin-routing \
-  --outdir outputs_baseline
-```
-
-Ablation:
-```bash
-!python -m cultivation.cli run \
-  --cycles 80 \
-  --seeds 0-19 \
-  --provider local \
-  --basin-routing \
-  --outdir outputs_ablation \
-  --intervention-mode ablate_oldest_nodes \
-  --intervention-cycle 40 \
-  --ablation-fraction 0.1 \
-  --intervention-target global
-```
-
-Scramble:
-```bash
-!python -m cultivation.cli run \
-  --cycles 80 \
-  --seeds 0-19 \
-  --provider local \
-  --basin-routing \
-  --outdir outputs_scramble \
-  --intervention-mode scramble_ee_edges \
-  --intervention-cycle 40 \
-  --intervention-target global
-```
-
-Comparison:
-```bash
-!python analysis/compare_intervention_runs.py \
-  --baseline outputs_baseline/<run_stamp> \
-  --ablation outputs_ablation/<run_stamp> \
-  --scramble outputs_scramble/<run_stamp> \
-  --outdir intervention_comparison
-```
-
-Expected run layout:
-- `outputs_*/run_<timestamp>/seed_<n>/state.json`
-- `outputs_*/run_<timestamp>/seed_<n>/cycles.jsonl`
-- `outputs_*/run_<timestamp>/seed_<n>/summary.json`
-
-## 5) Output locations and download targets
-- Cultivation artifacts: under `outputs_*/run_<timestamp>/seed_<n>/`
-- Comparison artifacts: under `intervention_comparison/`
-  - Includes `comparison_summary.json` and intervention comparison figures.
-
-In Colab, browse files from the left sidebar or zip outputs for download:
-```bash
-!zip -r verdant_outputs.zip outputs_baseline outputs_ablation outputs_scramble intervention_comparison
+outputs_baseline/run_<timestamp>/
+  seed_N/state.json      # Persisted V2 system state
+  seed_N/cycles.jsonl    # Per-cycle telemetry
+  seed_N/summary.json    # Run summary metrics
 ```

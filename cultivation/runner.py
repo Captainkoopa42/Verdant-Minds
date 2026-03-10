@@ -68,6 +68,26 @@ def _proposal_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, bool, st
     return prop_count, conflict, source, top_list
 
 
+def _dynamics_telemetry_from_chunk(chunk: CognitiveChunk) -> dict[str, object]:
+    """Extract basin dynamics telemetry from chunk sections."""
+    dsec = chunk.get_section_content("basin_dynamics_section") or {}
+    if not isinstance(dsec, dict):
+        dsec = {}
+    return {
+        "pruned_edges_count": int(dsec.get("pruned_edges_count", 0)),
+        "pruned_basin_id": dsec.get("pruned_basin_id"),
+        "basin_density_before": dsec.get("basin_density_before"),
+        "basin_density_after": dsec.get("basin_density_after"),
+        "bud_events_count": int(dsec.get("bud_events_count", 0)),
+        "bud_parent_basin_id": dsec.get("bud_parent_basin_id"),
+        "bud_new_basin_id": dsec.get("bud_new_basin_id"),
+        "bud_new_basin_size": dsec.get("bud_new_basin_size"),
+        "basin_pressure_values": dsec.get("basin_pressure_values", {}),
+        "boundary_emergents_created": int(dsec.get("boundary_emergents_created", 0)),
+        "boundary_pairs": dsec.get("boundary_pairs", []),
+    }
+
+
 @dataclass(frozen=True)
 class RunnerConfig:
     """Configuration for cultivation sessions."""
@@ -82,6 +102,19 @@ class RunnerConfig:
     ablation_fraction: float = 0.1
     intervention_target: str = "global"
     intervention_seed: int | None = None
+    enable_pruning: bool = False
+    enable_budding: bool = False
+    enable_boundary_emergence: bool = False
+    basin_prune_interval: int = 15
+    basin_prune_weight_threshold: float = 0.2
+    basin_prune_top_k: int = 12
+    basin_bud_interval: int = 20
+    basin_pressure_threshold: float = 0.5
+    basin_split_fraction: float = 0.15
+    basin_min_size_for_split: int = 12
+    basin_min_age_for_split: int = 20
+    boundary_emergence_threshold: float = 0.5
+    boundary_cooldown_cycles: int = 10
 
 
 class CultivationRunner:
@@ -141,7 +174,24 @@ class CultivationRunner:
             np.random.seed(seed)
             np.random.default_rng = deterministic_default_rng
             time.time = deterministic_time
-            system = VerdantSystem(VerdantConfig(seed=seed, initialize_knowledge=True, basin_routing=self.config.basin_routing))
+            system = VerdantSystem(VerdantConfig(
+                seed=seed,
+                initialize_knowledge=True,
+                basin_routing=self.config.basin_routing,
+                basin_prune_enabled=self.config.enable_pruning,
+                basin_prune_interval=self.config.basin_prune_interval,
+                basin_prune_weight_threshold=self.config.basin_prune_weight_threshold,
+                basin_prune_top_k=self.config.basin_prune_top_k,
+                basin_bud_enabled=self.config.enable_budding,
+                basin_bud_interval=self.config.basin_bud_interval,
+                basin_pressure_threshold=self.config.basin_pressure_threshold,
+                basin_split_fraction=self.config.basin_split_fraction,
+                basin_min_size_for_split=self.config.basin_min_size_for_split,
+                basin_min_age_for_split=self.config.basin_min_age_for_split,
+                boundary_emergence_enabled=self.config.enable_boundary_emergence,
+                boundary_emergence_threshold=self.config.boundary_emergence_threshold,
+                boundary_cooldown_cycles=self.config.boundary_cooldown_cycles,
+            ))
             # Ensure ECWF parameters are seed-deterministic even though upstream default is random_state=None.
             system.ecwf.random_state = seed
             system.ecwf.rng = np.random.RandomState(seed)
@@ -237,6 +287,7 @@ class CultivationRunner:
 
                     basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
+                    dynamics = _dynamics_telemetry_from_chunk(chunk)
                     record = CycleRecord(
                         cycle_index=cycle_idx,
                         seed=seed,
@@ -263,6 +314,17 @@ class CultivationRunner:
                         removed_nodes_count=removed_nodes_count,
                         removed_ee_edges=removed_ee_edges,
                         scrambled_edge_count=scrambled_edge_count,
+                        pruned_edges_count=int(dynamics["pruned_edges_count"]),
+                        pruned_basin_id=(str(dynamics["pruned_basin_id"]) if dynamics["pruned_basin_id"] is not None else None),
+                        basin_density_before=(float(dynamics["basin_density_before"]) if dynamics["basin_density_before"] is not None else None),
+                        basin_density_after=(float(dynamics["basin_density_after"]) if dynamics["basin_density_after"] is not None else None),
+                        bud_events_count=int(dynamics["bud_events_count"]),
+                        bud_parent_basin_id=(str(dynamics["bud_parent_basin_id"]) if dynamics["bud_parent_basin_id"] is not None else None),
+                        bud_new_basin_id=(str(dynamics["bud_new_basin_id"]) if dynamics["bud_new_basin_id"] is not None else None),
+                        bud_new_basin_size=(int(dynamics["bud_new_basin_size"]) if dynamics["bud_new_basin_size"] is not None else None),
+                        basin_pressure_values={str(k): float(v) for k, v in dict(dynamics["basin_pressure_values"]).items()},
+                        boundary_emergents_created=int(dynamics["boundary_emergents_created"]),
+                        boundary_pairs=[[str(x) for x in pair] for pair in list(dynamics["boundary_pairs"])],
                         telemetry={
                             "phase_label": metrics.get("phase", "Flexible"),
                             "edge_classification": metrics.get("edge_classification", {}),

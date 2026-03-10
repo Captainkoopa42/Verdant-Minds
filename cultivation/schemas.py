@@ -36,6 +36,17 @@ class CycleRecord(BaseModel):
     removed_nodes_count: int = 0
     removed_ee_edges: int = 0
     scrambled_edge_count: int = 0
+    pruned_edges_count: int = 0
+    pruned_basin_id: str | None = None
+    basin_density_before: float | None = None
+    basin_density_after: float | None = None
+    bud_events_count: int = 0
+    bud_parent_basin_id: str | None = None
+    bud_new_basin_id: str | None = None
+    bud_new_basin_size: int | None = None
+    basin_pressure_values: dict[str, float] = Field(default_factory=dict)
+    boundary_emergents_created: int = 0
+    boundary_pairs: list[list[str]] = Field(default_factory=list)
 
 
 class SessionSummary(BaseModel):

@@ -19,6 +19,10 @@ def main() -> None:
     run_p.add_argument("--outdir", default="outputs")
     run_p.add_argument("--pressure-every", type=int, default=5)
     run_p.add_argument("--basin-routing", action="store_true")
+    run_p.add_argument("--enable-pruning", action="store_true")
+    run_p.add_argument("--enable-budding", action="store_true")
+    run_p.add_argument("--enable-boundary-emergence", action="store_true")
+    run_p.add_argument("--enable-all-dynamics", action="store_true")
     run_p.add_argument("--intervention-mode", default="none", choices=["none", "ablate_oldest_nodes", "scramble_ee_edges"])
     run_p.add_argument("--intervention-cycle", type=int, default=None)
     run_p.add_argument("--ablation-fraction", type=float, default=0.1)
@@ -28,6 +32,9 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "run":
+        enable_pruning = bool(args.enable_pruning or args.enable_all_dynamics)
+        enable_budding = bool(args.enable_budding or args.enable_all_dynamics)
+        enable_boundary_emergence = bool(args.enable_boundary_emergence or args.enable_all_dynamics)
         config = RunnerConfig(
             cycles=args.cycles,
             provider=args.provider,
@@ -39,6 +46,9 @@ def main() -> None:
             ablation_fraction=args.ablation_fraction,
             intervention_target=args.intervention_target,
             intervention_seed=args.intervention_seed,
+            enable_pruning=enable_pruning,
+            enable_budding=enable_budding,
+            enable_boundary_emergence=enable_boundary_emergence,
         )
         runner = CultivationRunner(config)
         run_dir = runner.run(parse_seeds(args.seeds))

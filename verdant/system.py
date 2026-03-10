@@ -27,6 +27,12 @@ from verdant_v2.governance.data_king import DataKing
 from verdant_v2.governance.ethics_king import EthicsKing
 from verdant_v2.governance.forefront_king import ForefrontKing
 from verdant_v2.memory.basins import BasinInfo, detect_basins
+from verdant_v2.memory.basin_dynamics import (
+    maybe_bud_basin,
+    maybe_create_boundary_emergents,
+    compute_basin_pressure,
+    prune_basin_edges,
+)
 from verdant_v2.memory.basin_state import BasinState
 from verdant_v2.memory.graph import MemoryWeb
 from verdant_v2.pipeline.blocks.action import ActionBlock
@@ -60,6 +66,19 @@ class VerdantConfig(BaseModel):
     basin_min_size: int = 5
     basin_routing: bool = False
     basin_top_m: int = 2
+    basin_prune_enabled: bool = False
+    basin_prune_interval: int = 15
+    basin_prune_weight_threshold: float = 0.2
+    basin_prune_top_k: int = 12
+    basin_bud_enabled: bool = False
+    basin_bud_interval: int = 20
+    basin_pressure_threshold: float = 0.5
+    basin_split_fraction: float = 0.15
+    basin_min_size_for_split: int = 12
+    basin_min_age_for_split: int = 20
+    boundary_emergence_enabled: bool = False
+    boundary_emergence_threshold: float = 0.5
+    boundary_cooldown_cycles: int = 10
 
 
 class VerdantSystem:
@@ -150,6 +169,9 @@ class VerdantSystem:
         self._last_phase: str = "Flexible"
         self._last_basins: List[BasinInfo] = []
         self._basin_states: Dict[str, BasinState] = {}
+        self._next_basin_id: int = 0
+        self._last_boundary_cycles: Dict[frozenset[str], int] = {}
+        self._dynamics_metrics: Dict[str, Any] = {}
 
         # Knowledge initialization
         if self.config.initialize_knowledge:
@@ -202,6 +224,10 @@ class VerdantSystem:
                 k=self.config.basin_scan_k,
                 min_size=self.config.basin_min_size,
             )
+            if self._last_basins:
+                existing = [int(b.basin_id.split("_")[-1]) for b in self._last_basins if b.basin_id.startswith("basin_") and b.basin_id.split("_")[-1].isdigit()]
+                if existing:
+                    self._next_basin_id = max(self._next_basin_id, max(existing) + 1)
 
         chunk.update_section("basins_section", {
             "basins": [b.__dict__ for b in self._last_basins],
@@ -223,13 +249,108 @@ class VerdantSystem:
                     "size": basin.size,
                     "internal_density": basin.internal_density,
                     "emergent_count": basin.emergent_count,
+                    "created_cycle": (
+                        int(prior.local_metrics.get("created_cycle", self._cycle_count))
+                        if prior is not None
+                        else self._cycle_count
+                    ),
                 },
                 last_local_coherence=(float(proposal.get("coherence")) if isinstance(proposal, dict) and isinstance(proposal.get("coherence"), (int, float)) else (prior.last_local_coherence if prior else None)),
                 last_local_phase=(str(proposal.get("phase_state")) if isinstance(proposal, dict) and proposal.get("phase_state") is not None else (prior.last_local_phase if prior else None)),
                 last_proposal=(proposal if isinstance(proposal, dict) else (prior.last_proposal if prior else None)),
             )
 
+        self._apply_basin_dynamics(chunk)
+
         return chunk
+
+    def _apply_basin_dynamics(self, chunk: CognitiveChunk) -> None:
+        cycle = self._cycle_count
+        dynamics: Dict[str, Any] = {
+            "pruned_edges_count": 0,
+            "pruned_basin_id": None,
+            "basin_density_before": None,
+            "basin_density_after": None,
+            "bud_events_count": 0,
+            "bud_parent_basin_id": None,
+            "bud_new_basin_id": None,
+            "bud_new_basin_size": None,
+            "basin_pressure_values": {},
+            "boundary_emergents_created": 0,
+            "boundary_pairs": [],
+        }
+
+        prune_this_cycle = (
+            self.config.basin_prune_enabled
+            and self._last_basins
+            and cycle % max(1, self.config.basin_prune_interval) == 0
+        )
+        if prune_this_cycle:
+            for basin in self._last_basins:
+                result = prune_basin_edges(
+                    self.memory_web,
+                    basin,
+                    weight_threshold=self.config.basin_prune_weight_threshold,
+                    keep_top_k=self.config.basin_prune_top_k,
+                )
+                if result.edges_pruned > 0 and dynamics["pruned_basin_id"] is None:
+                    dynamics["pruned_basin_id"] = basin.basin_id
+                    dynamics["basin_density_before"] = result.density_before
+                    dynamics["basin_density_after"] = result.density_after
+                dynamics["pruned_edges_count"] += result.edges_pruned
+
+        should_bud = (
+            self.config.basin_bud_enabled
+            and self._last_basins
+            and cycle % max(1, self.config.basin_bud_interval) == 0
+            and not prune_this_cycle
+        )
+        if should_bud:
+            for basin in self._last_basins:
+                dynamics["basin_pressure_values"][basin.basin_id] = compute_basin_pressure(self.memory_web, basin)
+            for basin in self._last_basins:
+                bud = maybe_bud_basin(
+                    self.memory_web,
+                    basin,
+                    self._basin_states,
+                    cycle=cycle,
+                    next_basin_id=self._next_basin_id,
+                    pressure_threshold=self.config.basin_pressure_threshold,
+                    split_fraction=self.config.basin_split_fraction,
+                    min_size_for_split=self.config.basin_min_size_for_split,
+                    min_age_for_split=self.config.basin_min_age_for_split,
+                )
+                if bud is None:
+                    continue
+                self._next_basin_id += 1
+                dynamics["bud_events_count"] += 1
+                dynamics["bud_parent_basin_id"] = bud.parent_basin_id
+                dynamics["bud_new_basin_id"] = bud.new_basin_id
+                dynamics["bud_new_basin_size"] = bud.new_basin_size
+                break
+
+        routing = chunk.get_section_content("routing_section") or {}
+        active_ids = routing.get("active_basin_ids", []) if isinstance(routing, dict) else []
+        active_basins = [b for b in self._last_basins if b.basin_id in set(active_ids)]
+        if self.config.boundary_emergence_enabled and len(active_basins) >= 2:
+            memory = chunk.get_section_content("memory_section") or {}
+            levels = memory.get("activation_levels", {}) if isinstance(memory, dict) else {}
+            activation_levels = levels if isinstance(levels, dict) else {}
+            boundary = maybe_create_boundary_emergents(
+                self.memory_web,
+                self.bridge,
+                active_basins,
+                activation_levels,
+                cycle=cycle,
+                threshold=self.config.boundary_emergence_threshold,
+                cooldown_cycles=self.config.boundary_cooldown_cycles,
+                last_boundary_cycles=self._last_boundary_cycles,
+            )
+            dynamics["boundary_emergents_created"] = boundary.created_count
+            dynamics["boundary_pairs"] = boundary.boundary_pairs
+
+        chunk.update_section("basin_dynamics_section", dynamics)
+        self._dynamics_metrics = dynamics
 
     def initialize_knowledge(self) -> Dict[str, Any]:
         """Seed the memory web with foundational concepts and connections.
@@ -274,6 +395,7 @@ class VerdantSystem:
             "largest_basin_size": (max((b.size for b in self._last_basins), default=0)),
             "basins": [b.__dict__ for b in self._last_basins],
             "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
+            **self._dynamics_metrics,
         }
 
     def save_state(self, path: str) -> None:
@@ -307,6 +429,9 @@ class VerdantSystem:
                 "basin_scan_interval": self.config.basin_scan_interval,
                 "basin_scan_k": self.config.basin_scan_k,
                 "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
+                "next_basin_id": self._next_basin_id,
+                "last_boundary_cycles": {"|".join(sorted(list(k))): int(v) for k, v in self._last_boundary_cycles.items()},
+                "dynamics_metrics": self._dynamics_metrics,
             },
         )
 
@@ -351,6 +476,16 @@ class VerdantSystem:
                 for k, v in raw_basin_states.items()
                 if isinstance(v, dict)
             }
+        self._next_basin_id = int(extra.get("next_basin_id", 0))
+        raw_boundary = extra.get("last_boundary_cycles", {})
+        if isinstance(raw_boundary, dict):
+            self._last_boundary_cycles = {
+                frozenset(str(k).split("|")): int(v)
+                for k, v in raw_boundary.items()
+            }
+        raw_dyn = extra.get("dynamics_metrics", {})
+        if isinstance(raw_dyn, dict):
+            self._dynamics_metrics = raw_dyn
         # Re-wire blocks
         self._memory_block.memory_web = self.memory_web
         self._memory_block.bridge = self.bridge

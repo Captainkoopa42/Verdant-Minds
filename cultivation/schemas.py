@@ -45,8 +45,12 @@ class CycleRecord(BaseModel):
     bud_new_basin_id: str | None = None
     bud_new_basin_size: int | None = None
     basin_pressure_values: dict[str, float] = Field(default_factory=dict)
+    pressure_breakdown: list[dict[str, Any]] = Field(default_factory=list)
     boundary_emergents_created: int = 0
     boundary_pairs: list[list[str]] = Field(default_factory=list)
+    density_regulation_edges_removed: int = 0
+    global_edge_ratio_before: float = 0.0
+    global_edge_ratio_after: float = 0.0
 
 
 class SessionSummary(BaseModel):

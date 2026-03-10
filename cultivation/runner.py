@@ -83,8 +83,12 @@ def _dynamics_telemetry_from_chunk(chunk: CognitiveChunk) -> dict[str, object]:
         "bud_new_basin_id": dsec.get("bud_new_basin_id"),
         "bud_new_basin_size": dsec.get("bud_new_basin_size"),
         "basin_pressure_values": dsec.get("basin_pressure_values", {}),
+        "pressure_breakdown": dsec.get("pressure_breakdown", []),
         "boundary_emergents_created": int(dsec.get("boundary_emergents_created", 0)),
         "boundary_pairs": dsec.get("boundary_pairs", []),
+        "density_regulation_edges_removed": int(dsec.get("density_regulation_edges_removed", 0)),
+        "global_edge_ratio_before": float(dsec.get("global_edge_ratio_before", 0.0)),
+        "global_edge_ratio_after": float(dsec.get("global_edge_ratio_after", 0.0)),
     }
 
 
@@ -109,12 +113,16 @@ class RunnerConfig:
     basin_prune_weight_threshold: float = 0.2
     basin_prune_top_k: int = 12
     basin_bud_interval: int = 20
-    basin_pressure_threshold: float = 0.5
+    basin_pressure_threshold: float = 0.01
     basin_split_fraction: float = 0.15
-    basin_min_size_for_split: int = 12
-    basin_min_age_for_split: int = 20
+    basin_min_size_for_split: int = 8
+    basin_min_age_for_split: int = 10
     boundary_emergence_threshold: float = 0.5
     boundary_cooldown_cycles: int = 10
+    boundary_use_ecwf: bool = True
+    density_regulation_enabled: bool = True
+    density_max_edge_ratio: float = 80.0
+    density_target_edge_ratio: float = 60.0
 
 
 class CultivationRunner:
@@ -191,6 +199,10 @@ class CultivationRunner:
                 boundary_emergence_enabled=self.config.enable_boundary_emergence,
                 boundary_emergence_threshold=self.config.boundary_emergence_threshold,
                 boundary_cooldown_cycles=self.config.boundary_cooldown_cycles,
+                boundary_use_ecwf=self.config.boundary_use_ecwf,
+                density_regulation_enabled=self.config.density_regulation_enabled,
+                density_max_edge_ratio=self.config.density_max_edge_ratio,
+                density_target_edge_ratio=self.config.density_target_edge_ratio,
             ))
             # Ensure ECWF parameters are seed-deterministic even though upstream default is random_state=None.
             system.ecwf.random_state = seed
@@ -323,8 +335,12 @@ class CultivationRunner:
                         bud_new_basin_id=(str(dynamics["bud_new_basin_id"]) if dynamics["bud_new_basin_id"] is not None else None),
                         bud_new_basin_size=(int(dynamics["bud_new_basin_size"]) if dynamics["bud_new_basin_size"] is not None else None),
                         basin_pressure_values={str(k): float(v) for k, v in dict(dynamics["basin_pressure_values"]).items()},
+                        pressure_breakdown=[dict(x) for x in list(dynamics["pressure_breakdown"])],
                         boundary_emergents_created=int(dynamics["boundary_emergents_created"]),
                         boundary_pairs=[[str(x) for x in pair] for pair in list(dynamics["boundary_pairs"])],
+                        density_regulation_edges_removed=int(dynamics["density_regulation_edges_removed"]),
+                        global_edge_ratio_before=float(dynamics["global_edge_ratio_before"]),
+                        global_edge_ratio_after=float(dynamics["global_edge_ratio_after"]),
                         telemetry={
                             "phase_label": metrics.get("phase", "Flexible"),
                             "edge_classification": metrics.get("edge_classification", {}),

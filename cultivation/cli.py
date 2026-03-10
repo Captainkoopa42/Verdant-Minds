@@ -23,6 +23,9 @@ def main() -> None:
     run_p.add_argument("--enable-budding", action="store_true")
     run_p.add_argument("--enable-boundary-emergence", action="store_true")
     run_p.add_argument("--enable-all-dynamics", action="store_true")
+    run_p.add_argument("--boundary-use-ecwf", action=argparse.BooleanOptionalAction, default=True)
+    run_p.add_argument("--bud-pressure-threshold", type=float, default=0.01)
+    run_p.add_argument("--density-regulation", action=argparse.BooleanOptionalAction, default=True)
     run_p.add_argument("--intervention-mode", default="none", choices=["none", "ablate_oldest_nodes", "scramble_ee_edges"])
     run_p.add_argument("--intervention-cycle", type=int, default=None)
     run_p.add_argument("--ablation-fraction", type=float, default=0.1)
@@ -49,6 +52,9 @@ def main() -> None:
             enable_pruning=enable_pruning,
             enable_budding=enable_budding,
             enable_boundary_emergence=enable_boundary_emergence,
+            basin_pressure_threshold=args.bud_pressure_threshold,
+            boundary_use_ecwf=args.boundary_use_ecwf,
+            density_regulation_enabled=args.density_regulation,
         )
         runner = CultivationRunner(config)
         run_dir = runner.run(parse_seeds(args.seeds))

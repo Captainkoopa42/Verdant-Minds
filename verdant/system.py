@@ -13,12 +13,14 @@ from __future__ import annotations
 
 import time
 from dataclasses import asdict
+import math
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 from pydantic import BaseModel, Field
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
+from ethomorphic.bridge.emergence import assign_emergent_concept_mappings
 from ethomorphic.coherence.invariants import compute_coherence
 from ethomorphic.ecwf.core import ECWFCore
 
@@ -28,10 +30,14 @@ from verdant_v2.governance.ethics_king import EthicsKing
 from verdant_v2.governance.forefront_king import ForefrontKing
 from verdant_v2.memory.basins import BasinInfo, detect_basins
 from verdant_v2.memory.basin_dynamics import (
+    BoundaryCandidate,
+    PressureBreakdown,
     maybe_bud_basin,
     maybe_create_boundary_emergents,
+    maybe_propose_boundary_candidates,
     compute_basin_pressure,
     prune_basin_edges,
+    regulate_density,
 )
 from verdant_v2.memory.basin_state import BasinState
 from verdant_v2.memory.graph import MemoryWeb
@@ -72,13 +78,17 @@ class VerdantConfig(BaseModel):
     basin_prune_top_k: int = 12
     basin_bud_enabled: bool = False
     basin_bud_interval: int = 20
-    basin_pressure_threshold: float = 0.5
+    basin_pressure_threshold: float = 0.01
     basin_split_fraction: float = 0.15
-    basin_min_size_for_split: int = 12
-    basin_min_age_for_split: int = 20
+    basin_min_size_for_split: int = 8
+    basin_min_age_for_split: int = 10
     boundary_emergence_enabled: bool = False
     boundary_emergence_threshold: float = 0.5
     boundary_cooldown_cycles: int = 10
+    boundary_use_ecwf: bool = True
+    density_regulation_enabled: bool = True
+    density_max_edge_ratio: float = 80.0
+    density_target_edge_ratio: float = 60.0
 
 
 class VerdantSystem:
@@ -276,9 +286,17 @@ class VerdantSystem:
             "bud_new_basin_id": None,
             "bud_new_basin_size": None,
             "basin_pressure_values": {},
+            "pressure_breakdown": [],
             "boundary_emergents_created": 0,
             "boundary_pairs": [],
+            "global_edge_ratio_before": 0.0,
+            "global_edge_ratio_after": 0.0,
+            "density_regulation_edges_removed": 0,
         }
+
+        node_count = max(1, self.memory_web.graph.number_of_nodes())
+        edge_count = self.memory_web.graph.number_of_edges()
+        dynamics["global_edge_ratio_before"] = float(edge_count / node_count)
 
         prune_this_cycle = (
             self.config.basin_prune_enabled
@@ -299,15 +317,72 @@ class VerdantSystem:
                     dynamics["basin_density_after"] = result.density_after
                 dynamics["pruned_edges_count"] += result.edges_pruned
 
+        if self.config.density_regulation_enabled:
+            removed = regulate_density(
+                self.memory_web,
+                max_edge_ratio=self.config.density_max_edge_ratio,
+                prune_to_ratio=self.config.density_target_edge_ratio,
+            )
+            dynamics["density_regulation_edges_removed"] = removed
+
+        routing = chunk.get_section_content("routing_section") or {}
+        active_ids = routing.get("active_basin_ids", []) if isinstance(routing, dict) else []
+        active_basins = [b for b in self._last_basins if b.basin_id in set(active_ids)]
+
+        boundary_candidates: list[BoundaryCandidate] = []
+        if self.config.boundary_emergence_enabled and len(active_basins) >= 2:
+            memory = chunk.get_section_content("memory_section") or {}
+            levels = memory.get("activation_levels", {}) if isinstance(memory, dict) else {}
+            activation_levels = levels if isinstance(levels, dict) else {}
+            boundary_candidates = maybe_propose_boundary_candidates(
+                self.memory_web,
+                active_basins,
+                activation_levels,
+                threshold=self.config.boundary_emergence_threshold,
+                cooldown_cycles=self.config.boundary_cooldown_cycles,
+                cycle=cycle,
+                last_boundary_cycles=self._last_boundary_cycles,
+            )
+            dynamics["boundary_pairs"] = [[c.basin_pair[0], c.basin_pair[1]] for c in boundary_candidates[:3]]
+            if self.config.boundary_use_ecwf:
+                for candidate in boundary_candidates:
+                    created = self._evaluate_candidate_emergence(candidate)
+                    if created is None:
+                        continue
+                    pair_key = frozenset(candidate.basin_pair)
+                    self._last_boundary_cycles[pair_key] = cycle
+                    dynamics["boundary_emergents_created"] += 1
+            else:
+                boundary = maybe_create_boundary_emergents(
+                    self.memory_web,
+                    self.bridge,
+                    active_basins,
+                    activation_levels,
+                    cycle=cycle,
+                    threshold=self.config.boundary_emergence_threshold,
+                    cooldown_cycles=self.config.boundary_cooldown_cycles,
+                    last_boundary_cycles=self._last_boundary_cycles,
+                )
+                dynamics["boundary_emergents_created"] = boundary.created_count
+                dynamics["boundary_pairs"] = boundary.boundary_pairs
+
         should_bud = (
             self.config.basin_bud_enabled
             and self._last_basins
             and cycle % max(1, self.config.basin_bud_interval) == 0
             and not prune_this_cycle
         )
+        for basin in self._last_basins:
+            pressure = compute_basin_pressure(self.memory_web, basin)
+            state = self._basin_states.get(basin.basin_id)
+            created_cycle = int(state.local_metrics.get("created_cycle", cycle)) if state else cycle
+            pressure.meets_size = basin.size >= self.config.basin_min_size_for_split
+            pressure.meets_age = (cycle - created_cycle) >= self.config.basin_min_age_for_split
+            pressure.meets_threshold = pressure.raw_pressure > self.config.basin_pressure_threshold
+            pressure.would_bud = bool(pressure.meets_size and pressure.meets_age and pressure.meets_threshold)
+            dynamics["basin_pressure_values"][basin.basin_id] = pressure.raw_pressure
+            dynamics["pressure_breakdown"].append(asdict(pressure))
         if should_bud:
-            for basin in self._last_basins:
-                dynamics["basin_pressure_values"][basin.basin_id] = compute_basin_pressure(self.memory_web, basin)
             for basin in self._last_basins:
                 bud = maybe_bud_basin(
                     self.memory_web,
@@ -329,28 +404,69 @@ class VerdantSystem:
                 dynamics["bud_new_basin_size"] = bud.new_basin_size
                 break
 
-        routing = chunk.get_section_content("routing_section") or {}
-        active_ids = routing.get("active_basin_ids", []) if isinstance(routing, dict) else []
-        active_basins = [b for b in self._last_basins if b.basin_id in set(active_ids)]
-        if self.config.boundary_emergence_enabled and len(active_basins) >= 2:
-            memory = chunk.get_section_content("memory_section") or {}
-            levels = memory.get("activation_levels", {}) if isinstance(memory, dict) else {}
-            activation_levels = levels if isinstance(levels, dict) else {}
-            boundary = maybe_create_boundary_emergents(
-                self.memory_web,
-                self.bridge,
-                active_basins,
-                activation_levels,
-                cycle=cycle,
-                threshold=self.config.boundary_emergence_threshold,
-                cooldown_cycles=self.config.boundary_cooldown_cycles,
-                last_boundary_cycles=self._last_boundary_cycles,
-            )
-            dynamics["boundary_emergents_created"] = boundary.created_count
-            dynamics["boundary_pairs"] = boundary.boundary_pairs
+        node_count_after = max(1, self.memory_web.graph.number_of_nodes())
+        edge_count_after = self.memory_web.graph.number_of_edges()
+        dynamics["global_edge_ratio_after"] = float(edge_count_after / node_count_after)
 
         chunk.update_section("basin_dynamics_section", dynamics)
         self._dynamics_metrics = dynamics
+
+    def _evaluate_candidate_emergence(self, candidate: BoundaryCandidate) -> str | None:
+        """Evaluate a boundary candidate with ECWF-native emergence checks."""
+        parents = [p for p in candidate.parent_concepts if self.memory_web.get_concept(p) is not None]
+        if len(parents) < 2:
+            return None
+
+        for parent in parents:
+            if parent not in self.bridge.concept_dimension_mapping:
+                self.bridge.assign_concept_mappings(parent)
+
+        cog_state = self.bridge.get_cognitive_state_for_concepts(parents)
+        eth_state = self.bridge.get_ethical_state_for_concepts(parents)
+        t_val = float(self._t_g + (self._cycle_count / 1000.0))
+        cog_sens, eth_sens = self.ecwf.compute_sensitivities(
+            cog_state.reshape(1, 1, -1), eth_state.reshape(1, 1, -1), t_val
+        )
+        sens_vector = np.abs(np.concatenate([cog_sens.flatten(), eth_sens.flatten()]))
+        sens_norm = sens_vector / (sens_vector.sum() + 1e-10)
+        entropy = float(-np.sum(sens_norm * np.log(sens_norm + 1e-10)))
+        magnitude_scalar = float(sens_vector.mean())
+        if entropy < 0.3 or entropy > 3.0:
+            return None
+        if magnitude_scalar <= self.config.boundary_emergence_threshold:
+            return None
+
+        combo_key = "_x_".join(sorted(parents))
+        if combo_key in self.bridge._emergent_combo_keys:
+            return None
+        self.bridge._emergent_combo_keys.add(combo_key)
+
+        pair_slug = f"{candidate.basin_pair[0]}_{candidate.basin_pair[1]}"
+        suffix = abs(hash((combo_key, self.config.seed))) % 1_000_000
+        new_label = f"Emergent_boundary_{pair_slug}_{suffix:06d}"
+        if self.memory_web.get_concept(new_label) is not None:
+            return None
+
+        self.memory_web.add_concept(
+            new_label,
+            stability=0.5,
+            metadata={
+                "origin": "boundary_emergence",
+                "boundary": True,
+                "basins": [candidate.basin_pair[0], candidate.basin_pair[1]],
+                "parent_concepts": parents,
+                "combo_key": combo_key,
+                "entropy": entropy,
+                "magnitude": magnitude_scalar,
+                "creation_time": time.time(),
+                "overlap_score": candidate.overlap_score,
+                "ecwf_candidate": True,
+            },
+        )
+        assign_emergent_concept_mappings(self.bridge, new_label, parents)
+        for parent in parents:
+            self.memory_web.connect(new_label, parent, 0.65)
+        return new_label
 
     def initialize_knowledge(self) -> Dict[str, Any]:
         """Seed the memory web with foundational concepts and connections.

@@ -41,6 +41,8 @@ def _run(tmp: Path, seed: int) -> list[dict[str, object]]:
         basin_min_age_for_split=2,
         boundary_emergence_threshold=0.01,
         boundary_cooldown_cycles=2,
+        boundary_use_ecwf=False,
+        density_regulation_enabled=False,
     )
     run_dir = CultivationRunner(cfg).run([seed])
     lines = (run_dir / f"seed_{seed}" / "cycles.jsonl").read_text(encoding="utf-8").splitlines()

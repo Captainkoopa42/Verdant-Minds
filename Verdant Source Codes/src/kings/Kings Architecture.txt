@@ -1,9 +1,0 @@
-Kings Architecture
-
-/src/kings/
-
-BaseKing.py - Base class for all kings
-DataKing.py - Information quality governance
-ForefrontKing.py - Executive function governance
-EthicsKing.py - Ethical reasoning governance
-ThreeKingsLayer.py - Coordination between kings

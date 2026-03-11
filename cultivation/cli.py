@@ -14,7 +14,10 @@ def main() -> None:
 
     run_p = sub.add_parser("run", help="Run multi-seed cultivation")
     run_p.add_argument("--cycles", type=int, default=120)
-    run_p.add_argument("--provider", default="local", choices=["local", "anthropic", "groq", "mistral"])
+    run_p.add_argument("--provider", default="local", choices=["local", "anthropic", "groq", "mistral", "tutor"])
+    run_p.add_argument("--tutor-backend", default="groq", choices=["local", "groq", "anthropic", "mistral"])
+    run_p.add_argument("--tutor-model", default=None)
+    run_p.add_argument("--tutor-temperature", type=float, default=0.8)
     run_p.add_argument("--seeds", default="0-19", help="Seed range/list, e.g. 0-19 or 0,2,4")
     run_p.add_argument("--outdir", default="outputs")
     run_p.add_argument("--pressure-every", type=int, default=5)
@@ -41,6 +44,9 @@ def main() -> None:
         config = RunnerConfig(
             cycles=args.cycles,
             provider=args.provider,
+            tutor_backend=args.tutor_backend,
+            tutor_model=args.tutor_model,
+            tutor_temperature=args.tutor_temperature,
             outdir=args.outdir,
             pressure_every=args.pressure_every,
             basin_routing=args.basin_routing,

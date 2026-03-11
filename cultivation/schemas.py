@@ -2,9 +2,24 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+
+@dataclass(frozen=True)
+class ScaffoldContext:
+    """Snapshot of scaffold-relevant system state for tutor prompting."""
+
+    total_nodes: int
+    emergent_count: int
+    basin_count: int
+    basin_emergent_distribution: dict[str, int]
+    top_concepts: list[str]
+    recent_emergents: list[str]
+    earlier_share: float
+    cycle: int
 
 
 class CycleRecord(BaseModel):
@@ -51,6 +66,12 @@ class CycleRecord(BaseModel):
     density_regulation_edges_removed: int = 0
     global_edge_ratio_before: float = 0.0
     global_edge_ratio_after: float = 0.0
+    tutor_enabled: bool = False
+    tutor_backend: str | None = None
+    tutor_fallback: bool = False
+    tutor_input_length: int = 0
+    scaffold_context_emergents: int = 0
+    scaffold_context_basins: int = 0
 
 
 class SessionSummary(BaseModel):

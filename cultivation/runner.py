@@ -24,6 +24,7 @@ from cultivation.providers.base import Provider
 from cultivation.providers.groq import GroqProvider
 from cultivation.providers.local import LocalProvider
 from cultivation.providers.mistral import MistralProvider
+from cultivation.providers.tutor import TutorProvider
 from cultivation.schemas import CycleRecord, SessionSummary
 from cultivation.strategy.curriculum import CurriculumStrategy
 from cultivation.strategy.perturbation import PerturbationEngine
@@ -98,6 +99,9 @@ class RunnerConfig:
 
     cycles: int = 120
     provider: str = "local"
+    tutor_backend: str = "groq"
+    tutor_model: str | None = None
+    tutor_temperature: float = 0.8
     outdir: str = "outputs_v2"
     pressure_every: int = 5
     basin_routing: bool = False
@@ -153,6 +157,12 @@ class CultivationRunner:
             return GroqProvider()
         if name == "mistral":
             return MistralProvider()
+        if name == "tutor":
+            return TutorProvider(
+                backend=self.config.tutor_backend,
+                model=self.config.tutor_model,
+                temperature=self.config.tutor_temperature,
+            )
         raise ValueError(f"Unknown provider: {self.config.provider}")
 
     def _run_seed(self, *, seed: int, run_dir: Path) -> None:
@@ -227,7 +237,14 @@ class CultivationRunner:
                     phase_counts[step.phase] = phase_counts.get(step.phase, 0) + 1
 
                     prompt = self.perturbation.perturb(step.prompt, seed=seed, cycle_index=cycle_idx)
+                    scaffold_context = None
+                    if hasattr(provider, "set_scaffold_context"):
+                        scaffold_context = system.get_scaffold_context()
+                        provider.set_scaffold_context(scaffold_context)
                     input_text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
+                    tutor_fallback = bool(getattr(provider, "last_fallback", False))
+                    tutor_enabled = self.config.provider.lower() == "tutor"
+                    tutor_backend = self.config.tutor_backend if tutor_enabled else None
 
                     chunk = system.process_input(
                         input_text,
@@ -341,6 +358,12 @@ class CultivationRunner:
                         density_regulation_edges_removed=int(dynamics["density_regulation_edges_removed"]),
                         global_edge_ratio_before=float(dynamics["global_edge_ratio_before"]),
                         global_edge_ratio_after=float(dynamics["global_edge_ratio_after"]),
+                        tutor_enabled=tutor_enabled,
+                        tutor_backend=tutor_backend,
+                        tutor_fallback=tutor_fallback,
+                        tutor_input_length=len(input_text),
+                        scaffold_context_emergents=(int(scaffold_context.emergent_count) if scaffold_context is not None else 0),
+                        scaffold_context_basins=(int(scaffold_context.basin_count) if scaffold_context is not None else 0),
                         telemetry={
                             "phase_label": metrics.get("phase", "Flexible"),
                             "edge_classification": metrics.get("edge_classification", {}),

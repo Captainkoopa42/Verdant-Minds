@@ -514,6 +514,78 @@ class VerdantSystem:
             **self._dynamics_metrics,
         }
 
+    def get_scaffold_context(self):
+        """Extract current scaffold state for external consumption."""
+        from cultivation.schemas import ScaffoldContext
+
+        memory_store = self.memory_web.memory_store
+        emergent_nodes = self.memory_web.get_emergent_nodes()
+
+        basin_distribution = {b.basin_id: int(b.emergent_count) for b in self._last_basins}
+        top_concepts = [
+            label
+            for label, _ in sorted(
+                (
+                    (label, int(entry.get("access_count", 0)))
+                    for label, entry in memory_store.items()
+                    if isinstance(label, str) and isinstance(entry, dict)
+                ),
+                key=lambda x: x[1],
+                reverse=True,
+            )[:10]
+        ]
+
+        recent_emergents = []
+        emergent_with_time: list[tuple[str, float]] = []
+        for label in emergent_nodes:
+            entry = memory_store.get(label)
+            if not isinstance(entry, dict):
+                continue
+            metadata = entry.get("metadata", {})
+            if not isinstance(metadata, dict):
+                metadata = {}
+            created = float(metadata.get("creation_time", entry.get("first_seen", 0.0)))
+            emergent_with_time.append((label, created))
+        recent_emergents = [label for label, _ in sorted(emergent_with_time, key=lambda x: x[1], reverse=True)[:5]]
+
+        earlier_total = 0
+        earlier_count = 0
+        for label in emergent_nodes:
+            entry = memory_store.get(label)
+            if not isinstance(entry, dict):
+                continue
+            metadata = entry.get("metadata", {})
+            if not isinstance(metadata, dict):
+                continue
+            parents = metadata.get("parent_concepts", [])
+            if not isinstance(parents, list) or not parents:
+                continue
+            creation_time = float(metadata.get("creation_time", entry.get("first_seen", 0.0)))
+            parent_times: list[float] = []
+            for parent in parents:
+                pentry = memory_store.get(parent)
+                if not isinstance(pentry, dict):
+                    continue
+                pmeta = pentry.get("metadata", {})
+                if not isinstance(pmeta, dict):
+                    pmeta = {}
+                parent_times.append(float(pmeta.get("creation_time", pentry.get("first_seen", 0.0))))
+            if parent_times:
+                earlier_total += 1
+                if creation_time >= max(parent_times):
+                    earlier_count += 1
+
+        return ScaffoldContext(
+            total_nodes=len(memory_store),
+            emergent_count=len(emergent_nodes),
+            basin_count=len(self._last_basins),
+            basin_emergent_distribution=basin_distribution,
+            top_concepts=top_concepts,
+            recent_emergents=recent_emergents,
+            earlier_share=(float(earlier_count) / max(1, earlier_total)),
+            cycle=self._cycle_count,
+        )
+
     def save_state(self, path: str) -> None:
         """Save full system state to *path*."""
         from verdant_v2.memory.persistence import save_snapshot

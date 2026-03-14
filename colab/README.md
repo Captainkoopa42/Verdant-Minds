@@ -38,3 +38,7 @@ outputs_baseline/run_<timestamp>/
   seed_N/cycles.jsonl    # Per-cycle telemetry
   seed_N/summary.json    # Run summary metrics
 ```
+
+## Branch V3 Workflow
+
+For a Colab-ready, ordered V3 regime workflow (quick 80-cycle and long 300-cycle runs, unified analysis pass, and final bundle download), use `colab/V3_Colab_Workflow.md`.

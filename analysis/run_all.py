@@ -26,7 +26,7 @@ def main():
     )
     args = ap.parse_args()
 
-    stamp = dt.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     outdir = os.path.join(args.results_root, stamp)
     os.makedirs(outdir, exist_ok=True)
 

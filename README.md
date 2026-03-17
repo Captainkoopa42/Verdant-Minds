@@ -53,6 +53,46 @@ Open the `results/` folder:
 python -m cultivation.cli run --cycles 80 --seeds 0-4 --outdir my_run
 ```
 
+## Scaffold-Aware LLM Tutor (V3)
+
+The tutor provider reads the current scaffold state and generates
+contextually relevant cultivation inputs using an external LLM.
+
+### Quick Start (deterministic, no API needed)
+
+```bash
+python -m cultivation.cli run \
+  --cycles 80 --seeds 0-4 --provider tutor \
+  --tutor-backend local \
+  --basin-routing --enable-all-dynamics \
+  --boundary-use-ecwf --density-regulation \
+  --outdir outputs_v3/
+```
+
+### With a real LLM backend
+
+```bash
+export GROQ_API_KEY=your_key_here
+python -m cultivation.cli run \
+  --cycles 40 --seeds 0-2 --provider tutor \
+  --tutor-backend groq --tutor-model llama-3.3-70b-versatile \
+  --basin-routing --enable-all-dynamics \
+  --boundary-use-ecwf --density-regulation \
+  --outdir outputs_v3_groq/
+```
+
+### How it works
+
+The tutor provider:
+1. Reads a ScaffoldContext summary (basins, emergents, top concepts)
+2. Generates a cultivation input using the LLM
+3. The input goes through the normal process_input() pipeline
+4. The ECWF bridge remains the sole authority on emergence
+5. The LLM never touches the graph directly
+
+If the LLM API fails, the tutor falls back to deterministic
+local generation automatically.
+
 ### Analyze Scaffold Depth vs Age
 ```bash
 python -m analysis.depth_age_analysis results/20260306T045715Z/

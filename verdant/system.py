@@ -89,6 +89,7 @@ class VerdantConfig(BaseModel):
     density_regulation_enabled: bool = True
     density_max_edge_ratio: float = 80.0
     density_target_edge_ratio: float = 60.0
+    emit_basin_membership: bool = True
 
 
 class VerdantSystem:
@@ -239,11 +240,18 @@ class VerdantSystem:
                 if existing:
                     self._next_basin_id = max(self._next_basin_id, max(existing) + 1)
 
+        emergent_count_by_basin, basin_membership_snapshot = self._basin_emergent_telemetry(
+            self._last_basins,
+            include_membership=self.config.emit_basin_membership,
+        )
+
         chunk.update_section("basins_section", {
             "basins": [b.__dict__ for b in self._last_basins],
             "scan_k": self.config.basin_scan_k,
             "scan_interval": self.config.basin_scan_interval,
             "scanned_this_cycle": should_scan,
+            "emergent_count_by_basin": emergent_count_by_basin,
+            "basin_membership_snapshot": basin_membership_snapshot,
         })
 
         proposal_section = chunk.get_section_content("basin_proposals_section") or {}
@@ -513,6 +521,28 @@ class VerdantSystem:
             "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
             **self._dynamics_metrics,
         }
+
+
+    @staticmethod
+    def _basin_emergent_telemetry(
+        basins: list[BasinInfo],
+        *,
+        include_membership: bool,
+    ) -> tuple[dict[str, int], dict[str, str]]:
+        """Build per-basin emergent counts and optional membership snapshot."""
+        emergent_count_by_basin: dict[str, int] = {}
+        basin_membership_snapshot: dict[str, str] = {}
+        for basin in basins:
+            basin_id = str(basin.basin_id)
+            emergent_nodes = [
+                node for node in basin.nodes
+                if isinstance(node, str) and node.startswith("Emergent_")
+            ]
+            emergent_count_by_basin[basin_id] = len(emergent_nodes)
+            if include_membership:
+                for node in emergent_nodes:
+                    basin_membership_snapshot[node] = basin_id
+        return emergent_count_by_basin, basin_membership_snapshot
 
     def get_scaffold_context(self):
         """Extract current scaffold state for external consumption."""

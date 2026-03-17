@@ -39,6 +39,8 @@ class CycleRecord(BaseModel):
     largest_basin_size: int = 0
     self_cluster_basin_id: str | None = None
     emergent_basins: int = 0
+    emergent_count_by_basin: dict[str, int] = Field(default_factory=dict)
+    basin_membership_snapshot: dict[str, str] = Field(default_factory=dict)
     basin_proposals_count: int = 0
     basin_conflict_detected: bool = False
     final_action_source: str = "global_default"

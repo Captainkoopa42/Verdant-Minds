@@ -30,12 +30,12 @@ from cultivation.strategy.curriculum import CurriculumStrategy
 from cultivation.strategy.perturbation import PerturbationEngine
 
 
-def _basin_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, int, str | None, int]:
+def _basin_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, int, str | None, int, dict[str, int], dict[str, str]]:
     """Extract per-cycle basin telemetry from chunk basins section."""
     section = chunk.get_section_content("basins_section") or {}
     basins = section.get("basins", []) if isinstance(section, dict) else []
     if not isinstance(basins, list):
-        return 0, 0, None, 0
+        return 0, 0, None, 0, {}, {}
 
     basin_count = len(basins)
     largest = 0
@@ -52,7 +52,11 @@ def _basin_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, int, str | 
         nodes = basin.get("nodes", [])
         if self_cluster is None and isinstance(nodes, list) and "selfhood" in nodes:
             self_cluster = str(basin.get("basin_id"))
-    return basin_count, largest, self_cluster, emergent_basins
+    emergent_count_by_basin = section.get("emergent_count_by_basin", {}) if isinstance(section, dict) else {}
+    basin_membership_snapshot = section.get("basin_membership_snapshot", {}) if isinstance(section, dict) else {}
+    ecb = {str(k): int(v) for k, v in emergent_count_by_basin.items()} if isinstance(emergent_count_by_basin, dict) else {}
+    bms = {str(k): str(v) for k, v in basin_membership_snapshot.items()} if isinstance(basin_membership_snapshot, dict) else {}
+    return basin_count, largest, self_cluster, emergent_basins, ecb, bms
 
 
 def _proposal_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, bool, str, list[dict[str, float]]]:
@@ -314,7 +318,7 @@ class CultivationRunner:
                     entropies.append(entropy)
                     hcis.append(hci)
 
-                    basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins = _basin_telemetry_from_chunk(chunk)
+                    basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
                     dynamics = _dynamics_telemetry_from_chunk(chunk)
                     record = CycleRecord(
@@ -332,6 +336,8 @@ class CultivationRunner:
                         largest_basin_size=largest_basin_size,
                         self_cluster_basin_id=self_cluster_basin_id,
                         emergent_basins=emergent_basins,
+                        emergent_count_by_basin=emergent_count_by_basin,
+                        basin_membership_snapshot=basin_membership_snapshot,
                         basin_proposals_count=basin_proposals_count,
                         basin_conflict_detected=basin_conflict_detected,
                         final_action_source=final_action_source,

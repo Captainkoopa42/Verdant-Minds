@@ -56,5 +56,6 @@ def test_daughter_analysis_mock(tmp_path: Path) -> None:
     assert out["summary"]["total_daughters"] == 1
     daughter = out["daughters"][0]
     assert daughter["daughter_id"] == "basin_3"
-    assert daughter["became_forge"] is True
+    assert daughter["became_forge_peak"] is True
+    assert daughter["became_forge_final"] is True
     assert len(daughter["growth_trajectory"]) == 21

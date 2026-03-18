@@ -28,9 +28,12 @@ def analyze_cycles(cycles_jsonl: Path) -> dict[str, Any]:
             "daughters": [],
             "summary": {
                 "total_daughters": 0,
-                "daughters_became_forge": 0,
-                "forge_fraction": 0.0,
+                "daughters_became_forge_final": 0,
+                "daughters_became_forge_peak": 0,
+                "forge_fraction_final": 0.0,
+                "forge_fraction_peak": 0.0,
                 "mean_final_emergent_count": 0.0,
+                "mean_peak_emergent_count": 0.0,
                 "mean_time_to_ignition": None,
                 "max_emergent_any_daughter": 0,
             },
@@ -69,6 +72,8 @@ def analyze_cycles(cycles_jsonl: Path) -> dict[str, Any]:
         initial = trajectory[0]
         final = trajectory[-1]
         max_count = max(trajectory)
+        peak_index = trajectory.index(max_count)
+        peak_cycle = birth_cycle + peak_index
         final_cycle = int(rows[-1].get("cycle_index", 0))
         denom = max(1, final_cycle - birth_cycle)
         growth_rate = float((final - initial) / denom)
@@ -87,8 +92,11 @@ def analyze_cycles(cycles_jsonl: Path) -> dict[str, Any]:
                 "initial_emergent_count": initial,
                 "final_emergent_count": final,
                 "max_emergent_count": max_count,
+                "peak_cycle": peak_cycle,
+                "peak_to_final_ratio": float(max_count / (final + 1)),
                 "growth_rate": growth_rate,
-                "became_forge": final >= 10,
+                "became_forge_final": final >= 10,
+                "became_forge_peak": max_count >= 10,
                 "ignition_cycle": ignition_cycle,
                 "time_to_ignition": time_to_ignition,
                 "growth_trajectory": trajectory,
@@ -97,9 +105,11 @@ def analyze_cycles(cycles_jsonl: Path) -> dict[str, Any]:
             }
         )
 
-    forge_count = sum(1 for d in daughters if d["became_forge"])
+    forge_final_count = sum(1 for d in daughters if d["became_forge_final"])
+    forge_peak_count = sum(1 for d in daughters if d["became_forge_peak"])
     ignition_times = [int(d["time_to_ignition"]) for d in daughters if d["time_to_ignition"] is not None]
     finals = [int(d["final_emergent_count"]) for d in daughters]
+    peaks = [int(d["max_emergent_count"]) for d in daughters]
     max_any = max((int(d["max_emergent_count"]) for d in daughters), default=0)
 
     return {
@@ -108,9 +118,12 @@ def analyze_cycles(cycles_jsonl: Path) -> dict[str, Any]:
         "daughters": daughters,
         "summary": {
             "total_daughters": len(daughters),
-            "daughters_became_forge": forge_count,
-            "forge_fraction": float(forge_count / len(daughters)) if daughters else 0.0,
+            "daughters_became_forge_final": forge_final_count,
+            "daughters_became_forge_peak": forge_peak_count,
+            "forge_fraction_final": float(forge_final_count / len(daughters)) if daughters else 0.0,
+            "forge_fraction_peak": float(forge_peak_count / len(daughters)) if daughters else 0.0,
             "mean_final_emergent_count": float(mean(finals)) if finals else 0.0,
+            "mean_peak_emergent_count": float(mean(peaks)) if peaks else 0.0,
             "mean_time_to_ignition": float(mean(ignition_times)) if ignition_times else None,
             "max_emergent_any_daughter": max_any,
         },

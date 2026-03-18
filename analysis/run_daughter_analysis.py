@@ -53,16 +53,21 @@ def main() -> None:
         )
         all_daughters.extend(result.get("daughters", []))
 
-    became_forge = sum(1 for d in all_daughters if bool(d.get("became_forge", False)))
+    became_forge_final = sum(1 for d in all_daughters if bool(d.get("became_forge_final", False)))
+    became_forge_peak = sum(1 for d in all_daughters if bool(d.get("became_forge_peak", False)))
     final_counts = [int(d.get("final_emergent_count", 0)) for d in all_daughters]
+    peak_counts = [int(d.get("max_emergent_count", 0)) for d in all_daughters]
     max_any = max((int(d.get("max_emergent_count", 0)) for d in all_daughters), default=0)
 
     aggregate = {
         "seeds_analyzed": len(per_seed),
         "total_daughters_all_seeds": len(all_daughters),
-        "total_became_forge_all_seeds": became_forge,
-        "overall_forge_fraction": float(became_forge / len(all_daughters)) if all_daughters else 0.0,
+        "total_became_forge_final_all_seeds": became_forge_final,
+        "total_became_forge_peak_all_seeds": became_forge_peak,
+        "overall_forge_fraction_final": float(became_forge_final / len(all_daughters)) if all_daughters else 0.0,
+        "overall_forge_fraction_peak": float(became_forge_peak / len(all_daughters)) if all_daughters else 0.0,
         "mean_final_emergent_across_daughters": float(mean(final_counts)) if final_counts else 0.0,
+        "mean_peak_emergent_across_daughters": float(mean(peak_counts)) if peak_counts else 0.0,
         "max_emergent_any_daughter_any_seed": max_any,
         "per_seed_summaries": per_seed,
     }

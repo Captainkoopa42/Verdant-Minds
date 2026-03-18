@@ -5,6 +5,23 @@ from __future__ import annotations
 import argparse
 
 from cultivation.runner import CultivationRunner, RunnerConfig, parse_seeds
+from verdant_v2.ethomorphic_config import EthomorphicParams
+
+
+def _build_ethomorphic_params(args: argparse.Namespace) -> EthomorphicParams | None:
+    """Build optional ethomorphic parameter overrides from CLI args."""
+
+    updates = {
+        "num_cognitive_dims": args.ecwf_cognitive_dims,
+        "num_ethical_dims": args.ecwf_ethical_dims,
+        "adaptive_rate": args.ecwf_adaptive_rate,
+        "feedback_factor": args.ecwf_feedback_factor,
+        "emergence_entropy_min": args.emergence_entropy_min,
+        "emergence_entropy_max": args.emergence_entropy_max,
+        "emergence_magnitude_threshold": args.emergence_magnitude_threshold,
+    }
+    filtered = {key: value for key, value in updates.items() if value is not None}
+    return EthomorphicParams(**filtered) if filtered else None
 
 
 def main() -> None:
@@ -33,6 +50,13 @@ def main() -> None:
     run_p.add_argument("--checkpoint-format", choices=["json", "msgpack"], default="json")
     run_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     run_p.add_argument("--basin-use-registry", action=argparse.BooleanOptionalAction, default=True)
+    run_p.add_argument("--ecwf-cognitive-dims", type=int, default=None)
+    run_p.add_argument("--ecwf-ethical-dims", type=int, default=None)
+    run_p.add_argument("--ecwf-adaptive-rate", type=float, default=None)
+    run_p.add_argument("--ecwf-feedback-factor", type=float, default=None)
+    run_p.add_argument("--emergence-entropy-min", type=float, default=None)
+    run_p.add_argument("--emergence-entropy-max", type=float, default=None)
+    run_p.add_argument("--emergence-magnitude-threshold", type=float, default=None)
     run_p.add_argument("--intervention-mode", default="none", choices=["none", "ablate_oldest_nodes", "scramble_ee_edges"])
     run_p.add_argument("--intervention-cycle", type=int, default=None)
     run_p.add_argument("--ablation-fraction", type=float, default=0.1)
@@ -58,6 +82,7 @@ def main() -> None:
         enable_pruning = bool(args.enable_pruning or args.enable_all_dynamics)
         enable_budding = bool(args.enable_budding or args.enable_all_dynamics)
         enable_boundary_emergence = bool(args.enable_boundary_emergence or args.enable_all_dynamics)
+        ethomorphic_params = _build_ethomorphic_params(args)
         config = RunnerConfig(
             cycles=args.cycles,
             provider=args.provider,
@@ -82,6 +107,7 @@ def main() -> None:
             checkpoint_format=args.checkpoint_format,
             fast_bridge=args.fast_bridge,
             basin_use_registry=args.basin_use_registry,
+            ethomorphic_params=ethomorphic_params,
         )
         runner = CultivationRunner(config)
         run_dir = runner.run(parse_seeds(args.seeds))

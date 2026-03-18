@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
-from ethomorphic.bridge.emergence import detect_and_create_emergent_concepts
+from verdant_v2.ethomorphic_config import detect_and_create_emergent_concepts_with_params
 from verdant_v2.memory.activation import spread_activation
 from verdant_v2.memory.graph import MemoryWeb
 from verdant_v2.pipeline.chunk import CognitiveChunk
@@ -93,7 +93,7 @@ class MemoryBlock:
 
         # Emergent concept detection
         wave_output = ecwf.compute_ecwf(cog_state, eth_state, t)
-        emergent = detect_and_create_emergent_concepts(self.bridge, wave_output, t)
+        emergent = detect_and_create_emergent_concepts_with_params(self.bridge, wave_output, t)
 
         # Novelty score
         known = set(self.memory_web.list_concepts())

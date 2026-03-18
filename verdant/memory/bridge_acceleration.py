@@ -85,6 +85,9 @@ def install_fast_bridge_hooks(bridge: EthomorphicBridge) -> None:
         phase = np.angle(wave_output).flatten()
         entropy = self.ecwf.calculate_entropy(wave_output)
 
+        activation_threshold = float(getattr(self, "_verdant_co_activation_threshold", 0.2))
+        connection_weight_threshold = float(getattr(self, "_verdant_connection_weight_threshold", 0.0))
+        max_connections_per_concept = getattr(self, "_verdant_max_connections_per_concept", None)
         activations: dict[str, float] = {}
         for concept, mappings in self.concept_dimension_mapping.items():
             activation = 0.0
@@ -99,7 +102,7 @@ def install_fast_bridge_hooks(bridge: EthomorphicBridge) -> None:
                 activation *= max(0.2, 1.0 - entropy / 5.0)
                 activation *= 0.5 + 0.5 * np.cos(phase[0])
 
-            if activation > 0.2:
+            if activation > activation_threshold:
                 activations[concept] = min(1.0, activation)
 
         updated_concepts: list[str] = []
@@ -130,12 +133,23 @@ def install_fast_bridge_hooks(bridge: EthomorphicBridge) -> None:
 
         concepts_list = list(activations.keys())
         pair_evaluated = 0
+        connection_counts: dict[str, int] = {}
         for idx, c1 in enumerate(concepts_list):
             for c2 in concepts_list[idx + 1:]:
                 if self._verdant_fast_bridge_enabled and c1 not in newly_activated and c2 not in newly_activated:
                     continue
+                if max_connections_per_concept is not None:
+                    if connection_counts.get(c1, 0) >= max_connections_per_concept:
+                        continue
+                    if connection_counts.get(c2, 0) >= max_connections_per_concept:
+                        continue
                 pair_evaluated += 1
-                self.memory.connect(c1, c2, min(activations[c1], activations[c2]))
+                weight = min(activations[c1], activations[c2])
+                if weight < connection_weight_threshold:
+                    continue
+                self.memory.connect(c1, c2, weight)
+                connection_counts[c1] = connection_counts.get(c1, 0) + 1
+                connection_counts[c2] = connection_counts.get(c2, 0) + 1
         self._verdant_bridge_pairs_evaluated = pair_evaluated
 
         self.metrics["ecwf_to_memory_transfers"] += 1

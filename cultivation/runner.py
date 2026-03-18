@@ -12,6 +12,7 @@ from typing import Iterable
 from verdant_v2.pipeline.chunk import CognitiveChunk
 
 import numpy as np
+from verdant_v2.ethomorphic_config import EthomorphicParams
 from verdant_v2.memory.basins import detect_basins
 from verdant_v2.memory.interventions import (
     ablate_oldest_emergent_nodes,
@@ -147,6 +148,7 @@ class RunnerConfig:
     checkpoint_interval: int = 0
     checkpoint_format: str = "json"
     fast_bridge: bool = False
+    ethomorphic_params: EthomorphicParams | None = None
 
 
 class CultivationRunner:
@@ -367,11 +369,16 @@ class CultivationRunner:
                 checkpoint_interval=self.config.checkpoint_interval,
                 checkpoint_format=self.config.checkpoint_format,
                 fast_bridge=self.config.fast_bridge,
+                ethomorphic_params=self.config.ethomorphic_params,
             ))
             # Ensure ECWF parameters are seed-deterministic even though upstream default is random_state=None.
             system.ecwf.random_state = seed
             system.ecwf.rng = np.random.RandomState(seed)
             system.ecwf._initialize_parameters()
+            if system.ethomorphic_params.initial_amplitude != 1.0:
+                system.ecwf.amplitude_factors = (
+                    system.ecwf.amplitude_factors * float(system.ethomorphic_params.initial_amplitude)
+                )
             system.ecwf.past_states = []
 
             cycles_path = seed_dir / "cycles.jsonl"

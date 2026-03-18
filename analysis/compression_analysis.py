@@ -104,15 +104,24 @@ def analyze_run(run_dir: Path, seeds: int, max_lag: int) -> dict[str, Any]:
 
     mean_branching, std_branching = mean_std_by_position(branching_corrs)
     mean_emergence, std_emergence = mean_std_by_position(emergence_corrs)
-    best_branch_lag = int(np.nanargmax(mean_branching)) if mean_branching else 0
-    best_emergence_lag = int(np.nanargmax(mean_emergence)) if mean_emergence else 0
+
+    def _best_lag(values: list[float]) -> int:
+        if not values:
+            return 0
+        arr = np.asarray(values, dtype=float)
+        if np.all(np.isnan(arr)):
+            return 0
+        return int(np.nanargmax(arr))
+
+    best_branch_lag = _best_lag(mean_branching)
+    best_emergence_lag = _best_lag(mean_emergence)
     proxy_type = max(set(proxy_types), key=proxy_types.count) if proxy_types else "unavailable"
 
-    if mean_branching:
+    if mean_branching and not np.isnan(mean_branching[best_branch_lag]):
         best_branch_corr = float(mean_branching[best_branch_lag])
     else:
         best_branch_corr = float("nan")
-    if mean_emergence:
+    if mean_emergence and not np.isnan(mean_emergence[best_emergence_lag]):
         best_emergence_corr = float(mean_emergence[best_emergence_lag])
     else:
         best_emergence_corr = float("nan")

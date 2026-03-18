@@ -180,91 +180,117 @@ class CultivationRunner:
         seed_dir.mkdir(parents=True, exist_ok=True)
         provider = self._make_provider()
 
-        cycles_path = seed_dir / "cycles.jsonl"
-        with cycles_path.open("w", encoding="utf-8") as handle:
-            for offset in range(additional_cycles):
-                cycle_idx = int(system.get_metrics().get("cycle_count", 0))
-                step = self.curriculum.step(cycle_idx, seed=seed)
-                prompt = self.perturbation.perturb(step.prompt, seed=seed, cycle_index=cycle_idx)
-                if hasattr(provider, "set_scaffold_context"):
-                    provider.set_scaffold_context(system.get_scaffold_context())
-                input_text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
-                chunk = system.process_input(
-                    input_text,
-                    metadata={
-                        "seed": seed,
-                        "cycle": cycle_idx,
-                        "phase": step.phase,
-                        "topic": step.topic,
-                        "provider": self.config.provider,
-                        "resumed_from": str(checkpoint_path),
-                    },
-                )
-                metrics = system.get_metrics()
-                wave = chunk.get_section_content("wave_function_section") or {}
-                coherence = chunk.get_section_content("coherence_invariants_section") or {}
-                basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
-                basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
-                dynamics = _dynamics_telemetry_from_chunk(chunk)
-                record = CycleRecord(
-                    cycle_index=cycle_idx,
-                    seed=seed,
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    input_text=input_text,
-                    phase=step.phase,
-                    t_g=float(metrics.get("t_g", 0.5)),
-                    entropy=float(wave.get("entropy", 0.0)),
-                    hci=float(coherence.get("housed_contradiction_index", 0.0)),
-                    emergent_count=int(metrics.get("emergent_nodes", 0)),
-                    memory_size=int(metrics.get("memory_concepts", 0)),
-                    basin_count=basin_count,
-                    largest_basin_size=largest_basin_size,
-                    self_cluster_basin_id=self_cluster_basin_id,
-                    emergent_basins=emergent_basins,
-                    emergent_count_by_basin=emergent_count_by_basin,
-                    basin_membership_snapshot=basin_membership_snapshot,
-                    basin_proposals_count=basin_proposals_count,
-                    basin_conflict_detected=basin_conflict_detected,
-                    final_action_source=final_action_source,
-                    top_proposal_scores=top_proposal_scores,
-                    intervention_mode=self.config.intervention_mode,
-                    intervention_cycle=self.config.intervention_cycle,
-                    intervention_target=self.config.intervention_target,
-                    pruned_edges_count=int(dynamics["pruned_edges_count"]),
-                    pruned_basin_id=(str(dynamics["pruned_basin_id"]) if dynamics["pruned_basin_id"] is not None else None),
-                    basin_density_before=(float(dynamics["basin_density_before"]) if dynamics["basin_density_before"] is not None else None),
-                    basin_density_after=(float(dynamics["basin_density_after"]) if dynamics["basin_density_after"] is not None else None),
-                    bud_events_count=int(dynamics["bud_events_count"]),
-                    bud_parent_basin_id=(str(dynamics["bud_parent_basin_id"]) if dynamics["bud_parent_basin_id"] is not None else None),
-                    bud_new_basin_id=(str(dynamics["bud_new_basin_id"]) if dynamics["bud_new_basin_id"] is not None else None),
-                    bud_new_basin_size=(int(dynamics["bud_new_basin_size"]) if dynamics["bud_new_basin_size"] is not None else None),
-                    basin_pressure_values={str(k): float(v) for k, v in dict(dynamics["basin_pressure_values"]).items()},
-                    pressure_breakdown=[dict(x) for x in list(dynamics["pressure_breakdown"])],
-                    boundary_emergents_created=int(dynamics["boundary_emergents_created"]),
-                    boundary_pairs=[[str(x) for x in pair] for pair in list(dynamics["boundary_pairs"])],
-                    density_regulation_edges_removed=int(dynamics["density_regulation_edges_removed"]),
-                    global_edge_ratio_before=float(dynamics["global_edge_ratio_before"]),
-                    global_edge_ratio_after=float(dynamics["global_edge_ratio_after"]),
-                    cycle_time_seconds=float(dynamics["cycle_time_seconds"]),
-                    graph_nodes=int(dynamics["graph_nodes"]),
-                    graph_edges=int(dynamics["graph_edges"]),
-                    edges_per_node=float(dynamics["edges_per_node"]),
-                    bridge_pairs_evaluated=int(dynamics["bridge_pairs_evaluated"]),
-                    basin_registry_active=int(dynamics["basin_registry_active"]),
-                    basin_registry_dormant=int(dynamics["basin_registry_dormant"]),
-                    basin_registry_events=[dict(x) for x in list(dynamics["basin_registry_events"])],
-                    tutor_enabled=False,
-                    tutor_input_length=len(input_text),
-                    scaffold_context_emergents=0,
-                    scaffold_context_basins=0,
-                    telemetry={"phase_label": metrics.get("phase", "Flexible"), "resume_offset": offset},
-                )
-                handle.write(record.model_dump_json() + "\n")
-                if self.config.checkpoint_interval > 0 and (offset + 1) % self.config.checkpoint_interval == 0:
-                    system.save_checkpoint(str(seed_dir / f"checkpoint_{cycle_idx + 1}.json"))
+        py_state = random.getstate()
+        np_state = np.random.get_state()
+        real_time = time.time
+        real_default_rng = np.random.default_rng
+        tick = [int(system.get_metrics().get("cycle_count", 0))]
+        rng_tick = [int(system.get_metrics().get("cycle_count", 0))]
 
-        state_path = seed_dir / "state.json"
-        system.save_state(str(state_path))
+        def deterministic_time() -> float:
+            tick[0] += 1
+            return float(seed) * 10_000.0 + tick[0] * 0.01
+
+        def deterministic_default_rng(seed_arg: int | None = None):
+            if seed_arg is not None:
+                return real_default_rng(seed_arg)
+            rng_tick[0] += 1
+            return real_default_rng(seed * 10_000 + rng_tick[0])
+
+        try:
+            np.random.default_rng = deterministic_default_rng
+            time.time = deterministic_time
+
+            cycles_path = seed_dir / "cycles.jsonl"
+            with cycles_path.open("w", encoding="utf-8") as handle:
+                for offset in range(additional_cycles):
+                    cycle_idx = int(system.get_metrics().get("cycle_count", 0))
+                    step = self.curriculum.step(cycle_idx, seed=seed)
+                    prompt = self.perturbation.perturb(step.prompt, seed=seed, cycle_index=cycle_idx)
+                    if hasattr(provider, "set_scaffold_context"):
+                        provider.set_scaffold_context(system.get_scaffold_context())
+                    input_text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
+                    chunk = system.process_input(
+                        input_text,
+                        metadata={
+                            "seed": seed,
+                            "cycle": cycle_idx,
+                            "phase": step.phase,
+                            "topic": step.topic,
+                            "provider": self.config.provider,
+                            "resumed_from": str(checkpoint_path),
+                        },
+                    )
+                    metrics = system.get_metrics()
+                    wave = chunk.get_section_content("wave_function_section") or {}
+                    coherence = chunk.get_section_content("coherence_invariants_section") or {}
+                    basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
+                    basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
+                    dynamics = _dynamics_telemetry_from_chunk(chunk)
+                    record = CycleRecord(
+                        cycle_index=cycle_idx,
+                        seed=seed,
+                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        input_text=input_text,
+                        phase=step.phase,
+                        t_g=float(metrics.get("t_g", 0.5)),
+                        entropy=float(wave.get("entropy", 0.0)),
+                        hci=float(coherence.get("housed_contradiction_index", 0.0)),
+                        emergent_count=int(metrics.get("emergent_nodes", 0)),
+                        memory_size=int(metrics.get("memory_concepts", 0)),
+                        basin_count=basin_count,
+                        largest_basin_size=largest_basin_size,
+                        self_cluster_basin_id=self_cluster_basin_id,
+                        emergent_basins=emergent_basins,
+                        emergent_count_by_basin=emergent_count_by_basin,
+                        basin_membership_snapshot=basin_membership_snapshot,
+                        basin_proposals_count=basin_proposals_count,
+                        basin_conflict_detected=basin_conflict_detected,
+                        final_action_source=final_action_source,
+                        top_proposal_scores=top_proposal_scores,
+                        intervention_mode=self.config.intervention_mode,
+                        intervention_cycle=self.config.intervention_cycle,
+                        intervention_target=self.config.intervention_target,
+                        pruned_edges_count=int(dynamics["pruned_edges_count"]),
+                        pruned_basin_id=(str(dynamics["pruned_basin_id"]) if dynamics["pruned_basin_id"] is not None else None),
+                        basin_density_before=(float(dynamics["basin_density_before"]) if dynamics["basin_density_before"] is not None else None),
+                        basin_density_after=(float(dynamics["basin_density_after"]) if dynamics["basin_density_after"] is not None else None),
+                        bud_events_count=int(dynamics["bud_events_count"]),
+                        bud_parent_basin_id=(str(dynamics["bud_parent_basin_id"]) if dynamics["bud_parent_basin_id"] is not None else None),
+                        bud_new_basin_id=(str(dynamics["bud_new_basin_id"]) if dynamics["bud_new_basin_id"] is not None else None),
+                        bud_new_basin_size=(int(dynamics["bud_new_basin_size"]) if dynamics["bud_new_basin_size"] is not None else None),
+                        basin_pressure_values={str(k): float(v) for k, v in dict(dynamics["basin_pressure_values"]).items()},
+                        pressure_breakdown=[dict(x) for x in list(dynamics["pressure_breakdown"])],
+                        boundary_emergents_created=int(dynamics["boundary_emergents_created"]),
+                        boundary_pairs=[[str(x) for x in pair] for pair in list(dynamics["boundary_pairs"])],
+                        density_regulation_edges_removed=int(dynamics["density_regulation_edges_removed"]),
+                        global_edge_ratio_before=float(dynamics["global_edge_ratio_before"]),
+                        global_edge_ratio_after=float(dynamics["global_edge_ratio_after"]),
+                        cycle_time_seconds=float(dynamics["cycle_time_seconds"]),
+                        graph_nodes=int(dynamics["graph_nodes"]),
+                        graph_edges=int(dynamics["graph_edges"]),
+                        edges_per_node=float(dynamics["edges_per_node"]),
+                        bridge_pairs_evaluated=int(dynamics["bridge_pairs_evaluated"]),
+                        basin_registry_active=int(dynamics["basin_registry_active"]),
+                        basin_registry_dormant=int(dynamics["basin_registry_dormant"]),
+                        basin_registry_events=[dict(x) for x in list(dynamics["basin_registry_events"])],
+                        tutor_enabled=False,
+                        tutor_input_length=len(input_text),
+                        scaffold_context_emergents=0,
+                        scaffold_context_basins=0,
+                        telemetry={"phase_label": metrics.get("phase", "Flexible"), "resume_offset": offset},
+                    )
+                    handle.write(record.model_dump_json() + "\n")
+                    if self.config.checkpoint_interval > 0 and (offset + 1) % self.config.checkpoint_interval == 0:
+                        system.save_checkpoint(str(seed_dir / f"checkpoint_{cycle_idx + 1}.json"))
+
+            state_path = seed_dir / "state.json"
+            system.save_state(str(state_path))
+        finally:
+            np.random.default_rng = real_default_rng
+            time.time = real_time
+            random.setstate(py_state)
+            np.random.set_state(np_state)
         return run_dir
 
     def _make_provider(self) -> Provider:

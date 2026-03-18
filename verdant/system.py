@@ -24,6 +24,12 @@ from ethomorphic.bridge.emergence import assign_emergent_concept_mappings
 from ethomorphic.coherence.invariants import compute_coherence
 from ethomorphic.ecwf.core import ECWFCore
 
+from verdant_v2.ethomorphic_config import (
+    EthomorphicParams,
+    apply_ecwf_params,
+    configure_bridge_runtime,
+    resolve_ethomorphic_params,
+)
 from verdant_v2.governance.council import ThreeKingsCouncil
 from verdant_v2.governance.data_king import DataKing
 from verdant_v2.governance.ethics_king import EthicsKing
@@ -104,6 +110,7 @@ class VerdantConfig(BaseModel):
     checkpoint_interval: int = 0
     checkpoint_format: str = "json"
     fast_bridge: bool = False
+    ethomorphic_params: EthomorphicParams | None = None
 
 
 class VerdantSystem:
@@ -116,16 +123,23 @@ class VerdantSystem:
 
     def __init__(self, config: Optional[VerdantConfig] = None) -> None:
         self.config = config or VerdantConfig()
+        self.ethomorphic_params = resolve_ethomorphic_params(
+            self.config.ethomorphic_params,
+            cognitive_dims=self.config.cognitive_dims,
+            ethical_dims=self.config.ethical_dims,
+            wave_facets=self.config.wave_facets,
+        )
+        self.config.cognitive_dims = self.ethomorphic_params.num_cognitive_dims
+        self.config.ethical_dims = self.ethomorphic_params.num_ethical_dims
+        self.config.wave_facets = self.ethomorphic_params.num_facets
 
         if self.config.seed is not None:
             np.random.seed(self.config.seed)
 
         # Core components
-        self.ecwf = ECWFCore(
-            num_cognitive_dims=self.config.cognitive_dims,
-            num_ethical_dims=self.config.ethical_dims,
-            num_facets=self.config.wave_facets,
+        self.ecwf = apply_ecwf_params(
             random_state=self.config.seed,
+            params=self.ethomorphic_params,
         )
         self.memory_web = MemoryWeb()
         self.bridge = EthomorphicBridge(
@@ -134,6 +148,7 @@ class VerdantSystem:
             influence_factor=self.config.bridge_influence_factor,
         )
         restore_fast_bridge_state(self.bridge, None)
+        configure_bridge_runtime(self.bridge, self.ethomorphic_params)
 
         # Pipeline blocks
         self._sensory = SensoryInputBlock()
@@ -520,9 +535,16 @@ class VerdantSystem:
         sens_norm = sens_vector / (sens_vector.sum() + 1e-10)
         entropy = float(-np.sum(sens_norm * np.log(sens_norm + 1e-10)))
         magnitude_scalar = float(sens_vector.mean())
-        if entropy < 0.3 or entropy > 3.0:
+        if (
+            entropy < self.ethomorphic_params.emergence_entropy_min
+            or entropy > self.ethomorphic_params.emergence_entropy_max
+        ):
             return None
-        if magnitude_scalar <= self.config.boundary_emergence_threshold:
+        magnitude_threshold = max(
+            float(self.config.boundary_emergence_threshold),
+            float(self.ethomorphic_params.emergence_magnitude_threshold),
+        )
+        if magnitude_scalar <= magnitude_threshold:
             return None
 
         combo_key = "_x_".join(sorted(parents))
@@ -768,6 +790,16 @@ class VerdantSystem:
             influence_factor=self.config.bridge_influence_factor,
         )
         restore_fast_bridge_state(self.bridge, None)
+        self.ethomorphic_params = resolve_ethomorphic_params(
+            self.config.ethomorphic_params,
+            cognitive_dims=self.config.cognitive_dims,
+            ethical_dims=self.config.ethical_dims,
+            wave_facets=self.config.wave_facets,
+        )
+        self.config.cognitive_dims = self.ethomorphic_params.num_cognitive_dims
+        self.config.ethical_dims = self.ethomorphic_params.num_ethical_dims
+        self.config.wave_facets = self.ethomorphic_params.num_facets
+        configure_bridge_runtime(self.bridge, self.ethomorphic_params)
         bridge_state = state.get("bridge", {})
         if isinstance(bridge_state, dict):
             self.bridge.from_state_dict(bridge_state)
@@ -784,6 +816,15 @@ class VerdantSystem:
         config_data = extra.get("config", {})
         if isinstance(config_data, dict) and config_data:
             self.config = VerdantConfig(**config_data)
+        self.ethomorphic_params = resolve_ethomorphic_params(
+            self.config.ethomorphic_params,
+            cognitive_dims=self.config.cognitive_dims,
+            ethical_dims=self.config.ethical_dims,
+            wave_facets=self.config.wave_facets,
+        )
+        self.config.cognitive_dims = self.ethomorphic_params.num_cognitive_dims
+        self.config.ethical_dims = self.ethomorphic_params.num_ethical_dims
+        self.config.wave_facets = self.ethomorphic_params.num_facets
         self._t_g = extra.get("t_g", 0.5)
         self._cycle_count = extra.get("cycle_count", 0)
         self._entropy_history = extra.get("entropy_history", [])
@@ -808,6 +849,7 @@ class VerdantSystem:
         if isinstance(raw_dyn, dict):
             self._dynamics_metrics = raw_dyn
         restore_fast_bridge_state(self.bridge, extra.get("bridge_acceleration", {}))
+        configure_bridge_runtime(self.bridge, self.ethomorphic_params)
         raw_registry = extra.get("basin_registry", {})
         if isinstance(raw_registry, dict) and raw_registry:
             self._basin_registry = BasinRegistry.from_dict(raw_registry)

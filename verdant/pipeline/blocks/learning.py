@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
-from ethomorphic.bridge.emergence import detect_and_create_emergent_concepts
+from verdant_v2.ethomorphic_config import detect_and_create_emergent_concepts_with_params
 from verdant_v2.pipeline.chunk import CognitiveChunk
 
 
@@ -57,7 +57,7 @@ class LearningBlock:
                 eth = np.ones((1, 1, ecwf.num_ethical_dims)) * 0.5
                 t = time.time() % 1000
                 wo = ecwf.compute_ecwf(cog, eth, t)
-                created = detect_and_create_emergent_concepts(self.bridge, wo, t)
+                created = detect_and_create_emergent_concepts_with_params(self.bridge, wo, t)
                 emergent_created = len(created)
 
         chunk.update_section("continual_learning_section", {

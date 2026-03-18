@@ -68,6 +68,14 @@ class CycleRecord(BaseModel):
     density_regulation_edges_removed: int = 0
     global_edge_ratio_before: float = 0.0
     global_edge_ratio_after: float = 0.0
+    cycle_time_seconds: float = 0.0
+    graph_nodes: int = 0
+    graph_edges: int = 0
+    edges_per_node: float = 0.0
+    bridge_pairs_evaluated: int = 0
+    basin_registry_active: int = 0
+    basin_registry_dormant: int = 0
+    basin_registry_events: list[dict[str, Any]] = Field(default_factory=list)
     tutor_enabled: bool = False
     tutor_backend: str | None = None
     tutor_fallback: bool = False

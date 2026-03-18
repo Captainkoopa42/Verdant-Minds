@@ -7,6 +7,7 @@ from itertools import combinations
 import math
 
 import networkx as nx
+import numpy as np
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
 from ethomorphic.bridge.emergence import assign_emergent_concept_mappings
@@ -338,10 +339,18 @@ def regulate_density(
     if edge_count <= target_edges:
         return 0
 
-    edges = sorted(
-        ((str(u), str(v), float(data.get("weight", 0.0))) for u, v, data in memory_web.graph.edges(data=True)),
-        key=lambda item: (item[2], item[0], item[1]),
-    )
+    weighted_edges = [
+        (str(u), str(v), float(data.get("weight", 0.0)))
+        for u, v, data in memory_web.graph.edges(data=True)
+    ]
+    if not weighted_edges:
+        return 0
+    weights = np.array([edge[2] for edge in weighted_edges], dtype=float)
+    threshold = float(np.percentile(weights, 25))
+    candidate_edges = [edge for edge in weighted_edges if edge[2] <= threshold]
+    if len(candidate_edges) < (edge_count - target_edges):
+        candidate_edges = weighted_edges
+    edges = sorted(candidate_edges, key=lambda item: (item[2], item[0], item[1]))
     to_remove = edge_count - target_edges
     removed = 0
     for u, v, _ in edges[:to_remove]:

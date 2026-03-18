@@ -39,6 +39,12 @@ from verdant_v2.memory.basin_dynamics import (
     prune_basin_edges,
     regulate_density,
 )
+from verdant_v2.memory.bridge_acceleration import (
+    get_fast_bridge_state,
+    restore_fast_bridge_state,
+    set_fast_bridge_enabled,
+)
+from verdant_v2.memory.basin_registry import BasinRegistry
 from verdant_v2.memory.basin_state import BasinState
 from verdant_v2.memory.graph import MemoryWeb
 from verdant_v2.pipeline.blocks.action import ActionBlock
@@ -90,6 +96,14 @@ class VerdantConfig(BaseModel):
     density_max_edge_ratio: float = 80.0
     density_target_edge_ratio: float = 60.0
     emit_basin_membership: bool = True
+    basin_use_registry: bool = True
+    basin_daughter_protection_cycles: int = 30
+    basin_core_overlap_threshold: float = 0.5
+    basin_core_stability_cycles: int = 10
+    basin_core_absence_tolerance: int = 3
+    checkpoint_interval: int = 0
+    checkpoint_format: str = "json"
+    fast_bridge: bool = False
 
 
 class VerdantSystem:
@@ -119,6 +133,7 @@ class VerdantSystem:
             memory=self.memory_web,
             influence_factor=self.config.bridge_influence_factor,
         )
+        restore_fast_bridge_state(self.bridge, None)
 
         # Pipeline blocks
         self._sensory = SensoryInputBlock()
@@ -181,6 +196,11 @@ class VerdantSystem:
         self._last_basins: List[BasinInfo] = []
         self._basin_states: Dict[str, BasinState] = {}
         self._next_basin_id: int = 0
+        self._basin_registry = BasinRegistry(
+            daughter_protection_cycles=self.config.basin_daughter_protection_cycles,
+            core_stability_cycles=self.config.basin_core_stability_cycles,
+            core_absence_tolerance=self.config.basin_core_absence_tolerance,
+        )
         self._last_boundary_cycles: Dict[frozenset[str], int] = {}
         self._dynamics_metrics: Dict[str, Any] = {}
 
@@ -202,6 +222,7 @@ class VerdantSystem:
         Returns:
             Enriched CognitiveChunk with all sections populated.
         """
+        cycle_wall_start = time.perf_counter()
         chunk = CognitiveChunk()
         chunk.update_section("sensory_input_section", {
             "input_text": text,
@@ -213,6 +234,11 @@ class VerdantSystem:
             "glass_transition_temp": self._t_g,
             "cycle": self._cycle_count,
         })
+
+        set_fast_bridge_enabled(
+            self.bridge,
+            bool(self.config.fast_bridge or self._cycle_count >= 200),
+        )
 
         # Run pipeline
         chunk = self.pipeline.run(chunk)
@@ -228,30 +254,54 @@ class VerdantSystem:
         self._update_metrics(chunk)
 
         # Basin scans (analysis-first telemetry)
-        should_scan = (self._cycle_count % max(1, self.config.basin_scan_interval) == 0)
+        scan_interval = self._compute_basin_scan_interval()
+        should_scan = (self._cycle_count % max(1, scan_interval) == 0)
         if should_scan:
-            self._last_basins = detect_basins(
+            detected = detect_basins(
                 self.memory_web,
                 k=self.config.basin_scan_k,
                 min_size=self.config.basin_min_size,
             )
-            if self._last_basins:
-                existing = [int(b.basin_id.split("_")[-1]) for b in self._last_basins if b.basin_id.startswith("basin_") and b.basin_id.split("_")[-1].isdigit()]
-                if existing:
-                    self._next_basin_id = max(self._next_basin_id, max(existing) + 1)
+            if self.config.basin_use_registry:
+                communities = [set(b.nodes) for b in detected]
+                self._last_basins = self._basin_registry.update_from_detection(
+                    communities,
+                    self._cycle_count,
+                    core_overlap_threshold=self.config.basin_core_overlap_threshold,
+                    memory_web=self.memory_web,
+                )
+                self._next_basin_id = max(
+                    self._next_basin_id,
+                    int(self._basin_registry.to_dict().get("next_id", 0)),
+                )
+            else:
+                self._last_basins = detected
+                if self._last_basins:
+                    existing = [
+                        int(b.basin_id.split("_")[-1])
+                        for b in self._last_basins
+                        if b.basin_id.startswith("basin_")
+                        and b.basin_id.split("_")[-1].isdigit()
+                    ]
+                    if existing:
+                        self._next_basin_id = max(self._next_basin_id, max(existing) + 1)
 
         emergent_count_by_basin, basin_membership_snapshot = self._basin_emergent_telemetry(
             self._last_basins,
             include_membership=self.config.emit_basin_membership,
         )
+        registry_events = [asdict(event) for event in self._basin_registry.get_last_cycle_events()]
 
         chunk.update_section("basins_section", {
             "basins": [b.__dict__ for b in self._last_basins],
             "scan_k": self.config.basin_scan_k,
-            "scan_interval": self.config.basin_scan_interval,
+            "scan_interval": scan_interval,
             "scanned_this_cycle": should_scan,
             "emergent_count_by_basin": emergent_count_by_basin,
             "basin_membership_snapshot": basin_membership_snapshot,
+            "basin_registry_active": len(self._basin_registry.get_active_basins()),
+            "basin_registry_dormant": len(self._basin_registry.get_dormant_basins()),
+            "basin_registry_events": registry_events,
         })
 
         proposal_section = chunk.get_section_content("basin_proposals_section") or {}
@@ -279,6 +329,16 @@ class VerdantSystem:
             )
 
         self._apply_basin_dynamics(chunk)
+        dynamics_section = chunk.get_section_content("basin_dynamics_section") or {}
+        if isinstance(dynamics_section, dict):
+            dynamics_section["cycle_time_seconds"] = float(time.perf_counter() - cycle_wall_start)
+            dynamics_section["graph_nodes"] = int(self.memory_web.graph.number_of_nodes())
+            dynamics_section["graph_edges"] = int(self.memory_web.graph.number_of_edges())
+            graph_nodes = max(1, self.memory_web.graph.number_of_nodes())
+            dynamics_section["edges_per_node"] = float(self.memory_web.graph.number_of_edges() / graph_nodes)
+            dynamics_section["bridge_pairs_evaluated"] = int(get_fast_bridge_state(self.bridge)["bridge_pairs_evaluated"])
+            chunk.update_section("basin_dynamics_section", dynamics_section)
+            self._dynamics_metrics = dynamics_section
 
         return chunk
 
@@ -300,6 +360,14 @@ class VerdantSystem:
             "global_edge_ratio_before": 0.0,
             "global_edge_ratio_after": 0.0,
             "density_regulation_edges_removed": 0,
+            "cycle_time_seconds": 0.0,
+            "graph_nodes": 0,
+            "graph_edges": 0,
+            "edges_per_node": 0.0,
+            "bridge_pairs_evaluated": 0,
+            "basin_registry_active": len(self._basin_registry.get_active_basins()),
+            "basin_registry_dormant": len(self._basin_registry.get_dormant_basins()),
+            "basin_registry_events": [asdict(event) for event in self._basin_registry.get_last_cycle_events()],
         }
 
         node_count = max(1, self.memory_web.graph.number_of_nodes())
@@ -406,6 +474,15 @@ class VerdantSystem:
                 if bud is None:
                     continue
                 self._next_basin_id += 1
+                if self.config.basin_use_registry:
+                    state = self._basin_states.get(bud.new_basin_id)
+                    members = state.member_nodes if state is not None else []
+                    self._basin_registry.register_budded_basin(
+                        set(members),
+                        cycle=cycle,
+                        parent_id=bud.parent_basin_id,
+                        basin_id=bud.new_basin_id,
+                    )
                 dynamics["bud_events_count"] += 1
                 dynamics["bud_parent_basin_id"] = bud.parent_basin_id
                 dynamics["bud_new_basin_id"] = bud.new_basin_id
@@ -415,6 +492,10 @@ class VerdantSystem:
         node_count_after = max(1, self.memory_web.graph.number_of_nodes())
         edge_count_after = self.memory_web.graph.number_of_edges()
         dynamics["global_edge_ratio_after"] = float(edge_count_after / node_count_after)
+        dynamics["graph_nodes"] = int(node_count_after)
+        dynamics["graph_edges"] = int(edge_count_after)
+        dynamics["edges_per_node"] = float(edge_count_after / node_count_after)
+        dynamics["bridge_pairs_evaluated"] = int(get_fast_bridge_state(self.bridge)["bridge_pairs_evaluated"])
 
         chunk.update_section("basin_dynamics_section", dynamics)
         self._dynamics_metrics = dynamics
@@ -519,6 +600,8 @@ class VerdantSystem:
             "largest_basin_size": (max((b.size for b in self._last_basins), default=0)),
             "basins": [b.__dict__ for b in self._last_basins],
             "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
+            "basin_registry_active": len(self._basin_registry.get_active_basins()),
+            "basin_registry_dormant": len(self._basin_registry.get_dormant_basins()),
             **self._dynamics_metrics,
         }
 
@@ -616,22 +699,22 @@ class VerdantSystem:
             cycle=self._cycle_count,
         )
 
-    def save_state(self, path: str) -> None:
-        """Save full system state to *path*."""
+    def _compute_basin_scan_interval(self) -> int:
+        """Return the effective basin scan interval, adapting to graph size."""
+        graph_size = int(self.memory_web.graph.number_of_nodes())
+        adaptive = max(10, min(50, graph_size // 50 if graph_size > 0 else 10))
+        return max(1, max(int(self.config.basin_scan_interval), adaptive))
+
+    def save_checkpoint(self, path: str) -> None:
+        """Save a complete system checkpoint to *path*."""
+        if self.config.checkpoint_format != "json":
+            raise NotImplementedError("checkpoint_format='msgpack' is not implemented yet")
         from verdant_v2.memory.persistence import save_snapshot
 
         save_snapshot(
             path,
             memory_web=self.memory_web,
-            bridge_state={
-                "concept_dimension_mapping": {
-                    k: [(t, i, float(w)) for t, i, w in v]
-                    for k, v in self.bridge.concept_dimension_mapping.items()
-                },
-                "resonance_patterns": {
-                    k: str(v) for k, v in self.bridge.resonance_patterns.items()
-                },
-            },
+            bridge_state=self.bridge.to_state_dict(),
             ecwf_state=self.ecwf.to_state_dict(),
             metrics=self._metrics,
             kings_state={
@@ -650,8 +733,27 @@ class VerdantSystem:
                 "next_basin_id": self._next_basin_id,
                 "last_boundary_cycles": {"|".join(sorted(list(k))): int(v) for k, v in self._last_boundary_cycles.items()},
                 "dynamics_metrics": self._dynamics_metrics,
+                "config": self.config.model_dump(),
+                "basin_registry": self._basin_registry.to_dict(),
+                "bridge_acceleration": get_fast_bridge_state(self.bridge),
+                "numpy_random_state": self._serialize_numpy_state(np.random.get_state()),
             },
         )
+
+    @classmethod
+    def load_checkpoint(cls, path: str) -> "VerdantSystem":
+        """Restore a new system instance from *path*."""
+        from verdant_v2.memory.persistence import load_snapshot
+
+        state = load_snapshot(path)
+        config_data = dict((state.get("extra", {}) or {}).get("config", {}))
+        system = cls(VerdantConfig(**config_data) if config_data else VerdantConfig())
+        system.load_state(path)
+        return system
+
+    def save_state(self, path: str) -> None:
+        """Save full system state to *path*."""
+        self.save_checkpoint(path)
 
     def load_state(self, path: str) -> None:
         """Load system state from *path*."""
@@ -665,12 +767,10 @@ class VerdantSystem:
             memory=self.memory_web,
             influence_factor=self.config.bridge_influence_factor,
         )
-        # Restore bridge mappings
+        restore_fast_bridge_state(self.bridge, None)
         bridge_state = state.get("bridge", {})
-        for k, v in bridge_state.get("concept_dimension_mapping", {}).items():
-            self.bridge.concept_dimension_mapping[k] = [
-                (t, i, w) for t, i, w in v
-            ]
+        if isinstance(bridge_state, dict):
+            self.bridge.from_state_dict(bridge_state)
         # Restore kings
         kings = state.get("kings", {})
         if "data_king" in kings:
@@ -681,6 +781,9 @@ class VerdantSystem:
             self.ethics_king.from_state_dict(kings["ethics_king"])
         # Restore extra
         extra = state.get("extra", {})
+        config_data = extra.get("config", {})
+        if isinstance(config_data, dict) and config_data:
+            self.config = VerdantConfig(**config_data)
         self._t_g = extra.get("t_g", 0.5)
         self._cycle_count = extra.get("cycle_count", 0)
         self._entropy_history = extra.get("entropy_history", [])
@@ -704,12 +807,47 @@ class VerdantSystem:
         raw_dyn = extra.get("dynamics_metrics", {})
         if isinstance(raw_dyn, dict):
             self._dynamics_metrics = raw_dyn
+        restore_fast_bridge_state(self.bridge, extra.get("bridge_acceleration", {}))
+        raw_registry = extra.get("basin_registry", {})
+        if isinstance(raw_registry, dict) and raw_registry:
+            self._basin_registry = BasinRegistry.from_dict(raw_registry)
+        else:
+            self._basin_registry = BasinRegistry(
+                daughter_protection_cycles=self.config.basin_daughter_protection_cycles,
+                core_stability_cycles=self.config.basin_core_stability_cycles,
+                core_absence_tolerance=self.config.basin_core_absence_tolerance,
+            )
+        rng_state = extra.get("numpy_random_state")
+        if isinstance(rng_state, dict):
+            np.random.set_state(self._deserialize_numpy_state(rng_state))
         # Re-wire blocks
         self._memory_block.memory_web = self.memory_web
         self._memory_block.bridge = self.bridge
         self._learning.bridge = self.bridge
         self.pipeline.memory_web = self.memory_web
         self.pipeline.bridge = self.bridge
+
+    @staticmethod
+    def _serialize_numpy_state(state: tuple[Any, ...]) -> dict[str, Any]:
+        """Serialize ``numpy.random`` state into JSON-friendly data."""
+        return {
+            "bit_generator": str(state[0]),
+            "keys": state[1].tolist(),
+            "pos": int(state[2]),
+            "has_gauss": int(state[3]),
+            "cached_gaussian": float(state[4]),
+        }
+
+    @staticmethod
+    def _deserialize_numpy_state(state: dict[str, Any]) -> tuple[Any, ...]:
+        """Restore ``numpy.random`` state from serialized data."""
+        return (
+            str(state["bit_generator"]),
+            np.array(state["keys"], dtype=np.uint32),
+            int(state["pos"]),
+            int(state["has_gauss"]),
+            float(state["cached_gaussian"]),
+        )
 
     # ------------------------------------------------------------------
     # Internal

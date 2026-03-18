@@ -54,11 +54,14 @@ def main() -> None:
     fig2, ax2 = plt.subplots(figsize=(8, 5))
     if seed_results:
         labels = [f"seed_{int(s.get('seed', 0))}" for s in seed_results]
-        vals = [float((s.get("summary") or {}).get("forge_fraction", 0.0)) for s in seed_results]
+        vals = [
+            float((s.get("summary") or {}).get("forge_fraction_peak", (s.get("summary") or {}).get("forge_fraction", 0.0)))
+            for s in seed_results
+        ]
         ax2.bar(labels, vals)
         ax2.set_ylim(0, 1)
     ax2.set_ylabel("Forge Fraction")
-    ax2.set_title("Daughter Forge Fraction by Seed")
+    ax2.set_title("Daughter Forge Fraction by Seed (Peak-based)")
     fig2.tight_layout()
     fig2.savefig(outdir / "daughter_forge_fraction.png", dpi=160)
     plt.close(fig2)

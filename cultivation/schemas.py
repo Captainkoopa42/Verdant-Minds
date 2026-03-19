@@ -96,6 +96,11 @@ class CycleRecord(BaseModel):
     is_self_reflection: bool = False
     self_reflection_input: str = ""
     phase_name: str | None = None
+    phase_cycle: int = 0
+    phase_conditions_met: dict[str, Any] = Field(default_factory=dict)
+    self_reflect_trigger: str | None = None
+    basin_target: str | None = None
+    convergence_met: bool = False
     phase_start: bool = False
     phase_end: bool = False
 

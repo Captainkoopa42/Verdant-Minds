@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -20,6 +20,17 @@ class ScaffoldContext:
     recent_emergents: list[str]
     earlier_share: float
     cycle: int
+    active_basin_count: int = 0
+    dormant_basin_count: int = 0
+    total_emergent_count: int = 0
+    t_g: float = 0.0
+    latest_emergent_names: list[str] = field(default_factory=list)
+    largest_basin_id: str = ""
+    largest_basin_emergent_count: int = 0
+    recent_bud_events: list[dict[str, Any]] = field(default_factory=list)
+    edge_count: int = 0
+    node_count: int = 0
+    recent_dormancy_events: list[dict[str, Any]] = field(default_factory=list)
 
 
 class CycleRecord(BaseModel):
@@ -82,6 +93,8 @@ class CycleRecord(BaseModel):
     tutor_input_length: int = 0
     scaffold_context_emergents: int = 0
     scaffold_context_basins: int = 0
+    is_self_reflection: bool = False
+    self_reflection_input: str = ""
 
 
 class SessionSummary(BaseModel):

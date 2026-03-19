@@ -49,6 +49,7 @@ def main() -> None:
     run_p.add_argument("--checkpoint-interval", type=int, default=0)
     run_p.add_argument("--checkpoint-format", choices=["json", "msgpack"], default="json")
     run_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
+    run_p.add_argument("--self-reflect-interval", type=int, default=0)
     run_p.add_argument("--basin-use-registry", action=argparse.BooleanOptionalAction, default=True)
     run_p.add_argument("--ecwf-cognitive-dims", type=int, default=None)
     run_p.add_argument("--ecwf-ethical-dims", type=int, default=None)
@@ -75,6 +76,7 @@ def main() -> None:
     resume_p.add_argument("--checkpoint-interval", type=int, default=0)
     resume_p.add_argument("--checkpoint-format", choices=["json", "msgpack"], default="json")
     resume_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
+    resume_p.add_argument("--self-reflect-interval", type=int, default=0)
 
     args = parser.parse_args()
 
@@ -106,6 +108,7 @@ def main() -> None:
             checkpoint_interval=args.checkpoint_interval,
             checkpoint_format=args.checkpoint_format,
             fast_bridge=args.fast_bridge,
+            self_reflect_interval=args.self_reflect_interval,
             basin_use_registry=args.basin_use_registry,
             ethomorphic_params=ethomorphic_params,
         )
@@ -124,6 +127,7 @@ def main() -> None:
             checkpoint_interval=args.checkpoint_interval,
             checkpoint_format=args.checkpoint_format,
             fast_bridge=args.fast_bridge,
+            self_reflect_interval=args.self_reflect_interval,
         )
         runner = CultivationRunner(config)
         run_dir = runner.resume(args.checkpoint, args.additional_cycles)

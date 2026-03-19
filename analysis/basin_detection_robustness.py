@@ -27,12 +27,14 @@ def build_backbone_graph(state_path: Path, k: int = 6) -> nx.Graph:
     for nid in nodes.keys():
         graph.add_node(str(nid))
 
-    by_source: dict[str, list[dict[str, float | str]]] = defaultdict(list)
+    by_source: dict[str, list[dict[str, float | str | bool]]] = defaultdict(list)
     for edge in edges:
         source = str(edge["source"])
         target = str(edge["target"])
         weight = float(edge.get("weight", 1.0))
         by_source[source].append({"source": source, "target": target, "weight": weight})
+        if edge.get("undirected"):
+            by_source[target].append({"source": target, "target": source, "weight": weight})
 
     for source, source_edges in by_source.items():
         for edge in sorted(source_edges, key=lambda x: float(x["weight"]), reverse=True)[: max(1, k)]:

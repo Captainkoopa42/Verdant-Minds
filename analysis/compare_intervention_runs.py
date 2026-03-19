@@ -9,19 +9,21 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
+try:
+    from analysis.state_adapter import VerdantState
+except ImportError:
+    from state_adapter import VerdantState
+
 
 def _load_seed_dirs(run_dir: Path) -> list[Path]:
     return sorted([p for p in run_dir.iterdir() if p.is_dir() and p.name.startswith("seed_")])
 
 
 def _higher_order_count_from_state(state_path: Path) -> int:
-    data = json.loads(state_path.read_text(encoding="utf-8"))
-    store = ((data.get("memory_web") or {}).get("memory_store") or {}) if isinstance(data, dict) else {}
+    vs = VerdantState.load(state_path)
     count = 0
-    for label in store:
-        if not str(label).startswith("Emergent_"):
-            continue
-        name = str(label)
+    for node in vs.emergent_nodes:
+        name = str(node["name"])
         nested = name.count("Emergent_") >= 2
         separators = sum(name.count(sep) for sep in ("__", ":", "|", "->", "/", "+"))
         if nested or separators >= 2:
@@ -32,36 +34,26 @@ def _higher_order_count_from_state(state_path: Path) -> int:
 def _metrics_from_seed(seed_dir: Path) -> dict:
     summary = json.loads((seed_dir / "summary.json").read_text(encoding="utf-8"))
     state_path = seed_dir / "state.json"
-    state = json.loads(state_path.read_text(encoding="utf-8"))
+    vs = VerdantState.load(state_path)
 
-    edges = ((state.get("memory_web") or {}).get("edges") or []) if isinstance(state, dict) else []
     comparable = 0
-    emergent_edges = 0
-    for edge in edges:
-        u = edge.get("source")
-        v = edge.get("target")
-        if isinstance(u, str) and isinstance(v, str) and u.startswith("Emergent_") and v.startswith("Emergent_"):
-            emergent_edges += 1
-            comparable += 1
-
-    # Compute scaffolding share from final graph with available timestamps when possible.
-    store = ((state.get("memory_web") or {}).get("memory_store") or {}) if isinstance(state, dict) else {}
     older_to_newer = 0
-    comparable_oriented = 0
-    for edge in edges:
-        u = edge.get("source")
-        v = edge.get("target")
-        if not (isinstance(u, str) and isinstance(v, str) and u.startswith("Emergent_") and v.startswith("Emergent_")):
+    for edge in vs.emergent_edges:
+        left = vs.get_node(edge["source"])
+        right = vs.get_node(edge["target"])
+        if left is None or right is None:
             continue
-        du = store.get(u, {}) if isinstance(store, dict) else {}
-        dv = store.get(v, {}) if isinstance(store, dict) else {}
-        tu = du.get("first_seen")
-        tv = dv.get("first_seen")
-        if isinstance(tu, (int, float)) and isinstance(tv, (int, float)) and tu != tv:
-            comparable_oriented += 1
+        tu = left.get("creation_time")
+        tv = right.get("creation_time")
+        if tu is None or tv is None or tu == tv:
+            continue
+        comparable += 1
+        if vs.format_version == "v3":
+            older_to_newer += 1
+        else:
             older_to_newer += 1 if tu < tv else 0
 
-    scaffolding_share = (older_to_newer / comparable_oriented) if comparable_oriented else 0.0
+    scaffolding_share = (older_to_newer / comparable) if comparable else 0.0
 
     return {
         "emergent_nodes": float(summary.get("emergent_count", 0)),

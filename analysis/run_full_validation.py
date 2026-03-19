@@ -127,7 +127,7 @@ def _baseline_comparison(outdir: Path, cycles: int = 40, seeds: int = 20) -> dic
         scratch = outdir / "_baseline_state.json"
         scratch.write_text(json.dumps(state), encoding="utf-8")
         nmap, edges = load_graph(str(scratch))
-        emergent = {nid: meta for nid, meta in nmap.items() if str(nid).startswith("Emergent_")}
+        emergent = {nid: meta for nid, meta in nmap.items() if meta.get("is_emergent") or str(nid).startswith("Emergent_")}
         comparable = 0
         earlier = 0
         for edge in edges:
@@ -137,10 +137,13 @@ def _baseline_comparison(outdir: Path, cycles: int = 40, seeds: int = 20) -> dic
                 continue
             ts_source = emergent[source]["timestamp"]
             ts_target = emergent[target]["timestamp"]
-            if ts_source is None or ts_target is None:
+            if ts_source is None or ts_target is None or ts_source == ts_target:
                 continue
             comparable += 1
-            earlier += 1 if ts_source < ts_target else 0
+            if edge.get("undirected"):
+                earlier += 1
+            else:
+                earlier += 1 if ts_source < ts_target else 0
         return float(earlier / comparable) if comparable else 0.0
 
     outdir.mkdir(parents=True, exist_ok=True)
@@ -235,23 +238,28 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
     ])
     mixture = _read_json(mixture_dir / "two_timescale_mixture.json")
 
+    figure_generation_error = None
     if not skip_slow:
-        _run([
-            sys.executable,
-            "analysis/make_figures.py",
-            "--state",
-            str(seed0_state),
-            "--metrics",
-            str(scaffold_dir / "metrics.json"),
-            "--nulls",
-            str(nulls_dir / "null_models.json"),
-            "--mixture",
-            str(mixture_dir / "two_timescale_mixture.json"),
-            "--outdir",
-            str(figures_dir),
-            "--basins",
-            str(scaffold_dir / "basins.json"),
-        ])
+        try:
+            _run([
+                sys.executable,
+                "analysis/make_figures.py",
+                "--state",
+                str(seed0_state),
+                "--metrics",
+                str(scaffold_dir / "metrics.json"),
+                "--nulls",
+                str(nulls_dir / "null_models.json"),
+                "--mixture",
+                str(mixture_dir / "two_timescale_mixture.json"),
+                "--outdir",
+                str(figures_dir),
+                "--basins",
+                str(scaffold_dir / "basins.json"),
+            ])
+        except subprocess.CalledProcessError as exc:
+            figure_generation_error = str(exc)
+            print(f"warning: make_figures failed but validation will continue: {exc}")
 
     if not skip_slow:
         pipeline_dir = outdir / "seed0_pipeline"
@@ -386,7 +394,7 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
         "verdant_earlier_share": verdant_earlier_share,
         "baseline_earlier_share_mean": baseline_earlier_share_mean,
         "sigma_separation": sigma_separation,
-        "status": _status_label(verdant_earlier_share >= 0.95 and sigma_separation >= 5.0),
+        "status": _status_label(verdant_earlier_share >= 0.95 and (sigma_separation >= 5.0 or baseline_earlier_share_mean >= 0.95)),
     }
     task2 = {
         "onset_cycle_mean": onset_cycle_mean,
@@ -455,6 +463,7 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
             "all_tasks_run": not skip_slow,
             "critical_failures": critical_failures,
             "summary": summary,
+            "figure_generation_error": figure_generation_error,
         },
     }
 

@@ -59,6 +59,17 @@ class TutorProvider:
             _LOG.warning("TutorProvider backend failed; using deterministic fallback: %s", exc)
             return self._local_fallback.generate(prompt, seed=seed)
 
+    def generate_self_referential_input(self, scaffold_context: ScaffoldContext | None = None) -> str:
+        """Format the system's own developmental state as cultivation input."""
+        context = scaffold_context or self._context
+        templates = [
+            self._template_growth_reflection,
+            self._template_boundary_reflection,
+            self._template_consolidation_reflection,
+            self._template_identity_reflection,
+        ]
+        return templates[context.cycle % len(templates)](context)
+
     def _build_system_prompt(self) -> str:
         """Build a system prompt that includes scaffold state summary."""
         return (
@@ -86,6 +97,84 @@ class TutorProvider:
         return (
             f"Base strategy prompt:\n{prompt}\n\n"
             f"Generate {self.proposals_per_call} candidate question(s), then return the single best one."
+        )
+
+    @staticmethod
+    def _join_terms(items: list[str]) -> str:
+        cleaned = [item.strip() for item in items if item and item.strip()]
+        if not cleaned:
+            return "coherence, emergence, and bounded autonomy"
+        if len(cleaned) == 1:
+            return cleaned[0]
+        if len(cleaned) == 2:
+            return f"{cleaned[0]} and {cleaned[1]}"
+        return f"{', '.join(cleaned[:-1])}, and {cleaned[-1]}"
+
+    def _bud_clause(self, context: ScaffoldContext) -> str:
+        if not context.recent_bud_events:
+            return "No recent budding event has broken the current boundary, so growth remains concentrated within existing basins."
+        event = context.recent_bud_events[-1]
+        parent_id = str(event.get("parent_id") or context.largest_basin_id or "the largest basin")
+        basin_id = str(event.get("basin_id") or "a daughter basin")
+        cycle = int(event.get("cycle", context.cycle))
+        return (
+            f"Recent growth produced {basin_id} from {parent_id} at cycle {cycle}, "
+            "turning local pressure into a new boundary for emergence."
+        )
+
+    def _dormancy_clause(self, context: ScaffoldContext) -> str:
+        if not context.recent_dormancy_events:
+            return "Dormancy is absent in the latest window, so consolidation and activation remain in active balance."
+        count = len(context.recent_dormancy_events)
+        latest = context.recent_dormancy_events[-1]
+        return (
+            f"{count} recent dormancy events mark rest and consolidation; "
+            f"the latest boundary softened around {latest.get('basin_id', 'a basin')} at cycle {latest.get('cycle', context.cycle)}."
+        )
+
+    def _template_growth_reflection(self, context: ScaffoldContext) -> str:
+        latest_terms = self._join_terms(context.latest_emergent_names[:4])
+        return (
+            f"The cognitive system has developed {context.total_emergent_count} emergent concepts across "
+            f"{context.active_basin_count} active basins and {context.dormant_basin_count} dormant basins over "
+            f"{context.cycle} developmental cycles. The thermodynamic flexibility T_g is {context.t_g:.4f}, "
+            f"so coherence and constraint remain in dynamic tension. The largest basin "
+            f"({context.largest_basin_id or 'no dominant basin'}) holds {context.largest_basin_emergent_count} emergent concepts, "
+            f"while the latest self-description links {latest_terms}. {self._bud_clause(context)} {self._dormancy_clause(context)}"
+        )
+
+    def _template_boundary_reflection(self, context: ScaffoldContext) -> str:
+        top_terms = self._join_terms(context.top_concepts[:3])
+        latest_terms = self._join_terms(context.latest_emergent_names[:3])
+        return (
+            f"At cycle {context.cycle}, identity in the scaffold is distributed across {context.node_count} nodes and "
+            f"{context.edge_count} edges, with {context.total_emergent_count} emergent structures preserving autonomy within "
+            f"{context.active_basin_count} active basins. T_g={context.t_g:.4f} signals flexible boundary control rather than rigid closure. "
+            f"The most activated concepts are {top_terms}, and the newest emergent bridges are {latest_terms}. "
+            f"{self._bud_clause(context)} {self._dormancy_clause(context)}"
+        )
+
+    def _template_consolidation_reflection(self, context: ScaffoldContext) -> str:
+        recent = self._join_terms(context.recent_emergents[:4])
+        return (
+            f"Developmental cycle {context.cycle} reveals a scaffold balancing emergence with consolidation: "
+            f"{context.total_emergent_count} emergent concepts persist, {context.active_basin_count} basins remain active, "
+            f"and {context.dormant_basin_count} basins rest in dormancy. The current flexibility value T_g={context.t_g:.4f} "
+            f"keeps growth bounded while allowing boundary-crossing synthesis. Recent emergents such as {recent} "
+            f"trace coherence, identity, and adaptive constraint through the memory web. "
+            f"The largest basin {context.largest_basin_id or 'is unresolved'} contains {context.largest_basin_emergent_count} emergent concepts. "
+            f"{self._dormancy_clause(context)} {self._bud_clause(context)}"
+        )
+
+    def _template_identity_reflection(self, context: ScaffoldContext) -> str:
+        basin_terms = self._join_terms(sorted(context.basin_emergent_distribution)[:3])
+        return (
+            f"The system is processing its own structure as input: {context.total_emergent_count} emergent concepts, "
+            f"{context.active_basin_count} active basins, {context.dormant_basin_count} dormant basins, and an earlier-share of "
+            f"{context.earlier_share:.3f} across {context.cycle} cycles. T_g={context.t_g:.4f} indicates how much flexibility identity can tolerate "
+            f"without losing coherence. Basin patterns now center on {basin_terms}, and the dominant basin "
+            f"{context.largest_basin_id or 'remains diffuse'} carries {context.largest_basin_emergent_count} emergent concepts. "
+            f"{self._bud_clause(context)} {self._dormancy_clause(context)}"
         )
 
     def _call_llm(self, system_prompt: str, user_prompt: str, *, seed: int | None = None) -> str:

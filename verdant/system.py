@@ -655,6 +655,8 @@ class VerdantSystem:
 
         memory_store = self.memory_web.memory_store
         emergent_nodes = self.memory_web.get_emergent_nodes()
+        active_basins = self._basin_registry.get_active_basins()
+        dormant_basins = self._basin_registry.get_dormant_basins()
 
         basin_distribution = {b.basin_id: int(b.emergent_count) for b in self._last_basins}
         top_concepts = [
@@ -710,6 +712,34 @@ class VerdantSystem:
                 if creation_time >= max(parent_times):
                     earlier_count += 1
 
+        largest_basin = max(
+            self._last_basins,
+            key=lambda basin: (int(basin.emergent_count), int(basin.size), str(basin.basin_id)),
+            default=None,
+        )
+        registry_history = self._basin_registry.get_history()
+        recent_bud_events = [
+            {
+                "cycle": int(event.cycle),
+                "event_type": str(event.event_type),
+                "basin_id": str(event.basin_id),
+                "parent_id": event.details.get("parent_id"),
+                "members": int(event.details.get("members", 0)),
+            }
+            for event in registry_history
+            if event.event_type == "budded"
+        ][-3:]
+        recent_dormancy_events = [
+            {
+                "cycle": int(event.cycle),
+                "event_type": str(event.event_type),
+                "basin_id": str(event.basin_id),
+                "core_size": int(event.details.get("core_size", 0)),
+            }
+            for event in registry_history
+            if event.event_type == "dormant"
+        ][-3:]
+
         return ScaffoldContext(
             total_nodes=len(memory_store),
             emergent_count=len(emergent_nodes),
@@ -719,6 +749,17 @@ class VerdantSystem:
             recent_emergents=recent_emergents,
             earlier_share=(float(earlier_count) / max(1, earlier_total)),
             cycle=self._cycle_count,
+            active_basin_count=len(active_basins) if self.config.basin_use_registry else len(self._last_basins),
+            dormant_basin_count=len(dormant_basins) if self.config.basin_use_registry else 0,
+            total_emergent_count=len(emergent_nodes),
+            t_g=float(self._t_g),
+            latest_emergent_names=recent_emergents,
+            largest_basin_id=(str(largest_basin.basin_id) if largest_basin is not None else ""),
+            largest_basin_emergent_count=(int(largest_basin.emergent_count) if largest_basin is not None else 0),
+            recent_bud_events=recent_bud_events,
+            edge_count=int(self.memory_web.graph.number_of_edges()),
+            node_count=int(self.memory_web.graph.number_of_nodes()),
+            recent_dormancy_events=recent_dormancy_events,
         )
 
     def _compute_basin_scan_interval(self) -> int:

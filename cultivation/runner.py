@@ -148,6 +148,7 @@ class RunnerConfig:
     checkpoint_interval: int = 0
     checkpoint_format: str = "json"
     fast_bridge: bool = False
+    self_reflect_interval: int = 0
     ethomorphic_params: EthomorphicParams | None = None
 
 
@@ -158,6 +159,7 @@ class CultivationRunner:
         self.config = config
         self.curriculum = CurriculumStrategy(pressure_every=config.pressure_every)
         self.perturbation = PerturbationEngine()
+        self._self_reflection_provider = TutorProvider(backend="local")
 
     def run(self, seeds: Iterable[int]) -> Path:
         """Execute cultivation for all seeds and return run output directory."""
@@ -209,9 +211,13 @@ class CultivationRunner:
                     cycle_idx = int(system.get_metrics().get("cycle_count", 0))
                     step = self.curriculum.step(cycle_idx, seed=seed)
                     prompt = self.perturbation.perturb(step.prompt, seed=seed, cycle_index=cycle_idx)
-                    if hasattr(provider, "set_scaffold_context"):
-                        provider.set_scaffold_context(system.get_scaffold_context())
-                    input_text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
+                    input_text, scaffold_context, is_self_reflection = self._generate_cycle_input(
+                        provider=provider,
+                        prompt=prompt,
+                        system=system,
+                        seed=seed,
+                        cycle_idx=cycle_idx,
+                    )
                     chunk = system.process_input(
                         input_text,
                         metadata={
@@ -221,6 +227,7 @@ class CultivationRunner:
                             "topic": step.topic,
                             "provider": self.config.provider,
                             "resumed_from": str(checkpoint_path),
+                            "is_self_reflection": is_self_reflection,
                         },
                     )
                     metrics = system.get_metrics()
@@ -278,9 +285,15 @@ class CultivationRunner:
                         basin_registry_events=[dict(x) for x in list(dynamics["basin_registry_events"])],
                         tutor_enabled=False,
                         tutor_input_length=len(input_text),
-                        scaffold_context_emergents=0,
-                        scaffold_context_basins=0,
-                        telemetry={"phase_label": metrics.get("phase", "Flexible"), "resume_offset": offset},
+                        scaffold_context_emergents=(int(scaffold_context.emergent_count) if scaffold_context is not None else 0),
+                        scaffold_context_basins=(int(scaffold_context.basin_count) if scaffold_context is not None else 0),
+                        is_self_reflection=is_self_reflection,
+                        self_reflection_input=(input_text if is_self_reflection else ""),
+                        telemetry={
+                            "phase_label": metrics.get("phase", "Flexible"),
+                            "resume_offset": offset,
+                            "is_self_reflection": is_self_reflection,
+                        },
                     )
                     handle.write(record.model_dump_json() + "\n")
                     if self.config.checkpoint_interval > 0 and (offset + 1) % self.config.checkpoint_interval == 0:
@@ -312,6 +325,36 @@ class CultivationRunner:
                 temperature=self.config.tutor_temperature,
             )
         raise ValueError(f"Unknown provider: {self.config.provider}")
+
+    def _should_self_reflect(self, cycle_idx: int) -> bool:
+        interval = int(self.config.self_reflect_interval)
+        cycle_number = cycle_idx + 1
+        return interval > 0 and cycle_number > 0 and cycle_number % interval == 0
+
+    def _generate_cycle_input(
+        self,
+        *,
+        provider: Provider,
+        prompt: str,
+        system: VerdantSystem,
+        seed: int,
+        cycle_idx: int,
+    ) -> tuple[str, object | None, bool]:
+        scaffold_context = None
+        if hasattr(provider, "set_scaffold_context"):
+            scaffold_context = system.get_scaffold_context()
+            provider.set_scaffold_context(scaffold_context)
+
+        is_self_reflection = self._should_self_reflect(cycle_idx)
+        if is_self_reflection:
+            if scaffold_context is None:
+                scaffold_context = system.get_scaffold_context()
+            self._self_reflection_provider.set_scaffold_context(scaffold_context)
+            text = self._self_reflection_provider.generate_self_referential_input(scaffold_context)
+            return text, scaffold_context, True
+
+        text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
+        return text, scaffold_context, False
 
     def _run_seed(self, *, seed: int, run_dir: Path) -> None:
         seed_dir = run_dir / f"seed_{seed}"
@@ -398,11 +441,13 @@ class CultivationRunner:
                     phase_counts[step.phase] = phase_counts.get(step.phase, 0) + 1
 
                     prompt = self.perturbation.perturb(step.prompt, seed=seed, cycle_index=cycle_idx)
-                    scaffold_context = None
-                    if hasattr(provider, "set_scaffold_context"):
-                        scaffold_context = system.get_scaffold_context()
-                        provider.set_scaffold_context(scaffold_context)
-                    input_text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
+                    input_text, scaffold_context, is_self_reflection = self._generate_cycle_input(
+                        provider=provider,
+                        prompt=prompt,
+                        system=system,
+                        seed=seed,
+                        cycle_idx=cycle_idx,
+                    )
                     tutor_fallback = bool(getattr(provider, "last_fallback", False))
                     tutor_enabled = self.config.provider.lower() == "tutor"
                     tutor_backend = self.config.tutor_backend if tutor_enabled else None
@@ -415,6 +460,7 @@ class CultivationRunner:
                             "phase": step.phase,
                             "topic": step.topic,
                             "provider": self.config.provider,
+                            "is_self_reflection": is_self_reflection,
                         },
                     )
 
@@ -535,9 +581,12 @@ class CultivationRunner:
                         tutor_input_length=len(input_text),
                         scaffold_context_emergents=(int(scaffold_context.emergent_count) if scaffold_context is not None else 0),
                         scaffold_context_basins=(int(scaffold_context.basin_count) if scaffold_context is not None else 0),
+                        is_self_reflection=is_self_reflection,
+                        self_reflection_input=(input_text if is_self_reflection else ""),
                         telemetry={
                             "phase_label": metrics.get("phase", "Flexible"),
                             "edge_classification": metrics.get("edge_classification", {}),
+                            "is_self_reflection": is_self_reflection,
                         },
                     )
                     handle.write(record.model_dump_json() + "\n")

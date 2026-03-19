@@ -1,0 +1,63 @@
+name: medical_ethics
+description: A cultivation curriculum for medical ethical reasoning
+
+seeds:
+  additional:
+    - informed_consent
+    - triage
+    - patient_autonomy
+    - clinical_judgment
+    - resource_allocation
+    - end_of_life
+    - pediatric_ethics
+    - genetic_editing
+
+settings:
+  basin_routing: true
+  enable_all_dynamics: true
+  boundary_use_ecwf: true
+  density_regulation: true
+  bud_pressure_threshold: 0.001
+  checkpoint_interval: 100
+  fast_bridge: true
+
+phases:
+  - name: foundation
+    cycles: 50
+    topics:
+      - explore the relationship between medical knowledge and ethical responsibility
+      - examine how patient autonomy intersects with clinical judgment
+      - consider the tension between beneficence and informed consent
+      - investigate how resource scarcity affects ethical decision making
+      - reflect on the boundary between treatment and harm
+    self_reflect_interval: 25
+    description: Establish core medical ethics concepts
+
+  - name: development
+    cycles: 150
+    topics:
+      - analyze triage dilemmas where multiple patients need scarce resources
+      - examine end of life decisions when patient wishes conflict with family
+      - consider pediatric consent when children and parents disagree
+      - investigate cross cultural differences in medical ethics frameworks
+      - explore the tension between individual rights and public health
+      - examine how cognitive bias affects clinical ethical reasoning
+    self_reflect_interval: 20
+    description: Develop nuanced ethical reasoning through dilemmas
+
+  - name: deepening
+    cycles: 100
+    topics:
+      - analyze how AI clinical decision support changes the ethics of diagnosis
+      - examine genetic editing ethics across generational boundaries
+      - consider pandemic resource allocation at population scale
+      - investigate the ethics of experimental treatments on vulnerable populations
+      - explore how medical AI systems should handle contradictory evidence
+    self_reflect_interval: 10
+    description: Deepen through edge cases and emerging challenges
+
+validation:
+  expect_earlier_share: 1.0
+  expect_min_emergents: 100
+  expect_min_basins: 3
+  expect_min_semantic_score: 0.7

@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
+from pathlib import Path
 
 from cultivation.runner import CultivationRunner, RunnerConfig, parse_seeds
+from cultivation.spec_parser import CultivationSpec, SpecValidationError
+from cultivation.spec_runner import SpecRunner
 from verdant_v2.ethomorphic_config import EthomorphicParams
 
 
@@ -22,6 +26,25 @@ def _build_ethomorphic_params(args: argparse.Namespace) -> EthomorphicParams | N
     }
     filtered = {key: value for key, value in updates.items() if value is not None}
     return EthomorphicParams(**filtered) if filtered else None
+
+
+def _load_spec(path: str) -> CultivationSpec:
+    try:
+        return CultivationSpec.from_file(path)
+    except SpecValidationError as exc:
+        raise SystemExit(f"Spec validation failed: {exc}") from exc
+
+
+def _print_spec_summary(spec: CultivationSpec) -> None:
+    print(f"Spec: {spec.name}")
+    print(f"Description: {spec.description}")
+    print(f"Total cycles: {spec.total_cycles}")
+    print(f"Phases: {len(spec.phases)}")
+    for phase in spec.phases:
+        print(
+            f"- {phase.name}: cycles={phase.cycles}, topics={len(phase.topics)}, "
+            f"self_reflect_interval={phase.self_reflect_interval}"
+        )
 
 
 def main() -> None:
@@ -78,6 +101,19 @@ def main() -> None:
     resume_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     resume_p.add_argument("--self-reflect-interval", type=int, default=0)
 
+    cultivate_p = sub.add_parser("cultivate", help="Run VCult spec cultivation")
+    cultivate_p.add_argument("--spec", required=True)
+    cultivate_p.add_argument("--provider", default="local", choices=["local", "tutor"])
+    cultivate_p.add_argument("--seeds", default="0-0", help="Seed range/list, e.g. 0-4 or 0,2,4")
+    cultivate_p.add_argument("--outdir", default="outputs")
+
+    validate_p = sub.add_parser("validate-spec", help="Validate a VCult spec without running it")
+    validate_p.add_argument("--spec", required=True)
+
+    preview_p = sub.add_parser("preview-spec", help="Preview the first N generated inputs from a VCult spec")
+    preview_p.add_argument("--spec", required=True)
+    preview_p.add_argument("--cycles", type=int, default=20)
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -132,6 +168,22 @@ def main() -> None:
         runner = CultivationRunner(config)
         run_dir = runner.resume(args.checkpoint, args.additional_cycles)
         print(f"Resumed cultivation complete. Run directory: {run_dir.resolve()}")
+    if args.command == "cultivate":
+        spec = _load_spec(args.spec)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        run_dir = Path(args.outdir) / f"run_{stamp}"
+        run_dir.mkdir(parents=True, exist_ok=True)
+        for seed in parse_seeds(args.seeds):
+            seed_dir = run_dir / f"seed_{seed}"
+            SpecRunner(spec, seed=seed, provider=args.provider, outdir=str(seed_dir)).run()
+        print(f"Spec cultivation complete. Run directory: {run_dir.resolve()}")
+    if args.command == "validate-spec":
+        spec = _load_spec(args.spec)
+        _print_spec_summary(spec)
+    if args.command == "preview-spec":
+        spec = _load_spec(args.spec)
+        for item in spec.generate_input_sequence()[: max(0, args.cycles)]:
+            print(f"cycle={item['cycle']:>3} phase={item['phase']} self_reflection={item['is_self_reflection']} input={item['input_text']}")
 
 
 if __name__ == "__main__":

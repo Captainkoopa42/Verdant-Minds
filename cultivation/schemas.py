@@ -95,6 +95,9 @@ class CycleRecord(BaseModel):
     scaffold_context_basins: int = 0
     is_self_reflection: bool = False
     self_reflection_input: str = ""
+    phase_name: str | None = None
+    phase_start: bool = False
+    phase_end: bool = False
 
 
 class SessionSummary(BaseModel):

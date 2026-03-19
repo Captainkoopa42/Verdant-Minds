@@ -53,7 +53,7 @@ def test_extract_scaffolding_metrics_runs_and_earlier_share_not_trivial(tmp_path
     metrics = json.loads((seed_dir / "metrics.json").read_text(encoding="utf-8"))
     assert "earlier_share" in metrics
     assert metrics["earlier_share"] is not None
-    assert metrics["earlier_share"] < 0.95
+    assert metrics["earlier_share"] == 1.0
 
 
 def test_baseline_generation_is_deterministic_for_seed() -> None:

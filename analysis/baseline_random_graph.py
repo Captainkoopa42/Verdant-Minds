@@ -70,7 +70,7 @@ def build_baseline_state(config: BaselineConfig) -> dict[str, Any]:
             "access_count": py_rng.randint(1, 10),
             "created_at": created_at,
             "first_seen": created_at,
-            "metadata": {"created_at": created_at},
+            "metadata": {"created_at": created_at, "creation_time": created_at, "origin": "seed"},
         }
 
     for cycle in range(config.cycles):
@@ -89,7 +89,7 @@ def build_baseline_state(config: BaselineConfig) -> dict[str, Any]:
                 "access_count": 0,
                 "created_at": created_at,
                 "first_seen": created_at,
-                "metadata": {"created_at": created_at},
+                "metadata": {"created_at": created_at, "creation_time": created_at, "origin": "wave_emergence"},
             }
 
             existing = [name for name in memory_store if name != node]

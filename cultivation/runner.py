@@ -106,6 +106,35 @@ def _dynamics_telemetry_from_chunk(chunk: CognitiveChunk) -> dict[str, object]:
     }
 
 
+def _coherence_telemetry_from_system(system: VerdantSystem) -> dict[str, object | None]:
+    """Extract normalized H¹ coherence telemetry from the Verdant system."""
+    metrics = system.get_coherence_metrics() if hasattr(system, "get_coherence_metrics") else {}
+    if not isinstance(metrics, dict):
+        metrics = {}
+    return {
+        "h1_triangle_valid": (
+            bool(metrics.get("h1_triangle_valid"))
+            if metrics.get("h1_triangle_valid") is not None
+            else None
+        ),
+        "housed_contradiction_index": (
+            float(metrics.get("housed_contradiction_index"))
+            if metrics.get("housed_contradiction_index") is not None
+            else None
+        ),
+        "violation_rate": (
+            float(metrics.get("violation_rate"))
+            if metrics.get("violation_rate") is not None
+            else None
+        ),
+        "alpha_critical_estimate": (
+            float(metrics.get("alpha_critical_estimate"))
+            if metrics.get("alpha_critical_estimate") is not None
+            else None
+        ),
+    }
+
+
 @dataclass(frozen=True)
 class RunnerConfig:
     """Configuration for cultivation sessions."""
@@ -232,7 +261,7 @@ class CultivationRunner:
                     )
                     metrics = system.get_metrics()
                     wave = chunk.get_section_content("wave_function_section") or {}
-                    coherence = chunk.get_section_content("coherence_invariants_section") or {}
+                    coherence = _coherence_telemetry_from_system(system)
                     basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
                     dynamics = _dynamics_telemetry_from_chunk(chunk)
@@ -244,7 +273,23 @@ class CultivationRunner:
                         phase=step.phase,
                         t_g=float(metrics.get("t_g", 0.5)),
                         entropy=float(wave.get("entropy", 0.0)),
-                        hci=float(coherence.get("housed_contradiction_index", 0.0)),
+                        hci=float(coherence.get("housed_contradiction_index", 0.0) or 0.0),
+                        h1_triangle_valid=(coherence.get("h1_triangle_valid") if coherence.get("h1_triangle_valid") is not None else None),
+                        housed_contradiction_index=(
+                            float(coherence.get("housed_contradiction_index"))
+                            if coherence.get("housed_contradiction_index") is not None
+                            else None
+                        ),
+                        violation_rate=(
+                            float(coherence.get("violation_rate"))
+                            if coherence.get("violation_rate") is not None
+                            else None
+                        ),
+                        alpha_critical_estimate=(
+                            float(coherence.get("alpha_critical_estimate"))
+                            if coherence.get("alpha_critical_estimate") is not None
+                            else None
+                        ),
                         emergent_count=int(metrics.get("emergent_nodes", 0)),
                         memory_size=int(metrics.get("memory_concepts", 0)),
                         basin_count=basin_count,
@@ -513,11 +558,11 @@ class CultivationRunner:
                         )
 
                     wave = chunk.get_section_content("wave_function_section") or {}
-                    coherence = chunk.get_section_content("coherence_invariants_section") or {}
+                    coherence = _coherence_telemetry_from_system(system)
                     metrics = system.get_metrics()
 
                     entropy = float(wave.get("entropy", 0.0))
-                    hci = float(coherence.get("housed_contradiction_index", 0.0))
+                    hci = float(coherence.get("housed_contradiction_index", 0.0) or 0.0)
                     entropies.append(entropy)
                     hcis.append(hci)
 
@@ -533,6 +578,22 @@ class CultivationRunner:
                         t_g=float(metrics.get("t_g", 0.5)),
                         entropy=entropy,
                         hci=hci,
+                        h1_triangle_valid=(coherence.get("h1_triangle_valid") if coherence.get("h1_triangle_valid") is not None else None),
+                        housed_contradiction_index=(
+                            float(coherence.get("housed_contradiction_index"))
+                            if coherence.get("housed_contradiction_index") is not None
+                            else None
+                        ),
+                        violation_rate=(
+                            float(coherence.get("violation_rate"))
+                            if coherence.get("violation_rate") is not None
+                            else None
+                        ),
+                        alpha_critical_estimate=(
+                            float(coherence.get("alpha_critical_estimate"))
+                            if coherence.get("alpha_critical_estimate") is not None
+                            else None
+                        ),
                         emergent_count=int(metrics.get("emergent_nodes", 0)),
                         memory_size=int(metrics.get("memory_concepts", 0)),
                         basin_count=basin_count,

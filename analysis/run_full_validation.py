@@ -97,6 +97,14 @@ def _task7_status(ari_mean: float) -> str:
     return "FAIL"
 
 
+def _task8_status(h1_valid_fraction: float) -> str:
+    if h1_valid_fraction > 0.9:
+        return "PASS"
+    if h1_valid_fraction >= 0.5:
+        return "PARTIAL"
+    return "FAIL"
+
+
 def _fmt_number(value: float | int | None, digits: int = 3) -> str:
     if value is None:
         return "n/a"
@@ -340,6 +348,19 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
     ])
     stability = _read_json(stability_path)
 
+    h1_dir = outdir / "h1_coherence"
+    _run([
+        sys.executable,
+        "analysis/h1_coherence_analysis.py",
+        "--run-dir",
+        str(run_dir),
+        "--seeds",
+        str(len(selected_seed_dirs)),
+        "--outdir",
+        str(h1_dir),
+    ])
+    h1_coherence = _read_json(h1_dir / "h1_coherence_analysis.json")
+
     if skip_slow:
         robustness = {
             "seeds_analyzed": 0,
@@ -432,8 +453,14 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
         "interpretation": robustness_interpretation,
         "status": _task7_status(ari_mean) if not skip_slow else "MODERATE",
     }
+    task8 = {
+        "h1_valid_fraction": _coerce_float(h1_coherence.get("h1_valid_fraction")),
+        "hci_mean": _coerce_float(h1_coherence.get("hci_mean")),
+        "violation_rate_mean": _coerce_float(h1_coherence.get("violation_rate_mean")),
+        "status": _task8_status(_coerce_float(h1_coherence.get("h1_valid_fraction"))),
+    }
 
-    critical_failures = sum(1 for task in (task1, task2, task4) if task["status"] == "FAIL")
+    critical_failures = sum(1 for task in (task1, task2, task4, task8) if task["status"] == "FAIL")
     if not skip_slow and task7["status"] == "FAIL":
         critical_failures += 1
 
@@ -458,6 +485,7 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
         "task5_compression": task5,
         "task6_stability": task6,
         "task7_robustness": task7,
+        "task8_h1_coherence": task8,
         "overall": {
             "earlier_share": verdant_earlier_share,
             "all_tasks_run": not skip_slow,
@@ -509,6 +537,10 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
     print(
         f"Task 7 - Detection Robustness:    {task7['status']:<7} "
         f"(ARI {_fmt_number(task7['ari_mean'])})"
+    )
+    print(
+        f"Task 8 - H¹ Coherence:            {task8['status']:<7} "
+        f"(valid {_fmt_number(task8['h1_valid_fraction'] * 100.0, 1)}%, HCI {_fmt_number(task8['hci_mean'])})"
     )
     print()
     print(f"Earlier-share: {_fmt_number(report['overall']['earlier_share'])}")

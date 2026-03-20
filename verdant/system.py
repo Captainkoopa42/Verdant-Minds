@@ -218,6 +218,12 @@ class VerdantSystem:
         )
         self._last_boundary_cycles: Dict[frozenset[str], int] = {}
         self._dynamics_metrics: Dict[str, Any] = {}
+        self._last_coherence_metrics: Dict[str, Any] = {
+            "h1_triangle_valid": None,
+            "housed_contradiction_index": None,
+            "violation_rate": None,
+            "alpha_critical_estimate": None,
+        }
 
         # Knowledge initialization
         if self.config.initialize_knowledge:
@@ -627,6 +633,15 @@ class VerdantSystem:
             **self._dynamics_metrics,
         }
 
+    def get_coherence_metrics(self) -> Dict[str, Any]:
+        """Extract H¹ coherence metrics from the ethomorphic layer.
+
+        These are computed inside the ethomorphic processing path every cycle and
+        cached here so V3 telemetry and analyses can consume them without
+        modifying the ethomorphic implementation.
+        """
+        return dict(self._last_coherence_metrics)
+
 
     @staticmethod
     def _basin_emergent_telemetry(
@@ -760,6 +775,26 @@ class VerdantSystem:
             edge_count=int(self.memory_web.graph.number_of_edges()),
             node_count=int(self.memory_web.graph.number_of_nodes()),
             recent_dormancy_events=recent_dormancy_events,
+            h1_triangle_valid=(
+                bool(self._last_coherence_metrics["h1_triangle_valid"])
+                if self._last_coherence_metrics["h1_triangle_valid"] is not None
+                else None
+            ),
+            housed_contradiction_index=(
+                float(self._last_coherence_metrics["housed_contradiction_index"])
+                if self._last_coherence_metrics["housed_contradiction_index"] is not None
+                else None
+            ),
+            violation_rate=(
+                float(self._last_coherence_metrics["violation_rate"])
+                if self._last_coherence_metrics["violation_rate"] is not None
+                else None
+            ),
+            alpha_critical_estimate=(
+                float(self._last_coherence_metrics["alpha_critical_estimate"])
+                if self._last_coherence_metrics["alpha_critical_estimate"] is not None
+                else None
+            ),
         )
 
     def _compute_basin_scan_interval(self) -> int:
@@ -796,6 +831,7 @@ class VerdantSystem:
                 "next_basin_id": self._next_basin_id,
                 "last_boundary_cycles": {"|".join(sorted(list(k))): int(v) for k, v in self._last_boundary_cycles.items()},
                 "dynamics_metrics": self._dynamics_metrics,
+                "last_coherence_metrics": self._last_coherence_metrics,
                 "config": self.config.model_dump(),
                 "basin_registry": self._basin_registry.to_dict(),
                 "bridge_acceleration": get_fast_bridge_state(self.bridge),
@@ -889,6 +925,14 @@ class VerdantSystem:
         raw_dyn = extra.get("dynamics_metrics", {})
         if isinstance(raw_dyn, dict):
             self._dynamics_metrics = raw_dyn
+        raw_coherence = extra.get("last_coherence_metrics", {})
+        if isinstance(raw_coherence, dict):
+            self._last_coherence_metrics = {
+                "h1_triangle_valid": raw_coherence.get("h1_triangle_valid"),
+                "housed_contradiction_index": raw_coherence.get("housed_contradiction_index"),
+                "violation_rate": raw_coherence.get("violation_rate"),
+                "alpha_critical_estimate": raw_coherence.get("alpha_critical_estimate"),
+            }
         restore_fast_bridge_state(self.bridge, extra.get("bridge_acceleration", {}))
         configure_bridge_runtime(self.bridge, self.ethomorphic_params)
         raw_registry = extra.get("basin_registry", {})
@@ -976,6 +1020,14 @@ class VerdantSystem:
             "housed_contradiction_index": result.hci,
             "triple_pqr": result.triple_pqr,
         })
+        self._last_coherence_metrics = {
+            "h1_triangle_valid": bool(result.triangle_valid),
+            "housed_contradiction_index": float(result.hci),
+            "violation_rate": float(result.violation_rate),
+            "alpha_critical_estimate": (
+                float(result.alpha_critical) if result.alpha_critical is not None else None
+            ),
+        }
         chunk.add_processing_step("CoherenceInvariants", "coherence_computation", {
             "triangle_valid": result.triangle_valid,
             "hci": result.hci,

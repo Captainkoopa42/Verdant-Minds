@@ -24,6 +24,7 @@ from ethomorphic.bridge.emergence import assign_emergent_concept_mappings
 from ethomorphic.coherence.invariants import compute_coherence
 from ethomorphic.ecwf.core import ECWFCore
 
+# TODO: migrate verdant_v2 imports to verdant for V3
 from verdant_v2.ethomorphic_config import (
     EthomorphicParams,
     apply_ecwf_params,

@@ -9,6 +9,7 @@ from pathlib import Path
 from cultivation.runner import CultivationRunner, RunnerConfig, parse_seeds
 from cultivation.spec_parser import CultivationSpec, SpecValidationError
 from cultivation.spec_runner import SpecRunner
+# TODO: migrate verdant_v2 imports to verdant for V3
 from verdant_v2.ethomorphic_config import EthomorphicParams
 
 

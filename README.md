@@ -87,7 +87,7 @@ python -m cultivation.cli preview-spec \
 
 - **V1:** DOI [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
 - **V2:** DOI [10.5281/zenodo.18933639](https://doi.org/10.5281/zenodo.18933639)
-- **V3:** forthcoming
+- **V3:** github.com/Captainkoopa42/Verdant-Minds/tree/V3 (Zenodo DOI pending)
 
 ## Repository Structure
 

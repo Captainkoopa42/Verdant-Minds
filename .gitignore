@@ -132,3 +132,9 @@ dmypy.json
 # OS
 .DS_Store
 Thumbs.db
+# Large output files
+outputs_*/
+validation_*/
+*.zip
+verdant_phase7_bundle/
+results/v2/verdant_phase7_bundle/

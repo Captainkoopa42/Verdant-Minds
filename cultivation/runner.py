@@ -9,9 +9,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
+# TODO: migrate verdant_v2 imports to verdant for V3
 from verdant_v2.pipeline.chunk import CognitiveChunk
 
 import numpy as np
+from verdant_v2.ethomorphic_config import EthomorphicParams
 from verdant_v2.memory.basins import detect_basins
 from verdant_v2.memory.interventions import (
     ablate_oldest_emergent_nodes,
@@ -30,12 +32,12 @@ from cultivation.strategy.curriculum import CurriculumStrategy
 from cultivation.strategy.perturbation import PerturbationEngine
 
 
-def _basin_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, int, str | None, int]:
+def _basin_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, int, str | None, int, dict[str, int], dict[str, str]]:
     """Extract per-cycle basin telemetry from chunk basins section."""
     section = chunk.get_section_content("basins_section") or {}
     basins = section.get("basins", []) if isinstance(section, dict) else []
     if not isinstance(basins, list):
-        return 0, 0, None, 0
+        return 0, 0, None, 0, {}, {}
 
     basin_count = len(basins)
     largest = 0
@@ -52,7 +54,11 @@ def _basin_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, int, str | 
         nodes = basin.get("nodes", [])
         if self_cluster is None and isinstance(nodes, list) and "selfhood" in nodes:
             self_cluster = str(basin.get("basin_id"))
-    return basin_count, largest, self_cluster, emergent_basins
+    emergent_count_by_basin = section.get("emergent_count_by_basin", {}) if isinstance(section, dict) else {}
+    basin_membership_snapshot = section.get("basin_membership_snapshot", {}) if isinstance(section, dict) else {}
+    ecb = {str(k): int(v) for k, v in emergent_count_by_basin.items()} if isinstance(emergent_count_by_basin, dict) else {}
+    bms = {str(k): str(v) for k, v in basin_membership_snapshot.items()} if isinstance(basin_membership_snapshot, dict) else {}
+    return basin_count, largest, self_cluster, emergent_basins, ecb, bms
 
 
 def _proposal_telemetry_from_chunk(chunk: CognitiveChunk) -> tuple[int, bool, str, list[dict[str, float]]]:
@@ -90,6 +96,43 @@ def _dynamics_telemetry_from_chunk(chunk: CognitiveChunk) -> dict[str, object]:
         "density_regulation_edges_removed": int(dsec.get("density_regulation_edges_removed", 0)),
         "global_edge_ratio_before": float(dsec.get("global_edge_ratio_before", 0.0)),
         "global_edge_ratio_after": float(dsec.get("global_edge_ratio_after", 0.0)),
+        "cycle_time_seconds": float(dsec.get("cycle_time_seconds", 0.0)),
+        "graph_nodes": int(dsec.get("graph_nodes", 0)),
+        "graph_edges": int(dsec.get("graph_edges", 0)),
+        "edges_per_node": float(dsec.get("edges_per_node", 0.0)),
+        "bridge_pairs_evaluated": int(dsec.get("bridge_pairs_evaluated", 0)),
+        "basin_registry_active": int(dsec.get("basin_registry_active", 0)),
+        "basin_registry_dormant": int(dsec.get("basin_registry_dormant", 0)),
+        "basin_registry_events": dsec.get("basin_registry_events", []),
+    }
+
+
+def _coherence_telemetry_from_system(system: VerdantSystem) -> dict[str, object | None]:
+    """Extract normalized H¹ coherence telemetry from the Verdant system."""
+    metrics = system.get_coherence_metrics() if hasattr(system, "get_coherence_metrics") else {}
+    if not isinstance(metrics, dict):
+        metrics = {}
+    return {
+        "h1_triangle_valid": (
+            bool(metrics.get("h1_triangle_valid"))
+            if metrics.get("h1_triangle_valid") is not None
+            else None
+        ),
+        "housed_contradiction_index": (
+            float(metrics.get("housed_contradiction_index"))
+            if metrics.get("housed_contradiction_index") is not None
+            else None
+        ),
+        "violation_rate": (
+            float(metrics.get("violation_rate"))
+            if metrics.get("violation_rate") is not None
+            else None
+        ),
+        "alpha_critical_estimate": (
+            float(metrics.get("alpha_critical_estimate"))
+            if metrics.get("alpha_critical_estimate") is not None
+            else None
+        ),
     }
 
 
@@ -127,6 +170,16 @@ class RunnerConfig:
     density_regulation_enabled: bool = True
     density_max_edge_ratio: float = 80.0
     density_target_edge_ratio: float = 60.0
+    basin_use_registry: bool = True
+    basin_daughter_protection_cycles: int = 30
+    basin_core_overlap_threshold: float = 0.5
+    basin_core_stability_cycles: int = 10
+    basin_core_absence_tolerance: int = 3
+    checkpoint_interval: int = 0
+    checkpoint_format: str = "json"
+    fast_bridge: bool = False
+    self_reflect_interval: int = 0
+    ethomorphic_params: EthomorphicParams | None = None
 
 
 class CultivationRunner:
@@ -136,6 +189,7 @@ class CultivationRunner:
         self.config = config
         self.curriculum = CurriculumStrategy(pressure_every=config.pressure_every)
         self.perturbation = PerturbationEngine()
+        self._self_reflection_provider = TutorProvider(backend="local")
 
     def run(self, seeds: Iterable[int]) -> Path:
         """Execute cultivation for all seeds and return run output directory."""
@@ -145,6 +199,159 @@ class CultivationRunner:
 
         for seed in seeds:
             self._run_seed(seed=seed, run_dir=run_dir)
+        return run_dir
+
+    def resume(self, checkpoint: str, additional_cycles: int) -> Path:
+        """Resume a single-seed run from a saved checkpoint."""
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        run_dir = Path(self.config.outdir) / f"run_{stamp}"
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        checkpoint_path = Path(checkpoint)
+        system = VerdantSystem.load_checkpoint(str(checkpoint_path))
+        seed = int(system.config.seed or 0)
+        seed_dir = run_dir / f"seed_{seed}"
+        seed_dir.mkdir(parents=True, exist_ok=True)
+        provider = self._make_provider()
+
+        py_state = random.getstate()
+        np_state = np.random.get_state()
+        real_time = time.time
+        real_default_rng = np.random.default_rng
+        tick = [int(system.get_metrics().get("cycle_count", 0))]
+        rng_tick = [int(system.get_metrics().get("cycle_count", 0))]
+
+        def deterministic_time() -> float:
+            tick[0] += 1
+            return float(seed) * 10_000.0 + tick[0] * 0.01
+
+        def deterministic_default_rng(seed_arg: int | None = None):
+            if seed_arg is not None:
+                return real_default_rng(seed_arg)
+            rng_tick[0] += 1
+            return real_default_rng(seed * 10_000 + rng_tick[0])
+
+        try:
+            np.random.default_rng = deterministic_default_rng
+            time.time = deterministic_time
+
+            cycles_path = seed_dir / "cycles.jsonl"
+            with cycles_path.open("w", encoding="utf-8") as handle:
+                for offset in range(additional_cycles):
+                    cycle_idx = int(system.get_metrics().get("cycle_count", 0))
+                    step = self.curriculum.step(cycle_idx, seed=seed)
+                    prompt = self.perturbation.perturb(step.prompt, seed=seed, cycle_index=cycle_idx)
+                    input_text, scaffold_context, is_self_reflection = self._generate_cycle_input(
+                        provider=provider,
+                        prompt=prompt,
+                        system=system,
+                        seed=seed,
+                        cycle_idx=cycle_idx,
+                    )
+                    chunk = system.process_input(
+                        input_text,
+                        metadata={
+                            "seed": seed,
+                            "cycle": cycle_idx,
+                            "phase": step.phase,
+                            "topic": step.topic,
+                            "provider": self.config.provider,
+                            "resumed_from": str(checkpoint_path),
+                            "is_self_reflection": is_self_reflection,
+                        },
+                    )
+                    metrics = system.get_metrics()
+                    wave = chunk.get_section_content("wave_function_section") or {}
+                    coherence = _coherence_telemetry_from_system(system)
+                    basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
+                    basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
+                    dynamics = _dynamics_telemetry_from_chunk(chunk)
+                    record = CycleRecord(
+                        cycle_index=cycle_idx,
+                        seed=seed,
+                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        input_text=input_text,
+                        phase=step.phase,
+                        t_g=float(metrics.get("t_g", 0.5)),
+                        entropy=float(wave.get("entropy", 0.0)),
+                        hci=float(coherence.get("housed_contradiction_index", 0.0) or 0.0),
+                        h1_triangle_valid=(coherence.get("h1_triangle_valid") if coherence.get("h1_triangle_valid") is not None else None),
+                        housed_contradiction_index=(
+                            float(coherence.get("housed_contradiction_index"))
+                            if coherence.get("housed_contradiction_index") is not None
+                            else None
+                        ),
+                        violation_rate=(
+                            float(coherence.get("violation_rate"))
+                            if coherence.get("violation_rate") is not None
+                            else None
+                        ),
+                        alpha_critical_estimate=(
+                            float(coherence.get("alpha_critical_estimate"))
+                            if coherence.get("alpha_critical_estimate") is not None
+                            else None
+                        ),
+                        emergent_count=int(metrics.get("emergent_nodes", 0)),
+                        memory_size=int(metrics.get("memory_concepts", 0)),
+                        basin_count=basin_count,
+                        largest_basin_size=largest_basin_size,
+                        self_cluster_basin_id=self_cluster_basin_id,
+                        emergent_basins=emergent_basins,
+                        emergent_count_by_basin=emergent_count_by_basin,
+                        basin_membership_snapshot=basin_membership_snapshot,
+                        basin_proposals_count=basin_proposals_count,
+                        basin_conflict_detected=basin_conflict_detected,
+                        final_action_source=final_action_source,
+                        top_proposal_scores=top_proposal_scores,
+                        intervention_mode=self.config.intervention_mode,
+                        intervention_cycle=self.config.intervention_cycle,
+                        intervention_target=self.config.intervention_target,
+                        pruned_edges_count=int(dynamics["pruned_edges_count"]),
+                        pruned_basin_id=(str(dynamics["pruned_basin_id"]) if dynamics["pruned_basin_id"] is not None else None),
+                        basin_density_before=(float(dynamics["basin_density_before"]) if dynamics["basin_density_before"] is not None else None),
+                        basin_density_after=(float(dynamics["basin_density_after"]) if dynamics["basin_density_after"] is not None else None),
+                        bud_events_count=int(dynamics["bud_events_count"]),
+                        bud_parent_basin_id=(str(dynamics["bud_parent_basin_id"]) if dynamics["bud_parent_basin_id"] is not None else None),
+                        bud_new_basin_id=(str(dynamics["bud_new_basin_id"]) if dynamics["bud_new_basin_id"] is not None else None),
+                        bud_new_basin_size=(int(dynamics["bud_new_basin_size"]) if dynamics["bud_new_basin_size"] is not None else None),
+                        basin_pressure_values={str(k): float(v) for k, v in dict(dynamics["basin_pressure_values"]).items()},
+                        pressure_breakdown=[dict(x) for x in list(dynamics["pressure_breakdown"])],
+                        boundary_emergents_created=int(dynamics["boundary_emergents_created"]),
+                        boundary_pairs=[[str(x) for x in pair] for pair in list(dynamics["boundary_pairs"])],
+                        density_regulation_edges_removed=int(dynamics["density_regulation_edges_removed"]),
+                        global_edge_ratio_before=float(dynamics["global_edge_ratio_before"]),
+                        global_edge_ratio_after=float(dynamics["global_edge_ratio_after"]),
+                        cycle_time_seconds=float(dynamics["cycle_time_seconds"]),
+                        graph_nodes=int(dynamics["graph_nodes"]),
+                        graph_edges=int(dynamics["graph_edges"]),
+                        edges_per_node=float(dynamics["edges_per_node"]),
+                        bridge_pairs_evaluated=int(dynamics["bridge_pairs_evaluated"]),
+                        basin_registry_active=int(dynamics["basin_registry_active"]),
+                        basin_registry_dormant=int(dynamics["basin_registry_dormant"]),
+                        basin_registry_events=[dict(x) for x in list(dynamics["basin_registry_events"])],
+                        tutor_enabled=False,
+                        tutor_input_length=len(input_text),
+                        scaffold_context_emergents=(int(scaffold_context.emergent_count) if scaffold_context is not None else 0),
+                        scaffold_context_basins=(int(scaffold_context.basin_count) if scaffold_context is not None else 0),
+                        is_self_reflection=is_self_reflection,
+                        self_reflection_input=(input_text if is_self_reflection else ""),
+                        telemetry={
+                            "phase_label": metrics.get("phase", "Flexible"),
+                            "resume_offset": offset,
+                            "is_self_reflection": is_self_reflection,
+                        },
+                    )
+                    handle.write(record.model_dump_json() + "\n")
+                    if self.config.checkpoint_interval > 0 and (offset + 1) % self.config.checkpoint_interval == 0:
+                        system.save_checkpoint(str(seed_dir / f"checkpoint_{cycle_idx + 1}.json"))
+
+            state_path = seed_dir / "state.json"
+            system.save_state(str(state_path))
+        finally:
+            np.random.default_rng = real_default_rng
+            time.time = real_time
+            random.setstate(py_state)
+            np.random.set_state(np_state)
         return run_dir
 
     def _make_provider(self) -> Provider:
@@ -164,6 +371,36 @@ class CultivationRunner:
                 temperature=self.config.tutor_temperature,
             )
         raise ValueError(f"Unknown provider: {self.config.provider}")
+
+    def _should_self_reflect(self, cycle_idx: int) -> bool:
+        interval = int(self.config.self_reflect_interval)
+        cycle_number = cycle_idx + 1
+        return interval > 0 and cycle_number > 0 and cycle_number % interval == 0
+
+    def _generate_cycle_input(
+        self,
+        *,
+        provider: Provider,
+        prompt: str,
+        system: VerdantSystem,
+        seed: int,
+        cycle_idx: int,
+    ) -> tuple[str, object | None, bool]:
+        scaffold_context = None
+        if hasattr(provider, "set_scaffold_context"):
+            scaffold_context = system.get_scaffold_context()
+            provider.set_scaffold_context(scaffold_context)
+
+        is_self_reflection = self._should_self_reflect(cycle_idx)
+        if is_self_reflection:
+            if scaffold_context is None:
+                scaffold_context = system.get_scaffold_context()
+            self._self_reflection_provider.set_scaffold_context(scaffold_context)
+            text = self._self_reflection_provider.generate_self_referential_input(scaffold_context)
+            return text, scaffold_context, True
+
+        text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
+        return text, scaffold_context, False
 
     def _run_seed(self, *, seed: int, run_dir: Path) -> None:
         seed_dir = run_dir / f"seed_{seed}"
@@ -213,11 +450,24 @@ class CultivationRunner:
                 density_regulation_enabled=self.config.density_regulation_enabled,
                 density_max_edge_ratio=self.config.density_max_edge_ratio,
                 density_target_edge_ratio=self.config.density_target_edge_ratio,
+                basin_use_registry=self.config.basin_use_registry,
+                basin_daughter_protection_cycles=self.config.basin_daughter_protection_cycles,
+                basin_core_overlap_threshold=self.config.basin_core_overlap_threshold,
+                basin_core_stability_cycles=self.config.basin_core_stability_cycles,
+                basin_core_absence_tolerance=self.config.basin_core_absence_tolerance,
+                checkpoint_interval=self.config.checkpoint_interval,
+                checkpoint_format=self.config.checkpoint_format,
+                fast_bridge=self.config.fast_bridge,
+                ethomorphic_params=self.config.ethomorphic_params,
             ))
             # Ensure ECWF parameters are seed-deterministic even though upstream default is random_state=None.
             system.ecwf.random_state = seed
             system.ecwf.rng = np.random.RandomState(seed)
             system.ecwf._initialize_parameters()
+            if system.ethomorphic_params.initial_amplitude != 1.0:
+                system.ecwf.amplitude_factors = (
+                    system.ecwf.amplitude_factors * float(system.ethomorphic_params.initial_amplitude)
+                )
             system.ecwf.past_states = []
 
             cycles_path = seed_dir / "cycles.jsonl"
@@ -237,11 +487,13 @@ class CultivationRunner:
                     phase_counts[step.phase] = phase_counts.get(step.phase, 0) + 1
 
                     prompt = self.perturbation.perturb(step.prompt, seed=seed, cycle_index=cycle_idx)
-                    scaffold_context = None
-                    if hasattr(provider, "set_scaffold_context"):
-                        scaffold_context = system.get_scaffold_context()
-                        provider.set_scaffold_context(scaffold_context)
-                    input_text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
+                    input_text, scaffold_context, is_self_reflection = self._generate_cycle_input(
+                        provider=provider,
+                        prompt=prompt,
+                        system=system,
+                        seed=seed,
+                        cycle_idx=cycle_idx,
+                    )
                     tutor_fallback = bool(getattr(provider, "last_fallback", False))
                     tutor_enabled = self.config.provider.lower() == "tutor"
                     tutor_backend = self.config.tutor_backend if tutor_enabled else None
@@ -254,6 +506,7 @@ class CultivationRunner:
                             "phase": step.phase,
                             "topic": step.topic,
                             "provider": self.config.provider,
+                            "is_self_reflection": is_self_reflection,
                         },
                     )
 
@@ -306,15 +559,15 @@ class CultivationRunner:
                         )
 
                     wave = chunk.get_section_content("wave_function_section") or {}
-                    coherence = chunk.get_section_content("coherence_invariants_section") or {}
+                    coherence = _coherence_telemetry_from_system(system)
                     metrics = system.get_metrics()
 
                     entropy = float(wave.get("entropy", 0.0))
-                    hci = float(coherence.get("housed_contradiction_index", 0.0))
+                    hci = float(coherence.get("housed_contradiction_index", 0.0) or 0.0)
                     entropies.append(entropy)
                     hcis.append(hci)
 
-                    basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins = _basin_telemetry_from_chunk(chunk)
+                    basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
                     dynamics = _dynamics_telemetry_from_chunk(chunk)
                     record = CycleRecord(
@@ -326,12 +579,30 @@ class CultivationRunner:
                         t_g=float(metrics.get("t_g", 0.5)),
                         entropy=entropy,
                         hci=hci,
+                        h1_triangle_valid=(coherence.get("h1_triangle_valid") if coherence.get("h1_triangle_valid") is not None else None),
+                        housed_contradiction_index=(
+                            float(coherence.get("housed_contradiction_index"))
+                            if coherence.get("housed_contradiction_index") is not None
+                            else None
+                        ),
+                        violation_rate=(
+                            float(coherence.get("violation_rate"))
+                            if coherence.get("violation_rate") is not None
+                            else None
+                        ),
+                        alpha_critical_estimate=(
+                            float(coherence.get("alpha_critical_estimate"))
+                            if coherence.get("alpha_critical_estimate") is not None
+                            else None
+                        ),
                         emergent_count=int(metrics.get("emergent_nodes", 0)),
                         memory_size=int(metrics.get("memory_concepts", 0)),
                         basin_count=basin_count,
                         largest_basin_size=largest_basin_size,
                         self_cluster_basin_id=self_cluster_basin_id,
                         emergent_basins=emergent_basins,
+                        emergent_count_by_basin=emergent_count_by_basin,
+                        basin_membership_snapshot=basin_membership_snapshot,
                         basin_proposals_count=basin_proposals_count,
                         basin_conflict_detected=basin_conflict_detected,
                         final_action_source=final_action_source,
@@ -358,18 +629,35 @@ class CultivationRunner:
                         density_regulation_edges_removed=int(dynamics["density_regulation_edges_removed"]),
                         global_edge_ratio_before=float(dynamics["global_edge_ratio_before"]),
                         global_edge_ratio_after=float(dynamics["global_edge_ratio_after"]),
+                        cycle_time_seconds=float(dynamics["cycle_time_seconds"]),
+                        graph_nodes=int(dynamics["graph_nodes"]),
+                        graph_edges=int(dynamics["graph_edges"]),
+                        edges_per_node=float(dynamics["edges_per_node"]),
+                        bridge_pairs_evaluated=int(dynamics["bridge_pairs_evaluated"]),
+                        basin_registry_active=int(dynamics["basin_registry_active"]),
+                        basin_registry_dormant=int(dynamics["basin_registry_dormant"]),
+                        basin_registry_events=[dict(x) for x in list(dynamics["basin_registry_events"])],
                         tutor_enabled=tutor_enabled,
                         tutor_backend=tutor_backend,
                         tutor_fallback=tutor_fallback,
                         tutor_input_length=len(input_text),
                         scaffold_context_emergents=(int(scaffold_context.emergent_count) if scaffold_context is not None else 0),
                         scaffold_context_basins=(int(scaffold_context.basin_count) if scaffold_context is not None else 0),
+                        is_self_reflection=is_self_reflection,
+                        self_reflection_input=(input_text if is_self_reflection else ""),
                         telemetry={
                             "phase_label": metrics.get("phase", "Flexible"),
                             "edge_classification": metrics.get("edge_classification", {}),
+                            "is_self_reflection": is_self_reflection,
                         },
                     )
                     handle.write(record.model_dump_json() + "\n")
+                    if (
+                        self.config.checkpoint_interval > 0
+                        and (cycle_idx + 1) % self.config.checkpoint_interval == 0
+                    ):
+                        checkpoint_path = seed_dir / f"checkpoint_{cycle_idx + 1}.json"
+                        system.save_checkpoint(str(checkpoint_path))
 
             state_path = seed_dir / "state.json"
             system.save_state(str(state_path))

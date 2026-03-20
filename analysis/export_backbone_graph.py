@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-import argparse, csv, os
+import argparse
+import csv
+import os
 from collections import defaultdict
+
 from extract_scaffolding_metrics import load_graph
 
 
@@ -16,15 +19,17 @@ def main():
     by_src = defaultdict(list)
     for e in edges:
         by_src[e["source"]].append(e)
+        if e.get("undirected"):
+            by_src[e["target"]].append({"source": e["target"], "target": e["source"], "weight": e["weight"], "undirected": True})
     bb = []
     for src, arr in by_src.items():
         bb.extend(sorted(arr, key=lambda x: x["weight"], reverse=True)[: args.k])
 
     out = os.path.join(args.outdir, "backbone_edges.csv")
-    with open(out, "w", newline="") as f:
+    with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["source", "target", "weight"])
         w.writeheader()
-        w.writerows(bb)
+        w.writerows({"source": row["source"], "target": row["target"], "weight": row["weight"]} for row in bb)
     print(f"wrote {len(bb)} edges to {out}")
 
 

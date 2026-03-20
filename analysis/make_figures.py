@@ -129,8 +129,8 @@ def main():
         (axes[0], "Shuffle null", sn),
         (axes[1], "Degree-preserving null", dn),
     ]:
-        mu = dct.get("mean")
-        sd = dct.get("std")
+        mu = dct.get("mean") if dct.get("mean") is not None else dct.get("mu")
+        sd = dct.get("std") if dct.get("std") is not None else dct.get("sigma")
         obs = dct.get("observed")
         n = int(dct.get("n", 0) or 0)
         if mu is not None and sd is not None and sd > 0 and n > 3:
@@ -138,7 +138,11 @@ def main():
             ax.hist(sim, bins=min(40, max(10, n // 15)), color="#7FB3D5", alpha=0.9, density=True)
         if obs is not None:
             ax.axvline(obs, color="#C1121F", lw=2, label=f"observed={obs:.3f}")
-        label = f"μ={mu:.3f} σ={sd:.3f} z={dct.get('z')}"
+        zval = dct.get("z")
+        mu_label = f"{mu:.3f}" if isinstance(mu, (int, float)) else "n/a"
+        sd_label = f"{sd:.3f}" if isinstance(sd, (int, float)) else "n/a"
+        z_label = f"{zval:.3f}" if isinstance(zval, (int, float)) else "n/a"
+        label = f"μ={mu_label} σ={sd_label} z={z_label}"
         ax.set_title(title)
         ax.set_xlabel("earlier_share")
         ax.text(0.02, 0.96, label, transform=ax.transAxes, va="top", fontsize=9)

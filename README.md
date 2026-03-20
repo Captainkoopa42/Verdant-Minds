@@ -1,70 +1,105 @@
-# Verdant-Minds V2
+# Verdant-Minds
 
-**A generative concept-graph architecture that spontaneously builds temporal scaffolding and layered conceptual lineage.**
+**A developmental cognitive architecture with measurable structural laws, self-referential concept formation, and a cultivation specification language.**
 
-[<image-card alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" ></image-card>](https://colab.research.google.com/github/Captainkoopa42/Verdant-Minds/blob/V2/colab/verdant_v2_quickstart.ipynb)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 
-### Table of Contents
-1. [What is Verdant V2?](#what-is-verdant-v2)
-2. [Key Discoveries](#key-discoveries)
-3. [System Architecture Diagram](#system-architecture-diagram)
-4. [Quick Start (2 minutes)](#quick-start-2-minutes)
-5. [See Real Results](#see-real-results)
-6. [Run Your Own Experiment](#run-your-own-experiment)
-7. [Analyze Scaffold Depth vs Age](#analyze-scaffold-depth-vs-age)
-8. [How the System Works (Visual Guide)](#how-the-system-works-visual-guide)
-9. [Colab Reproduction Notebook](#colab-reproduction-notebook)
+## Key Results
 
-### What is Verdant V2?
-A minimal cognitive architecture where concepts emerge, compete, and self-organize into a clean older→newer causal spine (1.000 share across seeds). It spontaneously separates high-entropy generation from low-entropy historical preservation.
+- **Temporal scaffolding:** earlier-share = **1.000** across **1000 cycles**, with **44,850** emergent-emergent edges.
+- **Developmental onset invariant:** within tested configurations, onset appears at **cycle 9** with **T_g = 0.5725** across **47 configurations** on **8 axes**.
+- **Self-referential concept formation:** **56%** of emergents are self-referential, and a self-model basin appears spontaneously.
+- **Semantic coherence:** **97%** meaningful at **1000 cycles**.
+- **Basin genealogy:** **70 basins**, **3 generations**, **85%** daughter forge fraction.
+- **H1 coherence:** **100%** valid with a **zero violation rate**.
+- **Baseline separation:** **21 standard deviations** from random graphs.
+- **VCult language:** declarative and reactive cultivation specifications for controlled developmental runs.
 
-### Key Discoveries
-- Dominant generative attractor basin (61 of 62 emergents)
-- Perfect temporal scaffolding (older→newer = 1.000)
-- Forge-and-lineage morphology
-- Robust under intervention
+## What Verdant Is
 
-### System Architecture Diagram
-```mermaid
-graph TD
-    A[Forge — Generative Attractor Core<br>Basin 1] -->|Generates candidates| B[Selection Boundary]
-    B -->|Only temporally coherent survive| C[Lineage — Causal Preservation Spine<br>1.000 older→newer]
-    C --> D[Deepening Historical Layers<br>Depth increases with age]
-    style A fill:#ff8800,stroke:#fff
-    style C fill:#00cc88,stroke:#fff
-```
+Verdant couples three subsystems into a single developmental architecture:
 
-### Quick Start (2 minutes)
+- **ECWF** maintains a continuous wave-like state that carries activation, thermodynamic pressure, and structural priors.
+- **MemoryWeb** stores a mutable concept graph that can preserve history while remaining developmentally plastic.
+- **Ethomorphic Bridge** converts co-activation into edge reinforcement and emergent concept formation.
+
+These components run through a **nine-block processing pipeline** governed by the **Three Kings** control structure. Ethics is not an afterthought; it is embedded directly into the geometry and governance of the system.
+
+## Architecture
+
+### ECWF
+The ECWF layer provides the continuous state substrate that tracks activation flow, thermodynamic gradients, and the conditions under which concepts can stabilize or dissolve.
+
+### MemoryWeb
+MemoryWeb is the mutable graph memory where concepts, links, and historical traces accumulate, reorganize, and become available for later developmental reuse.
+
+### Ethomorphic Bridge
+The Ethomorphic Bridge links continuous dynamics to symbolic structure by turning repeated co-activation into reinforced relations and new emergent concepts.
+
+### Basin Dynamics and Registry
+Verdant tracks developmental basins, daughter formation, and lineage structure through the basin registry so attractors can be measured, compared, and reproduced.
+
+### Self-Referential Loop
+A self-referential loop arises when emergent concepts increasingly point back into their own developmental history, producing spontaneous self-model structure rather than hand-authored self-representations.
+
+### VCult Language
+VCult is the cultivation language for declaring experiments, providers, prompts, and reactive rules so developmental runs can be specified, previewed, and validated from versioned text specs.
+
+## Quick Start
+
 ```bash
 git clone https://github.com/Captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
-git checkout V2
 pip install -e .
+pip install -e ./cultivation -e ./ethomorphic -e ./verdant
 ```
 
-### See Real Results
-Open the `results/` folder:
+### Run a VCult spec
 
-- `20260306T045715Z/` — main preliminary run
-- `seed_0/` … `seed_19/` — full 20-seed replication
-
-### Run Your Own Experiment
 ```bash
-python -m cultivation.cli run --cycles 80 --seeds 0-4 --outdir my_run
+python -m cultivation.cli cultivate \
+  --spec cultivation/specs/quick_test.vcult \
+  --seeds 0-2 --outdir outputs
 ```
 
-### Analyze Scaffold Depth vs Age
+### Run validation
+
 ```bash
-python -m analysis.depth_age_analysis results/20260306T045715Z/
+python analysis/run_full_validation.py \
+  --run-dir outputs/run_* --seeds 3 --outdir validation
 ```
-This shows whether newer concepts build deeper historical layers.
 
-### How the System Works (Visual Guide)
-- **Forge Phase** — Dense core basin creates candidate concepts (high churn).
-- **Selection Boundary** — Only temporally coherent concepts survive.
-- **Lineage Phase** — Survivors form a clean forward spine that deepens over time.
+### Preview a spec
 
-### Colab Reproduction Notebook
-One-click reproduction + full analysis (including depth-vs-age plots) is available here:
+```bash
+python -m cultivation.cli preview-spec \
+  --spec cultivation/specs/medical_ethics.vcult --cycles 20
+```
 
-[Open in Colab](https://colab.research.google.com/github/Captainkoopa42/Verdant-Minds/blob/V2/colab/verdant_v2_quickstart.ipynb)
+## Reproduction
+
+- **Colab reproduction:** see [`colab/cells/`](colab/cells/) for the complete Colab-based reproduction workflow.
+- **Validation pipeline:** see [`analysis/run_full_validation.py`](analysis/run_full_validation.py) for the end-to-end validation entry point.
+
+## Published Papers
+
+- **V1:** DOI [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
+- **V2:** DOI [10.5281/zenodo.18933639](https://doi.org/10.5281/zenodo.18933639)
+- **V3:** github.com/Captainkoopa42/Verdant-Minds/tree/V3 (Zenodo DOI pending)
+
+## Repository Structure
+
+```text
+ethomorphic/    — ECWF, bridge, emergence (frozen core)
+verdant/        — system, basin registry, pipeline
+cultivation/    — runner, CLI, VCult parser, providers, specs
+analysis/       — validation pipeline, metrics, figures
+tests_v2/       — unit and integration tests
+colab/cells/    — Colab reproduction notebooks
+```
+
+## License
+
+MIT

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-import argparse, json, math, os
+import argparse
+import json
+import math
+import os
+
 from extract_scaffolding_metrics import load_graph
 
 
@@ -53,6 +57,7 @@ def main():
     nmap, edges = load_graph(args.state)
     ts = {k: v.get("timestamp") for k, v in nmap.items()}
     dts = []
+    weights = []
     for e in edges:
         a, b = ts.get(e["source"]), ts.get(e["target"])
         if a is None or b is None:
@@ -60,13 +65,23 @@ def main():
         dt = abs(a - b)
         if dt > 0:
             dts.append(math.log(dt))
+            weights.append(float(e.get("weight", 1.0)))
     if len(dts) < 10:
         raise SystemExit("Not enough timestamped edges for mixture fitting.")
 
     g1 = fit_1g(dts)
     g2 = fit_2g(dts)
-    out = {"one_component": g1, "two_component": g2, "delta_bic_two_minus_one": g2["bic"] - g1["bic"]}
-    with open(os.path.join(args.outdir, "two_timescale_mixture.json"), "w") as f:
+    out = {
+        "one_component": g1,
+        "two_component": g2,
+        "delta_bic_two_minus_one": g2["bic"] - g1["bic"],
+        "edge_weight_summary": {
+            "mean": sum(weights) / len(weights),
+            "min": min(weights),
+            "max": max(weights),
+        },
+    }
+    with open(os.path.join(args.outdir, "two_timescale_mixture.json"), "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2)
     print(json.dumps(out, indent=2))
 

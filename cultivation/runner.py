@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
+# TODO: migrate verdant_v2 imports to verdant for V3
 from verdant_v2.pipeline.chunk import CognitiveChunk
 
 import numpy as np

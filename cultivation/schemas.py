@@ -31,6 +31,10 @@ class ScaffoldContext:
     edge_count: int = 0
     node_count: int = 0
     recent_dormancy_events: list[dict[str, Any]] = field(default_factory=list)
+    h1_triangle_valid: bool | None = None
+    housed_contradiction_index: float | None = None
+    violation_rate: float | None = None
+    alpha_critical_estimate: float | None = None
 
 
 class CycleRecord(BaseModel):
@@ -44,6 +48,10 @@ class CycleRecord(BaseModel):
     t_g: float
     entropy: float
     hci: float
+    h1_triangle_valid: bool | None = None
+    housed_contradiction_index: float | None = None
+    violation_rate: float | None = None
+    alpha_critical_estimate: float | None = None
     emergent_count: int
     memory_size: int
     basin_count: int = 0

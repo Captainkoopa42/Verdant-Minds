@@ -31,6 +31,10 @@ def _context(*, cycle: int = 20, emergent_count: int = 12, t_g: float = 0.7234) 
         edge_count=88,
         node_count=42,
         recent_dormancy_events=[{"cycle": cycle - 1, "basin_id": "basin_4", "core_size": 3}],
+        h1_triangle_valid=True,
+        housed_contradiction_index=0.125,
+        violation_rate=0.0,
+        alpha_critical_estimate=1.0,
     )
 
 
@@ -81,6 +85,7 @@ def test_self_referential_input_generation() -> None:
     assert "basin_11" in text_a
     assert "basin_15" in text_a
     assert "coherence" in lowered
+    assert "h¹ coherence check is currently valid" in lowered
     assert text_a != text_b
 
 

@@ -65,6 +65,7 @@ def test_validation_pipeline_smoke(tmp_path: Path) -> None:
         'task5_compression',
         'task6_stability',
         'task7_robustness',
+        'task8_h1_coherence',
     ]:
         assert 'status' in report[key]
 

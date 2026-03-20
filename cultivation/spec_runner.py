@@ -22,6 +22,7 @@ from cultivation.providers.tutor import TutorProvider
 from cultivation.runner import (
     RunnerConfig,
     _basin_telemetry_from_chunk,
+    _coherence_telemetry_from_system,
     _dynamics_telemetry_from_chunk,
     _proposal_telemetry_from_chunk,
 )
@@ -184,10 +185,10 @@ class SpecRunner:
                         )
 
                         wave = chunk.get_section_content("wave_function_section") or {}
-                        coherence = chunk.get_section_content("coherence_invariants_section") or {}
+                        coherence = _coherence_telemetry_from_system(system)
                         metrics = system.get_metrics()
                         entropy = float(wave.get("entropy", 0.0))
-                        hci = float(coherence.get("housed_contradiction_index", 0.0))
+                        hci = float(coherence.get("housed_contradiction_index", 0.0) or 0.0)
                         entropies.append(entropy)
                         hcis.append(hci)
 
@@ -231,6 +232,22 @@ class SpecRunner:
                             t_g=float(metrics.get("t_g", 0.5)),
                             entropy=entropy,
                             hci=hci,
+                            h1_triangle_valid=(coherence.get("h1_triangle_valid") if coherence.get("h1_triangle_valid") is not None else None),
+                            housed_contradiction_index=(
+                                float(coherence.get("housed_contradiction_index"))
+                                if coherence.get("housed_contradiction_index") is not None
+                                else None
+                            ),
+                            violation_rate=(
+                                float(coherence.get("violation_rate"))
+                                if coherence.get("violation_rate") is not None
+                                else None
+                            ),
+                            alpha_critical_estimate=(
+                                float(coherence.get("alpha_critical_estimate"))
+                                if coherence.get("alpha_critical_estimate") is not None
+                                else None
+                            ),
                             emergent_count=emergent_count,
                             memory_size=int(metrics.get("memory_concepts", 0)),
                             basin_count=basin_count,

@@ -66,8 +66,12 @@ def test_validation_pipeline_smoke(tmp_path: Path) -> None:
         'task6_stability',
         'task7_robustness',
         'task8_h1_coherence',
+        'task9_verdant_triangle',
     ]:
         assert 'status' in report[key]
 
     assert report['overall']['earlier_share'] == 1.0
+    assert isinstance(report['overall']['critical_failures'], int)
+    assert report['overall']['critical_failures'] >= 0
+    assert report['task9_verdant_triangle']['status'] == 'REPORTED'
     assert report['overall']['critical_failures'] == 0

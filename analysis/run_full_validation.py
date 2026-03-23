@@ -105,6 +105,15 @@ def _task8_status(h1_valid_fraction: float) -> str:
     return "FAIL"
 
 
+TASK9_OPEN_CONJECTURE_NOTE = (
+    "Open conjecture - tested empirically, does not hold with current tau* definition"
+)
+
+
+def _task9_status(_: float) -> str:
+    return "REPORTED"
+
+
 def _fmt_number(value: float | int | None, digits: int = 3) -> str:
     if value is None:
         return "n/a"
@@ -361,6 +370,19 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
     ])
     h1_coherence = _read_json(h1_dir / "h1_coherence_analysis.json")
 
+    triangle_dir = outdir / "verdant_triangle"
+    _run([
+        sys.executable,
+        "analysis/verdant_triangle_verification.py",
+        "--state",
+        str(seed0_state),
+        "--outdir",
+        str(triangle_dir),
+        "--max-triples",
+        "1000000",
+    ])
+    verdant_triangle = _read_json(triangle_dir / "verdant_triangle_verification.json")
+
     if skip_slow:
         robustness = {
             "seeds_analyzed": 0,
@@ -459,6 +481,17 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
         "violation_rate_mean": _coerce_float(h1_coherence.get("violation_rate_mean")),
         "status": _task8_status(_coerce_float(h1_coherence.get("h1_valid_fraction"))),
     }
+    task9 = {
+        "validity_fraction": _coerce_float(verdant_triangle.get("validity_fraction")),
+        "total_triples": int(verdant_triangle.get("total_triples_checked", 0) or 0),
+        "violations": int(verdant_triangle.get("invalid_triples", 0) or 0),
+        "tau_star_mean": _coerce_float((verdant_triangle.get("tau_star_stats") or {}).get("mean")),
+        "within_basin": verdant_triangle.get("within_basin", {}),
+        "cross_basin": verdant_triangle.get("cross_basin", {}),
+        "unassigned_basin": verdant_triangle.get("unassigned_basin", {}),
+        "note": TASK9_OPEN_CONJECTURE_NOTE,
+        "status": _task9_status(_coerce_float(verdant_triangle.get("validity_fraction"))),
+    }
 
     critical_failures = sum(1 for task in (task1, task2, task4, task8) if task["status"] == "FAIL")
     if not skip_slow and task7["status"] == "FAIL":
@@ -486,6 +519,7 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
         "task6_stability": task6,
         "task7_robustness": task7,
         "task8_h1_coherence": task8,
+        "task9_verdant_triangle": task9,
         "overall": {
             "earlier_share": verdant_earlier_share,
             "all_tasks_run": not skip_slow,
@@ -541,6 +575,10 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
     print(
         f"Task 8 - H¹ Coherence:            {task8['status']:<7} "
         f"(valid {_fmt_number(task8['h1_valid_fraction'] * 100.0, 1)}%, HCI {_fmt_number(task8['hci_mean'])})"
+    )
+    print(
+        f"Task 9 - Verdant Triangle:        {task9['status']:<7} "
+        f"({_fmt_number(task9['validity_fraction'] * 100.0, 1)}% global, conjecture)"
     )
     print()
     print(f"Earlier-share: {_fmt_number(report['overall']['earlier_share'])}")

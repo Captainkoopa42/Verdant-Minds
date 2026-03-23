@@ -29,6 +29,11 @@ These components run through a **nine-block processing pipeline** governed by th
 
 ## Architecture
 
+For the full code-grounded architecture walkthrough, see [`docs/architecture.md`](docs/architecture.md).
+
+### Want the full walkthrough?
+If you want the complete runtime map, pipeline walkthrough, configuration reference, and checkpoint/analysis guide, open [`docs/architecture.md`](docs/architecture.md).
+
 ### ECWF
 The ECWF layer provides the continuous state substrate that tracks activation flow, thermodynamic gradients, and the conditions under which concepts can stabilize or dissolve.
 

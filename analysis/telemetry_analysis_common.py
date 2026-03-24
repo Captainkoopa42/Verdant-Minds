@@ -25,6 +25,11 @@ def resolve_run_dir(spec: str) -> Path:
 
 def load_cycles(path: Path) -> list[dict[str, Any]]:
     """Load JSONL cycle telemetry rows."""
+    return load_jsonl(path)
+
+
+def load_jsonl(path: Path) -> list[dict[str, Any]]:
+    """Load newline-delimited JSON records from *path*."""
     rows: list[dict[str, Any]] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()

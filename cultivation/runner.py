@@ -6,6 +6,7 @@ import random
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import json
 from pathlib import Path
 from typing import Iterable
 
@@ -177,6 +178,7 @@ class RunnerConfig:
     basin_core_absence_tolerance: int = 3
     checkpoint_interval: int = 0
     checkpoint_format: str = "json"
+    basin_snapshot_interval: int = 0
     fast_bridge: bool = False
     self_reflect_interval: int = 0
     ethomorphic_params: EthomorphicParams | None = None
@@ -200,6 +202,140 @@ class CultivationRunner:
         for seed in seeds:
             self._run_seed(seed=seed, run_dir=run_dir)
         return run_dir
+
+    @staticmethod
+    def _concept_metadata_snapshot(system: VerdantSystem, node_id: str) -> dict[str, object]:
+        """Capture compact concept identity metadata for snapshot analysis."""
+        entry = system.memory_web.get_concept(node_id) or {}
+        metadata = entry.get("metadata", {}) if isinstance(entry.get("metadata"), dict) else {}
+        parents = metadata.get("parent_concepts", [])
+        return {
+            "node_id": str(node_id),
+            "is_emergent": bool(str(node_id).startswith("Emergent_")),
+            "stability": float(entry.get("stability", 0.0) or 0.0),
+            "access_count": int(entry.get("access_count", 0) or 0),
+            "creation_time": float(metadata.get("creation_time", entry.get("first_seen", 0.0)) or 0.0),
+            "origin": metadata.get("origin"),
+            "parent_concepts": [str(parent) for parent in parents] if isinstance(parents, list) else [],
+        }
+
+    @staticmethod
+    def _serialize_edges(edges: Iterable[tuple[str, str, object]]) -> list[list[object]]:
+        """Normalize graph edges into a stable JSON-friendly representation."""
+        payload: list[list[object]] = []
+        for source, target, data in edges:
+            weight = 1.0
+            if isinstance(data, dict):
+                try:
+                    weight = float(data.get("weight", 1.0))
+                except (TypeError, ValueError):
+                    weight = 1.0
+            a, b = sorted((str(source), str(target)))
+            payload.append([a, b, float(weight)])
+        payload.sort(key=lambda item: (str(item[0]), str(item[1])))
+        return payload
+
+    def _build_basin_snapshot(
+        self,
+        *,
+        system: VerdantSystem,
+        cycle_idx: int,
+        seed: int,
+        timestamp: str,
+        phase: str,
+        scanned_this_cycle: bool,
+    ) -> dict[str, object]:
+        """Build a periodic ECWF + concept-graph snapshot for persistence analysis."""
+        graph = system.memory_web.graph
+        graph_edges = self._serialize_edges(graph.edges(data=True))
+        metrics = system.get_metrics()
+        ecwf_state = system.ecwf.to_state_dict()
+        ecwf_meta = ecwf_state.get("metadata", {})
+        ecwf_params = ecwf_state.get("parameters", {})
+        amplitude_factors = ecwf_params.get("amplitude_factors", []) if isinstance(ecwf_params, dict) else []
+        omega = ecwf_params.get("omega", []) if isinstance(ecwf_params, dict) else []
+        phi = ecwf_params.get("phi", []) if isinstance(ecwf_params, dict) else []
+
+        basins_payload: list[dict[str, object]] = []
+        for basin in metrics.get("basins", []):
+            if not isinstance(basin, dict):
+                continue
+            nodes = sorted(str(node) for node in basin.get("nodes", []) if isinstance(node, str))
+            subgraph = graph.subgraph(nodes)
+            basin_edges = self._serialize_edges(subgraph.edges(data=True))
+            basins_payload.append(
+                {
+                    "basin_id": str(basin.get("basin_id")),
+                    "size": int(basin.get("size", len(nodes))),
+                    "emergent_count": int(basin.get("emergent_count", 0)),
+                    "internal_edges": basin_edges,
+                    "nodes": nodes,
+                    "node_metadata": {
+                        node_id: self._concept_metadata_snapshot(system, node_id)
+                        for node_id in nodes
+                    },
+                    "top_nodes_by_access": [
+                        [str(node_id), int(access)]
+                        for node_id, access in basin.get("top_nodes_by_access", [])[:10]
+                        if isinstance(node_id, str)
+                    ],
+                }
+            )
+
+        return {
+            "cycle_index": int(cycle_idx),
+            "seed": int(seed),
+            "timestamp": timestamp,
+            "phase": str(phase),
+            "t_g": float(metrics.get("t_g", 0.5)),
+            "scanned_this_cycle": bool(scanned_this_cycle),
+            "ecwf_summary": {
+                "num_cognitive_dims": int(ecwf_meta.get("num_cognitive_dims", system.config.cognitive_dims)),
+                "num_ethical_dims": int(ecwf_meta.get("num_ethical_dims", system.config.ethical_dims)),
+                "num_facets": int(ecwf_meta.get("num_facets", system.config.wave_facets)),
+                "adaptive_rate": float(ecwf_meta.get("adaptive_rate", 0.0) or 0.0),
+                "feedback_factor": float(ecwf_meta.get("feedback_factor", 0.0) or 0.0),
+                "amplitude_mean": float(np.mean(amplitude_factors)) if amplitude_factors else 0.0,
+                "amplitude_std": float(np.std(amplitude_factors)) if amplitude_factors else 0.0,
+                "omega_mean": float(np.mean(omega)) if omega else 0.0,
+                "phi_mean": float(np.mean(phi)) if phi else 0.0,
+            },
+            "graph_summary": {
+                "node_count": int(graph.number_of_nodes()),
+                "edge_count": int(graph.number_of_edges()),
+                "emergent_count": int(metrics.get("emergent_nodes", 0)),
+                "basin_count": int(metrics.get("basin_count", 0)),
+            },
+            "graph_edges": graph_edges,
+            "basins": basins_payload,
+        }
+
+    def _write_basin_snapshot(
+        self,
+        *,
+        snapshots_handle,
+        system: VerdantSystem,
+        cycle_idx: int,
+        seed: int,
+        timestamp: str,
+        phase: str,
+        scanned_this_cycle: bool,
+        force: bool = False,
+    ) -> None:
+        """Persist a periodic basin snapshot when configured."""
+        interval = int(self.config.basin_snapshot_interval)
+        should_write = force or (interval > 0 and (cycle_idx + 1) % interval == 0)
+        if snapshots_handle is None or not should_write:
+            return
+        payload = self._build_basin_snapshot(
+            system=system,
+            cycle_idx=cycle_idx,
+            seed=seed,
+            timestamp=timestamp,
+            phase=phase,
+            scanned_this_cycle=scanned_this_cycle,
+        )
+        snapshots_handle.write(json.dumps(payload) + "\n")
 
     def resume(self, checkpoint: str, additional_cycles: int) -> Path:
         """Resume a single-seed run from a saved checkpoint."""
@@ -236,7 +372,8 @@ class CultivationRunner:
             time.time = deterministic_time
 
             cycles_path = seed_dir / "cycles.jsonl"
-            with cycles_path.open("w", encoding="utf-8") as handle:
+            snapshots_path = seed_dir / "basin_snapshots.jsonl"
+            with cycles_path.open("w", encoding="utf-8") as handle, snapshots_path.open("w", encoding="utf-8") as snapshots_handle:
                 for offset in range(additional_cycles):
                     cycle_idx = int(system.get_metrics().get("cycle_count", 0))
                     step = self.curriculum.step(cycle_idx, seed=seed)
@@ -266,10 +403,11 @@ class CultivationRunner:
                     basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
                     dynamics = _dynamics_telemetry_from_chunk(chunk)
+                    timestamp = datetime.now(timezone.utc).isoformat()
                     record = CycleRecord(
                         cycle_index=cycle_idx,
                         seed=seed,
-                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        timestamp=timestamp,
                         input_text=input_text,
                         phase=step.phase,
                         t_g=float(metrics.get("t_g", 0.5)),
@@ -342,6 +480,16 @@ class CultivationRunner:
                         },
                     )
                     handle.write(record.model_dump_json() + "\n")
+                    self._write_basin_snapshot(
+                        snapshots_handle=snapshots_handle,
+                        system=system,
+                        cycle_idx=cycle_idx,
+                        seed=seed,
+                        timestamp=timestamp,
+                        phase=step.phase,
+                        scanned_this_cycle=bool((chunk.get_section_content("basins_section") or {}).get("scanned_this_cycle", False)),
+                        force=(offset == additional_cycles - 1),
+                    )
                     if self.config.checkpoint_interval > 0 and (offset + 1) % self.config.checkpoint_interval == 0:
                         system.save_checkpoint(str(seed_dir / f"checkpoint_{cycle_idx + 1}.json"))
 
@@ -481,7 +629,8 @@ class CultivationRunner:
             post_intervention_new_emergents = 0
             intervention_done = False
 
-            with cycles_path.open("w", encoding="utf-8") as handle:
+            snapshots_path = seed_dir / "basin_snapshots.jsonl"
+            with cycles_path.open("w", encoding="utf-8") as handle, snapshots_path.open("w", encoding="utf-8") as snapshots_handle:
                 for cycle_idx in range(self.config.cycles):
                     step = self.curriculum.step(cycle_idx, seed=seed)
                     phase_counts[step.phase] = phase_counts.get(step.phase, 0) + 1
@@ -570,10 +719,11 @@ class CultivationRunner:
                     basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
                     dynamics = _dynamics_telemetry_from_chunk(chunk)
+                    timestamp = datetime.now(timezone.utc).isoformat()
                     record = CycleRecord(
                         cycle_index=cycle_idx,
                         seed=seed,
-                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        timestamp=timestamp,
                         input_text=input_text,
                         phase=step.phase,
                         t_g=float(metrics.get("t_g", 0.5)),
@@ -652,6 +802,16 @@ class CultivationRunner:
                         },
                     )
                     handle.write(record.model_dump_json() + "\n")
+                    self._write_basin_snapshot(
+                        snapshots_handle=snapshots_handle,
+                        system=system,
+                        cycle_idx=cycle_idx,
+                        seed=seed,
+                        timestamp=timestamp,
+                        phase=step.phase,
+                        scanned_this_cycle=bool((chunk.get_section_content("basins_section") or {}).get("scanned_this_cycle", False)),
+                        force=(cycle_idx == self.config.cycles - 1),
+                    )
                     if (
                         self.config.checkpoint_interval > 0
                         and (cycle_idx + 1) % self.config.checkpoint_interval == 0

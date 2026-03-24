@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from analysis.basin_persistence_analysis import analyze_snapshots
 from cultivation.runner import CultivationRunner, RunnerConfig
 from verdant_v2.system import VerdantConfig, VerdantSystem
 
@@ -38,3 +39,32 @@ def test_cultivation_cycles_include_basin_telemetry(tmp_path: Path) -> None:
     assert "basin_conflict_detected" in sample
     assert "final_action_source" in sample
     assert "top_proposal_scores" in sample
+
+
+def test_cultivation_emits_periodic_basin_snapshots(tmp_path: Path) -> None:
+    config = RunnerConfig(
+        cycles=12,
+        provider="local",
+        outdir=str(tmp_path / "out"),
+        pressure_every=4,
+        basin_snapshot_interval=4,
+    )
+    run_dir = CultivationRunner(config).run([0])
+    snapshots_path = run_dir / "seed_0" / "basin_snapshots.jsonl"
+    assert snapshots_path.exists()
+
+    snapshots = [
+        json.loads(line)
+        for line in snapshots_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(snapshots) >= 3
+    sample = snapshots[-1]
+    assert "ecwf_summary" in sample
+    assert "graph_summary" in sample
+    assert "graph_edges" in sample
+    assert "basins" in sample
+
+    result = analyze_snapshots(snapshots)
+    assert result["snapshots_analyzed"] == len(snapshots)
+    assert "per_basin" in result

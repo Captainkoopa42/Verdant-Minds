@@ -72,6 +72,7 @@ def main() -> None:
     run_p.add_argument("--density-regulation", action=argparse.BooleanOptionalAction, default=True)
     run_p.add_argument("--checkpoint-interval", type=int, default=0)
     run_p.add_argument("--checkpoint-format", choices=["json", "msgpack"], default="json")
+    run_p.add_argument("--basin-snapshot-interval", type=int, default=0)
     run_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     run_p.add_argument("--self-reflect-interval", type=int, default=0)
     run_p.add_argument("--basin-use-registry", action=argparse.BooleanOptionalAction, default=True)
@@ -99,6 +100,7 @@ def main() -> None:
     resume_p.add_argument("--pressure-every", type=int, default=5)
     resume_p.add_argument("--checkpoint-interval", type=int, default=0)
     resume_p.add_argument("--checkpoint-format", choices=["json", "msgpack"], default="json")
+    resume_p.add_argument("--basin-snapshot-interval", type=int, default=0)
     resume_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     resume_p.add_argument("--self-reflect-interval", type=int, default=0)
 
@@ -144,6 +146,7 @@ def main() -> None:
             density_regulation_enabled=args.density_regulation,
             checkpoint_interval=args.checkpoint_interval,
             checkpoint_format=args.checkpoint_format,
+            basin_snapshot_interval=args.basin_snapshot_interval,
             fast_bridge=args.fast_bridge,
             self_reflect_interval=args.self_reflect_interval,
             basin_use_registry=args.basin_use_registry,
@@ -163,6 +166,7 @@ def main() -> None:
             pressure_every=args.pressure_every,
             checkpoint_interval=args.checkpoint_interval,
             checkpoint_format=args.checkpoint_format,
+            basin_snapshot_interval=args.basin_snapshot_interval,
             fast_bridge=args.fast_bridge,
             self_reflect_interval=args.self_reflect_interval,
         )

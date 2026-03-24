@@ -46,6 +46,11 @@ class PressureBreakdown:
     meets_size: bool
     meets_age: bool
     meets_threshold: bool
+    interval_gate_open: bool
+    prune_gate_open: bool
+    ejection_possible: bool
+    call_attempted: bool
+    blocked_reason: str | None
     would_bud: bool
 
 
@@ -146,8 +151,43 @@ def compute_basin_pressure(memory_web: MemoryWeb, basin_info: BasinInfo) -> Pres
         meets_size=False,
         meets_age=False,
         meets_threshold=False,
+        interval_gate_open=False,
+        prune_gate_open=False,
+        ejection_possible=False,
+        call_attempted=False,
+        blocked_reason=None,
         would_bud=False,
     )
+
+
+def find_ejection_candidates(
+    memory_web: MemoryWeb,
+    basin_info: BasinInfo,
+    *,
+    split_fraction: float,
+) -> list[str]:
+    """Select a connected-safe ejection candidate list for budding."""
+    nodes = list(basin_info.nodes)
+    node_set = set(nodes)
+    sub = memory_web.graph.subgraph(nodes)
+    degree = {n: int(sum(1 for nbr in sub.neighbors(n) if nbr in node_set)) for n in nodes}
+    split_count = max(1, int(len(nodes) * split_fraction))
+
+    ranked = sorted(nodes, key=lambda n: (degree[n], n))
+    candidates = ranked[:split_count]
+
+    def remaining_connected(ejected: list[str]) -> bool:
+        remain = [n for n in nodes if n not in set(ejected)]
+        if len(remain) <= 1:
+            return True
+        return nx.is_connected(memory_web.graph.subgraph(remain))
+
+    if candidates and remaining_connected(candidates):
+        return candidates
+    leaves = [n for n in ranked if degree[n] <= 2][:split_count]
+    if leaves and remaining_connected(leaves):
+        return leaves
+    return []
 
 
 def maybe_bud_basin(
@@ -176,25 +216,11 @@ def maybe_bud_basin(
         return None
 
     nodes = list(basin_info.nodes)
-    node_set = set(nodes)
-    sub = memory_web.graph.subgraph(nodes)
-    degree = {n: int(sum(1 for nbr in sub.neighbors(n) if nbr in node_set)) for n in nodes}
-    split_count = max(1, int(len(nodes) * split_fraction))
-
-    ranked = sorted(nodes, key=lambda n: (degree[n], n))
-    candidates = ranked[:split_count]
-
-    def remaining_connected(ejected: list[str]) -> bool:
-        remain = [n for n in nodes if n not in set(ejected)]
-        if len(remain) <= 1:
-            return True
-        return nx.is_connected(memory_web.graph.subgraph(remain))
-
-    ejected = candidates if remaining_connected(candidates) else []
-    if not ejected:
-        leaves = [n for n in ranked if degree[n] <= 2][:split_count]
-        if leaves and remaining_connected(leaves):
-            ejected = leaves
+    ejected = find_ejection_candidates(
+        memory_web,
+        basin_info,
+        split_fraction=split_fraction,
+    )
     if not ejected:
         return None
 

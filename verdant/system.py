@@ -39,6 +39,7 @@ from verdant_v2.memory.basins import BasinInfo, detect_basins
 from verdant_v2.memory.basin_dynamics import (
     BoundaryCandidate,
     PressureBreakdown,
+    find_ejection_candidates,
     maybe_bud_basin,
     maybe_create_boundary_emergents,
     maybe_propose_boundary_candidates,
@@ -377,6 +378,8 @@ class VerdantSystem:
             "bud_new_basin_size": None,
             "basin_pressure_values": {},
             "pressure_breakdown": [],
+            "budding_gate": {},
+            "budding_attempts": [],
             "boundary_emergents_created": 0,
             "boundary_pairs": [],
             "global_edge_ratio_before": 0.0,
@@ -470,6 +473,18 @@ class VerdantSystem:
             and cycle % max(1, self.config.basin_bud_interval) == 0
             and not prune_this_cycle
         )
+        interval_gate_open = bool(cycle % max(1, self.config.basin_bud_interval) == 0)
+        dynamics["budding_gate"] = {
+            "enable_budding": bool(self.config.basin_bud_enabled),
+            "interval_gate_open": interval_gate_open,
+            "prune_gate_open": bool(not prune_this_cycle),
+            "basin_bud_interval": int(self.config.basin_bud_interval),
+            "basin_pressure_threshold": float(self.config.basin_pressure_threshold),
+            "basin_min_size_for_split": int(self.config.basin_min_size_for_split),
+            "basin_min_age_for_split": int(self.config.basin_min_age_for_split),
+            "basin_split_fraction": float(self.config.basin_split_fraction),
+            "will_attempt_budding_phase": bool(should_bud),
+        }
         for basin in self._last_basins:
             pressure = compute_basin_pressure(self.memory_web, basin)
             state = self._basin_states.get(basin.basin_id)
@@ -477,11 +492,43 @@ class VerdantSystem:
             pressure.meets_size = basin.size >= self.config.basin_min_size_for_split
             pressure.meets_age = (cycle - created_cycle) >= self.config.basin_min_age_for_split
             pressure.meets_threshold = pressure.raw_pressure > self.config.basin_pressure_threshold
-            pressure.would_bud = bool(pressure.meets_size and pressure.meets_age and pressure.meets_threshold)
+            pressure.interval_gate_open = interval_gate_open
+            pressure.prune_gate_open = not prune_this_cycle
+            pressure.call_attempted = bool(should_bud)
+            if not self.config.basin_bud_enabled:
+                pressure.blocked_reason = "budding_disabled"
+            elif not pressure.interval_gate_open:
+                pressure.blocked_reason = "interval_gate_closed"
+            elif not pressure.prune_gate_open:
+                pressure.blocked_reason = "prune_cycle_blocks_budding"
+            elif not pressure.meets_size:
+                pressure.blocked_reason = "below_min_size"
+            elif not pressure.meets_age:
+                pressure.blocked_reason = "below_min_age"
+            elif not pressure.meets_threshold:
+                pressure.blocked_reason = "below_pressure_threshold"
+            else:
+                ejection = find_ejection_candidates(
+                    self.memory_web,
+                    basin,
+                    split_fraction=self.config.basin_split_fraction,
+                )
+                pressure.ejection_possible = bool(ejection)
+                pressure.blocked_reason = None if pressure.ejection_possible else "no_valid_ejection_set"
+            pressure.would_bud = bool(
+                self.config.basin_bud_enabled
+                and pressure.interval_gate_open
+                and pressure.prune_gate_open
+                and pressure.meets_size
+                and pressure.meets_age
+                and pressure.meets_threshold
+                and pressure.ejection_possible
+            )
             dynamics["basin_pressure_values"][basin.basin_id] = pressure.raw_pressure
             dynamics["pressure_breakdown"].append(asdict(pressure))
         if should_bud:
             for basin in self._last_basins:
+                dynamics["budding_attempts"].append({"basin_id": basin.basin_id, "attempted": True})
                 bud = maybe_bud_basin(
                     self.memory_web,
                     basin,
@@ -494,7 +541,9 @@ class VerdantSystem:
                     min_age_for_split=self.config.basin_min_age_for_split,
                 )
                 if bud is None:
+                    dynamics["budding_attempts"][-1]["result"] = "no_bud"
                     continue
+                dynamics["budding_attempts"][-1]["result"] = "budded"
                 self._next_basin_id += 1
                 if self.config.basin_use_registry:
                     state = self._basin_states.get(bud.new_basin_id)

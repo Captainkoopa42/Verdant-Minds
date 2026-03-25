@@ -1,6 +1,8 @@
 # Verdant V3 Architecture
 
-A code-grounded architecture manual for the current `V3` branch covering `verdant/`, `ethomorphic/`, and `cultivation/` as they exist today.
+This is the complete, code-grounded architecture walkthrough for the current `V3` branch, covering `verdant/`, `ethomorphic/`, and `cultivation/` as they exist today.
+
+It is the source-of-truth architecture guide for Verdant V3 runtime behavior (`verdant/system.py` and related modules), and supersedes older V1-era unified-system documentation for implementation details.
 
 ---
 

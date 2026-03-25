@@ -6,6 +6,8 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 
+📚 Architecture walkthrough: [Architecture](docs/architecture.md)
+
 ## Key Results
 
 - **Temporal scaffolding:** earlier-share = **1.000** across **1000 cycles**, with **44,850** emergent-emergent edges.
@@ -29,7 +31,7 @@ These components run through a **nine-block processing pipeline** governed by th
 
 ## Architecture
 
-For the full code-grounded architecture walkthrough, see [`docs/architecture.md`](docs/architecture.md).
+For a full walkthrough of the Verdant V3 system architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
 
 ### Want the full walkthrough?
 If you want the complete runtime map, pipeline walkthrough, configuration reference, and checkpoint/analysis guide, open [`docs/architecture.md`](docs/architecture.md).

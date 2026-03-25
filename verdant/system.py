@@ -112,6 +112,8 @@ class VerdantConfig(BaseModel):
     checkpoint_interval: int = 0
     checkpoint_format: str = "json"
     fast_bridge: bool = False
+    concept_min_length: int = 3
+    filter_numeric_concepts: bool = True
     ethomorphic_params: EthomorphicParams | None = None
 
 
@@ -155,7 +157,14 @@ class VerdantSystem:
         # Pipeline blocks
         self._sensory = SensoryInputBlock()
         self._pattern = PatternRecognitionBlock()
-        self._memory_block = MemoryBlock(self.memory_web, self.bridge)
+        seeded_concepts = {label for label, *_ in _SEEDED_CONCEPTS}
+        self._memory_block = MemoryBlock(
+            self.memory_web,
+            self.bridge,
+            concept_min_length=self.config.concept_min_length,
+            filter_numeric_concepts=self.config.filter_numeric_concepts,
+            seeded_concepts=seeded_concepts,
+        )
         self._communication = CommunicationBlock()
         self._reasoning = ReasoningBlock()
         self._ethics = EthicsBlock()

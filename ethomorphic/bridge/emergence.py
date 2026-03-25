@@ -176,6 +176,24 @@ def detect_and_create_emergent_concepts(
     for concept in matched_concepts:
         memory.connect(new_concept, concept, 0.6)
 
+    # Connect to prior emergent concepts that share parent concepts.
+    new_parent_set = set(top_concepts)
+    for existing_emergent in memory.get_emergent_nodes():
+        if existing_emergent == new_concept:
+            continue
+        existing_data = memory.get_concept(existing_emergent) or {}
+        existing_meta = existing_data.get("metadata", {})
+        if not isinstance(existing_meta, dict):
+            continue
+        existing_parents = existing_meta.get("parent_concepts", [])
+        if not isinstance(existing_parents, list):
+            continue
+        overlap = new_parent_set.intersection(existing_parents)
+        if not overlap:
+            continue
+        overlap_ratio = len(overlap) / max(1, len(new_parent_set))
+        memory.connect(new_concept, existing_emergent, 0.6 * overlap_ratio)
+
     return [new_concept]
 
 

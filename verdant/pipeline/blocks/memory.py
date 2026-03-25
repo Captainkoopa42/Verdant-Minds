@@ -6,6 +6,7 @@ Writes: ``memory_section``, ``wave_function_section``
 
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -27,9 +28,49 @@ class MemoryBlock:
         self,
         memory_web: MemoryWeb,
         bridge: EthomorphicBridge,
+        *,
+        concept_min_length: int = 3,
+        filter_numeric_concepts: bool = True,
+        seeded_concepts: Optional[set[str]] = None,
     ) -> None:
         self.memory_web = memory_web
         self.bridge = bridge
+        self.concept_min_length = max(1, int(concept_min_length))
+        self.filter_numeric_concepts = bool(filter_numeric_concepts)
+        self.seeded_concepts = set(seeded_concepts or set())
+
+    _CONCEPT_STOPWORDS = {
+        "and", "the", "for", "with", "from", "that", "this", "into",
+        "about", "under", "while", "through", "across", "between",
+        "their", "there", "these", "those", "have", "has", "had",
+        "been", "being", "will", "would", "could", "should", "may",
+        "might", "must", "onto", "than", "then", "also", "such",
+    }
+    _BASIN_ID_RE = re.compile(r"^basin_\d+$")
+    _NUMERIC_RE = re.compile(r"^\d+$")
+    _HEX_ID_RE = re.compile(r"^[a-f0-9]{6,}$")
+
+    def _should_seed_concept(self, concept: str) -> bool:
+        """Return True when a concept should be added as a new memory node."""
+        if concept in self.seeded_concepts:
+            return True
+
+        normalized = concept.strip().lower()
+        if not normalized:
+            return False
+        if len(normalized) < self.concept_min_length:
+            return False
+        if normalized in self._CONCEPT_STOPWORDS:
+            return False
+        if not self.filter_numeric_concepts:
+            return True
+        if self._NUMERIC_RE.fullmatch(normalized):
+            return False
+        if self._BASIN_ID_RE.fullmatch(normalized):
+            return False
+        if self._HEX_ID_RE.fullmatch(normalized):
+            return False
+        return True
 
     def process(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """Run memory retrieval, bridge update, and phase-dependent maintenance."""
@@ -56,6 +97,8 @@ class MemoryBlock:
         # Ensure concepts exist in memory
         for c in seed_concepts:
             if self.memory_web.get_concept(c) is None:
+                if not self._should_seed_concept(c):
+                    continue
                 self.memory_web.add_concept(c, stability=0.5)
 
         # Bridge bidirectional update

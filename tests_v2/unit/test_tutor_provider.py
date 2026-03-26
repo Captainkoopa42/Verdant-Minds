@@ -63,3 +63,13 @@ def test_generate_falls_back_when_llm_errors() -> None:
     assert result
     assert provider.last_fallback is True
     assert provider.last_error is not None
+
+
+def test_local_provider_preserves_prompt_terms() -> None:
+    provider = TutorProvider(backend="local")
+
+    text = provider.generate("Water flows downhill and trees grow slowly", seed=5)
+
+    lowered = text.lower()
+    assert "water" in lowered
+    assert "trees" in lowered

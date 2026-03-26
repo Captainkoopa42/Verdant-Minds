@@ -42,8 +42,11 @@ class LocalProvider:
 
     @staticmethod
     def _extract_topic(prompt: str) -> str:
-        lowered = prompt.lower()
-        for key in ["identity", "memory", "ethics", "emergence", "time", "coherence", "entropy"]:
-            if key in lowered:
-                return key
-        return "general cognition"
+        cleaned = " ".join(prompt.replace("\n", " ").split()).strip()
+        if not cleaned:
+            return "general cognition"
+
+        # Preserve the caller's natural-language content so those concepts reach the pipeline.
+        if len(cleaned) <= 140:
+            return cleaned
+        return cleaned[:140].rsplit(" ", 1)[0].strip() or cleaned[:140]

@@ -24,6 +24,80 @@ _DEFAULT_SYNONYMS: dict[str, tuple[str, ...]] = {
     "coherence": ("consistency", "alignment"),
 }
 
+_QUERY_STOPWORDS: set[str] = {
+    "the",
+    "what",
+    "how",
+    "why",
+    "who",
+    "when",
+    "where",
+    "which",
+    "is",
+    "are",
+    "was",
+    "were",
+    "do",
+    "does",
+    "did",
+    "can",
+    "could",
+    "will",
+    "would",
+    "should",
+    "may",
+    "might",
+    "must",
+    "shall",
+    "about",
+    "know",
+    "tell",
+    "me",
+    "you",
+    "your",
+    "my",
+    "its",
+    "has",
+    "have",
+    "had",
+    "not",
+    "but",
+    "and",
+    "or",
+    "if",
+    "then",
+    "now",
+    "just",
+    "very",
+    "also",
+    "too",
+    "much",
+    "many",
+    "some",
+    "all",
+    "any",
+    "each",
+    "every",
+    "this",
+    "that",
+    "these",
+    "those",
+    "for",
+    "from",
+    "with",
+    "into",
+    "out",
+    "under",
+    "over",
+    "after",
+    "before",
+    "between",
+    "through",
+    "during",
+    "above",
+    "below",
+}
+
 
 @dataclass(frozen=True)
 class ParsedQuery:
@@ -62,6 +136,13 @@ class QueryParser:
     def _normalize(text: str) -> str:
         return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9_\-\s]", " ", text.lower())).strip()
 
+    @staticmethod
+    def _contains_whole_phrase(haystack: str, needle: str) -> bool:
+        if not needle:
+            return False
+        pattern = r"\b" + re.escape(needle) + r"\b"
+        return re.search(pattern, haystack) is not None
+
     def parse(self, query: str, available_concepts: Iterable[str], *, max_seeds: int = 5) -> ParsedQuery:
         """Parse ``query`` into a small set of seed concepts.
 
@@ -80,19 +161,23 @@ class QueryParser:
 
         # 1) exact phrase containment against concept labels
         for norm_label, original_label in concepts_by_norm.items():
-            if norm_label and norm_label in normalized_query:
+            if norm_label in _QUERY_STOPWORDS:
+                continue
+            if self._contains_whole_phrase(normalized_query, norm_label):
                 seed_scores[original_label] = max(seed_scores.get(original_label, 0.0), 1.0)
 
         # 2) direct token matches
         for token in tokens:
             if token in concepts_by_norm:
                 concept = concepts_by_norm[token]
+                if self._normalize(concept) in _QUERY_STOPWORDS:
+                    continue
                 seed_scores[concept] = max(seed_scores.get(concept, 0.0), 0.98)
 
         # 3) synonym-based mapping
         for canonical, variants in self._synonyms.items():
             canonical_norm = self._normalize(canonical)
-            if canonical_norm not in concepts_by_norm:
+            if canonical_norm not in concepts_by_norm or canonical_norm in _QUERY_STOPWORDS:
                 continue
             if canonical_norm in tokens:
                 seed_scores[concepts_by_norm[canonical_norm]] = max(
@@ -102,7 +187,7 @@ class QueryParser:
                 continue
             for variant in variants:
                 norm_variant = self._normalize(variant)
-                if norm_variant and norm_variant in normalized_query:
+                if self._contains_whole_phrase(normalized_query, norm_variant):
                     concept = concepts_by_norm[canonical_norm]
                     seed_scores[concept] = max(seed_scores.get(concept, 0.0), 0.9)
                     break
@@ -113,6 +198,8 @@ class QueryParser:
             for token in tokens:
                 close = get_close_matches(token, norm_labels, n=2, cutoff=self._fuzzy_cutoff)
                 for matched in close:
+                    if matched in _QUERY_STOPWORDS:
+                        continue
                     concept = concepts_by_norm[matched]
                     seed_scores[concept] = max(seed_scores.get(concept, 0.0), 0.75)
 

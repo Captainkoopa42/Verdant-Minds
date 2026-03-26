@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -117,10 +118,20 @@ class QueryEngine:
     ) -> dict[str, float]:
         """Compute spreading activation over graph edges with stability-aware damping."""
         graph = memory_web.graph
+        spread_factor, threshold, max_depth = self._resolve_spread_params(
+            graph=graph,
+            max_depth=max_depth,
+            spread_factor=spread_factor,
+            threshold=threshold,
+        )
+
         activation: dict[str, float] = {}
         queue = deque((seed, 1.0, 0) for seed in seeds if seed in graph)
+        max_activated = max(1, min(100, graph.number_of_nodes() // 5))
 
         while queue:
+            if len(activation) >= max_activated:
+                break
             node, level, depth = queue.popleft()
             if level < threshold:
                 continue
@@ -140,17 +151,52 @@ class QueryEngine:
 
         return activation
 
+    @staticmethod
+    def _resolve_spread_params(
+        *,
+        graph: nx.Graph,
+        max_depth: int,
+        spread_factor: float,
+        threshold: float,
+    ) -> tuple[float, float, int]:
+        using_defaults = max_depth == 3 and abs(spread_factor - 0.65) < 1e-12 and abs(threshold - 0.02) < 1e-12
+        if not using_defaults:
+            return spread_factor, threshold, max_depth
+        avg_degree = (graph.number_of_edges() * 2.0) / max(graph.number_of_nodes(), 1)
+        if avg_degree > 50:
+            return 0.25, 0.15, 2
+        if avg_degree > 20:
+            return 0.4, 0.1, 2
+        return spread_factor, threshold, max_depth
+
     def _rank_concepts(self, *, memory_web: Any, activation: dict[str, float], parsed: ParsedQuery) -> list[RelatedConcept]:
-        """Rank concepts using stability × access_count × activation."""
+        """Rank concepts using stability × normalized(log1p(access_count)) × activation."""
         graph = memory_web.graph
         primary = parsed.primary_concept
         ranked: list[RelatedConcept] = []
+        max_access = max(
+            (
+                max(1, int((memory_web.get_concept(concept) or {}).get("access_count", 1)))
+                for concept in activation
+            ),
+            default=1,
+        )
+        max_log_access = math.log1p(max_access) or 1.0
 
         for concept, act in activation.items():
             data = memory_web.get_concept(concept) or {}
             stability = float(data.get("stability", 0.0))
             access_count = max(1, int(data.get("access_count", 1)))
-            score = stability * access_count * act
+            normalized_access = math.log1p(access_count) / max_log_access
+            degree_penalty = 1.0 / max(1.0, math.log1p(graph.degree(concept)))
+            path_length_factor = 1.0
+            if primary and primary in graph and concept in graph and primary != concept:
+                try:
+                    path_length = nx.shortest_path_length(graph, source=primary, target=concept)
+                    path_length_factor = 1.0 / (1.0 + float(path_length))
+                except nx.NetworkXNoPath:
+                    path_length_factor = 0.2
+            score = stability * normalized_access * act * degree_penalty * path_length_factor
             path_str = self._format_path(graph, primary, concept) if primary else None
             ranked.append(RelatedConcept(concept=concept, strength=score, path=path_str))
 

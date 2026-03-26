@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import sys
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -10,9 +12,8 @@ from cultivation.runner import CultivationRunner, RunnerConfig, parse_seeds
 from cultivation.spec_parser import CultivationSpec, SpecValidationError
 from cultivation.spec_runner import SpecRunner
 from verdant.query import QueryEngine, format_query_result
-# TODO: migrate verdant_v2 imports to verdant for V3
-from verdant_v2.ethomorphic_config import EthomorphicParams
-from verdant_v2.system import VerdantSystem
+from verdant.ethomorphic_config import EthomorphicParams
+from verdant.system import VerdantSystem
 
 
 def _build_ethomorphic_params(args: argparse.Namespace) -> EthomorphicParams | None:
@@ -196,9 +197,14 @@ def main() -> None:
         for item in spec.generate_input_sequence()[: max(0, args.cycles)]:
             print(f"cycle={item['cycle']:>3} phase={item['phase']} self_reflection={item['is_self_reflection']} input={item['input_text']}")
     if args.command == "query":
-        system = VerdantSystem.load_checkpoint(args.state)
-        result = QueryEngine().query(system, args.question)
-        print(format_query_result(result, pretty=True))
+        try:
+            system = VerdantSystem.load_checkpoint(args.state)
+            result = QueryEngine().query(system, args.question)
+            print(format_query_result(result, pretty=True))
+        except Exception as exc:
+            print(f"Query failed: {exc}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+            raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":

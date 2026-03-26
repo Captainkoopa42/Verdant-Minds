@@ -6,6 +6,7 @@ Writes: ``pattern_recognition_section``
 
 from __future__ import annotations
 
+import keyword
 import re
 import time
 from typing import Any, Dict, List, Set, Tuple
@@ -19,7 +20,10 @@ _STOPWORDS: Set[str] = {
     "for", "on", "with", "at", "by", "from", "as", "into", "about", "it",
     "this", "that", "and", "or", "but", "if", "not", "no", "so", "than",
     "too", "very", "just", "i", "me", "my", "we", "our", "you", "your",
-    "he", "she", "they", "them", "its",
+    "he", "she", "they", "them", "its", "what", "who", "where", "when", "why",
+    "how", "which", "whom", "each", "every", "all", "any", "few", "more", "most",
+    "other", "some", "such", "only", "own", "same", "these", "those", "both",
+    "either", "neither", "during", "before", "after", "between", "through", "also",
 }
 
 # Opposition pairs → base tension strength
@@ -48,6 +52,12 @@ _QUESTION_PATTERNS: Dict[str, List[str]] = {
     "comparative": [r"\bcompare\b", r"\bbetter\b", r"\bworse\b", r"\bdifference\b"],
 }
 
+_PROGRAMMING_TERMS: Set[str] = {
+    "class", "method", "function", "lambda", "dict", "list", "tuple", "object", "module",
+    "import", "return", "yield", "while", "strict", "managed", "marker", "update", "linked",
+    "metadata", "state", "cycle", "timestamp", "config", "parameter", "variable", "args", "kwargs",
+}
+
 
 class PatternRecognitionBlock:
     """Extracts keywords, concepts, oppositions, entities, and question type."""
@@ -59,8 +69,10 @@ class PatternRecognitionBlock:
         sensory = chunk.get_section_content("sensory_input_section") or {}
         text: str = sensory.get("input_text", "")
         tokens: List[str] = sensory.get("tokens", [])
+        metadata: Dict[str, Any] = sensory.get("metadata", {})
 
-        keywords = self._extract_keywords(tokens)
+        is_self_reflection = bool(metadata.get("is_self_reflection"))
+        keywords = self._extract_keywords(tokens, is_self_reflection=is_self_reflection)
         concepts = list(dict.fromkeys(keywords))  # dedup preserving order
         oppositions = self._detect_oppositions(concepts, tokens)
         tensions = self._compute_tensions(oppositions, text)
@@ -91,13 +103,41 @@ class PatternRecognitionBlock:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _extract_keywords(tokens: List[str]) -> List[str]:
+    def _is_noise_token(token: str, *, is_self_reflection: bool) -> bool:
+        if not token:
+            return True
+        if token in _STOPWORDS:
+            return True
+        if len(token) <= 2:
+            return True
+        if token.isdigit():
+            return True
+
+        if not is_self_reflection:
+            return False
+
+        if token in _PROGRAMMING_TERMS:
+            return True
+        if keyword.iskeyword(token):
+            return True
+        if "_" in token and token.count("_") >= 1:
+            return True
+        if any(ch.isupper() for ch in token):
+            return True
+        return False
+
+    @classmethod
+    def _extract_keywords(cls, tokens: List[str], *, is_self_reflection: bool = False) -> List[str]:
         seen: set[str] = set()
         out: List[str] = []
-        for t in tokens:
-            if len(t) > 2 and t not in _STOPWORDS and t not in seen:
-                seen.add(t)
-                out.append(t)
+        for raw_token in tokens:
+            t = str(raw_token).strip().lower()
+            if cls._is_noise_token(t, is_self_reflection=is_self_reflection):
+                continue
+            if t in seen:
+                continue
+            seen.add(t)
+            out.append(t)
         return out
 
     @staticmethod

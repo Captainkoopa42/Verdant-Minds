@@ -29,14 +29,20 @@ class CurriculumStrategy:
         "collective intelligence",
     ]
 
-    def __init__(self, *, pressure_every: int = 5) -> None:
+    def __init__(self, *, pressure_every: int = 5, external_topics: list[str] | None = None) -> None:
         self.pressure_every = max(1, pressure_every)
+        cleaned_topics = [str(topic).strip() for topic in (external_topics or []) if str(topic).strip()]
+        self._using_external_topics = len(cleaned_topics) > 0
+        self.topics = cleaned_topics if self._using_external_topics else list(self.TOPIC_WHEEL)
 
     def step(self, cycle_index: int, *, seed: int) -> CurriculumStep:
         """Build deterministic phase/topic prompt for a cycle."""
-        topic = self.TOPIC_WHEEL[(cycle_index + seed) % len(self.TOPIC_WHEEL)]
+        topic = self.topics[(cycle_index + seed) % len(self.topics)]
         is_pressure = (cycle_index + 1) % self.pressure_every == 0
-        if is_pressure:
+        if self._using_external_topics:
+            prompt = topic
+            phase = "pressure" if is_pressure else "release"
+        elif is_pressure:
             prompt = (
                 f"Contradiction pressure on {topic}: hold two competing claims as simultaneously relevant, "
                 f"then reconcile with explicit trade-offs and unresolved residue."

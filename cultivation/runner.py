@@ -148,6 +148,7 @@ class RunnerConfig:
     tutor_temperature: float = 0.8
     outdir: str = "outputs_v2"
     pressure_every: int = 5
+    topic_file: str | None = None
     basin_routing: bool = False
     intervention_mode: str = "none"
     intervention_cycle: int | None = None
@@ -189,9 +190,27 @@ class CultivationRunner:
 
     def __init__(self, config: RunnerConfig) -> None:
         self.config = config
-        self.curriculum = CurriculumStrategy(pressure_every=config.pressure_every)
+        self.curriculum = CurriculumStrategy(
+            pressure_every=config.pressure_every,
+            external_topics=self._load_external_topics(config.topic_file),
+        )
         self.perturbation = PerturbationEngine()
         self._self_reflection_provider = TutorProvider(backend="local")
+
+    @staticmethod
+    def _load_external_topics(topic_file: str | None) -> list[str] | None:
+        """Load optional external topics from JSON file."""
+        if not topic_file:
+            return None
+        topic_path = Path(topic_file)
+        if not topic_path.exists():
+            raise FileNotFoundError(f"Topic file not found: {topic_file}")
+        payload = json.loads(topic_path.read_text(encoding="utf-8"))
+        topics_source = payload.get("topics", payload) if isinstance(payload, dict) else payload
+        if not isinstance(topics_source, list):
+            raise ValueError("Topic file JSON must be a list or an object containing a 'topics' list")
+        topics = [str(item).strip() for item in topics_source if str(item).strip()]
+        return topics or None
 
     def run(self, seeds: Iterable[int]) -> Path:
         """Execute cultivation for all seeds and return run output directory."""

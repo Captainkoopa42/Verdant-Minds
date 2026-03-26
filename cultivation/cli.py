@@ -65,6 +65,7 @@ def main() -> None:
     run_p.add_argument("--seeds", default="0-19", help="Seed range/list, e.g. 0-19 or 0,2,4")
     run_p.add_argument("--outdir", default="outputs")
     run_p.add_argument("--pressure-every", type=int, default=5)
+    run_p.add_argument("--topic-file", default=None, help="JSON file with custom topics")
     run_p.add_argument("--basin-routing", action="store_true")
     run_p.add_argument("--enable-pruning", action="store_true")
     run_p.add_argument("--enable-budding", action="store_true")
@@ -101,6 +102,7 @@ def main() -> None:
     resume_p.add_argument("--tutor-temperature", type=float, default=0.8)
     resume_p.add_argument("--outdir", default="outputs")
     resume_p.add_argument("--pressure-every", type=int, default=5)
+    resume_p.add_argument("--topic-file", default=None, help="JSON file with custom topics")
     resume_p.add_argument("--checkpoint-interval", type=int, default=0)
     resume_p.add_argument("--checkpoint-format", choices=["json", "msgpack"], default="json")
     resume_p.add_argument("--basin-snapshot-interval", type=int, default=0)
@@ -139,6 +141,7 @@ def main() -> None:
             tutor_temperature=args.tutor_temperature,
             outdir=args.outdir,
             pressure_every=args.pressure_every,
+            topic_file=args.topic_file,
             basin_routing=args.basin_routing,
             intervention_mode=args.intervention_mode,
             intervention_cycle=args.intervention_cycle,
@@ -171,6 +174,7 @@ def main() -> None:
             tutor_temperature=args.tutor_temperature,
             outdir=args.outdir,
             pressure_every=args.pressure_every,
+            topic_file=args.topic_file,
             checkpoint_interval=args.checkpoint_interval,
             checkpoint_format=args.checkpoint_format,
             basin_snapshot_interval=args.basin_snapshot_interval,

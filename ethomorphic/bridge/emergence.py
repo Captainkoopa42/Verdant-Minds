@@ -22,6 +22,36 @@ def _combo_hash(combo_key: str) -> str:
     return hashlib.sha256(combo_key.encode()).hexdigest()[:6]
 
 
+def link_emergent_to_existing_emergents(
+    memory: Any,
+    new_emergent: str,
+    parent_concepts: List[str],
+) -> None:
+    """Connect a new emergent to prior emergents that share parents.
+
+    The edge weight scales by parent overlap: ``0.6 * overlap_ratio``.
+    """
+    if not parent_concepts:
+        return
+
+    new_parent_set = set(parent_concepts)
+    for existing_emergent in memory.get_emergent_nodes():
+        if existing_emergent == new_emergent:
+            continue
+        existing_data = memory.get_concept(existing_emergent) or {}
+        existing_meta = existing_data.get("metadata", {})
+        if not isinstance(existing_meta, dict):
+            continue
+        existing_parents = existing_meta.get("parent_concepts", [])
+        if not isinstance(existing_parents, list):
+            continue
+        overlap = new_parent_set.intersection(existing_parents)
+        if not overlap:
+            continue
+        overlap_ratio = len(overlap) / max(1, len(new_parent_set))
+        memory.connect(new_emergent, existing_emergent, 0.6 * overlap_ratio)
+
+
 def detect_and_create_emergent_concepts(
     bridge: EthomorphicBridge,
     wave_output: np.ndarray,
@@ -177,22 +207,7 @@ def detect_and_create_emergent_concepts(
         memory.connect(new_concept, concept, 0.6)
 
     # Connect to prior emergent concepts that share parent concepts.
-    new_parent_set = set(top_concepts)
-    for existing_emergent in memory.get_emergent_nodes():
-        if existing_emergent == new_concept:
-            continue
-        existing_data = memory.get_concept(existing_emergent) or {}
-        existing_meta = existing_data.get("metadata", {})
-        if not isinstance(existing_meta, dict):
-            continue
-        existing_parents = existing_meta.get("parent_concepts", [])
-        if not isinstance(existing_parents, list):
-            continue
-        overlap = new_parent_set.intersection(existing_parents)
-        if not overlap:
-            continue
-        overlap_ratio = len(overlap) / max(1, len(new_parent_set))
-        memory.connect(new_concept, existing_emergent, 0.6 * overlap_ratio)
+    link_emergent_to_existing_emergents(memory, new_concept, top_concepts)
 
     return [new_concept]
 

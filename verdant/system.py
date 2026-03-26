@@ -20,7 +20,10 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
-from ethomorphic.bridge.emergence import assign_emergent_concept_mappings
+from ethomorphic.bridge.emergence import (
+    assign_emergent_concept_mappings,
+    link_emergent_to_existing_emergents,
+)
 from ethomorphic.coherence.invariants import compute_coherence
 from ethomorphic.ecwf.core import ECWFCore
 
@@ -642,6 +645,7 @@ class VerdantSystem:
         assign_emergent_concept_mappings(self.bridge, new_label, parents)
         for parent in parents:
             self.memory_web.connect(new_label, parent, 0.65)
+        link_emergent_to_existing_emergents(self.memory_web, new_label, parents)
         return new_label
 
     def initialize_knowledge(self) -> Dict[str, Any]:

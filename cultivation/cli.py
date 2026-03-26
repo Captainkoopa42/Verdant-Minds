@@ -9,8 +9,10 @@ from pathlib import Path
 from cultivation.runner import CultivationRunner, RunnerConfig, parse_seeds
 from cultivation.spec_parser import CultivationSpec, SpecValidationError
 from cultivation.spec_runner import SpecRunner
+from verdant.query import QueryEngine, format_query_result
 # TODO: migrate verdant_v2 imports to verdant for V3
 from verdant_v2.ethomorphic_config import EthomorphicParams
+from verdant_v2.system import VerdantSystem
 
 
 def _build_ethomorphic_params(args: argparse.Namespace) -> EthomorphicParams | None:
@@ -117,6 +119,10 @@ def main() -> None:
     preview_p.add_argument("--spec", required=True)
     preview_p.add_argument("--cycles", type=int, default=20)
 
+    query_p = sub.add_parser("query", help="Query a saved Verdant state")
+    query_p.add_argument("--state", required=True, help="Path to a JSON checkpoint/state file")
+    query_p.add_argument("question", help="Natural-language question to ask the memory graph")
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -189,6 +195,10 @@ def main() -> None:
         spec = _load_spec(args.spec)
         for item in spec.generate_input_sequence()[: max(0, args.cycles)]:
             print(f"cycle={item['cycle']:>3} phase={item['phase']} self_reflection={item['is_self_reflection']} input={item['input_text']}")
+    if args.command == "query":
+        system = VerdantSystem.load_checkpoint(args.state)
+        result = QueryEngine().query(system, args.question)
+        print(format_query_result(result, pretty=True))
 
 
 if __name__ == "__main__":

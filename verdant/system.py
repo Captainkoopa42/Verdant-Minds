@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import asdict
+import json
 import math
 from typing import Any, Dict, List, Optional
 
@@ -866,24 +867,66 @@ class VerdantSystem:
         adaptive = max(10, min(50, graph_size // 50 if graph_size > 0 else 10))
         return max(1, max(int(self.config.basin_scan_interval), adaptive))
 
+    def _prune_state_for_save(self, state_dict: Dict[str, Any]) -> None:
+        """Prune connection lists and low-weight edges before save."""
+        max_conn = 50
+        min_edge_weight = 0.01
+
+        memory = state_dict.get("memory_web", {})
+        store = memory.get("memory_store", memory.get("nodes", {}))
+
+        if isinstance(store, dict):
+            for data in store.values():
+                if not isinstance(data, dict):
+                    continue
+                connections = data.get("connections", [])
+                if not isinstance(connections, list):
+                    continue
+                if len(connections) > max_conn:
+                    connections.sort(
+                        key=lambda conn: (
+                            float(conn[1])
+                            if isinstance(conn, (list, tuple)) and len(conn) > 1
+                            else 0.0
+                        ),
+                        reverse=True,
+                    )
+                    data["connections"] = connections[:max_conn]
+
+        edges = memory.get("edges", [])
+        if isinstance(edges, list):
+            pruned_edges: list[Any] = []
+            for edge in edges:
+                try:
+                    if isinstance(edge, dict):
+                        weight = float(edge.get("weight", 0))
+                    elif isinstance(edge, (list, tuple)) and len(edge) > 2:
+                        weight = float(edge[2])
+                    else:
+                        continue
+                except (TypeError, ValueError):
+                    continue
+                if weight >= min_edge_weight:
+                    pruned_edges.append(edge)
+            memory["edges"] = pruned_edges
+
     def save_checkpoint(self, path: str) -> None:
         """Save a complete system checkpoint to *path*."""
         if self.config.checkpoint_format != "json":
             raise NotImplementedError("checkpoint_format='msgpack' is not implemented yet")
-        from verdant_v2.memory.persistence import save_snapshot
 
-        save_snapshot(
-            path,
-            memory_web=self.memory_web,
-            bridge_state=self.bridge.to_state_dict(),
-            ecwf_state=self.ecwf.to_state_dict(),
-            metrics=self._metrics,
-            kings_state={
+        state: Dict[str, Any] = {
+            "version": 2,
+            "memory_web": self.memory_web.to_state_dict(),
+            "bridge": self.bridge.to_state_dict(),
+            "ecwf": self.ecwf.to_state_dict(),
+            "metrics": self._metrics,
+            "kings": {
                 "data_king": self.data_king.to_state_dict(),
                 "forefront_king": self.forefront_king.to_state_dict(),
                 "ethics_king": self.ethics_king.to_state_dict(),
             },
-            extra={
+            "extra": {
                 "t_g": self._t_g,
                 "cycle_count": self._cycle_count,
                 "entropy_history": self._entropy_history[-50:],
@@ -900,7 +943,10 @@ class VerdantSystem:
                 "bridge_acceleration": get_fast_bridge_state(self.bridge),
                 "numpy_random_state": self._serialize_numpy_state(np.random.get_state()),
             },
-        )
+        }
+        self._prune_state_for_save(state)
+        with open(path, "w", encoding="utf-8") as handle:
+            json.dump(state, handle, separators=(",", ":"), default=str)
 
     @classmethod
     def load_checkpoint(cls, path: str) -> "VerdantSystem":

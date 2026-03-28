@@ -102,6 +102,9 @@ sentence-transformers>=2.2.0
 # Files using: MemoryECWFBridge.py
 scikit-learn>=1.3.0
 
+# ijson for streaming JSON parsing in large-state analysis helpers.
+ijson>=3.2.0
+
 # ----------------------------------------------------------------------------
 # Natural Language Processing (Optional)
 # ----------------------------------------------------------------------------

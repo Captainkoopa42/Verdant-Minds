@@ -49,6 +49,14 @@ Outputs include:
 - `basin_persistence_summary.md`
 - `fig_basin_persistence_trajectories.png` (when `matplotlib` is available)
 
+
+## Quick node/edge count (streaming-aware)
+```bash
+python analysis/count_graph_size.py --state path/to/state.json
+```
+
+The script uses `ijson` when available (true streaming) and falls back to stdlib JSON loading with a warning if `ijson` is missing.
+
 ## State schema assumptions
 The scripts try multiple field aliases:
 - nodes: `nodes`, `concepts`

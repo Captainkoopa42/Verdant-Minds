@@ -314,6 +314,24 @@ class MemoryWeb:
         self._update_avg_stability()
         return dict(self.metrics)
 
+    def prune_connections(self, max_per_node: int = 50) -> None:
+        """Prune concept connection lists to top-K by stored weight."""
+        for node_id in self.list_concepts():
+            data = self.get_concept(node_id)
+            if not isinstance(data, dict):
+                continue
+            connections = data.get("connections", [])
+            if not isinstance(connections, list):
+                continue
+            if len(connections) > max_per_node:
+                connections.sort(
+                    key=lambda conn: (
+                        float(conn[1]) if isinstance(conn, (list, tuple)) and len(conn) > 1 else 0.0
+                    ),
+                    reverse=True,
+                )
+                data["connections"] = connections[:max_per_node]
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------

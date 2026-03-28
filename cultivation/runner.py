@@ -677,6 +677,8 @@ class CultivationRunner:
                             "is_self_reflection": is_self_reflection,
                         },
                     )
+                    if cycle_idx % 50 == 0:
+                        system.memory_web.prune_connections(max_per_node=50)
 
                     intervention_applied = False
                     removed_nodes_count = 0

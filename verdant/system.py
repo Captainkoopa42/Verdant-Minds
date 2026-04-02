@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from pydantic import BaseModel, Field
 
+from verdant.attention import AttentionBuffer, AttentionItem
 from ethomorphic.bridge.bridge import EthomorphicBridge
 from ethomorphic.bridge.emergence import (
     assign_emergent_concept_mappings,
@@ -118,6 +119,7 @@ class VerdantConfig(BaseModel):
     fast_bridge: bool = False
     concept_min_length: int = 3
     filter_numeric_concepts: bool = True
+    enable_attention_buffer: bool = False
     ethomorphic_params: EthomorphicParams | None = None
 
 
@@ -175,6 +177,7 @@ class VerdantSystem:
         self._action = ActionBlock(decision_threshold=self.config.decision_threshold)
         self._language = LanguageBlock()
         self._learning = LearningBlock(bridge=self.bridge)
+        self.attention_buffer = AttentionBuffer(bypass=not self.config.enable_attention_buffer)
 
         # Governance
         self.data_king = DataKing()
@@ -249,15 +252,34 @@ class VerdantSystem:
     # ------------------------------------------------------------------
 
     def process_input(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
-        """Process raw text through the full pipeline.
+        """Process input through the attention buffer and full pipeline."""
+        t_g = self._current_t_g()
+        self.attention_buffer.update_governance(t_g)
 
-        Args:
-            text: Raw input text.
-            metadata: Optional metadata dict.
+        concepts = self._quick_extract_concepts(text)
+        novelty = self._compute_novelty(concepts)
+        activation = self._compute_input_activation(concepts, novelty)
+        item = AttentionItem(
+            concepts=concepts,
+            activation=activation,
+            source_text=text,
+            novelty=novelty,
+            cycle=self._cycle_count,
+        )
+        self.attention_buffer.add(item)
+        escalated = self.attention_buffer.evaluate()
 
-        Returns:
-            Enriched CognitiveChunk with all sections populated.
-        """
+        chunks: list[CognitiveChunk] = []
+        for esc_item in escalated:
+            chunks.append(self._full_pipeline_process(esc_item.source_text, metadata))
+
+        for remaining in self.attention_buffer.items:
+            self._light_process(remaining)
+
+        return chunks[-1] if chunks else self._null_chunk(text=text, metadata=metadata)
+
+    def _full_pipeline_process(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
+        """Process raw text through the full pipeline."""
         cycle_wall_start = time.perf_counter()
         chunk = CognitiveChunk()
         chunk.update_section("sensory_input_section", {
@@ -377,6 +399,59 @@ class VerdantSystem:
             self._dynamics_metrics = dynamics_section
 
         return chunk
+
+    def _null_chunk(self, text: str = "", metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
+        """Return a no-op chunk when no attention item escalates."""
+        chunk = CognitiveChunk()
+        chunk.update_section("sensory_input_section", {
+            "input_text": text,
+            "metadata": metadata or {},
+        })
+        chunk.update_section("processing_metrics_section", {
+            "glass_transition_temp": self._t_g,
+            "cycle": self._cycle_count,
+            "attention_escalated": False,
+        })
+        return chunk
+
+    def _current_t_g(self) -> float:
+        """Return the current thermodynamic governance value."""
+        return float(self._t_g)
+
+    def _quick_extract_concepts(self, text: str) -> list[str]:
+        """Fast concept extraction without running the full pipeline."""
+        tokens = [token.strip(".,!?;:()[]{}\"'") for token in text.lower().split()]
+        known = set(self.memory_web.list_concepts())
+        return [token for token in tokens if token and token in known]
+
+    def _compute_novelty(self, concepts: list[str]) -> float:
+        """How novel an input is versus current memory concepts."""
+        known = set(self.memory_web.list_concepts())
+        novel = [concept for concept in concepts if concept not in known]
+        return len(novel) / max(len(concepts), 1)
+
+    def _compute_input_activation(self, concepts: list[str], novelty: float) -> float:
+        """Compute initial activation for attention triage."""
+        if not concepts:
+            return 0.1
+
+        activation = 0.06 + novelty * 0.24
+        stabilities: list[float] = []
+        for concept in concepts:
+            data = self.memory_web.get_concept(concept)
+            if data:
+                stabilities.append(float(data.get("stability", 0.5)))
+        if stabilities:
+            mean_stab = sum(stabilities) / len(stabilities)
+            activation += (1.0 - mean_stab) * 0.12
+        return min(1.0, activation)
+
+    def _light_process(self, item: AttentionItem) -> None:
+        """Light processing for non-escalated attention items."""
+        for idx, c1 in enumerate(item.concepts):
+            for c2 in item.concepts[idx + 1:]:
+                if self.memory_web.get_concept(c1) and self.memory_web.get_concept(c2):
+                    self.memory_web.connect(c1, c2, weight=0.01)
 
     def _apply_basin_dynamics(self, chunk: CognitiveChunk) -> None:
         cycle = self._cycle_count
@@ -694,6 +769,7 @@ class VerdantSystem:
             "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
             "basin_registry_active": len(self._basin_registry.get_active_basins()),
             "basin_registry_dormant": len(self._basin_registry.get_dormant_basins()),
+            "attention_buffer": self.attention_buffer.get_state(),
             **self._dynamics_metrics,
         }
 
@@ -942,6 +1018,12 @@ class VerdantSystem:
                 "basin_registry": self._basin_registry.to_dict(),
                 "bridge_acceleration": get_fast_bridge_state(self.bridge),
                 "numpy_random_state": self._serialize_numpy_state(np.random.get_state()),
+                "attention_buffer": {
+                    "items": [item.to_dict() for item in self.attention_buffer.items],
+                    "history_count": len(self.attention_buffer.history),
+                    "silent_count": self.attention_buffer.silent_count,
+                    "bypass": self.attention_buffer.bypass,
+                },
             },
         }
         self._prune_state_for_save(state)
@@ -1056,6 +1138,25 @@ class VerdantSystem:
         rng_state = extra.get("numpy_random_state")
         if isinstance(rng_state, dict):
             np.random.set_state(self._deserialize_numpy_state(rng_state))
+        attention_state = extra.get("attention_buffer", {})
+        if isinstance(attention_state, dict):
+            self.attention_buffer.items = []
+            for item_dict in attention_state.get("items", []):
+                if not isinstance(item_dict, dict):
+                    continue
+                item = AttentionItem(
+                    concepts=list(item_dict.get("concepts", [])),
+                    activation=float(item_dict.get("activation", 0.0)),
+                    source_text=str(item_dict.get("source_text", "")),
+                    novelty=float(item_dict.get("novelty", 0.0)),
+                    basin_id=item_dict.get("basin_id"),
+                    cycle=int(item_dict.get("cycle", 0)),
+                )
+                item.age = int(item_dict.get("age", 0))
+                item.resonance_count = int(item_dict.get("resonance_count", 0))
+                self.attention_buffer.items.append(item)
+            self.attention_buffer.silent_count = int(attention_state.get("silent_count", 0))
+            self.attention_buffer.bypass = bool(attention_state.get("bypass", self.attention_buffer.bypass))
         # Re-wire blocks
         self._memory_block.memory_web = self.memory_web
         self._memory_block.bridge = self.bridge

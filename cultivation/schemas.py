@@ -95,6 +95,7 @@ class CycleRecord(BaseModel):
     basin_registry_active: int = 0
     basin_registry_dormant: int = 0
     basin_registry_events: list[dict[str, Any]] = Field(default_factory=list)
+    attention_buffer: dict[str, Any] = Field(default_factory=dict)
     tutor_enabled: bool = False
     tutor_backend: str | None = None
     tutor_fallback: bool = False

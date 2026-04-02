@@ -80,6 +80,7 @@ def main() -> None:
     run_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     run_p.add_argument("--self-reflect-interval", type=int, default=0)
     run_p.add_argument("--basin-use-registry", action=argparse.BooleanOptionalAction, default=True)
+    run_p.add_argument("--enable-attention-buffer", action="store_true")
     run_p.add_argument("--ecwf-cognitive-dims", type=int, default=None)
     run_p.add_argument("--ecwf-ethical-dims", type=int, default=None)
     run_p.add_argument("--ecwf-adaptive-rate", type=float, default=None)
@@ -160,6 +161,7 @@ def main() -> None:
             fast_bridge=args.fast_bridge,
             self_reflect_interval=args.self_reflect_interval,
             basin_use_registry=args.basin_use_registry,
+            enable_attention_buffer=args.enable_attention_buffer,
             ethomorphic_params=ethomorphic_params,
         )
         runner = CultivationRunner(config)

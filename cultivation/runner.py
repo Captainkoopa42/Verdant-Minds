@@ -182,6 +182,7 @@ class RunnerConfig:
     basin_snapshot_interval: int = 0
     fast_bridge: bool = False
     self_reflect_interval: int = 0
+    enable_attention_buffer: bool = False
     ethomorphic_params: EthomorphicParams | None = None
 
 
@@ -486,6 +487,7 @@ class CultivationRunner:
                         basin_registry_active=int(dynamics["basin_registry_active"]),
                         basin_registry_dormant=int(dynamics["basin_registry_dormant"]),
                         basin_registry_events=[dict(x) for x in list(dynamics["basin_registry_events"])],
+                        attention_buffer=dict(metrics.get("attention_buffer", {})),
                         tutor_enabled=False,
                         tutor_input_length=len(input_text),
                         scaffold_context_emergents=(int(scaffold_context.emergent_count) if scaffold_context is not None else 0),
@@ -625,6 +627,7 @@ class CultivationRunner:
                 checkpoint_interval=self.config.checkpoint_interval,
                 checkpoint_format=self.config.checkpoint_format,
                 fast_bridge=self.config.fast_bridge,
+                enable_attention_buffer=self.config.enable_attention_buffer,
                 ethomorphic_params=self.config.ethomorphic_params,
             ))
             # Ensure ECWF parameters are seed-deterministic even though upstream default is random_state=None.
@@ -808,6 +811,7 @@ class CultivationRunner:
                         basin_registry_active=int(dynamics["basin_registry_active"]),
                         basin_registry_dormant=int(dynamics["basin_registry_dormant"]),
                         basin_registry_events=[dict(x) for x in list(dynamics["basin_registry_events"])],
+                        attention_buffer=dict(metrics.get("attention_buffer", {})),
                         tutor_enabled=tutor_enabled,
                         tutor_backend=tutor_backend,
                         tutor_fallback=tutor_fallback,

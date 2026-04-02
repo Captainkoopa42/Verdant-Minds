@@ -267,9 +267,9 @@ class VerdantSystem:
         self.attention_buffer.update_governance(t_g)
 
         known_concepts, unknown_words = self._quick_extract_concepts(text)
-        novelty = self._compute_novelty(known_concepts, unknown_words)
-        activation = self._compute_input_activation(known_concepts, unknown_words, novelty)
+        novelty = self._compute_novelty(text)
         concepts = known_concepts + unknown_words
+        activation = self._compute_input_activation(concepts, novelty)
         item = AttentionItem(
             concepts=concepts,
             activation=activation,
@@ -450,61 +450,42 @@ class VerdantSystem:
                 unknown_words.append(token)
         return known_concepts, unknown_words
 
-    def _compute_novelty(
-        self,
-        known_concepts: list[str] | tuple[list[str], list[str]],
-        unknown_words: list[str] | None = None,
-    ) -> float:
-        """How novel an input is versus current memory concepts."""
-        if unknown_words is None and isinstance(known_concepts, tuple):
-            known_concepts, unknown_words = known_concepts
-        elif unknown_words is None:
-            unknown_words = []
-        total = len(known_concepts) + len(unknown_words)
-        return len(unknown_words) / max(total, 1)
+    def _compute_novelty(self, text: str) -> float:
+        stopwords = {
+            "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+            "have", "has", "had", "do", "does", "did", "will", "would", "shall",
+            "should", "may", "might", "must", "can", "could", "to", "of", "in",
+            "for", "on", "with", "at", "by", "from", "as", "into", "about", "it",
+            "this", "that", "and", "or", "but", "if", "not", "no", "so", "than",
+            "too", "very", "just", "its", "what", "who", "where", "when", "how",
+        }
+        tokens = [t.strip('.,;:!?"()') for t in text.lower().split()]
+        tokens = [t for t in tokens if t and len(t) > 2 and t not in stopwords]
+        if not tokens:
+            return 0.0
+        known = set(self.memory_web.list_concepts())
+        unknown = [t for t in tokens if t not in known]
+        return len(unknown) / len(tokens)
 
-    def _compute_input_activation(
-        self,
-        known_concepts: list[str] | tuple[list[str], list[str]],
-        unknown_words: list[str] | float | None = None,
-        novelty: float | None = None,
-    ) -> float:
-        """Compute initial activation for attention triage."""
-        if isinstance(known_concepts, tuple):
-            known_concepts, extracted_unknown = known_concepts
-            if unknown_words is None or isinstance(unknown_words, float):
-                unknown_words = extracted_unknown
-        if isinstance(unknown_words, float):
-            novelty = float(unknown_words)
-            unknown_words = []
-        if unknown_words is None:
-            unknown_words = []
-        if novelty is None:
-            novelty = self._compute_novelty(known_concepts, unknown_words)
-        if not known_concepts and not unknown_words:
+    def _compute_input_activation(self, concepts: list[str] | tuple[list[str], list[str]], novelty: float) -> float:
+        if isinstance(concepts, tuple):
+            concepts = concepts[0] + concepts[1]
+        if not concepts:
             return 0.05
-
-        activation = 0.05 + novelty * 0.4
+        activation = 0.05
+        activation += novelty * 0.4
         stabilities: list[float] = []
         access_counts: list[int] = []
-        now = time.time()
-        recency_penalties: list[float] = []
-        for concept in known_concepts:
+        for concept in concepts:
             data = self.memory_web.get_concept(concept)
             if data and isinstance(data, dict):
                 stabilities.append(float(data.get("stability", 0.5)))
                 access_counts.append(int(data.get("access_count", 0)))
-                last_accessed = float(data.get("last_accessed", 0.0) or 0.0)
-                age_seconds = max(0.0, now - last_accessed)
-                recency_penalties.append(max(0.0, 1.0 - min(1.0, age_seconds / 3600.0)))
         if stabilities:
-            mean_stab = sum(stabilities) / len(stabilities)
-            activation -= mean_stab * 0.1
+            activation -= (sum(stabilities) / len(stabilities)) * 0.08
         if access_counts:
-            mean_access = sum(access_counts) / len(access_counts)
-            activation -= min(0.1, math.log1p(mean_access) * 0.01)
-        if recency_penalties:
-            activation -= (sum(recency_penalties) / len(recency_penalties)) * 0.03
+            mean_acc = sum(access_counts) / len(access_counts)
+            activation -= min(0.05, math.log1p(mean_acc) * 0.005)
         return max(0.02, min(1.0, activation))
 
     def _light_process(self, item: AttentionItem) -> None:

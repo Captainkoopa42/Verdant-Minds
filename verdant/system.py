@@ -472,20 +472,42 @@ class VerdantSystem:
             concepts = concepts[0] + concepts[1]
         if not concepts:
             return 0.05
-        activation = 0.05
-        activation += novelty * 0.4
-        stabilities: list[float] = []
+        activation = 0.03
+        activation += novelty * 0.3
+
+        if len(concepts) >= 2:
+            graph = self.memory_web.graph
+            pair_count = 0
+            connected_pairs = 0
+            limit = min(len(concepts), 5)
+            for i in range(limit):
+                for j in range(i + 1, limit):
+                    pair_count += 1
+                    c1, c2 = concepts[i], concepts[j]
+                    if graph.has_node(c1) and graph.has_node(c2):
+                        if graph.has_edge(c1, c2) or graph.has_edge(c2, c1):
+                            connected_pairs += 1
+            if pair_count > 0:
+                combination_familiarity = connected_pairs / pair_count
+                combination_novelty = 1.0 - combination_familiarity
+                activation += combination_novelty * 0.15
+
         access_counts: list[int] = []
+        stabilities: list[float] = []
         for concept in concepts:
             data = self.memory_web.get_concept(concept)
             if data and isinstance(data, dict):
-                stabilities.append(float(data.get("stability", 0.5)))
                 access_counts.append(int(data.get("access_count", 0)))
-        if stabilities:
-            activation -= (sum(stabilities) / len(stabilities)) * 0.08
+                stabilities.append(float(data.get("stability", 0.5)))
         if access_counts:
-            mean_acc = sum(access_counts) / len(access_counts)
-            activation -= min(0.05, math.log1p(mean_acc) * 0.005)
+            mean_access = sum(access_counts) / len(access_counts)
+            activation -= min(0.08, math.log1p(mean_access) * 0.008)
+        if stabilities:
+            mean_stab = sum(stabilities) / len(stabilities)
+            if mean_stab > 0.9:
+                activation -= 0.04
+            elif mean_stab > 0.7:
+                activation -= 0.02
         return max(0.02, min(1.0, activation))
 
     def _light_process(self, item: AttentionItem) -> None:

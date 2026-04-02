@@ -73,6 +73,16 @@ from verdant_v2.pipeline.chunk import CognitiveChunk
 from verdant_v2.pipeline.orchestrator import PipelineOrchestrator
 from verdant_v2.thermodynamics.phase import compute_phase, compute_t_g
 
+_ATTENTION_STOPWORDS: set[str] = {
+    "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+    "have", "has", "had", "do", "does", "did", "will", "would", "shall",
+    "should", "may", "might", "must", "can", "could", "to", "of", "in",
+    "for", "on", "with", "at", "by", "from", "as", "into", "about", "it",
+    "this", "that", "and", "or", "but", "if", "not", "no", "so", "than",
+    "too", "very", "just", "i", "me", "my", "we", "our", "you", "your",
+    "he", "she", "they", "them", "its",
+}
+
 
 class VerdantConfig(BaseModel):
     """Configuration for the Verdant v2 system."""
@@ -256,9 +266,10 @@ class VerdantSystem:
         t_g = self._current_t_g()
         self.attention_buffer.update_governance(t_g)
 
-        concepts = self._quick_extract_concepts(text)
-        novelty = self._compute_novelty(concepts)
-        activation = self._compute_input_activation(concepts, novelty)
+        known_concepts, unknown_words = self._quick_extract_concepts(text)
+        novelty = self._compute_novelty(known_concepts, unknown_words)
+        activation = self._compute_input_activation(known_concepts, unknown_words, novelty)
+        concepts = known_concepts + unknown_words
         item = AttentionItem(
             concepts=concepts,
             activation=activation,
@@ -418,33 +429,83 @@ class VerdantSystem:
         """Return the current thermodynamic governance value."""
         return float(self._t_g)
 
-    def _quick_extract_concepts(self, text: str) -> list[str]:
-        """Fast concept extraction without running the full pipeline."""
+    def _quick_extract_concepts(self, text: str) -> tuple[list[str], list[str]]:
+        """Fast concept extraction for attention triage.
+
+        Returns ``(known_concepts, unknown_words)`` where unknown words are
+        meaningful non-stopwords that are not yet in the memory graph.
+        """
         tokens = [token.strip(".,!?;:()[]{}\"'") for token in text.lower().split()]
         known = set(self.memory_web.list_concepts())
-        return [token for token in tokens if token and token in known]
+        known_concepts: list[str] = []
+        unknown_words: list[str] = []
+        for token in tokens:
+            if not token or len(token) < self.config.concept_min_length or token.isdigit():
+                continue
+            if token in _ATTENTION_STOPWORDS:
+                continue
+            if token in known:
+                known_concepts.append(token)
+            else:
+                unknown_words.append(token)
+        return known_concepts, unknown_words
 
-    def _compute_novelty(self, concepts: list[str]) -> float:
+    def _compute_novelty(
+        self,
+        known_concepts: list[str] | tuple[list[str], list[str]],
+        unknown_words: list[str] | None = None,
+    ) -> float:
         """How novel an input is versus current memory concepts."""
-        known = set(self.memory_web.list_concepts())
-        novel = [concept for concept in concepts if concept not in known]
-        return len(novel) / max(len(concepts), 1)
+        if unknown_words is None and isinstance(known_concepts, tuple):
+            known_concepts, unknown_words = known_concepts
+        elif unknown_words is None:
+            unknown_words = []
+        total = len(known_concepts) + len(unknown_words)
+        return len(unknown_words) / max(total, 1)
 
-    def _compute_input_activation(self, concepts: list[str], novelty: float) -> float:
+    def _compute_input_activation(
+        self,
+        known_concepts: list[str] | tuple[list[str], list[str]],
+        unknown_words: list[str] | float | None = None,
+        novelty: float | None = None,
+    ) -> float:
         """Compute initial activation for attention triage."""
-        if not concepts:
-            return 0.1
+        if isinstance(known_concepts, tuple):
+            known_concepts, extracted_unknown = known_concepts
+            if unknown_words is None or isinstance(unknown_words, float):
+                unknown_words = extracted_unknown
+        if isinstance(unknown_words, float):
+            novelty = float(unknown_words)
+            unknown_words = []
+        if unknown_words is None:
+            unknown_words = []
+        if novelty is None:
+            novelty = self._compute_novelty(known_concepts, unknown_words)
+        if not known_concepts and not unknown_words:
+            return 0.05
 
-        activation = 0.06 + novelty * 0.24
+        activation = 0.05 + novelty * 0.4
         stabilities: list[float] = []
-        for concept in concepts:
+        access_counts: list[int] = []
+        now = time.time()
+        recency_penalties: list[float] = []
+        for concept in known_concepts:
             data = self.memory_web.get_concept(concept)
-            if data:
+            if data and isinstance(data, dict):
                 stabilities.append(float(data.get("stability", 0.5)))
+                access_counts.append(int(data.get("access_count", 0)))
+                last_accessed = float(data.get("last_accessed", 0.0) or 0.0)
+                age_seconds = max(0.0, now - last_accessed)
+                recency_penalties.append(max(0.0, 1.0 - min(1.0, age_seconds / 3600.0)))
         if stabilities:
             mean_stab = sum(stabilities) / len(stabilities)
-            activation += (1.0 - mean_stab) * 0.12
-        return min(1.0, activation)
+            activation -= mean_stab * 0.1
+        if access_counts:
+            mean_access = sum(access_counts) / len(access_counts)
+            activation -= min(0.1, math.log1p(mean_access) * 0.01)
+        if recency_penalties:
+            activation -= (sum(recency_penalties) / len(recency_penalties)) * 0.03
+        return max(0.02, min(1.0, activation))
 
     def _light_process(self, item: AttentionItem) -> None:
         """Light processing for non-escalated attention items."""

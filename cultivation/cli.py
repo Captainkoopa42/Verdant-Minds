@@ -109,6 +109,7 @@ def main() -> None:
     resume_p.add_argument("--basin-snapshot-interval", type=int, default=0)
     resume_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     resume_p.add_argument("--self-reflect-interval", type=int, default=0)
+    resume_p.add_argument("--enable-attention-buffer", action="store_true")
 
     cultivate_p = sub.add_parser("cultivate", help="Run VCult spec cultivation")
     cultivate_p.add_argument("--spec", required=True)
@@ -182,6 +183,7 @@ def main() -> None:
             basin_snapshot_interval=args.basin_snapshot_interval,
             fast_bridge=args.fast_bridge,
             self_reflect_interval=args.self_reflect_interval,
+            enable_attention_buffer=args.enable_attention_buffer,
         )
         runner = CultivationRunner(config)
         run_dir = runner.resume(args.checkpoint, args.additional_cycles)

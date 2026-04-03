@@ -182,6 +182,7 @@ class RunnerConfig:
     basin_snapshot_interval: int = 0
     fast_bridge: bool = False
     self_reflect_interval: int = 0
+    self_query_interval: int = 0
     enable_attention_buffer: bool = False
     ethomorphic_params: EthomorphicParams | None = None
 
@@ -419,6 +420,31 @@ class CultivationRunner:
                             "is_self_reflection": is_self_reflection,
                         },
                     )
+                    if self.config.self_query_interval > 0 and cycle_idx > 0:
+                        if cycle_idx % self.config.self_query_interval == 0 and hasattr(system, "self_query"):
+                            gap_report = system.self_query()
+                            if gap_report:
+                                gap_log_path = seed_dir / "gap_log.jsonl"
+                                with open(gap_log_path, "a") as gf:
+                                    gf.write(json.dumps(gap_report) + "\n")
+
+                                if hasattr(system, "attention_buffer") and not system.attention_buffer.bypass:
+                                    from verdant.attention.buffer import AttentionItem
+                                    self_text = (f"Examined {gap_report['concept']} "
+                                               f"found {gap_report['related_count']} related")
+                                    concepts = [gap_report["concept"]] + [
+                                        r for r in gap_report.get("top_related", [])
+                                    ]
+                                    activation = 0.18 if gap_report.get("is_gap") else 0.12
+                                    item = AttentionItem(
+                                        concepts=concepts,
+                                        activation=activation,
+                                        source_text=self_text,
+                                        novelty=0.5 if gap_report.get("is_gap") else 0.1,
+                                        cycle=cycle_idx,
+                                    )
+                                    system.attention_buffer.add(item)
+
                     metrics = system.get_metrics()
                     wave = chunk.get_section_content("wave_function_section") or {}
                     coherence = _coherence_telemetry_from_system(system)
@@ -682,6 +708,31 @@ class CultivationRunner:
                             "is_self_reflection": is_self_reflection,
                         },
                     )
+                    if self.config.self_query_interval > 0 and cycle_idx > 0:
+                        if cycle_idx % self.config.self_query_interval == 0 and hasattr(system, "self_query"):
+                            gap_report = system.self_query()
+                            if gap_report:
+                                gap_log_path = seed_dir / "gap_log.jsonl"
+                                with open(gap_log_path, "a") as gf:
+                                    gf.write(json.dumps(gap_report) + "\n")
+
+                                if hasattr(system, "attention_buffer") and not system.attention_buffer.bypass:
+                                    from verdant.attention.buffer import AttentionItem
+                                    self_text = (f"Examined {gap_report['concept']} "
+                                               f"found {gap_report['related_count']} related")
+                                    concepts = [gap_report["concept"]] + [
+                                        r for r in gap_report.get("top_related", [])
+                                    ]
+                                    activation = 0.18 if gap_report.get("is_gap") else 0.12
+                                    item = AttentionItem(
+                                        concepts=concepts,
+                                        activation=activation,
+                                        source_text=self_text,
+                                        novelty=0.5 if gap_report.get("is_gap") else 0.1,
+                                        cycle=cycle_idx,
+                                    )
+                                    system.attention_buffer.add(item)
+
                     if cycle_idx % 50 == 0:
                         system.memory_web.prune_connections(max_per_node=50)
 

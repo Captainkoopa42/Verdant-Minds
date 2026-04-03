@@ -79,6 +79,8 @@ def main() -> None:
     run_p.add_argument("--basin-snapshot-interval", type=int, default=0)
     run_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     run_p.add_argument("--self-reflect-interval", type=int, default=0)
+    run_p.add_argument("--self-query-interval", type=int, default=0,
+                      help="Run self-query every N cycles (0=disabled)")
     run_p.add_argument("--basin-use-registry", action=argparse.BooleanOptionalAction, default=True)
     run_p.add_argument("--enable-attention-buffer", action="store_true")
     run_p.add_argument("--ecwf-cognitive-dims", type=int, default=None)
@@ -109,6 +111,8 @@ def main() -> None:
     resume_p.add_argument("--basin-snapshot-interval", type=int, default=0)
     resume_p.add_argument("--fast-bridge", action=argparse.BooleanOptionalAction, default=False)
     resume_p.add_argument("--self-reflect-interval", type=int, default=0)
+    resume_p.add_argument("--self-query-interval", type=int, default=0,
+                         help="Run self-query every N cycles (0=disabled)")
     resume_p.add_argument("--enable-attention-buffer", action="store_true")
 
     cultivate_p = sub.add_parser("cultivate", help="Run VCult spec cultivation")
@@ -161,6 +165,7 @@ def main() -> None:
             basin_snapshot_interval=args.basin_snapshot_interval,
             fast_bridge=args.fast_bridge,
             self_reflect_interval=args.self_reflect_interval,
+            self_query_interval=args.self_query_interval,
             basin_use_registry=args.basin_use_registry,
             enable_attention_buffer=args.enable_attention_buffer,
             ethomorphic_params=ethomorphic_params,
@@ -183,6 +188,7 @@ def main() -> None:
             basin_snapshot_interval=args.basin_snapshot_interval,
             fast_bridge=args.fast_bridge,
             self_reflect_interval=args.self_reflect_interval,
+            self_query_interval=args.self_query_interval,
             enable_attention_buffer=args.enable_attention_buffer,
         )
         runner = CultivationRunner(config)

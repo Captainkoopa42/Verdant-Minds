@@ -365,6 +365,8 @@ class CultivationRunner:
 
         checkpoint_path = Path(checkpoint)
         system = VerdantSystem.load_checkpoint(str(checkpoint_path))
+        if self.config.enable_attention_buffer:
+            system.attention_buffer.bypass = False
         seed = int(system.config.seed or 0)
         seed_dir = run_dir / f"seed_{seed}"
         seed_dir.mkdir(parents=True, exist_ok=True)

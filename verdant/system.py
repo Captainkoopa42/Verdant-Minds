@@ -1001,6 +1001,37 @@ class VerdantSystem:
             ),
         )
 
+    def self_query(self) -> Dict[str, Any] | None:
+        """Run a lightweight introspective probe over memory connectivity.
+
+        Returns a gap-style report compatible with cultivation runner telemetry.
+        """
+        concepts = self.memory_web.list_concepts()
+        if not concepts:
+            return None
+
+        concept = max(
+            concepts,
+            key=lambda label: int((self.memory_web.get_concept(label) or {}).get("access_count", 0)),
+        )
+        related = self.memory_web.retrieve_related(concept, depth=2, limit=5)
+        top_related = [str(name) for name, _ in related]
+        related_count = len(top_related)
+
+        concept_entry = self.memory_web.get_concept(concept) or {}
+        concept_stability = float(concept_entry.get("stability", 0.0) or 0.0)
+        is_gap = related_count <= 1 or concept_stability < 0.35
+
+        return {
+            "cycle": int(self._cycle_count),
+            "timestamp": float(time.time()),
+            "concept": str(concept),
+            "related_count": int(related_count),
+            "top_related": top_related,
+            "is_gap": bool(is_gap),
+            "stability": concept_stability,
+        }
+
     def _compute_basin_scan_interval(self) -> int:
         """Return the effective basin scan interval, adapting to graph size."""
         graph_size = int(self.memory_web.graph.number_of_nodes())

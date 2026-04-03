@@ -1,4 +1,4 @@
-"""Main cultivation runner for multi-seed Verdant v2 sessions."""
+"""Main cultivation runner for multi-seed Verdant sessions."""
 
 from __future__ import annotations
 
@@ -10,17 +10,16 @@ import json
 from pathlib import Path
 from typing import Iterable
 
-# TODO: migrate verdant_v2 imports to verdant for V3
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 import numpy as np
-from verdant_v2.ethomorphic_config import EthomorphicParams
-from verdant_v2.memory.basins import detect_basins
-from verdant_v2.memory.interventions import (
+from verdant.ethomorphic_config import EthomorphicParams
+from verdant.memory.basins import detect_basins
+from verdant.memory.interventions import (
     ablate_oldest_emergent_nodes,
     scramble_emergent_edges,
 )
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.system import VerdantConfig, VerdantSystem
 
 from cultivation.providers.anthropic import AnthropicProvider
 from cultivation.providers.base import Provider

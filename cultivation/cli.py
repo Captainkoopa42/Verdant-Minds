@@ -212,7 +212,8 @@ def main() -> None:
             print(f"cycle={item['cycle']:>3} phase={item['phase']} self_reflection={item['is_self_reflection']} input={item['input_text']}")
     if args.command == "query":
         try:
-            system = VerdantSystem.load_checkpoint(args.state)
+            system = VerdantSystem()
+            system.load_state(args.state)
             result = QueryEngine().query(system, args.question)
             print(format_query_result(result, pretty=True))
         except Exception as exc:

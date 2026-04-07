@@ -364,7 +364,8 @@ class CultivationRunner:
         run_dir.mkdir(parents=True, exist_ok=True)
 
         checkpoint_path = Path(checkpoint)
-        system = VerdantSystem.load_checkpoint(str(checkpoint_path))
+        system = VerdantSystem()
+        system.load_state(str(checkpoint_path))
         if self.config.enable_attention_buffer:
             system.attention_buffer.bypass = False
         seed = int(system.config.seed or 0)
@@ -539,7 +540,7 @@ class CultivationRunner:
                         force=(offset == additional_cycles - 1),
                     )
                     if self.config.checkpoint_interval > 0 and (offset + 1) % self.config.checkpoint_interval == 0:
-                        system.save_checkpoint(str(seed_dir / f"checkpoint_{cycle_idx + 1}.json"))
+                        system.save_state(str(seed_dir / f"checkpoint_{cycle_idx + 1}.json"))
 
             state_path = seed_dir / "state.json"
             system.save_state(str(state_path))
@@ -894,7 +895,7 @@ class CultivationRunner:
                         and (cycle_idx + 1) % self.config.checkpoint_interval == 0
                     ):
                         checkpoint_path = seed_dir / f"checkpoint_{cycle_idx + 1}.json"
-                        system.save_checkpoint(str(checkpoint_path))
+                        system.save_state(str(checkpoint_path))
 
             state_path = seed_dir / "state.json"
             system.save_state(str(state_path))

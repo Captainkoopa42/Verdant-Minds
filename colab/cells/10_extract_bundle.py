@@ -2,7 +2,7 @@
 import zipfile
 from pathlib import Path
 
-zip_path = Path("/content/verdant_v2_colab_bundle.zip")
+zip_path = Path("/content/verdant_colab_bundle.zip")
 extract_dir = Path("/content/verdant_data")
 extract_dir.mkdir(exist_ok=True)
 

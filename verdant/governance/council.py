@@ -9,10 +9,10 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, List, Optional
 
-from verdant_v2.governance.data_king import DataKing
-from verdant_v2.governance.ethics_king import EthicsKing
-from verdant_v2.governance.forefront_king import ForefrontKing
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.governance.data_king import DataKing
+from verdant.governance.ethics_king import EthicsKing
+from verdant.governance.forefront_king import ForefrontKing
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 class ThreeKingsCouncil:

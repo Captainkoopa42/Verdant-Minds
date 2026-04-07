@@ -6,7 +6,7 @@ python -V
 pip -V
 pip install -U pip setuptools wheel
 pip install -e ./ethomorphic
-pip install -e ./verdant_v2
+pip install -e ./verdant
 pip install -e ./cultivation
 pip install -U numpy scipy scikit-learn networkx matplotlib
 echo "Installation complete."

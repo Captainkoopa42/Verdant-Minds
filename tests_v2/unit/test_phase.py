@@ -1,9 +1,9 @@
-"""Unit tests for verdant_v2.thermodynamics.phase."""
+"""Unit tests for verdant.thermodynamics.phase."""
 
 from __future__ import annotations
 
 import pytest
-from verdant_v2.thermodynamics.phase import PhaseState, compute_phase, compute_t_g
+from verdant.thermodynamics.phase import PhaseState, compute_phase, compute_t_g
 
 
 class TestComputePhase:

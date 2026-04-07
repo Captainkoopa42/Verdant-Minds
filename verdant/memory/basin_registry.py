@@ -6,8 +6,8 @@ from dataclasses import asdict, dataclass, field
 import time
 from typing import Any
 
-from verdant_v2.memory.basins import BasinInfo
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import BasinInfo
+from verdant.memory.graph import MemoryWeb
 
 
 @dataclass

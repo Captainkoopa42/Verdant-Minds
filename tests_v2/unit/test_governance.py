@@ -1,13 +1,13 @@
-"""Unit tests for verdant_v2.governance."""
+"""Unit tests for verdant.governance."""
 
 from __future__ import annotations
 
 import pytest
-from verdant_v2.governance.data_king import DataKing
-from verdant_v2.governance.ethics_king import EthicsKing
-from verdant_v2.governance.forefront_king import ForefrontKing
-from verdant_v2.governance.council import ThreeKingsCouncil
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.governance.data_king import DataKing
+from verdant.governance.ethics_king import EthicsKing
+from verdant.governance.forefront_king import ForefrontKing
+from verdant.governance.council import ThreeKingsCouncil
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 def _make_chunk(**sections) -> CognitiveChunk:

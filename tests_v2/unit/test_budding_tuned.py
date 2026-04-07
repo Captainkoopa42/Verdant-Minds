@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from verdant_v2.memory.basins import BasinInfo
-from verdant_v2.memory.basin_dynamics import compute_basin_pressure, maybe_bud_basin
-from verdant_v2.memory.basin_state import BasinState
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import BasinInfo
+from verdant.memory.basin_dynamics import compute_basin_pressure, maybe_bud_basin
+from verdant.memory.basin_state import BasinState
+from verdant.memory.graph import MemoryWeb
 
 
 def test_budding_fires_with_tuned_thresholds_and_breakdown() -> None:

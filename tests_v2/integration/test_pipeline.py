@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.system import VerdantConfig, VerdantSystem
 
 
 @pytest.fixture

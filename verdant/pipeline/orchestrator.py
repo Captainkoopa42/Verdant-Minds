@@ -10,10 +10,10 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
-from verdant_v2.memory.basins import detect_basins
-from verdant_v2.memory.graph import MemoryWeb
-from verdant_v2.pipeline.basin_processor import BasinProcessor, proposal_to_dict
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.memory.basins import detect_basins
+from verdant.memory.graph import MemoryWeb
+from verdant.pipeline.basin_processor import BasinProcessor, proposal_to_dict
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 @runtime_checkable

@@ -11,9 +11,9 @@ import numpy as np
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
 from ethomorphic.bridge.emergence import assign_emergent_concept_mappings
-from verdant_v2.memory.basins import BasinInfo
-from verdant_v2.memory.basin_state import BasinState
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import BasinInfo
+from verdant.memory.basin_state import BasinState
+from verdant.memory.graph import MemoryWeb
 
 
 @dataclass

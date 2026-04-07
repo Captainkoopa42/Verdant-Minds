@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from cultivation.runner import CultivationRunner, RunnerConfig
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.system import VerdantConfig, VerdantSystem
 
 
 def test_coherence_metrics_accessible() -> None:

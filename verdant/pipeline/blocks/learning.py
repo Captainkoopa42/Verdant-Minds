@@ -13,8 +13,8 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
-from verdant_v2.ethomorphic_config import detect_and_create_emergent_concepts_with_params
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.ethomorphic_config import detect_and_create_emergent_concepts_with_params
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 class LearningBlock:

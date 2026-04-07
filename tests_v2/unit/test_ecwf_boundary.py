@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from verdant_v2.memory.basin_dynamics import BoundaryCandidate
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.memory.basin_dynamics import BoundaryCandidate
+from verdant.system import VerdantConfig, VerdantSystem
 
 
 def test_boundary_candidate_uses_ecwf_timestamp_and_metadata() -> None:

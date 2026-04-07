@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from cultivation.runner import CultivationRunner, RunnerConfig
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.system import VerdantConfig, VerdantSystem
 
 
 def _run_cycles(system: VerdantSystem, start: int, count: int) -> None:

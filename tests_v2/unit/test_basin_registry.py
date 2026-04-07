@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from verdant_v2.memory.basin_registry import BasinRegistry
+from verdant.memory.basin_registry import BasinRegistry
 
 
 def test_initial_detection() -> None:

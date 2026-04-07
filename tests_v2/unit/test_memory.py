@@ -1,9 +1,9 @@
-"""Unit tests for verdant_v2.memory.graph.MemoryWeb."""
+"""Unit tests for verdant.memory.graph.MemoryWeb."""
 
 from __future__ import annotations
 
 import pytest
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.graph import MemoryWeb
 
 
 class TestMemoryBackendProtocol:

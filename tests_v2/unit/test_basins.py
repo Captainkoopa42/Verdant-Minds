@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from verdant_v2.memory.basins import detect_basins
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import detect_basins
+from verdant.memory.graph import MemoryWeb
 
 
 def test_detect_basins_two_clusters_bridge() -> None:

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import pytest
-from verdant_v2.system import VerdantConfig, VerdantSystem
-from verdant_v2.thermodynamics.phase import compute_phase
+from verdant.system import VerdantConfig, VerdantSystem
+from verdant.thermodynamics.phase import compute_phase
 
 
 @pytest.fixture

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from verdant_v2.memory.basins import BasinInfo
-from verdant_v2.memory.basin_dynamics import find_ejection_candidates, maybe_bud_basin
-from verdant_v2.memory.basin_state import BasinState
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import BasinInfo
+from verdant.memory.basin_dynamics import find_ejection_candidates, maybe_bud_basin
+from verdant.memory.basin_state import BasinState
+from verdant.memory.graph import MemoryWeb
 
 
 def _make_basin(memory: MemoryWeb, nodes: list[str], *, density: float = 0.8) -> BasinInfo:

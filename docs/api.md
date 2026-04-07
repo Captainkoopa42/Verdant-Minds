@@ -33,7 +33,7 @@ Complete API documentation for the Unified Synthetic Mind cognitive architecture
 
 ### UnifiedSyntheticMind
 
-**Import**: `from usm import UnifiedSyntheticMind`
+**Import**: `from verdant.system import VerdantSystem as UnifiedSyntheticMind`
 
 The main entry point and orchestrator for the Unified Synthetic Mind system. This class manages all components and provides the primary API for interacting with the cognitive architecture.
 
@@ -52,7 +52,7 @@ UnifiedSyntheticMind(seed: int = 42, config: Optional[Dict[str, Any]] = None)
 
 **Example:**
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 # Basic initialization
 mind = UnifiedSyntheticMind()
@@ -990,7 +990,7 @@ logger.debug("Debug information")
 ### Pattern 1: Simple Query-Response
 
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 mind = UnifiedSyntheticMind()
 response = mind.get_response("What is machine learning?")
@@ -1002,7 +1002,7 @@ print(response)
 ### Pattern 2: Examine Processing
 
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 mind = UnifiedSyntheticMind()
 chunk = mind.process_input("Explain AI ethics")
@@ -1022,7 +1022,7 @@ print(f"Ethics: {ethics['evaluation']['status']}")
 ### Pattern 3: Memory Exploration
 
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 mind = UnifiedSyntheticMind()
 
@@ -1048,7 +1048,7 @@ activated = mind.memory_web.activate_concepts(
 ### Pattern 4: Ethical Analysis
 
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 mind = UnifiedSyntheticMind(config={"ethical_sensitivity": 0.8})
 
@@ -1073,7 +1073,7 @@ for principle, score in evaluation['principle_scores'].items():
 ### Pattern 5: Monitoring and Metrics
 
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 mind = UnifiedSyntheticMind()
 
@@ -1103,7 +1103,7 @@ print(f"Kings activity: {metrics['kings_metrics']}")
 ### Example
 
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 try:
     mind = UnifiedSyntheticMind(config={"invalid_key": 123})

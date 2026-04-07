@@ -5,8 +5,8 @@ import numpy as np
 from ethomorphic.bridge.bridge import EthomorphicBridge
 from ethomorphic.ecwf.core import ECWFCore
 
-from verdant_v2.ethomorphic_config import detect_and_create_emergent_concepts_with_params
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.ethomorphic_config import detect_and_create_emergent_concepts_with_params
+from verdant.memory.graph import MemoryWeb
 
 
 def test_emergent_connects_to_existing_emergent_with_shared_parents() -> None:

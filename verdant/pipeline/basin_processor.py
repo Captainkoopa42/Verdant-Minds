@@ -7,13 +7,13 @@ from typing import Dict, List, Optional
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
 
-from verdant_v2.memory.activation import spread_activation
-from verdant_v2.memory.graph import MemoryWeb
-from verdant_v2.pipeline.blocks.action import ActionBlock
-from verdant_v2.pipeline.blocks.ethics import EthicsBlock
-from verdant_v2.pipeline.blocks.memory import MemoryBlock
-from verdant_v2.pipeline.blocks.reasoning import ReasoningBlock
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.memory.activation import spread_activation
+from verdant.memory.graph import MemoryWeb
+from verdant.pipeline.blocks.action import ActionBlock
+from verdant.pipeline.blocks.ethics import EthicsBlock
+from verdant.pipeline.blocks.memory import MemoryBlock
+from verdant.pipeline.blocks.reasoning import ReasoningBlock
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 @dataclass

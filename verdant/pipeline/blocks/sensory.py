@@ -10,7 +10,7 @@ import re
 import time
 from typing import Any, Dict, List
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 # Simple lexicon-based sentiment
 _POSITIVE_WORDS = {"good", "great", "excellent", "wonderful", "happy", "love", "best", "beautiful", "enjoy", "helpful"}

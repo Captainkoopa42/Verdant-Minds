@@ -5,7 +5,7 @@ from pathlib import Path
 
 from analysis.tau_star import TauStarComputer
 from analysis.verdant_triangle_verification import run_sensitivity, verify_verdant_triangle
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.system import VerdantConfig, VerdantSystem
 
 
 def _write(path: Path, payload: dict) -> None:

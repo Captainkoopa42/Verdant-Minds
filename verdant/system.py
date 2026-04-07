@@ -31,19 +31,19 @@ from ethomorphic.bridge.emergence import (
 from ethomorphic.coherence.invariants import compute_coherence
 from ethomorphic.ecwf.core import ECWFCore
 
-# TODO: migrate verdant_v2 imports to verdant for V3
-from verdant_v2.ethomorphic_config import (
+# TODO: migrate verdant imports to verdant for V3
+from verdant.ethomorphic_config import (
     EthomorphicParams,
     apply_ecwf_params,
     configure_bridge_runtime,
     resolve_ethomorphic_params,
 )
-from verdant_v2.governance.council import ThreeKingsCouncil
-from verdant_v2.governance.data_king import DataKing
-from verdant_v2.governance.ethics_king import EthicsKing
-from verdant_v2.governance.forefront_king import ForefrontKing
-from verdant_v2.memory.basins import BasinInfo, detect_basins
-from verdant_v2.memory.basin_dynamics import (
+from verdant.governance.council import ThreeKingsCouncil
+from verdant.governance.data_king import DataKing
+from verdant.governance.ethics_king import EthicsKing
+from verdant.governance.forefront_king import ForefrontKing
+from verdant.memory.basins import BasinInfo, detect_basins
+from verdant.memory.basin_dynamics import (
     BoundaryCandidate,
     PressureBreakdown,
     find_ejection_candidates,
@@ -54,26 +54,26 @@ from verdant_v2.memory.basin_dynamics import (
     prune_basin_edges,
     regulate_density,
 )
-from verdant_v2.memory.bridge_acceleration import (
+from verdant.memory.bridge_acceleration import (
     get_fast_bridge_state,
     restore_fast_bridge_state,
     set_fast_bridge_enabled,
 )
-from verdant_v2.memory.basin_registry import BasinRegistry
-from verdant_v2.memory.basin_state import BasinState
-from verdant_v2.memory.graph import MemoryWeb
-from verdant_v2.pipeline.blocks.action import ActionBlock
-from verdant_v2.pipeline.blocks.communication import CommunicationBlock
-from verdant_v2.pipeline.blocks.ethics import EthicsBlock
-from verdant_v2.pipeline.blocks.language import LanguageBlock
-from verdant_v2.pipeline.blocks.learning import LearningBlock
-from verdant_v2.pipeline.blocks.memory import MemoryBlock
-from verdant_v2.pipeline.blocks.pattern import PatternRecognitionBlock
-from verdant_v2.pipeline.blocks.reasoning import ReasoningBlock
-from verdant_v2.pipeline.blocks.sensory import SensoryInputBlock
-from verdant_v2.pipeline.chunk import CognitiveChunk
-from verdant_v2.pipeline.orchestrator import PipelineOrchestrator
-from verdant_v2.thermodynamics.phase import compute_phase, compute_t_g
+from verdant.memory.basin_registry import BasinRegistry
+from verdant.memory.basin_state import BasinState
+from verdant.memory.graph import MemoryWeb
+from verdant.pipeline.blocks.action import ActionBlock
+from verdant.pipeline.blocks.communication import CommunicationBlock
+from verdant.pipeline.blocks.ethics import EthicsBlock
+from verdant.pipeline.blocks.language import LanguageBlock
+from verdant.pipeline.blocks.learning import LearningBlock
+from verdant.pipeline.blocks.memory import MemoryBlock
+from verdant.pipeline.blocks.pattern import PatternRecognitionBlock
+from verdant.pipeline.blocks.reasoning import ReasoningBlock
+from verdant.pipeline.blocks.sensory import SensoryInputBlock
+from verdant.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.orchestrator import PipelineOrchestrator
+from verdant.thermodynamics.phase import compute_phase, compute_t_g
 
 _ATTENTION_STOPWORDS: set[str] = {
     "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
@@ -1142,7 +1142,7 @@ class VerdantSystem:
     @classmethod
     def load_checkpoint(cls, path: str) -> "VerdantSystem":
         """Restore a new system instance from *path*."""
-        from verdant_v2.memory.persistence import load_snapshot
+        from verdant.memory.persistence import load_snapshot
 
         state = load_snapshot(path)
         config_data = dict((state.get("extra", {}) or {}).get("config", {}))
@@ -1156,7 +1156,7 @@ class VerdantSystem:
 
     def load_state(self, path: str) -> None:
         """Load system state from *path*."""
-        from verdant_v2.memory.persistence import load_snapshot
+        from verdant.memory.persistence import load_snapshot
 
         state = load_snapshot(path)
         self.memory_web = MemoryWeb.from_state_dict(state["memory_web"])

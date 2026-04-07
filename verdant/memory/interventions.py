@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 from typing import Any
 
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.graph import MemoryWeb
 
 
 def _node_timestamp(memory_web: MemoryWeb, node: str) -> float:

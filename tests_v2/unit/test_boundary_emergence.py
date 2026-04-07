@@ -5,9 +5,9 @@ from __future__ import annotations
 from ethomorphic.bridge.bridge import EthomorphicBridge
 from ethomorphic.ecwf.core import ECWFCore
 
-from verdant_v2.memory.basins import BasinInfo
-from verdant_v2.memory.basin_dynamics import maybe_create_boundary_emergents
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import BasinInfo
+from verdant.memory.basin_dynamics import maybe_create_boundary_emergents
+from verdant.memory.graph import MemoryWeb
 
 
 def test_boundary_emergence_and_cooldown() -> None:

@@ -8,7 +8,7 @@ from typing import List, Tuple
 
 import networkx as nx
 
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.graph import MemoryWeb
 
 
 @dataclass

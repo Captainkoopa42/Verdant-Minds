@@ -12,11 +12,11 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from ethomorphic.bridge.bridge import EthomorphicBridge
-from verdant_v2.ethomorphic_config import detect_and_create_emergent_concepts_with_params
-from verdant_v2.memory.activation import spread_activation
-from verdant_v2.memory.graph import MemoryWeb
-from verdant_v2.pipeline.chunk import CognitiveChunk
-from verdant_v2.thermodynamics.phase import PhaseState, compute_phase
+from verdant.ethomorphic_config import detect_and_create_emergent_concepts_with_params
+from verdant.memory.activation import spread_activation
+from verdant.memory.graph import MemoryWeb
+from verdant.pipeline.chunk import CognitiveChunk
+from verdant.thermodynamics.phase import PhaseState, compute_phase
 
 
 class MemoryBlock:

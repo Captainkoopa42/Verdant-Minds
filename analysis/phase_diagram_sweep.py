@@ -16,9 +16,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from cultivation.runner import CultivationRunner, RunnerConfig
-# TODO: migrate verdant_v2 imports to verdant for V3
-from verdant_v2 import system as verdant_system
-from verdant_v2.ethomorphic_config import EthomorphicParams, SWEEPABILITY
+# TODO: migrate verdant imports to verdant for V3
+from verdant import system as verdant_system
+from verdant.ethomorphic_config import EthomorphicParams, SWEEPABILITY
 
 from analysis.detect_onset import detect_onset
 from analysis.seed_sets import get_seed_set

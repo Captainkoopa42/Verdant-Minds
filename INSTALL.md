@@ -114,20 +114,20 @@ After installation, verify that everything works:
 
 ```bash
 # Check version
-python -c "import usm; print('Verdant-Minds installed successfully!')"
+python -c "import verdant; print('Verdant-Minds installed successfully!')"
 
 # Run the interactive CLI
 verdant-minds
 # or
-usm
+verdant
 
 # Run with Python module
-python -m usm
+python -m verdant
 ```
 
 ### Expected Output
 
-When you run `verdant-minds` or `usm`, you should see:
+When you run `verdant-minds` or `verdant`, you should see:
 
 ```
 Unified Synthetic Mind initialized. Type 'exit' to quit.
@@ -143,7 +143,7 @@ If you installed with `[dev]` extras:
 pytest
 
 # Run with coverage
-pytest --cov=usm --cov-report=html
+pytest --cov=verdant --cov-report=html
 
 # Run specific test file
 pytest tests/test_memory.py
@@ -214,12 +214,12 @@ After installation, you'll have:
 ### Console Commands
 
 - `verdant-minds` - Main CLI entry point
-- `usm` - Alias for verdant-minds
+- `verdant` - Alias for verdant-minds
 
 ### Python Package
 
 ```python
-from usm import UnifiedSyntheticMind
+from verdant.system import VerdantSystem as UnifiedSyntheticMind
 
 # Initialize the cognitive system
 mind = UnifiedSyntheticMind()
@@ -233,7 +233,7 @@ print(response)
 
 ```
 verdant-minds/
-├── usm/                      # Main package
+├── verdant/                      # Main package
 │   ├── __init__.py
 │   └── __main__.py          # CLI entry point
 ├── Verdant Source Codes/    # Core cognitive architecture

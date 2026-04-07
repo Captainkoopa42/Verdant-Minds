@@ -15,7 +15,7 @@ Alternatively, paste individual cells from `cells/` in order.
 |------|---------|-------|
 | 01 | Clone repo, checkout V2 | 10s |
 | 02 | Create workspace symlink | 1s |
-| 03 | Install ethomorphic + verdant_v2 + cultivation + deps | 30s |
+| 03 | Install ethomorphic + verdant + cultivation + deps | 30s |
 | 04 | Run V2 test suite | 30s |
 | 05 | Run baseline + ablation + scramble (80 cycles × 20 seeds × 3) | 10min |
 | 06 | Compare intervention runs | 30s |

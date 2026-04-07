@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "pydantic>=2,<3",
-  "verdant_v2 @ file:///workspace/Verdant-Minds/verdant_v2",
+  "verdant @ file:///workspace/Verdant-Minds/verdant",
   "ethomorphic @ file:///workspace/Verdant-Minds/ethomorphic",
 ]
 

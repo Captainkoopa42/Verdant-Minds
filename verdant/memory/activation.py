@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Tuple
 
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.graph import MemoryWeb
 
 
 def spread_activation(

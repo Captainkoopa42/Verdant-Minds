@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 import numpy as np
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 # ---------------------------------------------------------------------------

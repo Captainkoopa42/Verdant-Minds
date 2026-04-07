@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 _PRINCIPLES: Dict[str, Dict[str, Any]] = {
     "Non-Maleficence": {"weight": 0.9, "indicators": [

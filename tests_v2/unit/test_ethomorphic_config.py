@@ -8,8 +8,8 @@ import time
 
 import numpy as np
 
-from verdant_v2.ethomorphic_config import EthomorphicParams, SWEEPABILITY, params_report_rows
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.ethomorphic_config import EthomorphicParams, SWEEPABILITY, params_report_rows
+from verdant.system import VerdantConfig, VerdantSystem
 
 
 @contextmanager

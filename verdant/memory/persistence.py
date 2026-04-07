@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.graph import MemoryWeb
 
 
 def save_snapshot(

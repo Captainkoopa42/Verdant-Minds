@@ -9,8 +9,8 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, List
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
-from verdant_v2.thermodynamics.phase import compute_phase
+from verdant.pipeline.chunk import CognitiveChunk
+from verdant.thermodynamics.phase import compute_phase
 
 
 class ForefrontKing:

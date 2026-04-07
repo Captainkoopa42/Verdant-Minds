@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from verdant_v2.memory.basins import BasinInfo
-from verdant_v2.memory.basin_dynamics import prune_basin_edges
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import BasinInfo
+from verdant.memory.basin_dynamics import prune_basin_edges
+from verdant.memory.graph import MemoryWeb
 
 
 def _make_two_community_web() -> tuple[MemoryWeb, BasinInfo, set[tuple[str, str]]]:

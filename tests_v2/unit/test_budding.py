@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import networkx as nx
 
-from verdant_v2.memory.basins import BasinInfo
-from verdant_v2.memory.basin_dynamics import maybe_bud_basin
-from verdant_v2.memory.basin_state import BasinState
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basins import BasinInfo
+from verdant.memory.basin_dynamics import maybe_bud_basin
+from verdant.memory.basin_state import BasinState
+from verdant.memory.graph import MemoryWeb
 
 
 def test_budding_creates_new_basin_and_preserves_parent_connectivity() -> None:

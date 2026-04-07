@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, List
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 class CommunicationBlock:

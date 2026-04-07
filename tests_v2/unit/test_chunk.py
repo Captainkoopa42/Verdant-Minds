@@ -1,9 +1,9 @@
-"""Unit tests for verdant_v2.pipeline.chunk.CognitiveChunk."""
+"""Unit tests for verdant.pipeline.chunk.CognitiveChunk."""
 
 from __future__ import annotations
 
 import pytest
-from verdant_v2.pipeline.chunk import CognitiveChunk, ProcessingStep
+from verdant.pipeline.chunk import CognitiveChunk, ProcessingStep
 
 
 class TestSections:

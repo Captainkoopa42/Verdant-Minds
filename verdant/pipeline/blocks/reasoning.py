@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 class ReasoningBlock:

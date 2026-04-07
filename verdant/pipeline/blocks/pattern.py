@@ -11,7 +11,7 @@ import re
 import time
 from typing import Any, Dict, List, Set, Tuple
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 _STOPWORDS: Set[str] = {
     "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",

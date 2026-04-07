@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "verdant_v2"
+name = "verdant"
 version = "0.1.0"
 description = "Verdant v2 cognitive architecture"
 requires-python = ">=3.10"
@@ -19,4 +19,4 @@ dev = ["pytest>=7.0"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["verdant_v2*"]
+include = ["verdant*"]

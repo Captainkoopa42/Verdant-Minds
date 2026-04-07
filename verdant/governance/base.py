@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Protocol, runtime_checkable
 
-from verdant_v2.pipeline.chunk import CognitiveChunk
+from verdant.pipeline.chunk import CognitiveChunk
 
 
 @runtime_checkable

@@ -1,7 +1,7 @@
 """MemoryWeb — associative memory graph implementing the ethomorphic MemoryBackend.
 
 Internally uses NetworkX for graph storage.  This is the **only** module
-in verdant_v2/ that imports NetworkX.
+in verdant/ that imports NetworkX.
 """
 
 from __future__ import annotations

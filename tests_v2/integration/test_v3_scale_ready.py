@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from cultivation.runner import CultivationRunner, RunnerConfig
-from verdant_v2.system import VerdantSystem
+from verdant.system import VerdantSystem
 
 
 def test_daughter_persistence_under_detection(tmp_path: Path) -> None:

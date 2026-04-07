@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from verdant_v2.pipeline.blocks.pattern import PatternRecognitionBlock
+from verdant.pipeline.blocks.pattern import PatternRecognitionBlock
 
 
 def test_extract_keywords_keeps_natural_language_content_words() -> None:

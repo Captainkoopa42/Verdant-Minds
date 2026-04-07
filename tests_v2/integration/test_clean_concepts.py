@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from cultivation.providers.local import LocalProvider
-from verdant_v2.system import VerdantConfig, VerdantSystem
+from verdant.system import VerdantConfig, VerdantSystem
 
 
 NUMERIC_RE = re.compile(r"^\d+$")

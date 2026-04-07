@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from verdant_v2.memory.basin_dynamics import regulate_density
-from verdant_v2.memory.graph import MemoryWeb
+from verdant.memory.basin_dynamics import regulate_density
+from verdant.memory.graph import MemoryWeb
 
 
 def test_regulate_density_prunes_weakest_edges_to_target_ratio() -> None:

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from verdant_v2.memory.graph import MemoryWeb
-from verdant_v2.memory.interventions import (
+from verdant.memory.graph import MemoryWeb
+from verdant.memory.interventions import (
     ablate_oldest_emergent_nodes,
     get_emergent_nodes_sorted_by_age,
     scramble_emergent_edges,

@@ -3,8 +3,8 @@ from __future__ import annotations
 from ethomorphic.bridge.bridge import EthomorphicBridge
 from ethomorphic.ecwf.core import ECWFCore
 
-from verdant_v2.memory.graph import MemoryWeb
-from verdant_v2.pipeline.blocks.memory import MemoryBlock
+from verdant.memory.graph import MemoryWeb
+from verdant.pipeline.blocks.memory import MemoryBlock
 
 
 def _make_block(*, seeded: set[str] | None = None, min_len: int = 3, filter_numeric: bool = True) -> MemoryBlock:

@@ -17,6 +17,8 @@ import json
 import math
 from typing import Any, Dict, List, Optional
 
+from verdant.adapters.base import Adapter, InputEvent
+
 import numpy as np
 from pydantic import BaseModel, Field
 
@@ -252,6 +254,7 @@ class VerdantSystem:
             "violation_rate": None,
             "alpha_critical_estimate": None,
         }
+        self.adapters: List[Adapter] = []
 
         # Knowledge initialization
         if self.config.initialize_knowledge:
@@ -260,6 +263,17 @@ class VerdantSystem:
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
+
+    def register_adapter(self, adapter: Adapter) -> None:
+        """Register an input adapter."""
+        self.adapters.append(adapter)
+
+    def collect_inputs(self) -> List[InputEvent]:
+        """Collect pending input events from all registered adapters."""
+        events: List[InputEvent] = []
+        for adapter in self.adapters:
+            events.extend(adapter.poll())
+        return events
 
     def process_input(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
         """Process input through the attention buffer and full pipeline."""

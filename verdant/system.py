@@ -62,6 +62,7 @@ from verdant.memory.bridge_acceleration import (
 from verdant.memory.basin_registry import BasinRegistry
 from verdant.memory.basin_state import BasinState
 from verdant.memory.graph import MemoryWeb
+from verdant.memory.persistence import export_bundle, load_state as load_state_json, save_state as save_state_json
 from verdant.pipeline.blocks.action import ActionBlock
 from verdant.pipeline.blocks.communication import CommunicationBlock
 from verdant.pipeline.blocks.ethics import EthicsBlock
@@ -275,6 +276,39 @@ class VerdantSystem:
             events.extend(adapter.poll())
         return events
 
+    def process_cycle(self, events: List[InputEvent]) -> List[CognitiveChunk]:
+        """Process one external event batch through the canonical runtime path."""
+        chunks: List[CognitiveChunk] = []
+        for event in events:
+            text = ""
+            if event.type == "text":
+                text = str(event.payload.get("text", ""))
+            else:
+                text = json.dumps(event.payload, default=str)
+            metadata = {"event_type": event.type, "source": event.source, "timestamp": event.timestamp}
+            chunks.append(self.process_input(text=text, metadata=metadata))
+        return chunks
+
+    def run_cycle(self) -> List[CognitiveChunk]:
+        """Run one full collect→process→memory/update→emit step."""
+        events = self.collect_inputs()
+        return self.process_cycle(events)
+
+    def run_loop(self, *, interval: float = 0.5, max_cycles: int | None = None, checkpoint_dir: str | None = None) -> None:
+        """Run continuous daemon loop until max_cycles is reached (or forever)."""
+        if checkpoint_dir:
+            from pathlib import Path
+
+            Path(checkpoint_dir).mkdir(parents=True, exist_ok=True)
+        cycle = 0
+        while max_cycles is None or cycle < max_cycles:
+            self.run_cycle()
+            cycle += 1
+            if checkpoint_dir and self.config.checkpoint_interval > 0 and cycle % self.config.checkpoint_interval == 0:
+                ts = int(time.time())
+                self.save_state(f"{checkpoint_dir}/checkpoint_{ts}.json")
+            time.sleep(max(0.0, interval))
+
     def process_input(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
         """Process input through the attention buffer and full pipeline."""
         t_g = self._current_t_g()
@@ -324,7 +358,7 @@ class VerdantSystem:
         )
 
         # Run pipeline
-        chunk = self.pipeline.run(chunk)
+        chunk = self.pipeline.process(chunk)
 
         # Compute coherence invariants
         chunk = self._compute_coherence(chunk)
@@ -1152,13 +1186,38 @@ class VerdantSystem:
 
     def save_state(self, path: str) -> None:
         """Save full system state to *path*."""
-        self.save_checkpoint(path)
+        state: Dict[str, Any] = {
+            "version": 4,
+            "memory_web": self.memory_web.to_state_dict(),
+            "bridge": self.bridge.to_state_dict(),
+            "ecwf": self.ecwf.to_state_dict(),
+            "metrics": self._metrics,
+            "kings": {
+                "data_king": self.data_king.to_state_dict(),
+                "forefront_king": self.forefront_king.to_state_dict(),
+                "ethics_king": self.ethics_king.to_state_dict(),
+            },
+            "extra": {
+                "t_g": self._t_g,
+                "cycle_count": self._cycle_count,
+                "entropy_history": self._entropy_history[-50:],
+                "last_basins": [b.__dict__ for b in self._last_basins],
+                "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
+                "next_basin_id": self._next_basin_id,
+                "last_boundary_cycles": {"|".join(sorted(list(k))): int(v) for k, v in self._last_boundary_cycles.items()},
+                "dynamics_metrics": self._dynamics_metrics,
+                "last_coherence_metrics": self._last_coherence_metrics,
+                "config": self.config.model_dump(),
+                "basin_registry": self._basin_registry.to_dict(),
+                "bridge_acceleration": get_fast_bridge_state(self.bridge),
+            },
+        }
+        self._prune_state_for_save(state)
+        save_state_json(path, state)
 
     def load_state(self, path: str) -> None:
         """Load system state from *path*."""
-        from verdant.memory.persistence import load_snapshot
-
-        state = load_snapshot(path)
+        state = load_state_json(path)
         self.memory_web = MemoryWeb.from_state_dict(state["memory_web"])
         self.ecwf = ECWFCore.from_state_dict(state["ecwf"])
         self.bridge = EthomorphicBridge(
@@ -1272,6 +1331,24 @@ class VerdantSystem:
         self._learning.bridge = self.bridge
         self.pipeline.memory_web = self.memory_web
         self.pipeline.bridge = self.bridge
+
+    def export_bundle(self, path: str) -> None:
+        export_bundle(
+            path,
+            memory_graph=self.memory_web.to_state_dict(),
+            basins={
+                "last_basins": [b.__dict__ for b in self._last_basins],
+                "registry": self._basin_registry.to_dict(),
+                "states": {k: asdict(v) for k, v in self._basin_states.items()},
+            },
+            ecwf_state=self.ecwf.to_state_dict(),
+            telemetry={
+                "metrics": self._metrics,
+                "coherence": self._last_coherence_metrics,
+                "dynamics": self._dynamics_metrics,
+                "cycle_count": self._cycle_count,
+            },
+        )
 
     @staticmethod
     def _serialize_numpy_state(state: tuple[Any, ...]) -> dict[str, Any]:

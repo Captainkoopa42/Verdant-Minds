@@ -210,3 +210,7 @@ class PipelineOrchestrator:
         metrics["block_timings"] = timings
         chunk.update_section("processing_metrics_section", metrics)
         return chunk
+
+    def process(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Alias for canonical process entrypoint."""
+        return self.run(chunk)

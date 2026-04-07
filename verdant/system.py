@@ -13,9 +13,11 @@ from __future__ import annotations
 
 import time
 from dataclasses import asdict
+from datetime import datetime, timezone
 import json
 import math
 from typing import Any, Dict, List, Optional
+import warnings
 
 from verdant.adapters.base import Adapter, InputEvent
 
@@ -74,6 +76,7 @@ from verdant.pipeline.blocks.reasoning import ReasoningBlock
 from verdant.pipeline.blocks.sensory import SensoryInputBlock
 from verdant.pipeline.chunk import CognitiveChunk
 from verdant.pipeline.orchestrator import PipelineOrchestrator
+from verdant.output import OutputAdapter, OutputBus, OutputEvent
 from verdant.thermodynamics.phase import compute_phase, compute_t_g
 
 _ATTENTION_STOPWORDS: set[str] = {
@@ -256,6 +259,7 @@ class VerdantSystem:
             "alpha_critical_estimate": None,
         }
         self.adapters: List[Adapter] = []
+        self.output_bus = OutputBus()
 
         # Knowledge initialization
         if self.config.initialize_knowledge:
@@ -269,6 +273,10 @@ class VerdantSystem:
         """Register an input adapter."""
         self.adapters.append(adapter)
 
+    def register_output_adapter(self, adapter: OutputAdapter) -> None:
+        """Register an output adapter."""
+        self.output_bus.register(adapter)
+
     def collect_inputs(self) -> List[InputEvent]:
         """Collect pending input events from all registered adapters."""
         events: List[InputEvent] = []
@@ -279,6 +287,7 @@ class VerdantSystem:
     def process_cycle(self, events: List[InputEvent]) -> List[CognitiveChunk]:
         """Process one external event batch through the canonical runtime path."""
         chunks: List[CognitiveChunk] = []
+        output_events: List[OutputEvent] = []
         for event in events:
             text = ""
             if event.type == "text":
@@ -286,8 +295,48 @@ class VerdantSystem:
             else:
                 text = json.dumps(event.payload, default=str)
             metadata = {"event_type": event.type, "source": event.source, "timestamp": event.timestamp}
-            chunks.append(self.process_input(text=text, metadata=metadata))
+            chunk = self.process_input(text=text, metadata=metadata)
+            chunks.append(chunk)
+            output_events.extend(self._extract_output_events(chunk))
+        self.output_bus.emit_all(output_events)
         return chunks
+
+    def _extract_output_events(self, chunk: CognitiveChunk) -> List[OutputEvent]:
+        timestamp = datetime.now(timezone.utc).isoformat()
+        output_events: list[OutputEvent] = []
+        language = chunk.get_section_content("language_processing_section") or {}
+        generated_response = language.get("generated_response")
+        if isinstance(generated_response, str) and generated_response:
+            output_events.append(OutputEvent(
+                type="speech",
+                payload=generated_response,
+                source="language_processing",
+                timestamp=timestamp,
+            ))
+
+        action = chunk.get_section_content("action_selection_section") or {}
+        selected_action = action.get("selected_action")
+        if selected_action:
+            output_events.append(OutputEvent(
+                type="action",
+                payload={
+                    "selected_action": selected_action,
+                    "confidence": float(action.get("action_confidence", 0.0)),
+                    "parameters": action.get("action_parameters", {}),
+                },
+                source="action_selection",
+                timestamp=timestamp,
+            ))
+
+        metrics = chunk.get_section_content("processing_metrics_section") or {}
+        if metrics:
+            output_events.append(OutputEvent(
+                type="telemetry",
+                payload=dict(metrics),
+                source="processing_metrics",
+                timestamp=timestamp,
+            ))
+        return output_events
 
     def run_cycle(self) -> List[CognitiveChunk]:
         """Run one full collect→process→memory/update→emit step."""
@@ -1131,54 +1180,22 @@ class VerdantSystem:
 
     def save_checkpoint(self, path: str) -> None:
         """Save a complete system checkpoint to *path*."""
-        if self.config.checkpoint_format != "json":
-            raise NotImplementedError("checkpoint_format='msgpack' is not implemented yet")
-
-        state: Dict[str, Any] = {
-            "version": 2,
-            "memory_web": self.memory_web.to_state_dict(),
-            "bridge": self.bridge.to_state_dict(),
-            "ecwf": self.ecwf.to_state_dict(),
-            "metrics": self._metrics,
-            "kings": {
-                "data_king": self.data_king.to_state_dict(),
-                "forefront_king": self.forefront_king.to_state_dict(),
-                "ethics_king": self.ethics_king.to_state_dict(),
-            },
-            "extra": {
-                "t_g": self._t_g,
-                "cycle_count": self._cycle_count,
-                "entropy_history": self._entropy_history[-50:],
-                "last_basins": [b.__dict__ for b in self._last_basins],
-                "basin_scan_interval": self.config.basin_scan_interval,
-                "basin_scan_k": self.config.basin_scan_k,
-                "basin_states": {k: asdict(v) for k, v in self._basin_states.items()},
-                "next_basin_id": self._next_basin_id,
-                "last_boundary_cycles": {"|".join(sorted(list(k))): int(v) for k, v in self._last_boundary_cycles.items()},
-                "dynamics_metrics": self._dynamics_metrics,
-                "last_coherence_metrics": self._last_coherence_metrics,
-                "config": self.config.model_dump(),
-                "basin_registry": self._basin_registry.to_dict(),
-                "bridge_acceleration": get_fast_bridge_state(self.bridge),
-                "numpy_random_state": self._serialize_numpy_state(np.random.get_state()),
-                "attention_buffer": {
-                    "items": [item.to_dict() for item in self.attention_buffer.items],
-                    "history_count": len(self.attention_buffer.history),
-                    "silent_count": self.attention_buffer.silent_count,
-                    "bypass": self.attention_buffer.bypass,
-                },
-            },
-        }
-        self._prune_state_for_save(state)
-        with open(path, "w", encoding="utf-8") as handle:
-            json.dump(state, handle, separators=(",", ":"), default=str)
+        warnings.warn(
+            "save_checkpoint is deprecated; use save_state instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.save_state(path)
 
     @classmethod
     def load_checkpoint(cls, path: str) -> "VerdantSystem":
         """Restore a new system instance from *path*."""
-        from verdant.memory.persistence import load_snapshot
-
-        state = load_snapshot(path)
+        warnings.warn(
+            "load_checkpoint is deprecated; use load_state instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        state = load_state_json(path)
         config_data = dict((state.get("extra", {}) or {}).get("config", {}))
         system = cls(VerdantConfig(**config_data) if config_data else VerdantConfig())
         system.load_state(path)

@@ -10,12 +10,13 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import shutil
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from verdant.language.native_generator import NativeGenerator
+from verdant.system import VerdantSystem
 
 AKIKU_CHARACTER_PROMPT = (
     "You are Akiku, the emergent inner voice of Verdant Minds. "
@@ -62,6 +63,7 @@ class VerdantBridge:
         self.tg_distress_threshold = tg_distress_threshold
         self.use_llm = use_llm
         self.llm_model = llm_model
+        self.system = VerdantSystem()
         self.state = BridgeState()
 
     async def run(self) -> None:
@@ -117,10 +119,10 @@ class VerdantBridge:
 
         self_reflection_input = _str_or_none(entry.get("self_reflection_input")) or _str_or_none(entry.get("input_text"))
 
-        if self.use_llm and self_reflection_input:
-            llm_text = await self._synthesize_with_local_llm(self_reflection_input, intents)
-            if llm_text:
-                return f"🧠 {llm_text}"
+        if self_reflection_input:
+            native_text = await self.speak(self_reflection_input, {"intents": intents})
+            if native_text:
+                return f"🧠 {native_text}"
 
         return " | ".join(intents)
 
@@ -136,32 +138,15 @@ class VerdantBridge:
                 intents.append(f"Emergent activation: {node_name}={activation:.2f}.")
         return intents
 
-    async def _synthesize_with_local_llm(self, reflection: str, intents: list[str]) -> str | None:
-        if not shutil.which("ollama"):
-            return None
-
-        prompt = (
-            f"{AKIKU_CHARACTER_PROMPT}\n\n"
-            f"Telemetry intents:\n- "
-            + "\n- ".join(intents)
-            + "\n\nRaw self_reflection_input:\n"
-            + reflection
-            + "\n\nRespond with one concise first-person line."
-        )
-
-        proc = await asyncio.create_subprocess_exec(
-            "ollama",
-            "run",
-            self.llm_model,
-            prompt,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, _stderr = await proc.communicate()
-        if proc.returncode != 0:
-            return None
-        text = stdout.decode("utf-8", errors="ignore").strip()
-        return text or None
+    async def speak(self, text, context):
+        if not hasattr(self, 'generator'):
+            self.generator = NativeGenerator(self.system)
+        
+        result = self.generator.generate()
+        if result["confidence"] < 0.6:
+            # Safe fallback
+            return f"[Native confidence low — using backup] {result['text']}"
+        return result["text"]
 
 
 def _extract_emergent_activations(entry: dict[str, Any]) -> dict[str, float]:

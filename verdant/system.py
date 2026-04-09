@@ -914,6 +914,13 @@ class VerdantSystem:
             "dimension_mappings": mapping_count,
         }
 
+    def get_current_state(self):
+        return {
+            "current_basin": getattr(self.memory_web, "current_basin", "unknown"),
+            "t_g": getattr(self.ecwf, "t_g", 0.5),
+            "recent_emergents": list(getattr(self.memory_web, "emergent_nodes", {}).keys())[-5:],
+        }
+
     def get_metrics(self) -> Dict[str, Any]:
         """Return current system metrics."""
         return {

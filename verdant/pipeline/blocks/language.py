@@ -7,15 +7,11 @@ Writes: ``language_processing_section``
 
 from __future__ import annotations
 
-import json
-import subprocess
 import time
-from collections import deque
-from typing import Any, Deque, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 import numpy as np
 
-from verdant.pipeline.language.thermal_bridge import map_runtime_generation_controls
 from verdant.pipeline.chunk import CognitiveChunk
 
 
@@ -119,96 +115,9 @@ class TemplateBackend:
 # ---------------------------------------------------------------------------
 
 class LLMBackend:
-    """Ollama-backed LLM response generation."""
-
-    _CORPORATE_FLUFF_MARKERS = (
-        "peppa pig",
-        "corporate synergy",
-        "stakeholder alignment",
-        "value proposition",
-        "brand uplift",
-    )
-
-    def __init__(self, model: str = "llama3", timeout_s: float = 30.0) -> None:
-        self.model = model
-        self.timeout_s = max(5.0, float(timeout_s))
-
     def generate(self, context: LanguageContext) -> str:
-        controls = map_runtime_generation_controls(
-            t_g=float(context.extra.get("glass_transition_temp", 0.5725)),
-            f_c=context.cognitive_free_energy,
-            entropy=context.wave_entropy,
-        )
-        h1_ok = bool(context.extra.get("h1_triangle_valid", True))
-        hci = float(context.extra.get("housed_contradiction_index", 0.0))
-        thermo_cost_penalty = 0.0 if h1_ok else (1.0 + max(0.0, 0.5 - hci))
-
-        prompt = self._build_prompt(context, controls, thermo_cost_penalty)
-        response = self._run_ollama(prompt, controls, timeout=self.timeout_s)
-        if self._needs_regeneration(response, h1_ok):
-            regen_prompt = (
-                prompt
-                + "\n\nREGENERATION CONSTRAINT:\n"
-                "Prior output violated coherence constraints. "
-                "Eliminate corporate fluff and satisfy U = (M + -M)^i explicitly."
-            )
-            response = self._run_ollama(regen_prompt, controls, timeout=self.timeout_s + 10.0)
-        return response.strip()
-
-    def _build_prompt(self, context: LanguageContext, controls: Dict[str, Any], thermo_cost_penalty: float) -> str:
-        reflection_state = context.reflection_loop_state[-25:]
-        reflection_blob = json.dumps(reflection_state, ensure_ascii=False)
-        key_terms = ", ".join(context.key_concepts[:8]) if context.key_concepts else "identity, coherence, contradiction"
-        return (
-            "You are Verdant's internal language emergence module.\n"
-            "Produce one concise response grounded in current thermodynamic cognition.\n"
-            "Constraint: satisfy Soul Equation U = (M + -M)^i via explicit contradiction-housing.\n"
-            f"Action: {context.selected_action}\n"
-            f"Phase: {context.phase_state}\n"
-            f"Ethical tone: {context.ethical_tone or 'balanced'}\n"
-            f"Wave entropy: {context.wave_entropy:.4f}\n"
-            f"Cognitive Free Energy F_c: {context.cognitive_free_energy:.4f}\n"
-            f"Thermo controls: temperature={controls['temperature']:.4f}, top_p={controls['top_p']:.4f}, "
-            f"frequency_penalty={controls['frequency_penalty']:.4f}, phase={controls['phase']}\n"
-            f"Thermo-cost penalty: {thermo_cost_penalty:.4f}\n"
-            f"Key concepts: {key_terms}\n"
-            f"Reasoning summary: {context.reasoning_summary or 'none'}\n"
-            "25-cycle reflection loop state (JSON):\n"
-            f"{reflection_blob}\n"
-            "Return only the response text."
-        )
-
-    def _run_ollama(self, prompt: str, controls: Dict[str, Any], *, timeout: float) -> str:
-        temp = f"{float(controls['temperature']):.4f}"
-        top_p = f"{float(controls['top_p']):.4f}"
-        freq = f"{float(controls['frequency_penalty']):.4f}"
-        primary = [
-            "ollama",
-            "run",
-            self.model,
-            "--temperature",
-            temp,
-            "--top-p",
-            top_p,
-            "--frequency-penalty",
-            freq,
-            prompt,
-        ]
-        fallback = ["ollama", "run", self.model, prompt]
-        try:
-            proc = subprocess.run(primary, check=False, capture_output=True, text=True, timeout=timeout)
-            if proc.returncode == 0 and proc.stdout.strip():
-                return proc.stdout.strip()
-        except Exception:
-            pass
-        proc2 = subprocess.run(fallback, check=True, capture_output=True, text=True, timeout=timeout)
-        return proc2.stdout.strip()
-
-    def _needs_regeneration(self, text: str, h1_ok: bool) -> bool:
-        lowered = text.lower()
-        fluff = any(marker in lowered for marker in self._CORPORATE_FLUFF_MARKERS)
-        soul_missing = "(m + -m)^i" not in lowered and "contradiction" not in lowered
-        return fluff or soul_missing or (not h1_ok)
+        """Disabled in core pipeline; reserved for external teacher workflows."""
+        raise NotImplementedError("LLMBackend is disabled in core pipeline; use verdant.learning.LLMTeacher.")
 
 
 # ---------------------------------------------------------------------------
@@ -261,7 +170,6 @@ class LanguageBlock:
 
     def __init__(self, backend: Optional[LanguageBackend] = None) -> None:
         self.backend: LanguageBackend = backend or TemplateBackend()
-        self._reflection_loop: Deque[Dict[str, Any]] = deque(maxlen=25)
 
     def process(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """Generate the response."""
@@ -314,7 +222,7 @@ class LanguageBlock:
             cognitive_free_energy=cognitive_free_energy,
             key_concepts=concepts,
             reasoning_summary=reasoning_summary,
-            reflection_loop_state=list(self._reflection_loop),
+            reflection_loop_state=[],
             extra={
                 "glass_transition_temp": t_g,
                 "h1_triangle_valid": bool(coherence_sec.get("triangle_valid_at_alpha1", True)),
@@ -323,20 +231,6 @@ class LanguageBlock:
         )
         raw_response = self.backend.generate(ctx)
         response = _apply_wave_modulation(raw_response, sig, tone_marker)
-
-        self._reflection_loop.append(
-            {
-                "cycle": int(processing_metrics.get("cycle", 0)),
-                "phase": phase_state,
-                "t_g": t_g,
-                "f_c": cognitive_free_energy,
-                "action": selected_action,
-                "sig": sig,
-                "h1_triangle_valid": bool(coherence_sec.get("triangle_valid_at_alpha1", True)),
-                "hci": float(coherence_sec.get("housed_contradiction_index", 0.0)),
-                "key_concepts": concepts[:5],
-            }
-        )
 
         chunk.update_section("language_processing_section", {
             "generated_response": response,

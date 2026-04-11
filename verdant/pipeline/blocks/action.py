@@ -26,6 +26,21 @@ class ActionBlock:
 
     def process(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """Score actions and select the best one."""
+        directive = self._extract_council_directive(chunk)
+        if directive == "REJECT":
+            chunk.update_section("action_selection_section", {
+                "selected_action": "null_op",
+                "action_confidence": 0.0,
+                "action_reason": "CouncilDirective=REJECT",
+                "action_parameters": {"directive": directive},
+                "all_action_scores": {},
+                "processed_timestamp": time.time(),
+            })
+            chunk.add_processing_step(self.name, "action_selection_rejected", {
+                "directive": directive,
+            })
+            return chunk
+
         comm = chunk.get_section_content("internal_communication_section") or {}
         reasoning = chunk.get_section_content("reasoning_section") or {}
         ethics = chunk.get_section_content("ethics_king_section") or {}
@@ -63,6 +78,14 @@ class ActionBlock:
             "confidence": scores[selected],
         })
         return chunk
+
+    @staticmethod
+    def _extract_council_directive(chunk: CognitiveChunk) -> str:
+        layer = chunk.get_section_content("three_kings_layer_section") or {}
+        directive = layer.get("CouncilDirective", layer.get("council_directive", ""))
+        if isinstance(directive, str):
+            return directive.strip().upper()
+        return ""
 
     # ------------------------------------------------------------------
 

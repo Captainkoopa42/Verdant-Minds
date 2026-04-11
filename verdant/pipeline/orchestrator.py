@@ -180,6 +180,22 @@ class PipelineOrchestrator:
                 selected_basins = self._attach_routing_context(chunk)
                 self._run_basin_micro_pipelines(chunk, selected_basins)
 
+            if block.name == "ActionSelection":
+                if self._coherence_handbrake(chunk):
+                    t0 = time.time()
+                    self._trigger_memory_restructure(chunk)
+                    action = chunk.get_section_content("action_selection_section") or {}
+                    action["selected_action"] = "null_op"
+                    action["action_confidence"] = 0.0
+                    action["action_reason"] = "coherence_handbrake"
+                    action["halted_by_coherence_handbrake"] = True
+                    chunk.update_section("action_selection_section", action)
+                    chunk.add_processing_step("PipelineOrchestrator", "action_halted", {
+                        "reason": "coherence_handbrake",
+                    })
+                    timings["ActionSelection"] = time.time() - t0
+                    continue
+
             t0 = time.time()
             chunk = block.process(chunk)
             timings[block.name] = time.time() - t0
@@ -214,3 +230,21 @@ class PipelineOrchestrator:
     def process(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """Alias for canonical process entrypoint."""
         return self.run(chunk)
+
+    @staticmethod
+    def _coherence_handbrake(chunk: CognitiveChunk) -> bool:
+        coherence = chunk.get_section_content("coherence_invariants_section") or {}
+        triangle_valid = coherence.get("triangle_valid_at_alpha1", True)
+        hci = float(coherence.get("housed_contradiction_index", 0.0))
+        system_coherence = float(coherence.get("system_coherence", max(0.0, 1.0 - hci)))
+        return (system_coherence < 0.4) or (triangle_valid is False)
+
+    def _trigger_memory_restructure(self, chunk: CognitiveChunk) -> None:
+        coherence = chunk.get_section_content("coherence_invariants_section") or {}
+        hci = float(coherence.get("housed_contradiction_index", 0.0))
+        system_coherence = float(coherence.get("system_coherence", max(0.0, 1.0 - hci)))
+        reason = "triangle_invalid" if coherence.get("triangle_valid_at_alpha1", True) is False else "low_system_coherence"
+        for block in self.blocks:
+            if getattr(block, "name", "") == "MemoryStorage" and hasattr(block, "restructure"):
+                block.restructure(chunk, reason=reason, coherence=system_coherence)
+                return

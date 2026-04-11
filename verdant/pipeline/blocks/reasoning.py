@@ -44,6 +44,8 @@ class ReasoningBlock:
         # Wave uncertainty integration
         magnitude = float(wave.get("magnitude", 0.5))
         phase = float(wave.get("phase", 0.0))
+        uncertainty_decay = self._uncertainty_decay_multiplier(magnitude, phase, entropy)
+        self._apply_uncertainty_decay(all_inferences, uncertainty_decay)
         adjustments = self._wave_uncertainty(all_inferences, magnitude, phase, entropy)
 
         # Inconsistencies
@@ -68,6 +70,7 @@ class ReasoningBlock:
             "reasoning_plan": plan,
             "inconsistencies": inconsistencies,
             "uncertainty_adjustments": adjustments,
+            "uncertainty_decay_multiplier": uncertainty_decay,
             "confidence_score": confidence,
             "processed_timestamp": time.time(),
         })
@@ -193,6 +196,18 @@ class ReasoningBlock:
                     "delta": delta,
                 })
         return adjustments
+
+    @staticmethod
+    def _uncertainty_decay_multiplier(magnitude: float, phase: float, entropy: float) -> float:
+        phase_factor = 0.5 + 0.5 * np.cos(phase)
+        substrate_stability = max(0.0, min(1.0, magnitude * (1 - entropy / 5.0) * phase_factor))
+        return float(max(0.25, min(1.0, substrate_stability)))
+
+    @staticmethod
+    def _apply_uncertainty_decay(inferences: List[Dict[str, Any]], multiplier: float) -> None:
+        for inf in inferences:
+            conf = float(inf.get("confidence", 0.5))
+            inf["confidence"] = max(0.05, min(0.99, conf * multiplier))
 
     @staticmethod
     def _detect_inconsistencies(inferences: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

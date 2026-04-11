@@ -84,8 +84,17 @@ class MemoryBlock:
         prioritized = [c for c in priority if isinstance(c, str)] + all_concepts
         seed_concepts = list(dict.fromkeys(prioritized))
 
+        # Pre-wave estimate from prior cycle (if present) to modulate activation threshold.
+        prior_wave = chunk.get_section_content("wave_function_section") or {}
+        prior_mean_amp = float(prior_wave.get("magnitude_mean", prior_wave.get("magnitude", 0.5)))
+        dynamic_threshold = max(0.05, min(0.35, 0.14 - 0.06 * prior_mean_amp))
+
         # Spreading activation
-        activations = spread_activation(self.memory_web, seed_concepts)
+        activations = spread_activation(
+            self.memory_web,
+            seed_concepts,
+            threshold=dynamic_threshold,
+        )
 
         # Retrieve related
         related: Dict[str, float] = {}
@@ -116,10 +125,14 @@ class MemoryBlock:
         entropy = 0.0
         wave_mag = mem_update.get("wave_magnitude", [])
         wave_phase = mem_update.get("wave_phase", [])
-        if wave_mag:
-            magnitude = float(wave_mag[0]) if isinstance(wave_mag, list) else float(wave_mag)
-        if wave_phase:
-            phase_val = float(wave_phase[0]) if isinstance(wave_phase, list) else float(wave_phase)
+        if isinstance(wave_mag, list) and wave_mag:
+            magnitude = float(np.mean(np.asarray(wave_mag, dtype=float)))
+        elif wave_mag:
+            magnitude = float(wave_mag)
+        if isinstance(wave_phase, list) and wave_phase:
+            phase_val = float(np.angle(np.mean(np.exp(1j * np.asarray(wave_phase, dtype=float)))))
+        elif wave_phase:
+            phase_val = float(wave_phase)
         entropy = float(mem_update.get("entropy", 0.0))
 
         # Phase-dependent decay / reinforcement
@@ -148,6 +161,7 @@ class MemoryBlock:
             "routing_priority_count": len(priority),
             "activated_concepts": activations,
             "activation_levels": activations,
+            "activation_threshold": dynamic_threshold,
             "novelty_score": novelty,
             "emergent_concepts": emergent,
             "phase_memory_management": {
@@ -161,9 +175,47 @@ class MemoryBlock:
             "magnitude": magnitude,
             "phase": phase_val,
             "entropy": entropy,
+            "magnitude_vector": wave_mag if isinstance(wave_mag, list) else [float(wave_mag)] if wave_mag else [],
+            "phase_vector": wave_phase if isinstance(wave_phase, list) else [float(wave_phase)] if wave_phase else [],
+            "magnitude_mean": magnitude,
+            "phase_mean": phase_val,
         })
         chunk.add_processing_step(self.name, "memory_integration", {
             "activated": len(activations),
             "emergent_created": len(emergent),
         })
         return chunk
+
+    def restructure(self, chunk: CognitiveChunk, *, reason: str, coherence: float) -> Dict[str, Any]:
+        """Apply emergency memory stabilization when coherence handbrake is triggered."""
+        before_edges = int(self.memory_web.graph.number_of_edges())
+        before_nodes = int(self.memory_web.graph.number_of_nodes())
+
+        self.memory_web.decay(0.05)
+        self.memory_web.prune_connections(max_per_node=20)
+
+        weighted = sorted(
+            (
+                (u, v, float(data.get("weight", 0.0)))
+                for u, v, data in self.memory_web.graph.edges(data=True)
+            ),
+            key=lambda item: item[2],
+        )
+        remove_n = max(0, int(len(weighted) * 0.10))
+        removed = 0
+        for u, v, _ in weighted[:remove_n]:
+            if self.memory_web.graph.has_edge(u, v):
+                self.memory_web.graph.remove_edge(u, v)
+                removed += 1
+
+        summary = {
+            "reason": reason,
+            "coherence": float(coherence),
+            "nodes_before": before_nodes,
+            "edges_before": before_edges,
+            "edges_removed": removed,
+            "edges_after": int(self.memory_web.graph.number_of_edges()),
+        }
+        chunk.update_section("memory_restructure_section", summary)
+        chunk.add_processing_step(self.name, "memory_restructure", summary)
+        return summary

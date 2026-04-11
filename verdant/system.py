@@ -16,6 +16,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 import json
 import math
+import os
 from typing import Any, Dict, List, Optional
 import warnings
 
@@ -69,7 +70,9 @@ from verdant.pipeline.blocks.action import ActionBlock
 from verdant.pipeline.blocks.communication import CommunicationBlock
 from verdant.pipeline.blocks.ethics import EthicsBlock
 from verdant.pipeline.blocks.language import LanguageBlock
+from verdant.pipeline.blocks.language import LanguageContext
 from verdant.pipeline.blocks.learning import LearningBlock
+from verdant.pipeline.language.thermal_bridge import map_runtime_generation_controls
 from verdant.pipeline.blocks.memory import MemoryBlock
 from verdant.pipeline.blocks.pattern import PatternRecognitionBlock
 from verdant.pipeline.blocks.reasoning import ReasoningBlock
@@ -78,6 +81,7 @@ from verdant.pipeline.chunk import CognitiveChunk
 from verdant.pipeline.orchestrator import PipelineOrchestrator
 from verdant.output import OutputAdapter, OutputBus, OutputEvent
 from verdant.thermodynamics.phase import compute_phase, compute_t_g
+from verdant.learning.llm_teacher import LLMTeacher
 
 _ATTENTION_STOPWORDS: set[str] = {
     "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
@@ -137,6 +141,9 @@ class VerdantConfig(BaseModel):
     filter_numeric_concepts: bool = True
     enable_attention_buffer: bool = False
     ethomorphic_params: EthomorphicParams | None = None
+    use_llm_teacher: bool = False
+    llm_teacher_model: str = "llama3"
+    llm_teacher_dataset_path: str = "data/akiku_expression_dataset.jsonl"
 
 
 class VerdantSystem:
@@ -194,6 +201,16 @@ class VerdantSystem:
         self._language = LanguageBlock()
         self._learning = LearningBlock(bridge=self.bridge)
         self.attention_buffer = AttentionBuffer(bypass=not self.config.enable_attention_buffer)
+        env_teacher = str(os.environ.get("VERDANT_LLM_TEACHER", "")).strip().lower() in {"1", "true", "yes", "on"}
+        self._use_llm_teacher = bool(self.config.use_llm_teacher or env_teacher)
+        self._llm_teacher = (
+            LLMTeacher(
+                model=self.config.llm_teacher_model,
+                dataset_path=self.config.llm_teacher_dataset_path,
+            )
+            if self._use_llm_teacher
+            else None
+        )
 
         # Governance
         self.data_king = DataKing()
@@ -408,6 +425,7 @@ class VerdantSystem:
 
         # Run pipeline
         chunk = self.pipeline.process(chunk)
+        chunk = self._maybe_run_llm_teacher(chunk)
 
         # Compute coherence invariants
         chunk = self._compute_coherence(chunk)
@@ -506,6 +524,85 @@ class VerdantSystem:
             chunk.update_section("basin_dynamics_section", dynamics_section)
             self._dynamics_metrics = dynamics_section
 
+        return chunk
+
+    def _maybe_run_llm_teacher(self, chunk: CognitiveChunk) -> CognitiveChunk:
+        """Optional teacher pass for expression learning; never modifies core output."""
+        metrics = chunk.get_section_content("processing_metrics_section") or {}
+        language = chunk.get_section_content("language_processing_section") or {}
+        pattern = chunk.get_section_content("pattern_recognition_section") or {}
+        reasoning = chunk.get_section_content("reasoning_section") or {}
+        action = chunk.get_section_content("action_selection_section") or {}
+        wave = chunk.get_section_content("wave_function_section") or {}
+        forefront = chunk.get_section_content("forefront_king_section") or {}
+
+        template_output = str(language.get("generated_response", "") or "")
+        teacher_used = bool(self._use_llm_teacher and self._llm_teacher and template_output)
+
+        t_g = float(metrics.get("glass_transition_temp", self._t_g))
+        entropy = float(wave.get("entropy", 0.0))
+        f_c = float(metrics.get("cognitive_free_energy", max(0.0, 1.0 - float(reasoning.get("confidence_score", 0.5)))))
+        controls = map_runtime_generation_controls(t_g=t_g, f_c=f_c, entropy=entropy)
+
+        metrics["generator"] = "template"
+        metrics["teacher_used"] = bool(teacher_used)
+        chunk.update_section("processing_metrics_section", metrics)
+
+        if not teacher_used:
+            return chunk
+
+        phase_state = str(forefront.get("phase_state", "Flexible"))
+        conclusions = ((reasoning.get("reasoning_plan", []) or [])[-1].get("items", []) if reasoning.get("reasoning_plan") else [])
+        reasoning_summary = ""
+        if conclusions:
+            first = conclusions[0]
+            reasoning_summary = first.get("content", "") if isinstance(first, dict) else str(first)
+
+        ctx = LanguageContext(
+            selected_action=str(action.get("selected_action", "provide_partial_answer")),
+            ethical_tone=str((chunk.get_section_content("ethics_king_section") or {}).get("recommendation", "")),
+            phase_state=phase_state,
+            wave_entropy=entropy,
+            cognitive_free_energy=f_c,
+            key_concepts=list(pattern.get("concepts", [])[:8]),
+            reasoning_summary=reasoning_summary,
+            reflection_loop_state=[],
+            extra={
+                "glass_transition_temp": t_g,
+                "generation_controls": controls,
+            },
+        )
+        teacher_payload = self._llm_teacher.teach(ctx, template_output)
+        llm_output = str(teacher_payload.get("llm_output", "") or "")
+        teacher_meta = teacher_payload.get("meta", {}) if isinstance(teacher_payload, dict) else {}
+        template_vs_llm_char_delta = abs(len(template_output) - len(llm_output))
+
+        chunk.update_section("expression_learning_section", {
+            "template_output": template_output,
+            "llm_output": llm_output,
+            "meta": teacher_meta,
+            "diff": {
+                "template_chars": len(template_output),
+                "llm_chars": len(llm_output),
+                "char_delta": template_vs_llm_char_delta,
+            },
+        })
+
+        self._llm_teacher.log_example(
+            cycle=int(metrics.get("cycle", self._cycle_count)),
+            state={
+                "phase_state": phase_state,
+                "selected_action": str(action.get("selected_action", "")),
+                "generator": "template",
+                "teacher_used": True,
+            },
+            template_output=template_output,
+            llm_output=llm_output,
+            t_g=t_g,
+            f_c=f_c,
+            entropy=entropy,
+            concepts=list(pattern.get("concepts", [])[:8]),
+        )
         return chunk
 
     def _null_chunk(self, text: str = "", metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:

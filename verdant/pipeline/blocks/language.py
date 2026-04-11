@@ -28,16 +28,20 @@ class LanguageContext:
         ethical_tone: str,
         phase_state: str,
         wave_entropy: float,
+        cognitive_free_energy: float,
         key_concepts: List[str],
         reasoning_summary: str,
+        reflection_loop_state: Optional[List[Dict[str, Any]]] = None,
         extra: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.selected_action = selected_action
         self.ethical_tone = ethical_tone
         self.phase_state = phase_state
         self.wave_entropy = wave_entropy
+        self.cognitive_free_energy = cognitive_free_energy
         self.key_concepts = key_concepts
         self.reasoning_summary = reasoning_summary
+        self.reflection_loop_state = reflection_loop_state or []
         self.extra = extra or {}
 
 
@@ -111,11 +115,9 @@ class TemplateBackend:
 # ---------------------------------------------------------------------------
 
 class LLMBackend:
-    """Placeholder for LLM-based response generation."""
-
     def generate(self, context: LanguageContext) -> str:
-        """Not yet implemented."""
-        raise NotImplementedError("LLMBackend is a Phase 2+ feature")
+        """Disabled in core pipeline; reserved for external teacher workflows."""
+        raise NotImplementedError("LLMBackend is disabled in core pipeline; use verdant.learning.LLMTeacher.")
 
 
 # ---------------------------------------------------------------------------
@@ -184,6 +186,10 @@ class LanguageBlock:
         entropy = float(wave.get("entropy", 0.0))
         magnitude = float(wave.get("magnitude", 0.5))
         phase_val = float(wave.get("phase", 0.0))
+        processing_metrics = chunk.get_section_content("processing_metrics_section") or {}
+        t_g = float(processing_metrics.get("glass_transition_temp", 0.5725))
+        cognitive_free_energy = float(processing_metrics.get("cognitive_free_energy", max(0.0, 1.0 - conf)))
+        coherence_sec = chunk.get_section_content("coherence_invariants_section") or {}
 
         # Ethical tone
         ethical_eval = ethics_k.get("evaluation", {})
@@ -213,8 +219,15 @@ class LanguageBlock:
             ethical_tone=tone_marker,
             phase_state=phase_state,
             wave_entropy=entropy,
+            cognitive_free_energy=cognitive_free_energy,
             key_concepts=concepts,
             reasoning_summary=reasoning_summary,
+            reflection_loop_state=[],
+            extra={
+                "glass_transition_temp": t_g,
+                "h1_triangle_valid": bool(coherence_sec.get("triangle_valid_at_alpha1", True)),
+                "housed_contradiction_index": float(coherence_sec.get("housed_contradiction_index", 0.0)),
+            },
         )
         raw_response = self.backend.generate(ctx)
         response = _apply_wave_modulation(raw_response, sig, tone_marker)

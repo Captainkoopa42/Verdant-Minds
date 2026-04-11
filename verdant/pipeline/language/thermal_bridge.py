@@ -174,3 +174,34 @@ class ThermalBridge:
     @staticmethod
     def _clamp(value: float, low: float, high: float) -> float:
         return max(low, min(high, value))
+
+
+def map_runtime_generation_controls(t_g: float, f_c: float, entropy: float) -> dict[str, float | str]:
+    """Map runtime thermodynamic state to language generation controls.
+
+    This helper activates thermal modulation without requiring a full
+    ``VerdantSystem`` instance.
+    """
+    tg = max(0.0, min(1.0, float(t_g)))
+    fc = max(0.0, min(1.0, float(f_c)))
+    h_sys = max(0.0, min(1.0, float(entropy)))
+
+    # Increase exploration when free-energy pressure rises.
+    # fc pressure scales temperature/top_p upward from thermodynamic baseline.
+    temperature = max(0.1, min(1.8, 0.2 + (tg * 1.2) + (fc * 0.6)))
+    top_p = max(0.1, min(1.0, 0.55 + (h_sys * 0.35) + (fc * 0.10)))
+    frequency_penalty = max(0.0, min(2.0, 0.1 + (tg * 0.6) + (fc * 0.5)))
+
+    if tg < 0.4:
+        phase = "Rigid"
+    elif tg <= 0.6:
+        phase = "Flexible"
+    else:
+        phase = "Chaotic"
+
+    return {
+        "temperature": temperature,
+        "top_p": top_p,
+        "frequency_penalty": frequency_penalty,
+        "phase": phase,
+    }

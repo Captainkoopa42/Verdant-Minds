@@ -110,3 +110,18 @@ colab/cells/    — Colab reproduction notebooks
 ## License
 
 MIT
+
+
+## Verdant-Memory API (Product Pivot)
+
+A developer-facing persistent memory API is now available via `verdant_memory.Memory`:
+
+```python
+from verdant_memory import Memory
+
+m = Memory()
+m.observe("hello world")
+print(m.retrieve("hello"))
+```
+
+This API intentionally hides ECWF, basin, and governance internals behind stable memory primitives.

@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import random
+import subprocess
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -27,7 +28,7 @@ from cultivation.providers.groq import GroqProvider
 from cultivation.providers.local import LocalProvider
 from cultivation.providers.mistral import MistralProvider
 from cultivation.providers.tutor import TutorProvider
-from cultivation.schemas import CycleRecord, SessionSummary
+from cultivation.schemas import CULTIVATION_SCHEMA_VERSION, CycleRecord, SessionSummary
 from cultivation.strategy.curriculum import CurriculumStrategy
 from cultivation.strategy.perturbation import PerturbationEngine
 
@@ -136,6 +137,162 @@ def _coherence_telemetry_from_system(system: VerdantSystem) -> dict[str, object 
     }
 
 
+
+def _git_metadata() -> dict[str, object]:
+    """Return lightweight repository provenance for run manifests."""
+    root = Path(__file__).resolve().parent.parent
+
+    def _git(args: list[str]) -> str:
+        result = subprocess.run(
+            ["git", *args],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip() if result.returncode == 0 else ""
+
+    status = _git(["status", "--short"])
+    return {
+        "commit": _git(["rev-parse", "HEAD"]),
+        "branch": _git(["rev-parse", "--abbrev-ref", "HEAD"]),
+        "dirty": bool(status),
+        "status_short": status.splitlines(),
+    }
+
+
+def _graph_signature(system: VerdantSystem) -> tuple[set[str], set[tuple[str, str]]]:
+    """Capture a compact node/undirected-edge signature for per-cycle deltas."""
+    graph = system.memory_web.graph
+    nodes = {str(node) for node in graph.nodes()}
+    edges = {tuple(sorted((str(source), str(target)))) for source, target in graph.edges()}
+    return nodes, edges
+
+
+def _build_graph_delta(
+    before: tuple[set[str], set[tuple[str, str]]],
+    after: tuple[set[str], set[tuple[str, str]]],
+    node_to_basin: dict[str, str],
+) -> dict[str, object]:
+    """Build a compact forensic graph delta for a single cycle."""
+    before_nodes, before_edges = before
+    after_nodes, after_edges = after
+    nodes_added = sorted(after_nodes - before_nodes)
+    nodes_removed = sorted(before_nodes - after_nodes)
+    edges_added_pairs = sorted(after_edges - before_edges)
+    edges_removed_pairs = sorted(before_edges - after_edges)
+
+    def _edge_list(edges: list[tuple[str, str]]) -> list[list[str]]:
+        return [[source, target] for source, target in edges]
+
+    def _is_ee(edge: tuple[str, str]) -> bool:
+        return edge[0].startswith("Emergent_") and edge[1].startswith("Emergent_")
+
+    def _is_cross_basin(edge: tuple[str, str]) -> bool:
+        a = node_to_basin.get(edge[0])
+        b = node_to_basin.get(edge[1])
+        return bool(a and b and a != b)
+
+    return {
+        "nodes_added": nodes_added,
+        "nodes_removed": nodes_removed,
+        "edges_added": _edge_list(edges_added_pairs),
+        "edges_removed": _edge_list(edges_removed_pairs),
+        "ee_edges_added": sum(1 for edge in edges_added_pairs if _is_ee(edge)),
+        "ee_edges_removed": sum(1 for edge in edges_removed_pairs if _is_ee(edge)),
+        "cross_basin_edges_added": sum(1 for edge in edges_added_pairs if _is_cross_basin(edge)),
+        "cross_basin_edges_removed": sum(1 for edge in edges_removed_pairs if _is_cross_basin(edge)),
+    }
+
+
+def _basin_memberships_snapshot(chunk: CognitiveChunk) -> dict[str, object]:
+    """Normalize current basin membership into a replayable snapshot payload."""
+    section = chunk.get_section_content("basins_section") or {}
+    basins = section.get("basins", []) if isinstance(section, dict) else []
+    node_to_basin: dict[str, str] = {}
+    basin_sizes: dict[str, int] = {}
+    basin_ids: list[str] = []
+    if isinstance(basins, list):
+        for basin in basins:
+            if not isinstance(basin, dict):
+                continue
+            basin_id = str(basin.get("basin_id", ""))
+            if not basin_id:
+                continue
+            nodes = basin.get("nodes", [])
+            if not isinstance(nodes, list):
+                nodes = []
+            basin_ids.append(basin_id)
+            basin_sizes[basin_id] = int(basin.get("size", len(nodes)) or 0)
+            for node in nodes:
+                node_to_basin[str(node)] = basin_id
+    return {
+        "scanned_this_cycle": bool(section.get("scanned_this_cycle", False)) if isinstance(section, dict) else False,
+        "scan_interval": int(section.get("scan_interval", 0) or 0) if isinstance(section, dict) else 0,
+        "basin_ids": sorted(basin_ids),
+        "node_to_basin": dict(sorted(node_to_basin.items())),
+        "basin_sizes": dict(sorted(basin_sizes.items())),
+    }
+
+
+def _emergent_events_from_delta(
+    system: VerdantSystem,
+    cycle_idx: int,
+    graph_delta: dict[str, object],
+    node_to_basin: dict[str, str],
+) -> tuple[list[str], list[dict[str, object]]]:
+    """Build event-form lineage records for emergents born this cycle."""
+    created = [str(node) for node in graph_delta.get("nodes_added", []) if str(node).startswith("Emergent_")]
+    events: list[dict[str, object]] = []
+    for node_id in created:
+        entry = system.memory_web.get_concept(node_id) or {}
+        metadata = entry.get("metadata", {}) if isinstance(entry.get("metadata"), dict) else {}
+        parents_raw = metadata.get("parent_concepts", [])
+        parents = [str(parent) for parent in parents_raw] if isinstance(parents_raw, list) else []
+        parent_basins = sorted({node_to_basin[parent] for parent in parents if parent in node_to_basin})
+        events.append(
+            {
+                "node_id": node_id,
+                "cycle": int(cycle_idx),
+                "source": str(metadata.get("origin", "other") or "other"),
+                "parent_concepts": parents,
+                "parent_basins": parent_basins,
+                "combo_key": metadata.get("combo_key"),
+                "creation_time": metadata.get("creation_time", entry.get("first_seen")),
+                "basin_id": node_to_basin.get(node_id),
+                "entropy": metadata.get("entropy"),
+                "magnitude": metadata.get("magnitude"),
+            }
+        )
+    return created, events
+
+
+def _cross_basin_coupling(system: VerdantSystem, node_to_basin: dict[str, str]) -> list[dict[str, object]]:
+    """Compute per-pair cross-basin edge counts and weight sums for replay analysis."""
+    pair_stats: dict[tuple[str, str], dict[str, object]] = {}
+    for source, target, data in system.memory_web.graph.edges(data=True):
+        source_id = str(source)
+        target_id = str(target)
+        basin_a = node_to_basin.get(source_id)
+        basin_b = node_to_basin.get(target_id)
+        if not basin_a or not basin_b or basin_a == basin_b:
+            continue
+        key = tuple(sorted((basin_a, basin_b)))
+        stat = pair_stats.setdefault(
+            key,
+            {"basin_pair": [key[0], key[1]], "edge_count": 0, "weight_sum": 0.0, "emergent_edge_count": 0},
+        )
+        try:
+            weight = float(data.get("weight", 1.0)) if isinstance(data, dict) else 1.0
+        except (TypeError, ValueError):
+            weight = 1.0
+        stat["edge_count"] = int(stat["edge_count"]) + 1
+        stat["weight_sum"] = float(stat["weight_sum"]) + weight
+        if source_id.startswith("Emergent_") or target_id.startswith("Emergent_"):
+            stat["emergent_edge_count"] = int(stat["emergent_edge_count"]) + 1
+    return sorted(pair_stats.values(), key=lambda item: (-float(item["weight_sum"]), item["basin_pair"]))
+
+
 @dataclass(frozen=True)
 class RunnerConfig:
     """Configuration for cultivation sessions."""
@@ -215,13 +372,71 @@ class CultivationRunner:
 
     def run(self, seeds: Iterable[int]) -> Path:
         """Execute cultivation for all seeds and return run output directory."""
+        seed_list = [int(seed) for seed in seeds]
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         run_dir = Path(self.config.outdir) / f"run_{stamp}"
         run_dir.mkdir(parents=True, exist_ok=True)
+        self._write_run_manifest(run_dir=run_dir, seeds=seed_list, run_label=stamp, status="started")
 
-        for seed in seeds:
-            self._run_seed(seed=seed, run_dir=run_dir)
+        completed: list[int] = []
+        failed: dict[str, str] = {}
+        for seed in seed_list:
+            try:
+                self._run_seed(seed=seed, run_dir=run_dir, run_label=stamp)
+                completed.append(seed)
+            except Exception as exc:
+                failed[str(seed)] = str(exc)
+                self._write_run_manifest(
+                    run_dir=run_dir,
+                    seeds=seed_list,
+                    run_label=stamp,
+                    status="failed",
+                    completed_seeds=completed,
+                    failed_seeds=failed,
+                )
+                raise
+        self._write_run_manifest(
+            run_dir=run_dir,
+            seeds=seed_list,
+            run_label=stamp,
+            status="completed",
+            completed_seeds=completed,
+            failed_seeds=failed,
+        )
         return run_dir
+
+    def _write_run_manifest(
+        self,
+        *,
+        run_dir: Path,
+        seeds: list[int],
+        run_label: str,
+        status: str,
+        completed_seeds: list[int] | None = None,
+        failed_seeds: dict[str, str] | None = None,
+    ) -> None:
+        """Write a run-root manifest for forensic reproducibility."""
+        manifest = {
+            "schema_version": CULTIVATION_SCHEMA_VERSION,
+            "run_label": run_label,
+            "regime_label": "default",
+            "branch_label": "v3",
+            "status": status,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "seed_list": seeds,
+            "completed_seeds": completed_seeds or [],
+            "failed_seeds": failed_seeds or {},
+            "config": asdict(self.config),
+            "git": _git_metadata(),
+            "artifacts": {
+                "seed_dir_pattern": "seed_<seed>",
+                "cycles": "cycles.jsonl",
+                "summary": "summary.json",
+                "state": "state.json",
+                "basin_snapshots": "basin_snapshots.jsonl",
+            },
+        }
+        (run_dir / "run_manifest.json").write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
 
     @staticmethod
     def _concept_metadata_snapshot(system: VerdantSystem, node_id: str) -> dict[str, object]:
@@ -369,6 +584,7 @@ class CultivationRunner:
         if self.config.enable_attention_buffer:
             system.attention_buffer.bypass = False
         seed = int(system.config.seed or 0)
+        self._write_run_manifest(run_dir=run_dir, seeds=[seed], run_label=stamp, status="started")
         seed_dir = run_dir / f"seed_{seed}"
         seed_dir.mkdir(parents=True, exist_ok=True)
         provider = self._make_provider()
@@ -408,6 +624,7 @@ class CultivationRunner:
                         seed=seed,
                         cycle_idx=cycle_idx,
                     )
+                    graph_before = _graph_signature(system)
                     chunk = system.process_input(
                         input_text,
                         metadata={
@@ -451,8 +668,22 @@ class CultivationRunner:
                     basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
                     dynamics = _dynamics_telemetry_from_chunk(chunk)
+                    basin_memberships_snapshot = _basin_memberships_snapshot(chunk)
+                    node_to_basin = dict(basin_memberships_snapshot.get("node_to_basin", {}))
+                    graph_delta = _build_graph_delta(graph_before, _graph_signature(system), node_to_basin)
+                    emergent_node_ids_created, emergent_events = _emergent_events_from_delta(
+                        system,
+                        cycle_idx,
+                        graph_delta,
+                        node_to_basin,
+                    )
+                    cross_basin_coupling = _cross_basin_coupling(system, node_to_basin)
                     timestamp = datetime.now(timezone.utc).isoformat()
                     record = CycleRecord(
+                        schema_version=CULTIVATION_SCHEMA_VERSION,
+                        regime_label="default",
+                        branch_label="v3",
+                        run_label=stamp,
                         cycle_index=cycle_idx,
                         seed=seed,
                         timestamp=timestamp,
@@ -485,6 +716,11 @@ class CultivationRunner:
                         emergent_basins=emergent_basins,
                         emergent_count_by_basin=emergent_count_by_basin,
                         basin_membership_snapshot=basin_membership_snapshot,
+                        basin_memberships_snapshot=basin_memberships_snapshot,
+                        emergent_node_ids_created=emergent_node_ids_created,
+                        emergent_events=emergent_events,
+                        graph_delta=graph_delta,
+                        cross_basin_coupling=cross_basin_coupling,
                         basin_proposals_count=basin_proposals_count,
                         basin_conflict_detected=basin_conflict_detected,
                         final_action_source=final_action_source,
@@ -544,6 +780,13 @@ class CultivationRunner:
 
             state_path = seed_dir / "state.json"
             system.save_state(str(state_path))
+            self._write_run_manifest(
+                run_dir=run_dir,
+                seeds=[seed],
+                run_label=stamp,
+                status="completed",
+                completed_seeds=[seed],
+            )
         finally:
             np.random.default_rng = real_default_rng
             time.time = real_time
@@ -599,7 +842,7 @@ class CultivationRunner:
         text = provider.generate(prompt, seed=(seed * 1_000_003 + cycle_idx))
         return text, scaffold_context, False
 
-    def _run_seed(self, *, seed: int, run_dir: Path) -> None:
+    def _run_seed(self, *, seed: int, run_dir: Path, run_label: str | None = None) -> None:
         seed_dir = run_dir / f"seed_{seed}"
         seed_dir.mkdir(parents=True, exist_ok=True)
         provider = self._make_provider()
@@ -697,6 +940,7 @@ class CultivationRunner:
                     tutor_enabled = self.config.provider.lower() == "tutor"
                     tutor_backend = self.config.tutor_backend if tutor_enabled else None
 
+                    graph_before = _graph_signature(system)
                     chunk = system.process_input(
                         input_text,
                         metadata={
@@ -796,8 +1040,22 @@ class CultivationRunner:
                     basin_count, largest_basin_size, self_cluster_basin_id, emergent_basins, emergent_count_by_basin, basin_membership_snapshot = _basin_telemetry_from_chunk(chunk)
                     basin_proposals_count, basin_conflict_detected, final_action_source, top_proposal_scores = _proposal_telemetry_from_chunk(chunk)
                     dynamics = _dynamics_telemetry_from_chunk(chunk)
+                    basin_memberships_snapshot = _basin_memberships_snapshot(chunk)
+                    node_to_basin = dict(basin_memberships_snapshot.get("node_to_basin", {}))
+                    graph_delta = _build_graph_delta(graph_before, _graph_signature(system), node_to_basin)
+                    emergent_node_ids_created, emergent_events = _emergent_events_from_delta(
+                        system,
+                        cycle_idx,
+                        graph_delta,
+                        node_to_basin,
+                    )
+                    cross_basin_coupling = _cross_basin_coupling(system, node_to_basin)
                     timestamp = datetime.now(timezone.utc).isoformat()
                     record = CycleRecord(
+                        schema_version=CULTIVATION_SCHEMA_VERSION,
+                        regime_label="default",
+                        branch_label="v3",
+                        run_label=run_label,
                         cycle_index=cycle_idx,
                         seed=seed,
                         timestamp=timestamp,
@@ -830,6 +1088,11 @@ class CultivationRunner:
                         emergent_basins=emergent_basins,
                         emergent_count_by_basin=emergent_count_by_basin,
                         basin_membership_snapshot=basin_membership_snapshot,
+                        basin_memberships_snapshot=basin_memberships_snapshot,
+                        emergent_node_ids_created=emergent_node_ids_created,
+                        emergent_events=emergent_events,
+                        graph_delta=graph_delta,
+                        cross_basin_coupling=cross_basin_coupling,
                         basin_proposals_count=basin_proposals_count,
                         basin_conflict_detected=basin_conflict_detected,
                         final_action_source=final_action_source,
@@ -902,6 +1165,10 @@ class CultivationRunner:
 
             final_metrics = system.get_metrics()
             summary = SessionSummary(
+                schema_version=CULTIVATION_SCHEMA_VERSION,
+                regime_label="default",
+                branch_label="v3",
+                run_label=run_label,
                 seed=seed,
                 cycles=self.config.cycles,
                 provider=self.config.provider,

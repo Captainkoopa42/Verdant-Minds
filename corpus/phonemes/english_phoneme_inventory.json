@@ -1,0 +1,2632 @@
+[
+  {
+    "phoneme_id": "ph_001",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "p",
+    "symbol_common": "p",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for p."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "b",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "b",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "t",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_002",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "b",
+    "symbol_common": "b",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for b."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "p",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "p",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "t",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "d",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_003",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "t",
+    "symbol_common": "t",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for t."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "p",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "p",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "b",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "d",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_004",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "d",
+    "symbol_common": "d",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for d."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "b",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "b",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "t",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "k",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_005",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "k",
+    "symbol_common": "k",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for k."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "t",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "t",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "d",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "g",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_006",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "g",
+    "symbol_common": "g",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for g."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "d",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "d",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "k",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "f",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_007",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "f",
+    "symbol_common": "f",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for f."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "k",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "k",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "g",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "v",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_008",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "v",
+    "symbol_common": "v",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for v."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "g",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "g",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "f",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "θ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_009",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "θ",
+    "symbol_common": "θ",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for θ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "f",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "f",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "v",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ð",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_010",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ð",
+    "symbol_common": "ð",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ð."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "v",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "v",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "θ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "s",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_011",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "s",
+    "symbol_common": "s",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for s."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "θ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "θ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ð",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "z",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_012",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "z",
+    "symbol_common": "z",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for z."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ð",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ð",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "s",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʃ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_013",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ʃ",
+    "symbol_common": "ʃ",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ʃ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "s",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "s",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "z",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʒ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_014",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ʒ",
+    "symbol_common": "ʒ",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ʒ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "z",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "z",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʃ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "h",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_015",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "h",
+    "symbol_common": "h",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for h."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ʃ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ʃ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʒ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "tʃ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_016",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "tʃ",
+    "symbol_common": "tʃ",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for tʃ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ʒ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ʒ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "h",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "dʒ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_017",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "dʒ",
+    "symbol_common": "dʒ",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for dʒ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "h",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "h",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "tʃ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "m",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_018",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "m",
+    "symbol_common": "m",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for m."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "tʃ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "tʃ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "dʒ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "n",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_019",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "n",
+    "symbol_common": "n",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for n."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "dʒ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "dʒ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "m",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ŋ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_020",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ŋ",
+    "symbol_common": "ŋ",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ŋ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "m",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "m",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "n",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "l",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_021",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "l",
+    "symbol_common": "l",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for l."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "n",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "n",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ŋ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "r",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_022",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "r",
+    "symbol_common": "r",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for r."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ŋ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ŋ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "l",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "w",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_023",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "w",
+    "symbol_common": "w",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for w."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "l",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "l",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "r",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "j",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_024",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "j",
+    "symbol_common": "j",
+    "phoneme_type": "consonant",
+    "vowel_class": null,
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for j."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "onset"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "r",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "r",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "w",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "iː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_025",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "iː",
+    "symbol_common": "iː",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for iː."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "w",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "w",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "j",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_026",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɪ",
+    "symbol_common": "ɪ",
+    "phoneme_type": "vowel",
+    "vowel_class": "monophthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɪ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "j",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "j",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "iː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "eɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_027",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "eɪ",
+    "symbol_common": "eɪ",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for eɪ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "iː",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "iː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɛ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_028",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɛ",
+    "symbol_common": "ɛ",
+    "phoneme_type": "vowel",
+    "vowel_class": "monophthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɛ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɪ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "eɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "æ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_029",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "æ",
+    "symbol_common": "æ",
+    "phoneme_type": "vowel",
+    "vowel_class": "monophthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for æ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "eɪ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "eɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɛ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɑː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_030",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɑː",
+    "symbol_common": "ɑː",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɑː."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɛ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɛ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "æ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɔː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_031",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɔː",
+    "symbol_common": "ɔː",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɔː."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "æ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "æ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɑː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "oʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_032",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "oʊ",
+    "symbol_common": "oʊ",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for oʊ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɑː",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɑː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɔː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_033",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ʊ",
+    "symbol_common": "ʊ",
+    "phoneme_type": "vowel",
+    "vowel_class": "monophthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ʊ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɔː",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɔː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "oʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "uː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_034",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "uː",
+    "symbol_common": "uː",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for uː."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "oʊ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "oʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʌ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_035",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ʌ",
+    "symbol_common": "ʌ",
+    "phoneme_type": "vowel",
+    "vowel_class": "monophthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ʌ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ʊ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "uː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ə",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_036",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ə",
+    "symbol_common": "ə",
+    "phoneme_type": "vowel",
+    "vowel_class": "monophthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ə."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "uː",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "uː",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʌ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɝ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_037",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɝ",
+    "symbol_common": "ɝ",
+    "phoneme_type": "vowel",
+    "vowel_class": "monophthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɝ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ʌ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ʌ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ə",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "aɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_038",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "aɪ",
+    "symbol_common": "aɪ",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for aɪ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ə",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ə",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɝ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "aʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_039",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "aʊ",
+    "symbol_common": "aʊ",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for aʊ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɝ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɝ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "aɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɔɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_040",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɔɪ",
+    "symbol_common": "ɔɪ",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɔɪ."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "aɪ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "aɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "aʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɪr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_041",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɪr",
+    "symbol_common": "ɪr",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɪr."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "aʊ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "aʊ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɔɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɛr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_042",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɛr",
+    "symbol_common": "ɛr",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɛr."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɔɪ",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɔɪ",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɪr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʊr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_043",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ʊr",
+    "symbol_common": "ʊr",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ʊr."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɪr",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɪr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɛr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ɔr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  },
+  {
+    "phoneme_id": "ph_044",
+    "schema_version": "phoneme-v1",
+    "symbol_ipa": "ɔr",
+    "symbol_common": "ɔr",
+    "phoneme_type": "vowel",
+    "vowel_class": "diphthong",
+    "articulation": {
+      "tongue_height": "mid",
+      "tongue_backness": "central",
+      "lip_rounding": "neutral",
+      "tenseness": "tense",
+      "description": "Articulatory profile for ɔr."
+    },
+    "example_words": [
+      {
+        "word": "sample",
+        "position": "nucleus"
+      },
+      {
+        "word": "heavy",
+        "position": "example"
+      }
+    ],
+    "common_spellings": [
+      "a",
+      "e",
+      "i"
+    ],
+    "spelling_examples": {
+      "a": "sample",
+      "e": "heavy",
+      "i": "bit"
+    },
+    "minimal_pairs": [
+      {
+        "contrast_with": "ɛr",
+        "example_a": "bat",
+        "example_b": "pat",
+        "contrast_type": "feature"
+      }
+    ],
+    "graph_edges": [
+      {
+        "to": "ɛr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      },
+      {
+        "to": "ʊr",
+        "relation": "near_neighbor_articulation",
+        "weight": 0.75
+      }
+    ]
+  }
+]

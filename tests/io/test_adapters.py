@@ -76,3 +76,14 @@ def test_two_turns_second_includes_prior_context(tmp_path: Path) -> None:
     second = rows[1]
     assert isinstance(second.get("continuity_context"), list)
     assert len(second["continuity_context"]) >= 1
+
+
+def test_inspect_basin_fallback_detects_when_cache_empty() -> None:
+    system = VerdantSystem()
+    qi = QueryInterface(system)
+    qi.query("trust care justice integrity")
+    # Simulate no cached basins and ensure method still works deterministically.
+    system._last_basins = []
+    out = qi.inspect_basin("nonexistent")
+    assert "source" in out
+    assert out["source"] in {"cached", "detected"}

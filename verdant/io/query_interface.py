@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import deque
 from typing import Any
 
+from verdant.memory.basins import detect_basins
 from verdant.system import VerdantSystem
 
 
@@ -62,7 +63,13 @@ class QueryInterface:
         }
 
     def inspect_basin(self, basin_id: str) -> dict[str, Any]:
-        for basin in self.system._last_basins:
+        basins = list(getattr(self.system, "_last_basins", []) or [])
+        if not basins:
+            scan_k = int(getattr(self.system.config, "basin_scan_k", 6))
+            min_size = int(getattr(self.system.config, "basin_min_size", 5))
+            basins = detect_basins(self.system.memory_web, k=scan_k, min_size=min_size)
+
+        for basin in basins:
             if str(basin.basin_id) == str(basin_id):
                 return {
                     "basin_id": basin.basin_id,
@@ -70,8 +77,9 @@ class QueryInterface:
                     "centroid": basin.centroid,
                     "volatility": basin.volatility,
                     "hotness": basin.hotness,
+                    "source": "cached" if getattr(self.system, "_last_basins", []) else "detected",
                 }
-        return {"basin_id": basin_id, "error": "not_found"}
+        return {"basin_id": basin_id, "error": "not_found", "source": "detected" if not getattr(self.system, "_last_basins", []) else "cached"}
 
     def recent_activations(self, n: int = 10) -> list[dict[str, Any]]:
         n = max(1, int(n))

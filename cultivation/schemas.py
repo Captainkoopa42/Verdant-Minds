@@ -8,6 +8,9 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+CULTIVATION_SCHEMA_VERSION = "v3.1-forensic"
+
+
 @dataclass(frozen=True)
 class ScaffoldContext:
     """Snapshot of scaffold-relevant system state for tutor prompting."""
@@ -40,6 +43,10 @@ class ScaffoldContext:
 class CycleRecord(BaseModel):
     """Per-cycle telemetry record written to JSONL."""
 
+    schema_version: str = CULTIVATION_SCHEMA_VERSION
+    regime_label: str = "default"
+    branch_label: str = "v3"
+    run_label: str | None = None
     cycle_index: int
     seed: int
     timestamp: str
@@ -60,11 +67,16 @@ class CycleRecord(BaseModel):
     emergent_basins: int = 0
     emergent_count_by_basin: dict[str, int] = Field(default_factory=dict)
     basin_membership_snapshot: dict[str, str] = Field(default_factory=dict)
+    basin_memberships_snapshot: dict[str, Any] = Field(default_factory=dict)
     basin_proposals_count: int = 0
     basin_conflict_detected: bool = False
     final_action_source: str = "global_default"
     top_proposal_scores: list[dict[str, Any]] = Field(default_factory=list)
     telemetry: dict[str, Any] = Field(default_factory=dict)
+    emergent_node_ids_created: list[str] = Field(default_factory=list)
+    emergent_events: list[dict[str, Any]] = Field(default_factory=list)
+    graph_delta: dict[str, Any] = Field(default_factory=dict)
+    cross_basin_coupling: list[dict[str, Any]] = Field(default_factory=list)
     intervention_applied: bool = False
     intervention_mode: str = "none"
     intervention_cycle: int | None = None
@@ -117,6 +129,10 @@ class CycleRecord(BaseModel):
 class SessionSummary(BaseModel):
     """End-of-seed run summary."""
 
+    schema_version: str = CULTIVATION_SCHEMA_VERSION
+    regime_label: str = "default"
+    branch_label: str = "v3"
+    run_label: str | None = None
     seed: int
     cycles: int
     provider: str

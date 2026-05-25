@@ -77,6 +77,7 @@ class MemoryBlock:
         pattern = chunk.get_section_content("pattern_recognition_section") or {}
         concepts: List[str] = pattern.get("concepts", [])
         keywords: List[str] = pattern.get("keywords", [])
+        tensions: Dict[str, float] = pattern.get("tension_coefficients", {}) if isinstance(pattern.get("tension_coefficients", {}), dict) else {}
         all_concepts = list(dict.fromkeys(concepts + keywords))
 
         routing = chunk.get_section_content("routing_section") or {}
@@ -140,11 +141,14 @@ class MemoryBlock:
         t_g = float(metrics.get("glass_transition_temp", 0.5))
         ps = compute_phase(t_g)
 
-        self.memory_web.decay(ps.decay_factor)
+        curiosity_bias = min(0.7, max(tensions.values(), default=0.0) * 0.5) if tensions else 0.0
+        effective_decay = ps.decay_factor * (1.0 - curiosity_bias)
+        self.memory_web.decay(effective_decay)
         reinforced: List[str] = []
         for c in seed_concepts:
             if c in activations and activations[c] > 0.3:
-                self.memory_web.reinforce(c, ps.reinforcement_amount)
+                boost = ps.reinforcement_amount * (1.0 + curiosity_bias)
+                self.memory_web.reinforce(c, boost)
                 reinforced.append(c)
 
         # Emergent concept detection
@@ -166,8 +170,9 @@ class MemoryBlock:
             "emergent_concepts": emergent,
             "phase_memory_management": {
                 "phase": ps.phase,
-                "decay_factor": ps.decay_factor,
+                "decay_factor": effective_decay,
                 "reinforcement": ps.reinforcement_amount,
+                "curiosity_bias": curiosity_bias,
                 "concepts_reinforced": reinforced,
             },
         })

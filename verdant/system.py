@@ -144,6 +144,10 @@ class VerdantConfig(BaseModel):
     use_llm_teacher: bool = False
     llm_teacher_model: str = "llama3"
     llm_teacher_dataset_path: str = "data/akiku_expression_dataset.jsonl"
+    dreaming_enabled: bool = True
+    dreaming_idle_cycles: int = 2
+    self_reflection_enabled: bool = True
+    self_reflection_max_basin_ids: int = 3
 
 
 class VerdantSystem:
@@ -277,6 +281,8 @@ class VerdantSystem:
         }
         self.adapters: List[Adapter] = []
         self.output_bus = OutputBus()
+        self._idle_cycles: int = 0
+        self._queued_self_observation: str | None = None
 
         # Knowledge initialization
         if self.config.initialize_knowledge:
@@ -358,7 +364,15 @@ class VerdantSystem:
     def run_cycle(self) -> List[CognitiveChunk]:
         """Run one full collect→process→memory/update→emit step."""
         events = self.collect_inputs()
-        return self.process_cycle(events)
+        if events:
+            self._idle_cycles = 0
+            return self.process_cycle(events)
+        self._idle_cycles += 1
+        if self.config.dreaming_enabled and self._idle_cycles >= max(1, self.config.dreaming_idle_cycles):
+            dreamed = self.dream_cycle()
+            if dreamed is not None:
+                return [dreamed]
+        return []
 
     def run_loop(self, *, interval: float = 0.5, max_cycles: int | None = None, checkpoint_dir: str | None = None) -> None:
         """Run continuous daemon loop until max_cycles is reached (or forever)."""
@@ -377,6 +391,9 @@ class VerdantSystem:
 
     def process_input(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
         """Process input through the attention buffer and full pipeline."""
+        if self._queued_self_observation:
+            text = f"{self._queued_self_observation}\n\n{text}".strip()
+            self._queued_self_observation = None
         t_g = self._current_t_g()
         self.attention_buffer.update_governance(t_g)
 
@@ -523,8 +540,31 @@ class VerdantSystem:
             dynamics_section["bridge_pairs_evaluated"] = int(get_fast_bridge_state(self.bridge)["bridge_pairs_evaluated"])
             chunk.update_section("basin_dynamics_section", dynamics_section)
             self._dynamics_metrics = dynamics_section
+        if self.config.self_reflection_enabled:
+            self._queued_self_observation = self._build_self_observation()
 
         return chunk
+
+    def dream_cycle(self) -> CognitiveChunk | None:
+        """Execute a self-simulation cycle from internal memory when externally idle."""
+        concepts = self.memory_web.list_concepts()
+        if not concepts:
+            return None
+        sample_n = min(8, len(concepts))
+        chosen = list(np.random.choice(concepts, size=sample_n, replace=False))
+        activations = self.memory_web.activate_concepts(chosen, strength=0.8, spread_factor=0.7, max_depth=2, threshold=0.08)
+        prioritized = sorted(activations.items(), key=lambda item: item[1], reverse=True)
+        replay = [label for label, _ in prioritized[:5]] or chosen[:5]
+        dream_text = "Self-simulation rehearsal: " + ", ".join(replay)
+        metadata = {"event_type": "dream", "source": "internal_dream", "idle_cycles": self._idle_cycles}
+        return self.process_input(text=dream_text, metadata=metadata)
+
+    def _build_self_observation(self) -> str:
+        active_basins = [b.basin_id for b in self._last_basins[: max(1, self.config.self_reflection_max_basin_ids)]]
+        hci = self._last_coherence_metrics.get("housed_contradiction_index")
+        hci_str = f"{float(hci):.4f}" if isinstance(hci, (int, float)) else "n/a"
+        basin_str = ", ".join(active_basins) if active_basins else "none"
+        return f"Self-Observation: T_g={self._t_g:.4f}; HCI={hci_str}; ActiveBasins={basin_str}."
 
     def _maybe_run_llm_teacher(self, chunk: CognitiveChunk) -> CognitiveChunk:
         """Optional teacher pass for expression learning; never modifies core output."""

@@ -64,7 +64,7 @@ from verdant.memory.bridge_acceleration import (
 )
 from verdant.memory.basin_registry import BasinRegistry
 from verdant.memory.basin_state import BasinState
-from verdant.memory.graph import MemoryWeb
+from verdant.memory.graph import MemoryWeb, ShardedMemoryWeb
 from verdant.memory.persistence import export_bundle, load_state as load_state_json, save_state as save_state_json
 from verdant.pipeline.blocks.action import ActionBlock
 from verdant.pipeline.blocks.communication import CommunicationBlock
@@ -178,7 +178,7 @@ class VerdantSystem:
             random_state=self.config.seed,
             params=self.ethomorphic_params,
         )
-        self.memory_web = MemoryWeb()
+        self.memory_web = ShardedMemoryWeb.monolith(MemoryWeb())
         self.bridge = EthomorphicBridge(
             ecwf=self.ecwf,
             memory=self.memory_web,
@@ -284,9 +284,16 @@ class VerdantSystem:
         self._idle_cycles: int = 0
         self._queued_self_observation: str | None = None
 
+        # Per-system legacy NumPy RNG state. Some lower-level Verdant paths still
+        # use ``np.random`` directly, so process_input temporarily installs this
+        # state to keep checkpointed systems deterministic even when two systems
+        # are advanced sequentially in the same Python process.
+        self._numpy_random_state = np.random.get_state()
+
         # Knowledge initialization
         if self.config.initialize_knowledge:
             self.initialize_knowledge()
+            self._numpy_random_state = np.random.get_state()
 
     # ------------------------------------------------------------------
     # Public API
@@ -391,6 +398,16 @@ class VerdantSystem:
 
     def process_input(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
         """Process input through the attention buffer and full pipeline."""
+        previous_random_state = np.random.get_state()
+        np.random.set_state(self._numpy_random_state)
+        try:
+            return self._process_input_with_system_rng(text, metadata)
+        finally:
+            self._numpy_random_state = np.random.get_state()
+            np.random.set_state(previous_random_state)
+
+    def _process_input_with_system_rng(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
+        """Process input while this system's NumPy RNG state is installed."""
         if self._queued_self_observation:
             text = f"{self._queued_self_observation}\n\n{text}".strip()
             self._queued_self_observation = None
@@ -684,7 +701,15 @@ class VerdantSystem:
                 unknown_words.append(token)
         return known_concepts, unknown_words
 
-    def _compute_novelty(self, text: str) -> float:
+    def _compute_novelty(self, text_or_known: str | list[str], unknown_words: list[str] | None = None) -> float:
+        """Compute input novelty from raw text or pre-extracted concept lists."""
+        if unknown_words is not None:
+            known_count = len(text_or_known) if isinstance(text_or_known, list) else 0
+            unknown_count = len(unknown_words)
+            total = known_count + unknown_count
+            return (unknown_count / total) if total else 0.0
+
+        text = str(text_or_known)
         stopwords = {
             "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
             "have", "has", "had", "do", "does", "did", "will", "would", "shall",
@@ -701,9 +726,20 @@ class VerdantSystem:
         unknown = [t for t in tokens if t not in known]
         return len(unknown) / len(tokens)
 
-    def _compute_input_activation(self, concepts: list[str] | tuple[list[str], list[str]], novelty: float) -> float:
-        if isinstance(concepts, tuple):
-            concepts = concepts[0] + concepts[1]
+    def _compute_input_activation(
+        self,
+        concepts: list[str] | tuple[list[str], list[str]],
+        unknown_or_novelty: list[str] | float,
+        novelty: float | None = None,
+    ) -> float:
+        if novelty is None:
+            novelty = float(unknown_or_novelty)
+            if isinstance(concepts, tuple):
+                concepts = concepts[0] + concepts[1]
+        else:
+            known = list(concepts) if isinstance(concepts, list) else list(concepts[0])
+            unknown = list(unknown_or_novelty) if isinstance(unknown_or_novelty, list) else []
+            concepts = known + unknown
         if not concepts:
             return 0.05
         activation = 0.03
@@ -1371,7 +1407,7 @@ class VerdantSystem:
                 "config": self.config.model_dump(),
                 "basin_registry": self._basin_registry.to_dict(),
                 "bridge_acceleration": get_fast_bridge_state(self.bridge),
-                "numpy_random_state": self._serialize_numpy_state(np.random.get_state()),
+                "numpy_random_state": self._serialize_numpy_state(self._numpy_random_state),
                 "attention_buffer": {
                     **self.attention_buffer.get_state(),
                     "items": [item.to_dict() for item in self.attention_buffer.items],
@@ -1385,7 +1421,7 @@ class VerdantSystem:
     def load_state(self, path: str) -> None:
         """Load system state from *path*."""
         state = load_state_json(path)
-        self.memory_web = MemoryWeb.from_state_dict(state["memory_web"])
+        self.memory_web = ShardedMemoryWeb.from_state_dict(state["memory_web"])
         self.ecwf = ECWFCore.from_state_dict(state["ecwf"])
         self.bridge = EthomorphicBridge(
             ecwf=self.ecwf,
@@ -1472,7 +1508,9 @@ class VerdantSystem:
             )
         rng_state = extra.get("numpy_random_state")
         if isinstance(rng_state, dict):
-            np.random.set_state(self._deserialize_numpy_state(rng_state))
+            self._numpy_random_state = self._deserialize_numpy_state(rng_state)
+        else:
+            self._numpy_random_state = np.random.get_state()
         attention_state = extra.get("attention_buffer", {})
         if isinstance(attention_state, dict):
             self.attention_buffer.items = []

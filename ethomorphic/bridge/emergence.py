@@ -34,6 +34,9 @@ def link_emergent_to_existing_emergents(
     if not parent_concepts:
         return
 
+    if not hasattr(memory, "get_emergent_nodes"):
+        return
+
     new_parent_set = set(parent_concepts)
     for existing_emergent in memory.get_emergent_nodes():
         if existing_emergent == new_emergent:

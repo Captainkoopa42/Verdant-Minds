@@ -89,7 +89,15 @@ def install_fast_bridge_hooks(bridge: EthomorphicBridge) -> None:
         connection_weight_threshold = float(getattr(self, "_verdant_connection_weight_threshold", 0.0))
         max_connections_per_concept = getattr(self, "_verdant_max_connections_per_concept", None)
         activations: dict[str, float] = {}
-        for concept, mappings in self.concept_dimension_mapping.items():
+        active_concepts = (
+            self.memory.list_active_concepts()
+            if hasattr(self.memory, "list_active_concepts")
+            else self.memory.list_concepts()
+        )
+        for concept in sorted(active_concepts, key=str):
+            mappings = self.concept_dimension_mapping.get(concept)
+            if mappings is None:
+                continue
             activation = 0.0
             for mtype, dim_idx, weight in mappings:
                 if mtype == "cognitive" and dim_idx < cognitive_state.shape[-1]:
@@ -131,7 +139,7 @@ def install_fast_bridge_hooks(bridge: EthomorphicBridge) -> None:
             self.activation_history.setdefault(concept, [])
             self.activation_history[concept].append((time.time(), activation))
 
-        concepts_list = list(activations.keys())
+        concepts_list = sorted(activations.keys(), key=str)
         pair_evaluated = 0
         connection_counts: dict[str, int] = {}
         for idx, c1 in enumerate(concepts_list):

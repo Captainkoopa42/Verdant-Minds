@@ -15,6 +15,7 @@ import time
 from dataclasses import asdict
 from datetime import datetime, timezone
 import json
+from pathlib import Path
 import math
 import os
 from typing import Any, Dict, List, Optional
@@ -1383,6 +1384,12 @@ class VerdantSystem:
 
     def save_state(self, path: str) -> None:
         """Save a complete system checkpoint to *path* via atomic JSON replace."""
+        shard_flush = {}
+        if hasattr(self.memory_web, "flush_shards"):
+            target_path = Path(path)
+            shard_root = target_path.parent / f"{target_path.stem}_shards"
+            shard_flush = self.memory_web.flush_shards(shard_root)
+
         state: Dict[str, Any] = {
             "version": 4,
             "memory_web": self.memory_web.to_state_dict(),
@@ -1407,6 +1414,7 @@ class VerdantSystem:
                 "config": self.config.model_dump(),
                 "basin_registry": self._basin_registry.to_dict(),
                 "bridge_acceleration": get_fast_bridge_state(self.bridge),
+                "shard_flush": shard_flush,
                 "numpy_random_state": self._serialize_numpy_state(self._numpy_random_state),
                 "attention_buffer": {
                     **self.attention_buffer.get_state(),

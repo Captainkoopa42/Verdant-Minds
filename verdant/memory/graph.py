@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import networkx as nx
@@ -509,6 +510,59 @@ class ShardedMemoryWeb:
     def prune_connections(self, max_per_node: int = 50) -> None:
         self.active_canvas.prune_connections(max_per_node=max_per_node)
 
+    def flush_shards(self, memory_root: str | Path) -> Dict[str, Any]:
+        """Persist active shard state and trigger mitosis when caps are exceeded.
+
+        This is the Phase 6 router hook: callers provide a memory root containing
+        ``manifest.json`` and ``shards/``. If the dirty active shard exceeds the
+        manifest caps, it is physically split and the first daughter becomes the
+        active canvas.
+        """
+        from verdant.memory.mitosis import split_and_persist
+        from verdant.memory.persistence import save_state
+
+        root = Path(memory_root)
+        shards_dir = root / "shards"
+        shards_dir.mkdir(parents=True, exist_ok=True)
+        self._refresh_active_manifest(dirty=True)
+
+        result = split_and_persist(
+            memory_web=self.active_canvas,
+            manifest=self.manifest,
+            parent_shard_id=self.active_shard_id,
+            memory_root=root,
+        )
+        if result is not None:
+            self.active_canvas = MemoryWeb.from_state_dict(result.active_state)
+            self.active_shard_id = result.active_shard_id
+            self.manifest = result.manifest
+            return {
+                "mitosis_performed": True,
+                "parent_shard_id": result.parent_shard_id,
+                "daughter_shard_ids": [daughter.shard_id for daughter in result.daughters],
+                "weak_bridge_edges": len(result.weak_bridge_edges),
+                "memory_root": str(root),
+            }
+
+        active_meta = self.manifest.setdefault("shards", {}).setdefault(self.active_shard_id, {})
+        active_meta.setdefault("path", f"shards/{self.active_shard_id}.json")
+        shard_path = root / str(active_meta["path"])
+        save_state(shard_path, {
+            "version": 1,
+            "schema": "verdant.memory_shard.v1",
+            "shard_id": self.active_shard_id,
+            "anchors": active_meta.get("anchor_labels", []),
+            "memory_web": self.active_canvas.to_state_dict(),
+        })
+        active_meta["dirty"] = False
+        self.manifest["updated_at"] = time.time()
+        save_state(root / "manifest.json", self.manifest)
+        return {
+            "mitosis_performed": False,
+            "active_shard_id": self.active_shard_id,
+            "memory_root": str(root),
+        }
+
     def _default_manifest(self) -> Dict[str, Any]:
         now = time.time()
         return {
@@ -517,6 +571,13 @@ class ShardedMemoryWeb:
             "created_at": now,
             "updated_at": now,
             "active_shards": [self.active_shard_id],
+            "defaults": {
+                "max_nodes_per_shard": 512,
+                "max_edges_per_shard": 20_000,
+                "thaw_penalty": 0.35,
+                "thaw_threshold": 0.12,
+                "noise_floor": 0.01,
+            },
             "shards": {
                 self.active_shard_id: {
                     "shard_id": self.active_shard_id,
@@ -537,14 +598,14 @@ class ShardedMemoryWeb:
             "weak_bridge_edges": [],
         }
 
-    def _refresh_active_manifest(self) -> None:
+    def _refresh_active_manifest(self, *, dirty: bool = True) -> None:
         shard = self.manifest.setdefault("shards", {}).setdefault(self.active_shard_id, {})
         shard.update({
             "shard_id": self.active_shard_id,
             "state": "active",
             "node_count": self.graph.number_of_nodes(),
             "edge_count": self.graph.number_of_edges(),
-            "dirty": True,
+            "dirty": bool(dirty),
             "updated_at": time.time(),
         })
         self.manifest["active_shards"] = [self.active_shard_id]

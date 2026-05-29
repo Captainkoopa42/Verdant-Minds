@@ -284,6 +284,7 @@ class ECWFCore:
                 "adaptive_rate": self.adaptive_rate,
                 "random_state": self.random_state,
                 "dimension_meanings": dict(self.dimension_meanings),
+                "rng_state": self._serialize_rng_state(self.rng.get_state()),
             },
             "parameters": {
                 "k": self.k.tolist(),
@@ -334,6 +335,9 @@ class ECWFCore:
         instance.amplitude_factors = np.array(params["amplitude_factors"], dtype=float)
 
         instance.dimension_meanings = dict(meta.get("dimension_meanings", {}))
+        rng_state = meta.get("rng_state")
+        if isinstance(rng_state, dict):
+            instance.rng.set_state(cls._deserialize_rng_state(rng_state))
 
         # Restore history if present
         history = state.get("history", {})
@@ -343,6 +347,28 @@ class ECWFCore:
             instance.past_states.append(real + 1j * imag)
 
         return instance
+
+    @staticmethod
+    def _serialize_rng_state(state: tuple[Any, ...]) -> Dict[str, Any]:
+        """Serialize NumPy RandomState state into JSON-friendly metadata."""
+        return {
+            "bit_generator": str(state[0]),
+            "keys": state[1].tolist(),
+            "pos": int(state[2]),
+            "has_gauss": int(state[3]),
+            "cached_gaussian": float(state[4]),
+        }
+
+    @staticmethod
+    def _deserialize_rng_state(state: Dict[str, Any]) -> tuple[Any, ...]:
+        """Restore NumPy RandomState state from JSON-friendly metadata."""
+        return (
+            str(state["bit_generator"]),
+            np.array(state["keys"], dtype=np.uint32),
+            int(state["pos"]),
+            int(state["has_gauss"]),
+            float(state["cached_gaussian"]),
+        )
 
     # ------------------------------------------------------------------
     # Convenience helpers

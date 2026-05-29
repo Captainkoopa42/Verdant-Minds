@@ -7,6 +7,8 @@ in verdant/ that imports NetworkX.
 from __future__ import annotations
 
 import time
+from copy import deepcopy
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import networkx as nx
@@ -70,7 +72,7 @@ class MemoryWeb:
                     for k, v in self.memory_store.items()
                     if k != label
                 ]
-                others.sort(key=lambda x: x[1], reverse=True)
+                others.sort(key=lambda x: (-float(x[1]), str(x[0])))
                 for other_label, _ in others[:3]:
                     self.connect(label, other_label, 0.3)
 
@@ -118,11 +120,11 @@ class MemoryWeb:
         """Return immediate neighbor labels."""
         if label not in self.graph:
             return []
-        return list(self.graph.neighbors(label))
+        return sorted(str(neighbor) for neighbor in self.graph.neighbors(label))
 
     def list_concepts(self) -> List[str]:
         """Return all concept labels."""
-        return list(self.memory_store.keys())
+        return sorted(str(label) for label in self.memory_store.keys())
 
     def reinforce(self, label: str, amount: float = 0.1) -> float:
         """Increase stability and return new value."""
@@ -139,7 +141,7 @@ class MemoryWeb:
     def decay(self, factor: float = 0.01) -> int:
         """Apply uniform decay; returns count of affected nodes."""
         count = 0
-        for label, data in self.memory_store.items():
+        for label, data in sorted(self.memory_store.items(), key=lambda item: str(item[0])):
             old = data["stability"]
             data["stability"] = max(0.1, old - factor)
             self.graph.nodes[label]["stability"] = data["stability"]
@@ -160,7 +162,7 @@ class MemoryWeb:
             return []
         ego = nx.ego_graph(self.graph, label, radius=depth)
         results: List[Tuple[str, float]] = []
-        for node in ego.nodes():
+        for node in sorted(ego.nodes(), key=str):
             if node == label:
                 continue
             try:
@@ -198,7 +200,7 @@ class MemoryWeb:
             activations[concept] = level
             if depth >= max_depth:
                 continue
-            for neighbor in self.graph.neighbors(concept):
+            for neighbor in sorted(self.graph.neighbors(concept), key=str):
                 w = self.graph[concept][neighbor].get("weight", 0.5)
                 new_level = level * w * spread_factor
                 if new_level >= threshold:
@@ -234,7 +236,7 @@ class MemoryWeb:
     def get_edge_classification(self) -> Dict[str, int]:
         """Classify edges as emergent↔emergent, emergent↔seeded, seeded↔seeded."""
         counts = {"emergent_emergent": 0, "emergent_seeded": 0, "seeded_seeded": 0}
-        for u, v in self.graph.edges():
+        for u, v in sorted(self.graph.edges(), key=lambda edge: (str(edge[0]), str(edge[1]))):
             u_em = u.startswith("Emergent_")
             v_em = v.startswith("Emergent_")
             if u_em and v_em:
@@ -248,7 +250,7 @@ class MemoryWeb:
     def to_chunks(self) -> Dict[str, Any]:
         """Produce chunked serialisation format."""
         nodes: Dict[str, Any] = {}
-        for label, data in self.memory_store.items():
+        for label, data in sorted(self.memory_store.items(), key=lambda item: str(item[0])):
             nodes[label] = {
                 "stability": data["stability"],
                 "access_count": data["access_count"],
@@ -257,7 +259,7 @@ class MemoryWeb:
             }
         edges = [
             {"source": u, "target": v, "weight": d.get("weight", 0.5)}
-            for u, v, d in self.graph.edges(data=True)
+            for u, v, d in sorted(self.graph.edges(data=True), key=lambda edge: (str(edge[0]), str(edge[1])))
         ]
         return {
             "nodes": nodes,
@@ -297,7 +299,7 @@ class MemoryWeb:
         for label, data in state.get("memory_store", {}).items():
             web.memory_store[label] = {
                 "stability": data["stability"],
-                "connections": data.get("connections", []),
+                "connections": [tuple(conn) for conn in data.get("connections", [])],
                 "first_seen": data.get("first_seen", 0),
                 "last_accessed": data.get("last_accessed", 0),
                 "access_count": data.get("access_count", 1),
@@ -357,3 +359,254 @@ class MemoryWeb:
             if kw in lower:
                 return -0.5
         return 0.0
+
+
+class ShardedMemoryWeb:
+    """Facade exposing a shard-aware MemoryBackend over one active canvas.
+
+    Phase 2 deliberately keeps a single monolithic active shard so the rest of
+    Verdant can depend on the facade contract before physical shard mitosis is
+    introduced. The underlying canvas remains a normal ``MemoryWeb``.
+    """
+
+    DEFAULT_SHARD_ID = "basin_monolith_000000"
+
+    def __init__(
+        self,
+        active_canvas: Optional[MemoryWeb] = None,
+        *,
+        active_shard_id: str = DEFAULT_SHARD_ID,
+        manifest: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        self.active_canvas = active_canvas or MemoryWeb()
+        self.active_shard_id = str(active_shard_id)
+        self.manifest = deepcopy(manifest) if manifest is not None else self._default_manifest()
+
+    @classmethod
+    def monolith(cls, active_canvas: Optional[MemoryWeb] = None) -> "ShardedMemoryWeb":
+        """Create a facade backed by a single active monolith shard."""
+        return cls(active_canvas=active_canvas, active_shard_id=cls.DEFAULT_SHARD_ID)
+
+    @property
+    def graph(self) -> nx.Graph:
+        return self.active_canvas.graph
+
+    @property
+    def memory_store(self) -> Dict[str, Dict[str, Any]]:
+        return self.active_canvas.memory_store
+
+    @property
+    def thought_clusters(self) -> Dict[str, List[str]]:
+        return self.active_canvas.thought_clusters
+
+    @property
+    def activation_history(self) -> Dict[str, List[Tuple[float, float]]]:
+        return self.active_canvas.activation_history
+
+    @property
+    def edge_policy(self) -> str:
+        return self.active_canvas.edge_policy
+
+    @edge_policy.setter
+    def edge_policy(self, value: str) -> None:
+        self.active_canvas.edge_policy = value
+
+    @property
+    def metrics(self) -> Dict[str, Any]:
+        return self.active_canvas.metrics
+
+    def add_concept(self, label: str, stability: float = 0.5, metadata: Optional[Dict[str, Any]] = None) -> None:
+        self.active_canvas.add_concept(label, stability=stability, metadata=metadata)
+        self._refresh_active_manifest()
+
+    add_thought = add_concept
+
+    def get_concept(self, label: str) -> Optional[Dict[str, Any]]:
+        return self.active_canvas.get_concept(label)
+
+    def connect(self, label1: str, label2: str, weight: float = 0.5) -> bool:
+        created = self.active_canvas.connect(label1, label2, weight=weight)
+        if created:
+            self._refresh_active_manifest()
+        return created
+
+    connect_thoughts = connect
+
+    def get_neighbors(self, label: str) -> List[str]:
+        return self.active_canvas.get_neighbors(label)
+
+    def list_concepts(self) -> List[str]:
+        return self.active_canvas.list_concepts()
+
+    def list_active_concepts(self) -> List[str]:
+        """Return labels resident in the active canvas."""
+        return self.active_canvas.list_concepts()
+
+    def reinforce(self, label: str, amount: float = 0.1) -> float:
+        return self.active_canvas.reinforce(label, amount=amount)
+
+    reinforce_memory = reinforce
+
+    def decay(self, factor: float = 0.01) -> int:
+        return self.active_canvas.decay(factor=factor)
+
+    decay_memories = decay
+
+    def retrieve_related(self, label: str, depth: int = 2, limit: int = 10) -> List[Tuple[str, float]]:
+        return self.active_canvas.retrieve_related(label, depth=depth, limit=limit)
+
+    retrieve_related_thoughts = retrieve_related
+
+    def activate_concepts(
+        self,
+        seeds: List[str],
+        strength: float = 0.7,
+        spread_factor: float = 0.5,
+        max_depth: int = 3,
+        threshold: float = 0.1,
+    ) -> Dict[str, float]:
+        return self.active_canvas.activate_concepts(
+            seeds,
+            strength=strength,
+            spread_factor=spread_factor,
+            max_depth=max_depth,
+            threshold=threshold,
+        )
+
+    def cluster_thoughts(self, min_stability: float = 0.3) -> Dict[str, List[str]]:
+        return self.active_canvas.cluster_thoughts(min_stability=min_stability)
+
+    def get_emergent_nodes(self) -> List[str]:
+        return self.active_canvas.get_emergent_nodes()
+
+    def get_edge_classification(self) -> Dict[str, int]:
+        return self.active_canvas.get_edge_classification()
+
+    def to_chunks(self) -> Dict[str, Any]:
+        return self.active_canvas.to_chunks()
+
+    def to_state_dict(self) -> Dict[str, Any]:
+        state = self.active_canvas.to_state_dict()
+        state["sharded_facade"] = {
+            "active_shard_id": self.active_shard_id,
+            "manifest": deepcopy(self.manifest),
+        }
+        return state
+
+    @classmethod
+    def from_state_dict(cls, state: Dict[str, Any]) -> "ShardedMemoryWeb":
+        facade_state = state.get("sharded_facade", {}) if isinstance(state, dict) else {}
+        canvas_state = state.get("active_canvas", state) if isinstance(state, dict) else state
+        canvas = MemoryWeb.from_state_dict(canvas_state)
+        return cls(
+            active_canvas=canvas,
+            active_shard_id=str(facade_state.get("active_shard_id", cls.DEFAULT_SHARD_ID)),
+            manifest=facade_state.get("manifest"),
+        )
+
+    def get_metrics(self) -> Dict[str, Any]:
+        return self.active_canvas.get_metrics()
+
+    def prune_connections(self, max_per_node: int = 50) -> None:
+        self.active_canvas.prune_connections(max_per_node=max_per_node)
+
+    def flush_shards(self, memory_root: str | Path) -> Dict[str, Any]:
+        """Persist active shard state and trigger mitosis when caps are exceeded.
+
+        This is the Phase 6 router hook: callers provide a memory root containing
+        ``manifest.json`` and ``shards/``. If the dirty active shard exceeds the
+        manifest caps, it is physically split and the first daughter becomes the
+        active canvas.
+        """
+        from verdant.memory.mitosis import split_and_persist
+        from verdant.memory.persistence import save_state
+
+        root = Path(memory_root)
+        shards_dir = root / "shards"
+        shards_dir.mkdir(parents=True, exist_ok=True)
+        self._refresh_active_manifest(dirty=True)
+
+        result = split_and_persist(
+            memory_web=self.active_canvas,
+            manifest=self.manifest,
+            parent_shard_id=self.active_shard_id,
+            memory_root=root,
+        )
+        if result is not None:
+            self.active_canvas = MemoryWeb.from_state_dict(result.active_state)
+            self.active_shard_id = result.active_shard_id
+            self.manifest = result.manifest
+            return {
+                "mitosis_performed": True,
+                "parent_shard_id": result.parent_shard_id,
+                "daughter_shard_ids": [daughter.shard_id for daughter in result.daughters],
+                "weak_bridge_edges": len(result.weak_bridge_edges),
+                "memory_root": str(root),
+            }
+
+        active_meta = self.manifest.setdefault("shards", {}).setdefault(self.active_shard_id, {})
+        active_meta.setdefault("path", f"shards/{self.active_shard_id}.json")
+        shard_path = root / str(active_meta["path"])
+        save_state(shard_path, {
+            "version": 1,
+            "schema": "verdant.memory_shard.v1",
+            "shard_id": self.active_shard_id,
+            "anchors": active_meta.get("anchor_labels", []),
+            "memory_web": self.active_canvas.to_state_dict(),
+        })
+        active_meta["dirty"] = False
+        self.manifest["updated_at"] = time.time()
+        save_state(root / "manifest.json", self.manifest)
+        return {
+            "mitosis_performed": False,
+            "active_shard_id": self.active_shard_id,
+            "memory_root": str(root),
+        }
+
+    def _default_manifest(self) -> Dict[str, Any]:
+        now = time.time()
+        return {
+            "version": 1,
+            "schema": "verdant.routing_registry.v1",
+            "created_at": now,
+            "updated_at": now,
+            "active_shards": [self.active_shard_id],
+            "defaults": {
+                "max_nodes_per_shard": 512,
+                "max_edges_per_shard": 20_000,
+                "thaw_penalty": 0.35,
+                "thaw_threshold": 0.12,
+                "noise_floor": 0.01,
+            },
+            "shards": {
+                self.active_shard_id: {
+                    "shard_id": self.active_shard_id,
+                    "path": f"shards/{self.active_shard_id}.json",
+                    "state": "active",
+                    "node_count": self.graph.number_of_nodes(),
+                    "edge_count": self.graph.number_of_edges(),
+                    "dirty": False,
+                    "anchor_labels": [],
+                    "centroid": {
+                        "space": "verdant.anchor_hash.v1",
+                        "dimensions": 0,
+                        "values": [],
+                    },
+                }
+            },
+            "concept_index": {},
+            "weak_bridge_edges": [],
+        }
+
+    def _refresh_active_manifest(self, *, dirty: bool = True) -> None:
+        shard = self.manifest.setdefault("shards", {}).setdefault(self.active_shard_id, {})
+        shard.update({
+            "shard_id": self.active_shard_id,
+            "state": "active",
+            "node_count": self.graph.number_of_nodes(),
+            "edge_count": self.graph.number_of_edges(),
+            "dirty": bool(dirty),
+            "updated_at": time.time(),
+        })
+        self.manifest["active_shards"] = [self.active_shard_id]
+        self.manifest["updated_at"] = shard["updated_at"]

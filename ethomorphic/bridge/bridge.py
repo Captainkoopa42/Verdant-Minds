@@ -8,6 +8,7 @@ concrete graph library (e.g. NetworkX).
 
 from __future__ import annotations
 
+import hashlib
 import time
 from typing import Any, Dict, List, Optional, Protocol, Tuple, runtime_checkable
 
@@ -131,7 +132,9 @@ class EthomorphicBridge:
 
         cog_dims = self.ecwf.num_cognitive_dims
         eth_dims = self.ecwf.num_ethical_dims
-        rng = np.random.default_rng()
+        base_seed = int(getattr(self.ecwf, "random_state", 0) or 0)
+        digest = hashlib.sha256(f"{concept}|{base_seed}".encode("utf-8")).digest()
+        rng = np.random.default_rng(int.from_bytes(digest[:8], "big") % (2**32))
 
         dimensions: List[Tuple[str, int, float]] = []
 
@@ -166,7 +169,7 @@ class EthomorphicBridge:
         """
         self.concept_dimension_mapping.clear()
         concepts = self.memory.list_concepts()
-        for concept in concepts:
+        for concept in sorted(concepts, key=str):
             self.assign_concept_mappings(concept)
         return len(self.concept_dimension_mapping)
 
@@ -203,7 +206,15 @@ class EthomorphicBridge:
 
         activations: Dict[str, float] = {}
 
-        for concept, mappings in self.concept_dimension_mapping.items():
+        active_concepts = (
+            self.memory.list_active_concepts()
+            if hasattr(self.memory, "list_active_concepts")
+            else self.memory.list_concepts()
+        )
+        for concept in sorted(active_concepts, key=str):
+            mappings = self.concept_dimension_mapping.get(concept)
+            if mappings is None:
+                continue
             activation = 0.0
             for mtype, dim_idx, weight in mappings:
                 if mtype == "cognitive" and dim_idx < cognitive_state.shape[-1]:
@@ -242,7 +253,7 @@ class EthomorphicBridge:
             self.activation_history[concept].append((time.time(), activation))
 
         # Connect co-activated concepts
-        concepts_list = list(activations.keys())
+        concepts_list = sorted(activations.keys(), key=str)
         for i, c1 in enumerate(concepts_list):
             for c2 in concepts_list[i + 1:]:
                 strength = min(activations[c1], activations[c2])
@@ -275,8 +286,8 @@ class EthomorphicBridge:
 
         processed: List[str] = []
 
-        for concept in input_concepts:
-            neighbors = self.memory.get_neighbors(concept)
+        for concept in sorted(input_concepts, key=str):
+            neighbors = sorted(self.memory.get_neighbors(concept), key=str)
             related = [(concept, 1.0)] + [(n, 0.5) for n in neighbors]
 
             for rel_concept, relevance in related:
@@ -337,13 +348,13 @@ class EthomorphicBridge:
         # Detect resonance
         memory_concepts = set(ecwf_update.get("processed_concepts", []))
         wave_concepts = set(memory_update.get("activated_concepts", {}).keys())
-        for concept in memory_concepts & wave_concepts:
+        for concept in sorted(memory_concepts & wave_concepts, key=str):
             self.resonance_patterns[concept] = self.resonance_patterns.get(concept, 0) + 1
 
         return {
             "ecwf_update": ecwf_update,
             "memory_update": memory_update,
-            "resonance_patterns": list(self.resonance_patterns.keys())[:5],
+            "resonance_patterns": sorted(self.resonance_patterns.keys())[:5],
             "timestamp": time.time(),
         }
 

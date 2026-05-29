@@ -3,12 +3,60 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import Any, Dict
 
 
+def _fsync_directory(path: Path) -> None:
+    """Best-effort directory fsync so atomic renames survive power loss."""
+    if os.name == "nt":
+        return
+    try:
+        dir_fd = os.open(path, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(dir_fd)
+    finally:
+        os.close(dir_fd)
+
+
 def save_state(path: str | Path, state: Dict[str, Any]) -> None:
-    Path(path).write_text(json.dumps(state, separators=(",", ":"), default=str), encoding="utf-8")
+    """Atomically serialize *state* to JSON at *path*.
+
+    The write is staged in the target directory, flushed with ``fsync``, and
+    then promoted with ``os.replace``. This prevents readers from observing a
+    partially written checkpoint if the process dies mid-write.
+    """
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path: Path | None = None
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=target.parent,
+            prefix=f".{target.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as tmp:
+            tmp_path = Path(tmp.name)
+            json.dump(state, tmp, separators=(",", ":"), default=str)
+            tmp.flush()
+            os.fsync(tmp.fileno())
+
+        os.replace(tmp_path, target)
+        _fsync_directory(target.parent)
+    except Exception:
+        if tmp_path is not None:
+            try:
+                tmp_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        raise
 
 
 def load_state(path: str | Path) -> Dict[str, Any]:

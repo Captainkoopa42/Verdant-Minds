@@ -1346,7 +1346,7 @@ class VerdantSystem:
         return system
 
     def save_state(self, path: str) -> None:
-        """Save full system state to *path*."""
+        """Save a complete system checkpoint to *path* via atomic JSON replace."""
         state: Dict[str, Any] = {
             "version": 4,
             "memory_web": self.memory_web.to_state_dict(),
@@ -1371,6 +1371,12 @@ class VerdantSystem:
                 "config": self.config.model_dump(),
                 "basin_registry": self._basin_registry.to_dict(),
                 "bridge_acceleration": get_fast_bridge_state(self.bridge),
+                "numpy_random_state": self._serialize_numpy_state(np.random.get_state()),
+                "attention_buffer": {
+                    **self.attention_buffer.get_state(),
+                    "items": [item.to_dict() for item in self.attention_buffer.items],
+                    "bypass": self.attention_buffer.bypass,
+                },
             },
         }
         self._prune_state_for_save(state)

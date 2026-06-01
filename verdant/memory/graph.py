@@ -61,6 +61,9 @@ class MemoryWeb:
                 "last_accessed": now,
                 "access_count": 1,
                 "metadata": metadata or {},
+                "ethics_salience_peak": 0.0,
+                "ethics_salience_floor": 0.0,
+                "ethics_salience_last_cycle": 0,
             }
             self.graph.add_node(label, stability=stability)
             self.metrics["total_concepts"] += 1
@@ -76,6 +79,9 @@ class MemoryWeb:
                 for other_label, _ in others[:3]:
                     self.connect(label, other_label, 0.3)
 
+        self.memory_store[label].setdefault("ethics_salience_peak", 0.0)
+        self.memory_store[label].setdefault("ethics_salience_floor", 0.0)
+        self.memory_store[label].setdefault("ethics_salience_last_cycle", 0)
         self.graph.nodes[label]["stability"] = self.memory_store[label]["stability"]
         self._update_avg_stability()
 
@@ -281,6 +287,9 @@ class MemoryWeb:
                     "last_accessed": v["last_accessed"],
                     "access_count": v["access_count"],
                     "metadata": v["metadata"],
+                    "ethics_salience_peak": v.get("ethics_salience_peak", 0.0),
+                    "ethics_salience_floor": v.get("ethics_salience_floor", 0.0),
+                    "ethics_salience_last_cycle": v.get("ethics_salience_last_cycle", 0),
                 }
                 for k, v in self.memory_store.items()
             },
@@ -304,6 +313,9 @@ class MemoryWeb:
                 "last_accessed": data.get("last_accessed", 0),
                 "access_count": data.get("access_count", 1),
                 "metadata": data.get("metadata", {}),
+                "ethics_salience_peak": data.get("ethics_salience_peak", 0.0),
+                "ethics_salience_floor": data.get("ethics_salience_floor", 0.0),
+                "ethics_salience_last_cycle": data.get("ethics_salience_last_cycle", 0),
             }
             web.graph.add_node(label, stability=data["stability"])
         for edge in state.get("edges", []):
@@ -381,6 +393,8 @@ class ShardedMemoryWeb:
         self.active_canvas = active_canvas or MemoryWeb()
         self.active_shard_id = str(active_shard_id)
         self.manifest = deepcopy(manifest) if manifest is not None else self._default_manifest()
+        self._dirty = False
+        self._warm_cache: Dict[str, MemoryWeb] = {}
 
     @classmethod
     def monolith(cls, active_canvas: Optional[MemoryWeb] = None) -> "ShardedMemoryWeb":
@@ -417,6 +431,7 @@ class ShardedMemoryWeb:
 
     def add_concept(self, label: str, stability: float = 0.5, metadata: Optional[Dict[str, Any]] = None) -> None:
         self.active_canvas.add_concept(label, stability=stability, metadata=metadata)
+        self._dirty = True
         self._refresh_active_manifest()
 
     add_thought = add_concept
@@ -427,6 +442,7 @@ class ShardedMemoryWeb:
     def connect(self, label1: str, label2: str, weight: float = 0.5) -> bool:
         created = self.active_canvas.connect(label1, label2, weight=weight)
         if created:
+            self._dirty = True
             self._refresh_active_manifest()
         return created
 
@@ -486,7 +502,7 @@ class ShardedMemoryWeb:
         return self.active_canvas.to_chunks()
 
     def to_state_dict(self) -> Dict[str, Any]:
-        state = self.active_canvas.to_state_dict()
+        state = self._active_canvas_state_without_ghosts()
         state["sharded_facade"] = {
             "active_shard_id": self.active_shard_id,
             "manifest": deepcopy(self.manifest),
@@ -509,6 +525,10 @@ class ShardedMemoryWeb:
 
     def prune_connections(self, max_per_node: int = 50) -> None:
         self.active_canvas.prune_connections(max_per_node=max_per_node)
+
+    def mark_dirty(self) -> None:
+        self._dirty = True
+        self._refresh_active_manifest(dirty=True)
 
     def flush_shards(self, memory_root: str | Path) -> Dict[str, Any]:
         """Persist active shard state and trigger mitosis when caps are exceeded.
@@ -536,6 +556,9 @@ class ShardedMemoryWeb:
             self.active_canvas = MemoryWeb.from_state_dict(result.active_state)
             self.active_shard_id = result.active_shard_id
             self.manifest = result.manifest
+            self._dirty = False
+            self._warm_cache = {self.active_shard_id: self.active_canvas}
+            self._load_mandatory_bridge_ghosts(root)
             return {
                 "mitosis_performed": True,
                 "parent_shard_id": result.parent_shard_id,
@@ -544,6 +567,8 @@ class ShardedMemoryWeb:
                 "memory_root": str(root),
             }
 
+        self._strip_ghosts()
+        self._populate_active_concept_index()
         active_meta = self.manifest.setdefault("shards", {}).setdefault(self.active_shard_id, {})
         active_meta.setdefault("path", f"shards/{self.active_shard_id}.json")
         shard_path = root / str(active_meta["path"])
@@ -555,6 +580,7 @@ class ShardedMemoryWeb:
             "memory_web": self.active_canvas.to_state_dict(),
         })
         active_meta["dirty"] = False
+        self._dirty = False
         self.manifest["updated_at"] = time.time()
         save_state(root / "manifest.json", self.manifest)
         return {
@@ -562,6 +588,121 @@ class ShardedMemoryWeb:
             "active_shard_id": self.active_shard_id,
             "memory_root": str(root),
         }
+
+
+    def thaw(self, shard_id: str, memory_root: str | Path) -> None:
+        """Load *shard_id* as the active canvas and materialize mandatory ghosts."""
+        shard_id = str(shard_id)
+        root = Path(memory_root)
+        if shard_id == self.active_shard_id:
+            return
+        if self._dirty:
+            self.flush_shards(root)
+
+        if shard_id in self._warm_cache:
+            canvas = self._warm_cache.pop(shard_id)
+        else:
+            meta = (self.manifest.get("shards", {}) or {}).get(shard_id, {})
+            path_value = meta.get("path", f"shards/{shard_id}.json") if isinstance(meta, dict) else f"shards/{shard_id}.json"
+            from verdant.memory.persistence import load_state
+
+            document = load_state(root / str(path_value))
+            canvas = MemoryWeb.from_state_dict(document.get("memory_web", document))
+        self._strip_ghosts(canvas)
+        self.active_canvas = canvas
+        self.active_shard_id = shard_id
+        self._warm_cache[shard_id] = self.active_canvas
+        while len(self._warm_cache) > 2:
+            self._warm_cache.pop(next(iter(self._warm_cache)))
+        self._refresh_active_manifest(dirty=False)
+        self._load_mandatory_bridge_ghosts(root)
+
+    def _active_canvas_state_without_ghosts(self) -> Dict[str, Any]:
+        state = self.active_canvas.to_state_dict()
+        store = state.get("memory_store", {})
+        ghost_labels = {
+            label for label, data in store.items()
+            if (data.get("metadata") or {}).get("ghost")
+        }
+        if not ghost_labels:
+            return state
+        state["memory_store"] = {
+            label: data for label, data in store.items()
+            if label not in ghost_labels
+        }
+        state["edges"] = [
+            edge for edge in state.get("edges", [])
+            if edge.get("source") not in ghost_labels and edge.get("target") not in ghost_labels
+        ]
+        metrics = dict(state.get("metrics", {}) or {})
+        metrics["total_concepts"] = len(state["memory_store"])
+        metrics["total_connections"] = len(state["edges"])
+        state["metrics"] = metrics
+        return state
+
+    def _populate_active_concept_index(self) -> None:
+        concept_index = self.manifest.setdefault("concept_index", {})
+        for label, data in self.memory_store.items():
+            if (data.get("metadata") or {}).get("ghost"):
+                continue
+            concept_index[str(label)] = [self.active_shard_id]
+
+    def _strip_ghosts(self, canvas: Optional[MemoryWeb] = None) -> None:
+        canvas = canvas or self.active_canvas
+        ghost_labels = [
+            label for label, data in canvas.memory_store.items()
+            if (data.get("metadata") or {}).get("ghost")
+        ]
+        for label in ghost_labels:
+            canvas.memory_store.pop(label, None)
+            canvas.activation_history.pop(label, None)
+            if canvas.graph.has_node(label):
+                canvas.graph.remove_node(label)
+        canvas.metrics["total_concepts"] = len(canvas.memory_store)
+        canvas.metrics["total_connections"] = canvas.graph.number_of_edges()
+        canvas._update_avg_stability()
+
+    def _load_mandatory_bridge_ghosts(self, root: Path) -> None:
+        from verdant.memory.persistence import load_state
+        from verdant.memory.router import MemoryRouter
+
+        router = MemoryRouter(self.manifest)
+        for edge in router.get_mandatory_bridges_for_shard(self.active_shard_id):
+            if edge.get("source_shard") == self.active_shard_id:
+                home_label = str(edge.get("source"))
+                ghost_label = str(edge.get("target"))
+                ghost_shard = str(edge.get("target_shard"))
+            else:
+                home_label = str(edge.get("target"))
+                ghost_label = str(edge.get("source"))
+                ghost_shard = str(edge.get("source_shard"))
+            if ghost_label in self.active_canvas.memory_store:
+                continue
+            meta = (self.manifest.get("shards", {}) or {}).get(ghost_shard, {})
+            if not isinstance(meta, dict) or meta.get("state") == "split":
+                continue
+            path_value = meta.get("path", f"shards/{ghost_shard}.json")
+            shard_path = root / str(path_value)
+            if not shard_path.exists():
+                continue
+            document = load_state(shard_path)
+            other_state = document.get("memory_web", document)
+            other_store = other_state.get("memory_store", {}) if isinstance(other_state, dict) else {}
+            node_data = dict(other_store.get(ghost_label, {}) or {})
+            if not node_data:
+                continue
+            node_data.setdefault("connections", [])
+            metadata = dict(node_data.get("metadata", {}) or {})
+            metadata.update({"ghost": True, "home_shard": ghost_shard})
+            node_data["metadata"] = metadata
+            node_data["activation"] = float(edge.get("weight", 0.5)) * float(edge.get("thaw_penalty", self.manifest.get("defaults", {}).get("thaw_penalty", 0.35)))
+            node_data.setdefault("ethics_salience_peak", 0.0)
+            node_data.setdefault("ethics_salience_floor", 0.0)
+            node_data.setdefault("ethics_salience_last_cycle", 0)
+            self.active_canvas.memory_store[ghost_label] = node_data
+            self.active_canvas.graph.add_node(ghost_label, stability=float(node_data.get("stability", 0.5)))
+            if self.active_canvas.graph.has_node(home_label):
+                self.active_canvas.graph.add_edge(home_label, ghost_label, weight=float(edge.get("weight", 0.5)))
 
     def _default_manifest(self) -> Dict[str, Any]:
         now = time.time()
@@ -577,6 +718,9 @@ class ShardedMemoryWeb:
                 "thaw_penalty": 0.35,
                 "thaw_threshold": 0.12,
                 "noise_floor": 0.01,
+                "salience_decay_rate": 0.92,
+                "ethics_anchor_threshold": 0.35,
+                "salience_high_water_floor": 0.20,
             },
             "shards": {
                 self.active_shard_id: {

@@ -11,6 +11,7 @@ from typing import Any
 
 import networkx as nx
 
+from verdant.config import ETHICS_ANCHOR_THRESHOLD, SALIENCE_DECAY_RATE
 from verdant.memory.persistence import save_state
 
 
@@ -77,7 +78,8 @@ def split_and_persist(
         _build_daughter(memory_web, parent_shard_id, left_nodes, "a"),
         _build_daughter(memory_web, parent_shard_id, right_nodes, "b"),
     )
-    weak_edges = _promote_cut_edges(graph, parent_shard_id, daughters)
+    current_cycle = int((manifest.get("runtime", {}) or {}).get("cycle", manifest.get("current_cycle", 0)) or 0)
+    weak_edges = _promote_cut_edges(memory_web, graph, parent_shard_id, daughters, current_cycle=current_cycle)
 
     updated_manifest = _updated_manifest(
         manifest=manifest,
@@ -196,10 +198,21 @@ def _slugify(value: str) -> str:
     return slug[:32]
 
 
+def _compute_salience(node_data: dict[str, Any], current_cycle: int) -> float:
+    peak = float(node_data.get("ethics_salience_peak", 0.0) or 0.0)
+    floor = float(node_data.get("ethics_salience_floor", 0.0) or 0.0)
+    last = int(node_data.get("ethics_salience_last_cycle", 0) or 0)
+    cycles = max(0, int(current_cycle) - last)
+    return max(floor, peak * (SALIENCE_DECAY_RATE ** cycles))
+
+
 def _promote_cut_edges(
+    memory_web: Any,
     graph: nx.Graph,
     parent_shard_id: str,
     daughters: tuple[DaughterShard, DaughterShard],
+    *,
+    current_cycle: int = 0,
 ) -> list[dict[str, Any]]:
     left, right = daughters
     node_to_shard = {node: left.shard_id for node in left.node_ids}
@@ -214,6 +227,11 @@ def _promote_cut_edges(
         if source_shard is None or target_shard is None or source_shard == target_shard:
             continue
         weight = float(data.get("weight", 0.5))
+        source_data = memory_web.get_concept(source) or dict(graph.nodes[source])
+        target_data = memory_web.get_concept(target) or dict(graph.nodes[target])
+        src_salience = _compute_salience(source_data, current_cycle)
+        dst_salience = _compute_salience(target_data, current_cycle)
+        is_mandatory = src_salience >= ETHICS_ANCHOR_THRESHOLD or dst_salience >= ETHICS_ANCHOR_THRESHOLD
         bridge_key = "|".join(sorted([source_shard, target_shard, source, target]))
         bridge_id = f"bridge_{hashlib.sha256(bridge_key.encode('utf-8')).hexdigest()[:12]}"
         weak_edges.append({
@@ -224,12 +242,15 @@ def _promote_cut_edges(
             "target_shard": target_shard,
             "target": target,
             "weight": weight,
+            "mandatory": is_mandatory,
+            "src_salience": src_salience,
+            "dst_salience": dst_salience,
             "resonance": 0.0,
             "thaw_penalty": 1.0,
             "last_energy_out": 0.0,
             "last_traversed": None,
             "traversal_count": 0,
-            "status": "ghost",
+            "status": "active" if is_mandatory else "ghost",
             "created_at": now,
         })
     weak_edges.sort(key=lambda edge: (edge["source_shard"], edge["source"], edge["target_shard"], edge["target"]))
@@ -246,7 +267,7 @@ def _updated_manifest(
 ) -> dict[str, Any]:
     updated = dict(manifest)
     updated["shards"] = dict((manifest.get("shards", {}) or {}))
-    updated["concept_index"] = dict((manifest.get("concept_index", {}) or {}))
+    updated["concept_index"] = {}
     updated["weak_bridge_edges"] = list(manifest.get("weak_bridge_edges", []) or [])
     updated["updated_at"] = time.time()
 
@@ -293,12 +314,22 @@ def _updated_manifest(
             },
         }
         for label in daughter.node_ids:
-            updated["concept_index"][label] = [{"shard_id": daughter.shard_id, "role": "member", "score": 1.0}]
-        for label in daughter.anchors:
-            updated["concept_index"][label] = [{"shard_id": daughter.shard_id, "role": "anchor", "score": 1.0}]
+            updated["concept_index"][label] = [daughter.shard_id]
 
     updated["active_shards"] = [daughters[0].shard_id]
     updated["weak_bridge_edges"].extend(weak_edges)
+    total_node_count = sum(len(daughter.node_ids) for daughter in daughters)
+    assert len(updated["concept_index"]) == total_node_count
+    assert all(
+        shard_id in updated["shards"]
+        for homes in updated["concept_index"].values()
+        for shard_id in homes
+    )
+    assert all(
+        edge.get("source") in updated["concept_index"] and edge.get("target") in updated["concept_index"]
+        for edge in updated["weak_bridge_edges"]
+        if edge.get("mandatory")
+    )
     return updated
 
 

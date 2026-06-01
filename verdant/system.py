@@ -36,6 +36,7 @@ from ethomorphic.coherence.invariants import compute_coherence
 from ethomorphic.ecwf.core import ECWFCore
 
 # TODO: migrate verdant imports to verdant for V3
+from verdant.config import SALIENCE_HIGH_WATER_FLOOR
 from verdant.ethomorphic_config import (
     EthomorphicParams,
     apply_ecwf_params,
@@ -66,6 +67,7 @@ from verdant.memory.bridge_acceleration import (
 from verdant.memory.basin_registry import BasinRegistry
 from verdant.memory.basin_state import BasinState
 from verdant.memory.graph import MemoryWeb, ShardedMemoryWeb
+from verdant.memory.router import MemoryRouter
 from verdant.memory.persistence import export_bundle, load_state as load_state_json, save_state as save_state_json
 from verdant.pipeline.blocks.action import ActionBlock
 from verdant.pipeline.blocks.communication import CommunicationBlock
@@ -284,6 +286,7 @@ class VerdantSystem:
         self.output_bus = OutputBus()
         self._idle_cycles: int = 0
         self._queued_self_observation: str | None = None
+        self._checkpoint_path: str = "/tmp/verdant_latest.json"
 
         # Per-system legacy NumPy RNG state. Some lower-level Verdant paths still
         # use ``np.random`` directly, so process_input temporarily installs this
@@ -412,6 +415,10 @@ class VerdantSystem:
         if self._queued_self_observation:
             text = f"{self._queued_self_observation}\n\n{text}".strip()
             self._queued_self_observation = None
+        target_shard = self._route_input(text)
+        shard_root = Path(self._checkpoint_path).parent / (Path(self._checkpoint_path).stem + "_shards")
+        if hasattr(self.memory_web, "thaw"):
+            self.memory_web.thaw(target_shard, shard_root)
         t_g = self._current_t_g()
         self.attention_buffer.update_governance(t_g)
 
@@ -431,12 +438,67 @@ class VerdantSystem:
 
         chunks: list[CognitiveChunk] = []
         for esc_item in escalated:
-            chunks.append(self._full_pipeline_process(esc_item.source_text, metadata))
+            chunk = self._full_pipeline_process(esc_item.source_text, metadata)
+            self._post_pipeline_ethics_salience(chunk)
+            chunks.append(chunk)
 
         for remaining in self.attention_buffer.items:
             self._light_process(remaining)
 
+        if hasattr(self.memory_web, "mark_dirty"):
+            self.memory_web.mark_dirty()
+
         return chunks[-1] if chunks else self._null_chunk(text=text, metadata=metadata)
+
+
+    def _route_input(self, text: str) -> str:
+        router = MemoryRouter(getattr(self.memory_web, "manifest", {}) or {})
+        targets = router.locate(text, top_n=1)
+        return targets[0] if targets else getattr(self.memory_web, "active_shard_id", ShardedMemoryWeb.DEFAULT_SHARD_ID)
+
+    def _update_ethics_salience(
+        self,
+        activated_concepts: dict[str, Any],
+        ethics_king_weight: float,
+        cycle: int,
+    ) -> None:
+        if ethics_king_weight < 0.25:
+            return
+        for label, activation_score in activated_concepts.items():
+            node = self.memory_web.get_concept(str(label))
+            if node is None:
+                continue
+            contribution = ethics_king_weight * float(activation_score)
+            if contribution > float(node.get("ethics_salience_peak", 0.0) or 0.0):
+                node["ethics_salience_peak"] = contribution
+                node["ethics_salience_last_cycle"] = cycle
+                if contribution > SALIENCE_HIGH_WATER_FLOOR:
+                    node["ethics_salience_floor"] = max(
+                        float(node.get("ethics_salience_floor", 0.0) or 0.0),
+                        contribution * 0.4,
+                    )
+            self.memory_web.memory_store[str(label)] = node
+
+    def _post_pipeline_ethics_salience(self, chunk: CognitiveChunk) -> None:
+        try:
+            basin_data = chunk.get_section_content("basin_section") or {}
+            if not isinstance(basin_data, dict):
+                basin_data = {}
+            if "ethics_king_weight" not in basin_data:
+                council = chunk.get_section_content("three_kings_layer_section") or {}
+                weights = council.get("influence_weights", {}) if isinstance(council, dict) else {}
+                ethics_weight = float(weights.get("EthicsKing", 0.0) or 0.0)
+                total = sum(float(v or 0.0) for v in weights.values()) if isinstance(weights, dict) else 0.0
+                if total > 0.0:
+                    ethics_weight = ethics_weight / total
+                basin_data["ethics_king_weight"] = ethics_weight
+                chunk.update_section("basin_section", basin_data)
+            ethics_weight = float(basin_data.get("ethics_king_weight", 0.0))
+            mem_data = chunk.get_section_content("memory_section") or {}
+            activated = mem_data.get("activated_concepts", {}) if isinstance(mem_data, dict) else {}
+            self._update_ethics_salience(activated or {}, ethics_weight, self._cycle_count)
+        except Exception:
+            pass
 
     def _full_pipeline_process(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> CognitiveChunk:
         """Process raw text through the full pipeline."""
@@ -1384,6 +1446,9 @@ class VerdantSystem:
 
     def save_state(self, path: str) -> None:
         """Save a complete system checkpoint to *path* via atomic JSON replace."""
+        self._checkpoint_path = path
+        if hasattr(self.memory_web, "manifest"):
+            self.memory_web.manifest.setdefault("runtime", {})["cycle"] = self._cycle_count
         shard_flush = {}
         if hasattr(self.memory_web, "flush_shards"):
             target_path = Path(path)

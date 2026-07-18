@@ -31,7 +31,7 @@ These components run through a **nine-block processing pipeline** governed by th
 
 ## Architecture
 
-For a full walkthrough of the Verdant V4 system architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
+For a full walkthrough of the Verdant V3 system architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
 
 ### Want the full walkthrough?
 If you want the complete runtime map, pipeline walkthrough, configuration reference, and checkpoint/analysis guide, open [`docs/architecture.md`](docs/architecture.md).
@@ -59,7 +59,6 @@ VCult is the cultivation language for declaring experiments, providers, prompts,
 ```bash
 git clone https://github.com/Captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
-git checkout V4
 pip install -e .
 pip install -e ./cultivation -e ./ethomorphic -e ./verdant
 ```
@@ -89,7 +88,6 @@ python -m cultivation.cli preview-spec \
 ## Reproduction
 
 - **Colab reproduction:** see [`colab/cells/`](colab/cells/) for the complete Colab-based reproduction workflow.
-- **Current runtime-alignment audit:** see [`docs/V4_RUNTIME_AUDIT.md`](docs/V4_RUNTIME_AUDIT.md).
 - **Validation pipeline:** see [`analysis/run_full_validation.py`](analysis/run_full_validation.py) for the end-to-end validation entry point.
 
 ## Published Papers

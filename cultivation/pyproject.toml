@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verdant-cultivation"
+version = "0.1.0"
+description = "Deterministic cultivation runner for Verdant v2"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pydantic>=2,<3",
+  "verdant @ file:///workspace/Verdant-Minds/verdant",
+  "ethomorphic @ file:///workspace/Verdant-Minds/ethomorphic",
+]
+
+[project.scripts]
+verdant-cultivation = "cultivation.cli:main"
+
+[tool.setuptools]
+packages = ["cultivation", "cultivation.providers", "cultivation.strategy"]
+
+[tool.setuptools.package-dir]
+"cultivation" = "."
+"cultivation.providers" = "providers"
+"cultivation.strategy" = "strategy"

@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from copy import deepcopy
 
+import pytest
+
 from verdant.memory.graph import MemoryWeb, ShardedMemoryWeb
 from verdant.memory.mitosis import DaughterShard, _updated_manifest, split_and_persist
 
@@ -97,6 +99,21 @@ def _base_manifest() -> dict:
         },
         "weak_bridge_edges": [],
     }
+
+
+def _homes(entry) -> list[str]:
+    if entry is None:
+        return []
+    if isinstance(entry, str):
+        return [entry]
+    if isinstance(entry, dict):
+        return [str(entry["shard_id"])] if entry.get("shard_id") else []
+    if isinstance(entry, list):
+        out: list[str] = []
+        for item in entry:
+            out.extend(_homes(item))
+        return out
+    return []
 
 
 def test_updated_manifest_preserves_inactive_shard_routing() -> None:
@@ -271,3 +288,67 @@ def test_split_and_persist_preserves_global_index_and_remaps_mandatory_bridge(tm
     assert remapped[0]["mandatory"] is True
     assert remapped[0]["source_shard"] in updated["concept_index"]["alpha"]
     assert remapped[0]["target_shard"] == "old"
+
+
+@pytest.mark.parametrize("legacy_entry", ["old", {"shard_id": "old"}])
+def test_updated_manifest_preserves_legacy_concept_index_entry_shapes_semantically(legacy_entry) -> None:
+    manifest = _base_manifest()
+    manifest["concept_index"]["beta"] = deepcopy(legacy_entry)
+
+    updated = _updated_manifest(
+        manifest=manifest,
+        parent_shard_id="parent",
+        parent_meta=manifest["shards"]["parent"],
+        daughters=(_daughter("daughter_a", ["alpha"]), _daughter("daughter_b", [])),
+        weak_edges=[],
+    )
+
+    assert _homes(updated["concept_index"]["beta"]) == ["old"]
+
+
+def test_orphaned_bridge_quarantine_is_idempotent_across_later_mitosis() -> None:
+    bridge = {
+        "source": "alpha",
+        "target": "missing",
+        "source_shard": "parent",
+        "target_shard": "old",
+        "weight": 0.9,
+        "mandatory": True,
+    }
+    manifest = _base_manifest()
+    manifest["weak_bridge_edges"] = [bridge]
+
+    first = _updated_manifest(
+        manifest=manifest,
+        parent_shard_id="parent",
+        parent_meta=manifest["shards"]["parent"],
+        daughters=(_daughter("daughter_a", ["alpha"]), _daughter("daughter_b", [])),
+        weak_edges=[],
+    )
+    assert first["weak_bridge_edges"] == []
+    assert len(first["orphaned_bridge_edges"]) == 1
+
+    second_input = deepcopy(first)
+    second_input["shards"]["second_parent"] = {
+        "shard_id": "second_parent",
+        "path": "shards/second_parent.json",
+        "state": "active",
+    }
+    second_input["concept_index"]["theta"] = ["second_parent"]
+    second_input["active_shards"] = ["second_parent"]
+
+    second = _updated_manifest(
+        manifest=second_input,
+        parent_shard_id="second_parent",
+        parent_meta=second_input["shards"]["second_parent"],
+        daughters=(_daughter("second_daughter_a", ["theta"]), _daughter("second_daughter_b", [])),
+        weak_edges=[],
+    )
+
+    assert second["weak_bridge_edges"] == []
+    assert len(second["orphaned_bridge_edges"]) == 1
+    orphan = second["orphaned_bridge_edges"][0]
+    assert orphan["source"] == "alpha"
+    assert orphan["target"] == "missing"
+    assert orphan["mandatory"] is True
+    assert orphan["orphaned_reason"] == "missing_target_home"

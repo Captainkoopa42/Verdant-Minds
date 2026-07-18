@@ -1,3 +1,10 @@
-"""Verdant Minds V4 canonical runtime package."""
-from .system import VerdantConfig, VerdantSystem
-__all__ = ["VerdantConfig", "VerdantSystem"]
+__version__ = "0.4.0"
+__all__ = ["system", "cultivation", "ethomorphic", "adapters", "VerdantSystem"]
+
+
+def __getattr__(name: str):
+    if name == "VerdantSystem":
+        from .system import VerdantSystem
+
+        return VerdantSystem
+    raise AttributeError(name)

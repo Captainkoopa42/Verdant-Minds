@@ -23,14 +23,12 @@ robot = ["opencv-python", "pyserial"]
 
 [project.scripts]
 verdant = "verdant.cli:main"
-verdant-run = "run_verdant:main"
 
 [project.urls]
 Homepage = "https://github.com/Captainkoopa42/Verdant-Minds"
 
 [tool.setuptools]
 package-dir = {"" = "."}
-py-modules = ["run_verdant", "verdant_bridge"]
 
 [tool.setuptools.packages.find]
 where = ["."]

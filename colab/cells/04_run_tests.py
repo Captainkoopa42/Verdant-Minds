@@ -1,4 +1,4 @@
-# Cell 4 — Run V2 test suite
+# Cell 4 — Run regression test suite
 %%bash
 set -e
 cd Verdant-Minds

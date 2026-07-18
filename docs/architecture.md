@@ -1,8 +1,8 @@
-# Verdant V3 Architecture
+# Verdant V4 Submission Architecture
 
-This is the complete, code-grounded architecture walkthrough for the current `V3` branch, covering `verdant/`, `ethomorphic/`, and `cultivation/` as they exist today.
+This is the complete, code-grounded architecture walkthrough for the current V4 submission branch, covering `verdant/`, `ethomorphic/`, and `cultivation/` as they exist today.
 
-It is the source-of-truth architecture guide for Verdant V3 runtime behavior (`verdant/system.py` and related modules), and supersedes older V1-era unified-system documentation for implementation details.
+It is the source-of-truth architecture guide for Verdant V4 submission runtime behavior (`verdant/system.py` and related modules), and supersedes older V1-era unified-system documentation for implementation details.
 
 ---
 
@@ -29,7 +29,7 @@ It is the source-of-truth architecture guide for Verdant V3 runtime behavior (`v
 
 ## 1. System overview
 
-Verdant V3 is a reproducible cognitive-architecture runtime that takes cultivated text prompts, moves them through a nine-block `CognitiveChunk` pipeline, couples symbolic memory with a wave-function substrate through the `EthomorphicBridge`, regulates decisions through the Three Kings governance layer, tracks large-scale graph structure as persistent basins, and emits cycle-by-cycle telemetry plus full serialized checkpoints for later analysis. The orchestration center is `verdant/system.py::VerdantSystem`, while long-running experiment control lives in `cultivation/runner.py::CultivationRunner` and `cultivation/spec_runner.py::SpecRunner`. Source: `verdant/system.py::VerdantSystem`, `cultivation/runner.py::CultivationRunner`, `cultivation/spec_runner.py::SpecRunner`.
+Verdant V4 is a reproducible cognitive-architecture runtime that takes cultivated text prompts, moves them through a nine-block `CognitiveChunk` pipeline, couples symbolic memory with a wave-function substrate through the `EthomorphicBridge`, regulates decisions through the Three Kings governance layer, tracks large-scale graph structure as persistent basins, and emits cycle-by-cycle telemetry plus full serialized checkpoints for later analysis. The orchestration center is `verdant/system.py::VerdantSystem`, while long-running experiment control lives in `cultivation/runner.py::CultivationRunner` and `cultivation/spec_runner.py::SpecRunner`. Source: `verdant/system.py::VerdantSystem`, `cultivation/runner.py::CultivationRunner`, `cultivation/spec_runner.py::SpecRunner`.
 
 ### Major subsystems
 
@@ -840,7 +840,7 @@ Source: `verdant/pipeline/blocks/memory.py::MemoryBlock.process`, `verdant/gover
 
 ### Relation to the onset constant `0.5725`
 
-The code does **not** hardcode `0.5725` anywhere in the runtime. That value is an empirical onset statistic reported by the V3 analysis pipeline: `README.md` calls out a developmental onset invariant around `T_g = 0.5725`, and the phase-diagram summary/run report record the same value as the mean onset temperature across tested sweeps. In other words, `0.5725` is currently an observed critical-region marker within the `Flexible` phase, not a runtime threshold used by `compute_phase` or `compute_t_g`. Source: `README.md`, `analysis/phase_diagram_summary.md`, `analysis/phase_diagram_run_report.md`, `analysis/detect_onset.py`.
+The code does **not** hardcode `0.5725` anywhere in the runtime. That value is an empirical onset statistic reported by the V4 analysis pipeline: `README.md` calls out a developmental onset invariant around `T_g = 0.5725`, and the phase-diagram summary/run report record the same value as the mean onset temperature across tested sweeps. In other words, `0.5725` is currently an observed critical-region marker within the `Flexible` phase, not a runtime threshold used by `compute_phase` or `compute_t_g`. Source: `README.md`, `analysis/phase_diagram_summary.md`, `analysis/phase_diagram_run_report.md`, `analysis/detect_onset.py`.
 
 ---
 
@@ -1269,7 +1269,7 @@ Source: `analysis/run_full_validation.py`, `analysis/README.md`.
 | Script | Purpose |
 |---|---|
 | `analysis/run_all.py` | one-command scaffolding analysis bundle for one saved state |
-| `analysis/run_full_validation.py` | end-to-end V3 validation report over a cultivation run |
+| `analysis/run_full_validation.py` | end-to-end V4 validation report over a cultivation run |
 | `analysis/spec_validation.py` | post-spec-run expectation checks |
 | `analysis/phase_diagram_sweep.py` | parameter sweeps for developmental onset |
 | `analysis/h1_coherence_analysis.py` | H¹ validity/HCI/alpha-critical trend analysis |
@@ -1335,4 +1335,4 @@ That command preserves the declarative spec, generates `cycles.jsonl`, `state.js
 
 ## Closing note
 
-This document describes the **current V3 codebase as implemented**, not the earlier V1 `UnifiedSystem` design. Where V1-style ideas survive, they now appear as concrete V3 classes, sections, thresholds, and runner flows in the files cited above. Source: `docs/architecture.md` (previous version for style only), `verdant/system.py`, `cultivation/runner.py`, `ethomorphic/bridge/bridge.py`.
+This document describes the **current V4 submission codebase as implemented**, not the earlier V1 `UnifiedSystem` design. Where V1-style ideas survive, they now appear as concrete V4 classes, sections, thresholds, and runner flows in the files cited above. Source: `docs/architecture.md` (previous version for style only), `verdant/system.py`, `cultivation/runner.py`, `ethomorphic/bridge/bridge.py`.

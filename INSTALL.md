@@ -20,7 +20,7 @@ This guide provides detailed instructions for installing the Verdant-Minds (Unif
 ### System Requirements
 
 - **Operating System**: Linux, macOS, or Windows
-- **Python**: Version 3.8 or higher
+- **Python**: Version 3.10 or higher
 - **Memory**: At least 8GB RAM (16GB+ recommended for large-scale operations)
 - **Storage**: At least 5GB free disk space
 - **Optional**: GPU with CUDA support for accelerated deep learning
@@ -41,48 +41,24 @@ conda activate verdant
 
 ---
 
-## Installation Methods
+## Supported Installation Path
 
-### Development Installation (Recommended)
-
-For development or if you want to modify the code:
+Verdant V4 supports one local source-install path for submissions and reproducibility checks:
 
 ```bash
-# Clone the repository
 git clone https://github.com/captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
-
-# Install in editable mode with development dependencies
-pip install -e ".[dev]"
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -e .
+pip install -e ./cultivation -e ./ethomorphic -e ./verdant
 ```
 
-This allows you to:
-- Make changes to the code without reinstalling
-- Run tests and use development tools
-- Contribute to the project
-
-### Standard Installation
-
-For regular use without development tools:
-
-```bash
-# Clone the repository
-git clone https://github.com/captainkoopa42/Verdant-Minds.git
-cd Verdant-Minds
-
-# Install the package
-pip install .
-```
-
-### From Source (PyPI - Coming Soon)
-
-Once published to PyPI, you'll be able to install directly:
-
-```bash
-pip install verdant-minds
-```
+This editable install keeps the runtime packages aligned with the checked-out branch and is the only supported installation path for the V4 submission surface.
 
 ---
+
 
 ## GPU Support
 

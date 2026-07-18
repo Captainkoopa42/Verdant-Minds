@@ -31,7 +31,7 @@ These components run through a **nine-block processing pipeline** governed by th
 
 ## Architecture
 
-For a full walkthrough of the Verdant V3 system architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
+For a full walkthrough of the Verdant V4 submission architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
 
 ### Want the full walkthrough?
 If you want the complete runtime map, pipeline walkthrough, configuration reference, and checkpoint/analysis guide, open [`docs/architecture.md`](docs/architecture.md).
@@ -53,6 +53,13 @@ A self-referential loop arises when emergent concepts increasingly point back in
 
 ### VCult Language
 VCult is the cultivation language for declaring experiments, providers, prompts, and reactive rules so developmental runs can be specified, previewed, and validated from versioned text specs.
+
+
+## V4 Submission Surface
+
+The root of this branch is intentionally narrow: one README, one installation guide, one supported demo path, one current Colab workflow, and current architecture/API documentation. Older V2/V3 material has been archived under `archive/` when retained for research history.
+
+`Verdant_Minds_Runner_Patched (2).py` is preserved for inspection as an experimental runner patch. It is not part of the supported V4 runtime contract; use the package CLI and VCult commands below for reproducible V4 runs.
 
 ## Quick Start
 
@@ -87,14 +94,14 @@ python -m cultivation.cli preview-spec \
 
 ## Reproduction
 
-- **Colab reproduction:** see [`colab/cells/`](colab/cells/) for the complete Colab-based reproduction workflow.
+- **Colab reproduction:** see [`colab/V4_Colab_Workflow.md`](colab/V4_Colab_Workflow.md) and [`colab/cells/`](colab/cells/) for the current Colab-based reproduction workflow.
 - **Validation pipeline:** see [`analysis/run_full_validation.py`](analysis/run_full_validation.py) for the end-to-end validation entry point.
 
 ## Published Papers
 
 - **V1:** DOI [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
 - **V2:** DOI [10.5281/zenodo.18933639](https://doi.org/10.5281/zenodo.18933639)
-- **V3:** github.com/Captainkoopa42/Verdant-Minds/tree/V3 (Zenodo DOI pending)
+- **V4 submission branch:** this branch is the current submission surface; V1/V2/V3 artifacts are preserved as research history under `archive/` where applicable.
 
 ## Repository Structure
 
@@ -103,8 +110,8 @@ ethomorphic/    — ECWF, bridge, emergence (frozen core)
 verdant/        — system, basin registry, pipeline
 cultivation/    — runner, CLI, VCult parser, providers, specs
 analysis/       — validation pipeline, metrics, figures
-tests_v2/       — unit and integration tests
-colab/cells/    — Colab reproduction notebooks
+tests_v2/       — historical/current regression tests pending V4 rename
+colab/          — current V4 Colab workflow and cells
 ```
 
 ## License

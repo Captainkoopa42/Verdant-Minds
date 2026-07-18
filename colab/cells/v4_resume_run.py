@@ -1,11 +1,11 @@
-# Cell 1 — Clone repo, install, and checkout V3
+# Cell 1 — Clone repo, install, and use the current branch
 %%bash
 set -e
 cd /content
 rm -rf Verdant-Minds
 git clone https://github.com/Captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
-git checkout V3
+git use the current branch
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 pip install -e .
@@ -27,20 +27,20 @@ python -m cultivation.cli resume \
   --provider local \
   --checkpoint-interval 100 \
   --fast-bridge \
-  --outdir outputs_v3_resumed
+  --outdir outputs_v4_resumed
 
 echo
 echo 'Latest resumed run:'
-ls -1dt outputs_v3_resumed/run_* | head -n 1
+ls -1dt outputs_v4_resumed/run_* | head -n 1
 
 # Cell 4 — Run validation on resumed output
 %%bash
 set -e
 cd /content/Verdant-Minds
 python analysis/run_full_validation.py \
-  --run-dir outputs_v3_resumed/run_* \
+  --run-dir outputs_v4_resumed/run_* \
   --seeds 1 \
-  --outdir validation_v3_resumed \
+  --outdir validation_v4_resumed \
   --n-nulls 200
 
 # Cell 5 — Bundle and download resumed outputs
@@ -49,12 +49,12 @@ from pathlib import Path
 from google.colab import files
 
 repo = Path('/content/Verdant-Minds')
-zip_path = repo / 'verdant_v3_resumed_bundle.zip'
+zip_path = repo / 'verdant_v4_resumed_bundle.zip'
 if zip_path.exists():
     zip_path.unlink()
 
 with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-    for folder in ['outputs_v3_resumed', 'validation_v3_resumed']:
+    for folder in ['outputs_v4_resumed', 'validation_v4_resumed']:
         root = repo / folder
         if root.exists():
             for file in root.rglob('*'):

@@ -1,11 +1,11 @@
-# Cell 1 — Clone repo, install, and checkout V3
+# Cell 1 — Clone repo, install, and use the current branch
 %%bash
 set -e
 cd /content
 rm -rf Verdant-Minds
 git clone https://github.com/Captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
-git checkout V3
+git use the current branch
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 pip install -e .

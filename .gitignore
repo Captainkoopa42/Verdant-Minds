@@ -138,3 +138,14 @@ validation_*/
 *.zip
 verdant_phase7_bundle/
 results/v2/verdant_phase7_bundle/
+
+# Runtime/test outputs
+__pycache__/
+.pytest_cache/
+*.pyc
+verdant_latest.json
+verdant_latest_shards/
+*_council.json
+*_shards/
+outputs/
+checkpoints/

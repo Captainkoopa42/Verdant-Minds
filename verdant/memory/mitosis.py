@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import re
 import time
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -265,10 +266,14 @@ def _updated_manifest(
     daughters: tuple[DaughterShard, DaughterShard],
     weak_edges: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    updated = dict(manifest)
-    updated["shards"] = dict((manifest.get("shards", {}) or {}))
-    updated["concept_index"] = {}
-    updated["weak_bridge_edges"] = list(manifest.get("weak_bridge_edges", []) or [])
+    updated = deepcopy(manifest)
+    updated["shards"] = deepcopy((manifest.get("shards", {}) or {}))
+    updated["concept_index"] = _concept_index_without_parent(
+        deepcopy((manifest.get("concept_index", {}) or {})),
+        parent_shard_id=parent_shard_id,
+    )
+    updated["weak_bridge_edges"] = []
+    updated["orphaned_bridge_edges"] = list(deepcopy(manifest.get("orphaned_bridge_edges", []) or []))
     updated["updated_at"] = time.time()
 
     parent_entry = dict(parent_meta)
@@ -314,23 +319,211 @@ def _updated_manifest(
             },
         }
         for label in daughter.node_ids:
-            updated["concept_index"][label] = [daughter.shard_id]
+            homes = _concept_homes(updated["concept_index"], label)
+            if daughter.shard_id not in homes:
+                homes.append(daughter.shard_id)
+            updated["concept_index"][label] = homes
 
     updated["active_shards"] = [daughters[0].shard_id]
-    updated["weak_bridge_edges"].extend(weak_edges)
-    total_node_count = sum(len(daughter.node_ids) for daughter in daughters)
-    assert len(updated["concept_index"]) == total_node_count
-    assert all(
-        shard_id in updated["shards"]
-        for homes in updated["concept_index"].values()
-        for shard_id in homes
+
+    node_to_daughter = {
+        label: daughter.shard_id
+        for daughter in daughters
+        for label in daughter.node_ids
+    }
+    existing_edges, orphaned_edges = _remap_existing_bridge_edges(
+        manifest.get("weak_bridge_edges", []) or [],
+        concept_index=updated["concept_index"],
+        shard_ids=set(updated["shards"]),
+        parent_shard_id=parent_shard_id,
+        node_to_daughter=node_to_daughter,
     )
-    assert all(
-        edge.get("source") in updated["concept_index"] and edge.get("target") in updated["concept_index"]
-        for edge in updated["weak_bridge_edges"]
-        if edge.get("mandatory")
+    updated["weak_bridge_edges"] = _dedupe_bridge_edges(
+        [*existing_edges, *deepcopy(weak_edges)],
+        orphaned_edges=orphaned_edges,
+    )
+    updated["orphaned_bridge_edges"].extend(orphaned_edges)
+    _validate_manifest_invariants(
+        updated,
+        parent_shard_id=parent_shard_id,
+        daughters=daughters,
     )
     return updated
+
+
+def _concept_index_without_parent(concept_index: dict[str, Any], *, parent_shard_id: str) -> dict[str, Any]:
+    """Return a global concept index with only the split parent homes removed."""
+    cleaned: dict[str, Any] = {}
+    for label, entry in concept_index.items():
+        homes = [home for home in _entry_shard_ids(entry) if home != parent_shard_id]
+        if homes:
+            cleaned[str(label)] = homes
+    return cleaned
+
+
+def _entry_shard_ids(entry: Any) -> list[str]:
+    """Normalize supported concept-index entry formats to shard-id strings."""
+    if entry is None:
+        return []
+    if isinstance(entry, str):
+        return [entry]
+    if isinstance(entry, dict):
+        shard_id = entry.get("shard_id")
+        return [str(shard_id)] if shard_id else []
+    if isinstance(entry, list):
+        out: list[str] = []
+        for item in entry:
+            out.extend(_entry_shard_ids(item))
+        return out
+    return []
+
+
+def _concept_homes(concept_index: dict[str, Any], concept: Any) -> list[str]:
+    return _entry_shard_ids(concept_index.get(str(concept)))
+
+
+def _missing_home_reason(source_homes: list[str], target_homes: list[str]) -> str | None:
+    if not source_homes and not target_homes:
+        return "missing_both_endpoint_homes"
+    if not source_homes:
+        return "missing_source_home"
+    if not target_homes:
+        return "missing_target_home"
+    return None
+
+
+def _orphaned_bridge(edge: dict[str, Any], *, reason: str) -> dict[str, Any]:
+    orphan = deepcopy(edge)
+    orphan["orphaned_reason"] = reason
+    orphan["orphaned_at"] = time.time()
+    orphan.setdefault("mandatory", bool(edge.get("mandatory", False)))
+    return orphan
+
+
+def _remap_existing_bridge_edges(
+    edges: list[dict[str, Any]],
+    *,
+    concept_index: dict[str, Any],
+    shard_ids: set[str],
+    parent_shard_id: str,
+    node_to_daughter: dict[str, str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    active_edges: list[dict[str, Any]] = []
+    orphaned_edges: list[dict[str, Any]] = []
+    for original in edges:
+        edge = deepcopy(original)
+        source = str(edge.get("source", ""))
+        target = str(edge.get("target", ""))
+        source_homes = _concept_homes(concept_index, source)
+        target_homes = _concept_homes(concept_index, target)
+        missing_reason = _missing_home_reason(source_homes, target_homes)
+        if missing_reason:
+            orphaned_edges.append(_orphaned_bridge(original, reason=missing_reason))
+            continue
+
+        if edge.get("source_shard") == parent_shard_id:
+            source_daughter = node_to_daughter.get(source)
+            if source_daughter is None:
+                orphaned_edges.append(_orphaned_bridge(original, reason="missing_source_daughter_home"))
+                continue
+            edge["source_shard"] = source_daughter
+        if edge.get("target_shard") == parent_shard_id:
+            target_daughter = node_to_daughter.get(target)
+            if target_daughter is None:
+                orphaned_edges.append(_orphaned_bridge(original, reason="missing_target_daughter_home"))
+                continue
+            edge["target_shard"] = target_daughter
+
+        source_shard = str(edge.get("source_shard", ""))
+        target_shard = str(edge.get("target_shard", ""))
+        if source_shard not in source_homes:
+            if source_shard not in shard_ids:
+                orphaned_edges.append(_orphaned_bridge(original, reason="missing_source_shard"))
+                continue
+            edge["source_shard"] = source_homes[0]
+        if target_shard not in target_homes:
+            if target_shard not in shard_ids:
+                orphaned_edges.append(_orphaned_bridge(original, reason="missing_target_shard"))
+                continue
+            edge["target_shard"] = target_homes[0]
+        active_edges.append(edge)
+    return active_edges, orphaned_edges
+
+
+def _bridge_key(edge: dict[str, Any]) -> tuple[str, str, str, str]:
+    return (
+        str(edge.get("source", "")),
+        str(edge.get("target", "")),
+        str(edge.get("source_shard", "")),
+        str(edge.get("target_shard", "")),
+    )
+
+
+def _dedupe_bridge_edges(
+    edges: list[dict[str, Any]],
+    *,
+    orphaned_edges: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str, str]] = set()
+    for edge in edges:
+        key = _bridge_key(edge)
+        if key in seen:
+            orphaned_edges.append(_orphaned_bridge(edge, reason="duplicate_bridge"))
+            continue
+        seen.add(key)
+        deduped.append(edge)
+    return deduped
+
+
+def _validate_manifest_invariants(
+    manifest: dict[str, Any],
+    *,
+    parent_shard_id: str,
+    daughters: tuple[DaughterShard, DaughterShard],
+) -> None:
+    concept_index = manifest.get("concept_index", {}) or {}
+    shards = manifest.get("shards", {}) or {}
+    for daughter in daughters:
+        for concept in daughter.node_ids:
+            homes = _concept_homes(concept_index, concept)
+            if daughter.shard_id not in homes:
+                raise ValueError(
+                    f"daughter concept {concept!r} missing daughter home "
+                    f"{daughter.shard_id!r}; homes={homes!r}"
+                )
+
+    for concept, entry in concept_index.items():
+        homes = _entry_shard_ids(entry)
+        if parent_shard_id in homes:
+            raise ValueError(f"concept {concept!r} still points to split parent {parent_shard_id!r}")
+        for shard_id in homes:
+            if shard_id not in shards:
+                raise ValueError(f"concept {concept!r} points to unknown shard {shard_id!r}")
+
+    seen: set[tuple[str, str, str, str]] = set()
+    for edge in manifest.get("weak_bridge_edges", []) or []:
+        source = str(edge.get("source", ""))
+        target = str(edge.get("target", ""))
+        source_homes = _concept_homes(concept_index, source)
+        target_homes = _concept_homes(concept_index, target)
+        if edge.get("mandatory") and (not source_homes or not target_homes):
+            missing = source if not source_homes else target
+            raise ValueError(f"mandatory bridge endpoint {missing!r} missing from concept_index: {edge!r}")
+        source_shard = str(edge.get("source_shard", ""))
+        target_shard = str(edge.get("target_shard", ""))
+        if source_shard not in source_homes:
+            raise ValueError(f"bridge source_shard not registered for source {source!r}: {edge!r}")
+        if target_shard not in target_homes:
+            raise ValueError(f"bridge target_shard not registered for target {target!r}: {edge!r}")
+        if source_shard not in shards:
+            raise ValueError(f"bridge source_shard {source_shard!r} missing from manifest shards: {edge!r}")
+        if target_shard not in shards:
+            raise ValueError(f"bridge target_shard {target_shard!r} missing from manifest shards: {edge!r}")
+        key = _bridge_key(edge)
+        if key in seen:
+            raise ValueError(f"duplicate bridge endpoint/shard pairing: {edge!r}")
+        seen.add(key)
 
 
 def _metrics_for_state(memory_web: Any, memory_store: dict[str, Any], edge_count: int) -> dict[str, Any]:

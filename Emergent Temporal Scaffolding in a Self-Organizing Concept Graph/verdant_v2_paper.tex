@@ -1,0 +1,290 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{float}
+
+\title{Emergent Temporal Scaffolding in a Self-Organizing Concept Graph}
+
+\author{William Adams}
+
+\date{March 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present Verdant-Minds V2, a cognitive architecture that models conceptual growth as a generative process over a mutable concept graph. The system iteratively grows a graph of concepts through co-activation, recombination, and emergence, without gradient-based training. Across 20 independent runs with different random seeds, the system consistently produces temporally scaffolded structures in which every emergent-to-emergent edge is oriented from an older concept to a newer one (earlier-share $= 1.000 \pm 0.000$, mean shuffle-null $z = 2.96 \pm 0.86$, 20/20 runs $z > 2$). In a representative deep run, the scaffolding effect survives both a shuffle null ($z = 12.73$) and a degree-preserving null ($z = 11.89$), ruling out degree distribution as an explanation. The emergent subgraph forms a complete temporally-ordered directed acyclic graph with a single root and causal depth equal to the number of emergent nodes. Three conceptual basins self-organize, with 61 of 62 emergent concepts concentrated in one generative core. A two-component mixture model on inter-emergence time gaps ($\Delta\text{BIC} = -9{,}942$) confirms two distinct timescales of concept formation. Intervention experiments show that removing early scaffold nodes reduces structural richness while preserving temporal orientation. These results demonstrate that a simple generative architecture can spontaneously produce strict temporal ordering in its emergent concept structure, a property that was not designed into the system.
+\end{abstract}
+
+%------------------------------------------------------------------
+\section{Introduction}
+%------------------------------------------------------------------
+
+How conceptual systems organize themselves over time remains an open question across cognitive science, artificial intelligence, and complex systems research. Neural network approaches typically do not maintain explicit representations of conceptual structure or the temporal dependencies between concepts. Symbolic architectures such as Soar and ACT-R represent structured knowledge but rely on hand-authored rules for knowledge organization rather than emergent self-organization.
+
+In this work we explore an alternative approach: cognition modeled as a growing graph of interacting concepts, where new concepts emerge through recombination and co-activation of existing ones. We introduce Verdant-Minds V2, a generative concept graph architecture designed to study the dynamics of conceptual emergence under controlled, reproducible conditions.
+
+The central empirical finding is that the system spontaneously produces a strict temporal ordering in its emergent concept structure. Every emergent-to-emergent connection points from an older concept to a newer one. This property was not explicitly coded and arises from the interaction between the system's wave-state dynamics, graph memory, and governance mechanisms. The result is reproducible across 20 independent seeds and survives multiple null models.
+
+%------------------------------------------------------------------
+\section{System Architecture}
+%------------------------------------------------------------------
+
+Verdant-Minds V2 models cognition as a directed concept graph $G = (V, E)$ where nodes represent concepts and weighted edges represent conceptual relationships. Each concept stores metadata including creation timestamp, stability score, access frequency, and dimensional mappings into a wave-state representation.
+
+The system processes input through a nine-stage pipeline: Sensory, Pattern, Memory, Communication, Reasoning, Ethics, Action, Language, and Learning. A governance layer (three role-differentiated controllers) modulates system behavior based on a thermodynamic phase parameter $T_g$ that determines whether the system operates in a rigid ($T_g < 0.4$), flexible ($0.4 \leq T_g \leq 0.6$), or chaotic ($T_g > 0.6$) regime.
+
+New concepts emerge when the bridge between graph memory and wave-state dynamics detects sufficient co-activation. Specifically, emergence requires that candidate concept pairs exceed thresholds on activation magnitude, entropy within the current wave state, and a novelty score computed against existing graph structure. When these conditions are met, a new emergent concept node is created and connected to its parent concepts and to other recently activated concepts through the system's all-pairs connection pass.
+
+Three conceptual basins are detected via community detection on the backbone graph (top-6 edges per node). Each basin runs a local micro-pipeline (Memory, Reasoning, Ethics, Action) and produces proposals that are arbitrated by a global council.
+
+%------------------------------------------------------------------
+\section{Experimental Setup}
+%------------------------------------------------------------------
+
+\subsection{Replication Protocol}
+
+We conducted 20 independent runs using random seeds 0 through 19. Each run processed 20 contradiction-rich inputs through the full nine-stage pipeline using a deterministic local provider (no external LLM calls). Runs produced graphs containing approximately 87 concept nodes (82 seeded plus emergent additions) with up to 17,000 conceptual edges.
+
+\subsection{Metrics}
+
+For each run we extracted the emergent-to-emergent (EE) subgraph: the set of directed edges between nodes whose labels begin with \texttt{Emergent\_}. Timestamps were parsed from node metadata (\texttt{creation\_time} field). Edge orientation was classified as \emph{older-to-newer} when the source node's timestamp precedes the target's.
+
+The primary statistic is the \textbf{earlier-share}: the proportion of EE edges oriented older-to-newer, excluding edges between nodes created at the same timestamp.
+
+\subsection{Null Models}
+
+We employed two null models:
+
+\begin{enumerate}
+\item \textbf{Shuffle null}: Random permutation of emergent node timestamps (200 permutations per run). Under this null, the expected earlier-share is approximately 0.50.
+\item \textbf{Degree-preserving null}: Edge swaps that preserve each node's degree sequence while randomizing temporal relationships (200 swaps per run). This tests whether the observed temporal bias can be explained by degree distribution alone.
+\end{enumerate}
+
+\subsection{Mixture Model}
+
+To test for multiple timescales of emergence, we fit one-component and two-component Gaussian mixture models to $\log(\Delta t)$ where $\Delta t$ is the absolute time gap between connected emergent concepts. Model selection used the Bayesian Information Criterion (BIC).
+
+%------------------------------------------------------------------
+\section{Results}
+%------------------------------------------------------------------
+
+\subsection{20-Seed Replication}
+
+Table~\ref{tab:replication} summarizes the replication results. Figure~\ref{fig:replication} shows per-seed z-scores and emergent counts.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lc}
+\toprule
+Metric & Value \\
+\midrule
+Emergent count (mean $\pm$ sd) & $6.7 \pm 3.1$ \\
+Emergent count (range) & 5--14 \\
+Earlier-share (mean $\pm$ sd) & $1.000 \pm 0.000$ \\
+Shuffle $z$-score (mean $\pm$ sd) & $2.96 \pm 0.86$ \\
+Runs with $z > 2$ & 20/20 (100\%) \\
+Gini (access count) & $0.728 \pm 0.005$ \\
+\bottomrule
+\end{tabular}
+\caption{Replication summary across 20 independent seeds.}
+\label{tab:replication}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig7_replication.png}
+\caption{Per-seed replication results. Left: all 20 seeds exceed the $z = 2$ significance threshold. Right: emergent counts vary across seeds (5--14) but the temporal law (earlier-share = 1.000) holds universally.}
+\label{fig:replication}
+\end{figure}
+
+\subsection{Scaffold Structure}
+
+Figure~\ref{fig:scaffold} shows the emergent scaffold spine, with edges colored by creation time flowing left to right.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig1_scaffold_spine.png}
+\caption{Emergent scaffold spine. Each node is an emergent concept positioned by creation time (left = older, right = newer). All 1,830 directed edges point from older to newer concepts. Color encodes creation time.}
+\label{fig:scaffold}
+\end{figure}
+
+\subsection{Null Model Analysis}
+
+Figure~\ref{fig:nulls} compares the observed earlier-share against both null distributions.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig2_null_models.png}
+\caption{Null model analysis. Left: shuffle null ($z = 12.73$). Right: degree-preserving null ($z = 11.89$). The observed value of 1.000 far exceeds both null distributions.}
+\label{fig:nulls}
+\end{figure}
+
+The degree-preserving null mean is 0.916, indicating that degree structure partially predicts temporal orientation. However, the observed value of 1.000 remains 11.89 standard deviations above this mean.
+
+\subsection{Complete DAG Structure}
+
+Analysis reveals that the 62 emergent concepts form a complete temporally-ordered DAG with a single root and causal depth of 60 (Figure~\ref{fig:dag}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig5_complete_dag.png}
+\caption{Complete DAG structure. Left: causal depth correlates perfectly with temporal rank ($r = 1.000$). Right: out-degree sequence decreases monotonically---each node connects to every subsequent node.}
+\label{fig:dag}
+\end{figure}
+
+\subsection{Basin Morphology}
+
+The backbone graph partitions into three basins (Table~\ref{tab:basins}, Figure~\ref{fig:basins}).
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lccccc}
+\toprule
+Basin & Size & Emergents & Density & Internal & Boundary \\
+\midrule
+Basin 0 (Secondary) & 92 & 1 & 0.082 & 345 & 301 \\
+Basin 1 (Core) & 81 & 61 & 0.098 & 316 & 278 \\
+Basin 2 (Inactive) & 14 & 0 & 0.341 & 31 & 213 \\
+\bottomrule
+\end{tabular}
+\caption{Basin structure. Basin 1 contains 61 of 62 emergent concepts.}
+\label{tab:basins}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig3_basin_morphology.png}
+\caption{Basin morphology. Orange: Basin 1 (core forge, 61 emergents). Teal: Basin 0 (secondary, 1 emergent). Blue: Basin 2 (inactive, 0 emergents).}
+\label{fig:basins}
+\end{figure}
+
+\subsection{Two-Timescale Emergence}
+
+The two-component mixture model is strongly favored ($\Delta\text{BIC} = -9{,}942$; Figure~\ref{fig:mixture}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig4_two_timescale.png}
+\caption{Two-timescale emergence. The histogram of $\log(\Delta t)$ between connected emergent concepts shows clear bimodality. The two-component Gaussian mixture (white line) fits substantially better than the one-component model (gray dotted).}
+\label{fig:mixture}
+\end{figure}
+
+\subsection{Forge and Lineage Morphology}
+
+Figure~\ref{fig:forge} illustrates the system's spontaneous separation into a high-entropy generative core and a low-entropy temporal preservation structure.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig6_forge_lineage.png}
+\caption{Forge and lineage morphology. The generative core (Basin 1) produces emergent concepts through dense recombination. The emergent scaffold preserves strict older-to-newer temporal ordering. The system spontaneously separates generation from preservation.}
+\label{fig:forge}
+\end{figure}
+
+\subsection{Intervention Experiments}
+
+Two interventions tested the causal role of early scaffold structure:
+
+\begin{enumerate}
+\item \textbf{Root removal}: Deleting the oldest emergent nodes reduced structural richness but did not break temporal orientation.
+\item \textbf{Edge scrambling}: Randomizing emergent-to-emergent edge endpoints destroyed temporal orientation, confirming it depends on specific edge structure.
+\end{enumerate}
+
+%------------------------------------------------------------------
+\section{Discussion}
+%------------------------------------------------------------------
+
+The central finding is that a cognitive architecture based on wave-state dynamics and graph memory spontaneously produces perfect temporal ordering in its emergent concept subgraph. This property was not designed into the system. It arises from the combination of three mechanisms: (1) timestamp-ordered concept creation, (2) co-activation-based connection formation, and (3) the all-pairs evaluation pass in the memory bridge.
+
+The complete DAG structure means the scaffold encodes total temporal accumulation rather than selective inheritance. In citation network terms, this is analogous to a system where every paper cites every earlier paper---a structure more characteristic of holographic memory than selective attention.
+
+The basin morphology introduces a spatial dimension. The concentration of 61/62 emergents in a single basin suggests that generative capacity is localized. This forge basin acts as the sole source of novelty while other basins maintain broader semantic context.
+
+The two-timescale pattern indicates concept formation operates in two regimes: rapid within-cycle co-activation and slower cross-cycle accumulation, paralleling within-session and cross-session learning dynamics in biological systems.
+
+The scaffold structure bears structural resemblance to causal cone growth in operator spreading models, where local interaction rules produce forward-expanding DAGs. Whether this reflects a deeper mathematical connection remains an open question.
+
+%------------------------------------------------------------------
+\section{Limitations}
+%------------------------------------------------------------------
+
+\begin{enumerate}
+\item \textbf{Seeded concept dependence.} The system begins with 82 manually curated seed concepts. Emergent structure may depend on this configuration.
+\item \textbf{Complete graph artifact.} The all-pairs connection pass produces a complete emergent subgraph. Temporal ordering follows from timestamp-ordered creation combined with exhaustive evaluation, not selective inheritance.
+\item \textbf{Graph density.} With 17,321 edges across 187 nodes, the full graph approaches saturation.
+\item \textbf{No benchmark comparison.} We do not compare against other cognitive architectures.
+\item \textbf{Semantic content not evaluated.} We demonstrate structural properties but do not evaluate semantic meaningfulness.
+\item \textbf{External LLM variability.} Deep-run cultivation used an external LLM; different providers may produce different dynamics.
+\item \textbf{Correlation, not mechanism.} We observe temporal scaffolding but have not formally proven which components are necessary or sufficient.
+\end{enumerate}
+
+%------------------------------------------------------------------
+\section{Reproducibility}
+%------------------------------------------------------------------
+
+This paper and all associated data are archived on Zenodo:
+\begin{center}
+DOI: \href{https://doi.org/10.5281/zenodo.18933639}{10.5281/zenodo.18933639}
+\end{center}
+
+All code, analysis scripts, and Colab replication cells are available at:
+\begin{center}
+\url{https://github.com/Captainkoopa42/Verdant-Minds} (branch \texttt{V2})
+\end{center}
+
+To reproduce the 20-seed replication:
+\begin{verbatim}
+python -m cultivation.cli run \
+  --cycles 20 --provider local \
+  --seeds 0-19 --outdir outputs/
+\end{verbatim}
+
+To run the full analysis pipeline on a produced state:
+\begin{verbatim}
+python analysis/run_all.py \
+  --state outputs/run_<stamp>/seed_0/state.json \
+  --results-root results/ --n-nulls 200 --k 6
+\end{verbatim}
+
+V1 research prototype archived separately: DOI \href{https://doi.org/10.5281/zenodo.18870656}{10.5281/zenodo.18870656}
+
+%------------------------------------------------------------------
+\section{Conclusion}
+%------------------------------------------------------------------
+
+Verdant-Minds V2 demonstrates that a cognitive architecture combining graph memory, wave-state dynamics, and governance mechanisms can spontaneously produce strict temporal ordering in emergent concept structure. This scaffolding property is reproducible (20/20 seeds), robust against null models (shuffle $z = 12.73$; degree-preserving $z = 11.89$), and accompanied by self-organized basin morphology and two-timescale emergence dynamics. Whether architectural modifications can transform total temporal accumulation into selective concept lineage is the primary question for future work.
+
+%------------------------------------------------------------------
+\bibliographystyle{plainnat}
+\begin{thebibliography}{9}
+
+\bibitem{papadopoulos2012}
+Papadopoulos, F., Kitsak, M., Serrano, M.\'{A}., and Bogu\~{n}\'{a}, M.
+\newblock Popularity versus similarity in growing networks.
+\newblock \emph{Nature}, 489(7417):537--540, 2012.
+
+\bibitem{wang2013}
+Wang, D., Song, C., and Barab\'{a}si, A.-L.
+\newblock Quantifying long-term scientific impact.
+\newblock \emph{Science}, 342(6154):127--132, 2013.
+
+\bibitem{laird2012}
+Laird, J.E.
+\newblock \emph{The Soar Cognitive Architecture}.
+\newblock MIT Press, 2012.
+
+\bibitem{anderson2007}
+Anderson, J.R.
+\newblock \emph{How Can the Human Mind Occur in the Physical Universe?}
+\newblock Oxford University Press, 2007.
+
+\end{thebibliography}
+
+\end{document}

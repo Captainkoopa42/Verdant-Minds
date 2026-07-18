@@ -1,0 +1,21 @@
+{
+  "edge_orientation_mode": "older_to_newer",
+  "observed_older_to_newer_share": 1.0,
+  "observed_newer_to_older_share": 0.0,
+  "scaffolding_share": 1.0,
+  "observed": 1.0,
+  "shuffle_null": {
+    "observed": 1.0,
+    "mean": 0.4955928961748634,
+    "std": 0.03963354027470069,
+    "z": 12.726773846824761,
+    "n": 200
+  },
+  "degree_preserving_null": {
+    "observed": 1.0,
+    "mean": 0.9156665447210756,
+    "std": 0.007094122153184555,
+    "z": 11.88779294434155,
+    "n": 200
+  }
+}

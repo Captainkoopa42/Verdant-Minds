@@ -1,0 +1,421 @@
+{
+  "basins": [
+    {
+      "basin_id": "basin_0",
+      "nodes": [
+        "Emergent_abstraction_ambiguity_353967",
+        "Emergent_abstraction_ambiguity_5c1c4f",
+        "Emergent_abstraction_ambiguity_94432c",
+        "Emergent_abstraction_ambiguity_a83b10",
+        "Emergent_abstraction_analogy_d695f8",
+        "Emergent_abstraction_autonomy_37c4a5",
+        "Emergent_abstraction_autonomy_9d570d",
+        "Emergent_abstraction_clarity_81ead3",
+        "Emergent_ambiguity_anticipation_961459",
+        "Emergent_ambiguity_constraint_33311e",
+        "Emergent_anticipation_appears_dac47e",
+        "Emergent_anticipation_autonomy_573275",
+        "Emergent_anticipation_autonomy_a66f28",
+        "Emergent_anticipation_autonomy_eda74a",
+        "Emergent_anticipation_bounded_2f7e1b",
+        "Emergent_anticipation_bounded_ca71cc",
+        "Emergent_anticipation_bounded_db424c",
+        "Emergent_anticipation_bounded_ed16fb",
+        "Emergent_anticipation_carefully_d4dc77",
+        "Emergent_appears_asymmetry_8ccc17",
+        "Emergent_appears_asymmetry_8dba4c",
+        "Emergent_appears_asymmetry_9e9e75",
+        "Emergent_appears_asymmetry_b0db07",
+        "Emergent_appears_asymmetry_ecd8f7",
+        "Emergent_attention_autonomy_1e79bf",
+        "Emergent_autonomy_belief_revision_b856db",
+        "Emergent_autonomy_bounded_5ceb4c",
+        "Emergent_autonomy_bounded_72bafc",
+        "Emergent_autonomy_bounded_94d9e2",
+        "Emergent_autonomy_bounded_ab8b66",
+        "Emergent_autonomy_carefully_659b9f",
+        "Emergent_autonomy_carefully_8f6776",
+        "Emergent_autonomy_carefully_dedeae",
+        "Emergent_autonomy_chaos_27df09",
+        "Emergent_autonomy_clarity_321c48",
+        "Emergent_autonomy_clarity_dc06c1",
+        "Emergent_autonomy_collective_0e3ed5",
+        "Emergent_autonomy_collective_461851",
+        "Emergent_autonomy_collective_4a8f61",
+        "Emergent_autonomy_consciousness_3a32d4",
+        "Emergent_autonomy_consciousness_fd14b8",
+        "Emergent_belief_revision_bounded_349257",
+        "Emergent_belief_revision_bounded_6c1d78",
+        "Emergent_belief_revision_bounded_92cc1a",
+        "Emergent_belief_revision_bounded_edaf3d",
+        "Emergent_bounded_carefully_f79645",
+        "Emergent_bounded_clarity_42b09f",
+        "Emergent_bounded_clarity_c1b4b0",
+        "Emergent_bounded_coherence_40a04d",
+        "Emergent_bounded_coherence_717f45",
+        "Emergent_bounded_contradiction_d8e7d7",
+        "Emergent_bounded_increases_8c621b",
+        "Emergent_bounded_increases_b9fad9",
+        "Emergent_bounded_inner_observer_8eb4e9",
+        "Emergent_carefully_clarity_0d7a6f",
+        "Emergent_carefully_clarity_28ad8a",
+        "Emergent_carefully_coherence_6373e7",
+        "Emergent_carefully_linked_5110f6",
+        "Emergent_clarity_energy_08bc8c",
+        "Emergent_coherence_constraint_b926a8",
+        "Emergent_collective_consciousness_f6f1a0",
+        "Emergent_collective_constraint_a92169",
+        "Emergent_consciousness_constraint_80c25f",
+        "Emergent_consciousness_contradiction_9e434e",
+        "Emergent_constraint_contradiction_66a818",
+        "Emergent_constraint_contradiction_8d2c9c",
+        "Emergent_continuity_contradiction_5d123e",
+        "Emergent_inner_observer_memory_79427d",
+        "beneficence",
+        "connection",
+        "marker",
+        "preserve",
+        "reasoning",
+        "working"
+      ],
+      "size": 74,
+      "internal_edges": 344,
+      "boundary_edges": 283,
+      "internal_density": 0.12736023694927803,
+      "emergent_count": 68,
+      "mean_stability": 0.9906756756756757,
+      "top_nodes_by_access": [
+        [
+          "connection",
+          396
+        ],
+        [
+          "marker",
+          385
+        ],
+        [
+          "preserve",
+          385
+        ],
+        [
+          "reasoning",
+          385
+        ],
+        [
+          "beneficence",
+          384
+        ],
+        [
+          "Emergent_autonomy_consciousness_fd14b8",
+          381
+        ],
+        [
+          "Emergent_continuity_contradiction_5d123e",
+          378
+        ],
+        [
+          "Emergent_autonomy_chaos_27df09",
+          373
+        ],
+        [
+          "Emergent_anticipation_carefully_d4dc77",
+          371
+        ],
+        [
+          "Emergent_abstraction_analogy_d695f8",
+          366
+        ]
+      ],
+      "created_at": 191395.01
+    },
+    {
+      "basin_id": "basin_1",
+      "nodes": [
+        "Emergent_attention_awareness_468e25",
+        "Emergent_autonomy_chaos_5f1756",
+        "Emergent_autonomy_contradiction_77a95c",
+        "abstraction",
+        "ambiguity",
+        "analogy",
+        "chaos",
+        "concept",
+        "consciousness",
+        "constraint",
+        "continuity",
+        "criticality",
+        "emergence",
+        "emergence_from_interaction",
+        "emerges",
+        "energy",
+        "enforcing",
+        "entropy",
+        "equilibrium",
+        "forgetting",
+        "framing",
+        "hierarchy",
+        "increases",
+        "inner_observer",
+        "interference",
+        "justice",
+        "managed",
+        "memory",
+        "moral_weight",
+        "network",
+        "note",
+        "paradox",
+        "pattern",
+        "pattern_history",
+        "phase",
+        "phenomenology",
+        "present_moment",
+        "recollection",
+        "recursive_self_reference",
+        "reference",
+        "reflection",
+        "reflective",
+        "self_organization",
+        "subjective_experience",
+        "superposition",
+        "temporal_flow",
+        "threshold",
+        "traceability",
+        "transformation",
+        "translation",
+        "trust",
+        "uncertainty",
+        "update",
+        "value_conflict",
+        "wave",
+        "yet"
+      ],
+      "size": 56,
+      "internal_edges": 187,
+      "boundary_edges": 307,
+      "internal_density": 0.12142857142857143,
+      "emergent_count": 3,
+      "mean_stability": 0.9903571428571428,
+      "top_nodes_by_access": [
+        [
+          "phenomenology",
+          401
+        ],
+        [
+          "reference",
+          401
+        ],
+        [
+          "subjective_experience",
+          401
+        ],
+        [
+          "temporal_flow",
+          401
+        ],
+        [
+          "threshold",
+          401
+        ],
+        [
+          "translation",
+          401
+        ],
+        [
+          "wave",
+          401
+        ],
+        [
+          "analogy",
+          400
+        ],
+        [
+          "consciousness",
+          400
+        ],
+        [
+          "emergence",
+          400
+        ]
+      ],
+      "created_at": 191395.01
+    },
+    {
+      "basin_id": "basin_2",
+      "nodes": [
+        "Emergent_anticipation_bounded_88e144",
+        "anticipation",
+        "appears",
+        "asymmetry",
+        "attention",
+        "awareness",
+        "boundary",
+        "bounded",
+        "carefully",
+        "cascade",
+        "clarity",
+        "cognition",
+        "collective",
+        "complexity",
+        "contradiction",
+        "coupling",
+        "dependency",
+        "dissipation",
+        "ego_dissolution",
+        "ethical",
+        "experience_accumulation",
+        "expression",
+        "feedback",
+        "focused",
+        "general",
+        "harm",
+        "improve",
+        "inference",
+        "interference_pattern",
+        "interpretation",
+        "linked",
+        "observed",
+        "order",
+        "perception",
+        "persistence",
+        "phase_transition",
+        "qualia",
+        "representational",
+        "resonance",
+        "selfhood",
+        "silence",
+        "stable",
+        "strict",
+        "symmetry",
+        "synthesis",
+        "temperature",
+        "tension",
+        "through",
+        "time",
+        "transformable",
+        "under",
+        "unsayable",
+        "when",
+        "while"
+      ],
+      "size": 54,
+      "internal_edges": 180,
+      "boundary_edges": 176,
+      "internal_density": 0.12578616352201258,
+      "emergent_count": 1,
+      "mean_stability": 0.9827777777777778,
+      "top_nodes_by_access": [
+        [
+          "selfhood",
+          401
+        ],
+        [
+          "silence",
+          401
+        ],
+        [
+          "temperature",
+          401
+        ],
+        [
+          "unsayable",
+          401
+        ],
+        [
+          "anticipation",
+          400
+        ],
+        [
+          "awareness",
+          400
+        ],
+        [
+          "boundary",
+          400
+        ],
+        [
+          "cascade",
+          400
+        ],
+        [
+          "complexity",
+          400
+        ],
+        [
+          "contradiction",
+          400
+        ]
+      ],
+      "created_at": 191395.01
+    },
+    {
+      "basin_id": "basin_3",
+      "nodes": [
+        "Emergent_abstraction_bounded_b74b81",
+        "Emergent_anticipation_clarity_8a2f90",
+        "Emergent_belief_revision_carefully_a9d18e",
+        "Emergent_bounded_connection_8dc0d7",
+        "autonomy",
+        "belief_revision",
+        "coherence",
+        "ethics",
+        "hypothesis",
+        "identity",
+        "influence",
+        "integration",
+        "integrity",
+        "meaning",
+        "novelty",
+        "responsibility",
+        "symbol"
+      ],
+      "size": 17,
+      "internal_edges": 27,
+      "boundary_edges": 86,
+      "internal_density": 0.19852941176470587,
+      "emergent_count": 4,
+      "mean_stability": 0.9676470588235294,
+      "top_nodes_by_access": [
+        [
+          "identity",
+          398
+        ],
+        [
+          "belief_revision",
+          397
+        ],
+        [
+          "meaning",
+          385
+        ],
+        [
+          "novelty",
+          385
+        ],
+        [
+          "responsibility",
+          385
+        ],
+        [
+          "symbol",
+          385
+        ],
+        [
+          "autonomy",
+          384
+        ],
+        [
+          "coherence",
+          384
+        ],
+        [
+          "ethics",
+          384
+        ],
+        [
+          "hypothesis",
+          384
+        ]
+      ],
+      "created_at": 191395.01
+    }
+  ]
+}

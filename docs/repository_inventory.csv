@@ -1,0 +1,301 @@
+path,classification,reason
+.gitignore,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+CHANGELOG_AUDIT_FIXES_2026-07-16.md,Documentation,Project documentation.
+Emergent Temporal Scaffolding in a Self-Organizing Concept Graph/Emergent Temporal Scaffolding in a Self-Organizing Concept Graph.pdf,Research,"Paper, figure, bibliography, or verification bundle."
+Emergent Temporal Scaffolding in a Self-Organizing Concept Graph/figures.zip,Research,"Paper, figure, bibliography, or verification bundle."
+Emergent Temporal Scaffolding in a Self-Organizing Concept Graph/references.bib,Research,"Paper, figure, bibliography, or verification bundle."
+Emergent Temporal Scaffolding in a Self-Organizing Concept Graph/results.zip,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+Emergent Temporal Scaffolding in a Self-Organizing Concept Graph/verdant_v2.bib,Research,"Paper, figure, bibliography, or verification bundle."
+Emergent Temporal Scaffolding in a Self-Organizing Concept Graph/verdant_v2_paper.tex,Research,"Paper, figure, bibliography, or verification bundle."
+Emergent Temporal Scaffolding in a Self-Organizing Concept Graph/verdant_v2_plaintext.txt,Research,"Paper, figure, bibliography, or verification bundle."
+INSTALL.md,Documentation,Project documentation.
+LICENSE,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+"Paper/Verdant-Minds V3 A Developmental Cognitive Substrate with Intrinsic Thermodynamic Governance Architecture, Validation, and Empirical Results.pdf",Research,"Paper, figure, bibliography, or verification bundle."
+Paper/figures/basin_genealogy_v4.png,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/figures/basin_structure_v4.png,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/figures/emergent_scaffold_v4.png,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/figures/memory_web_v4.png,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/figures/node_edge_stats_v4.png,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/figures/thermo_cycle_v4.png,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/references.bib,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/verdant_v3.tex,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/verdant_v3_verification_bundle_20260325_065424/MANIFEST.json,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/verdant_v3_verification_bundle_20260325_065424/README.md,Research,"Paper, figure, bibliography, or verification bundle."
+Paper/verdant_v3_verification_bundle_20260325_065424/thermo_verify_v4/run_20260325T053952Z/seed_0/Figures.zip,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+Paper/verdant_v3_verification_bundle_20260325_065424/thermo_verify_v4/run_20260325T053952Z/seed_0/basin_snapshots.zip,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+Paper/verdant_v3_verification_bundle_20260325_065424/thermo_verify_v4/run_20260325T053952Z/seed_0/cycles.zip,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+README.md,Documentation,Project documentation.
+Verdant_Minds_Runner_Patched (2).py,Legacy,Operational patched runner retained as behavioral specification.
+analysis/README.md,Tooling,Analysis or validation tooling.
+analysis/baseline_random_graph.py,Tooling,Analysis or validation tooling.
+analysis/basin_detection_robustness.py,Tooling,Analysis or validation tooling.
+analysis/basin_persistence_analysis.py,Tooling,Analysis or validation tooling.
+analysis/compare_intervention_runs.py,Tooling,Analysis or validation tooling.
+analysis/compare_self_reflection.py,Tooling,Analysis or validation tooling.
+analysis/compression_analysis.py,Tooling,Analysis or validation tooling.
+analysis/compute_null_models.py,Tooling,Analysis or validation tooling.
+analysis/count_graph_size.py,Tooling,Analysis or validation tooling.
+analysis/daughter_basin_analysis.py,Tooling,Analysis or validation tooling.
+analysis/detect_onset.py,Tooling,Analysis or validation tooling.
+analysis/detect_self_referential_concepts.py,Tooling,Analysis or validation tooling.
+analysis/export_backbone_graph.py,Tooling,Analysis or validation tooling.
+analysis/extract_emergent_concepts.py,Tooling,Analysis or validation tooling.
+analysis/extract_scaffolding_metrics.py,Tooling,Analysis or validation tooling.
+analysis/fit_two_timescale_mixture.py,Tooling,Analysis or validation tooling.
+analysis/h1_coherence_analysis.py,Tooling,Analysis or validation tooling.
+analysis/make_baseline_comparison_figure.py,Tooling,Analysis or validation tooling.
+analysis/make_compression_stability_figures.py,Tooling,Analysis or validation tooling.
+analysis/make_daughter_figure.py,Tooling,Analysis or validation tooling.
+analysis/make_figures.py,Tooling,Analysis or validation tooling.
+analysis/make_phase_diagram_figure.py,Tooling,Analysis or validation tooling.
+analysis/make_robustness_figure.py,Tooling,Analysis or validation tooling.
+analysis/make_semantic_figure.py,Tooling,Analysis or validation tooling.
+analysis/phase_diagram_run_report.md,Tooling,Analysis or validation tooling.
+analysis/phase_diagram_summary.md,Tooling,Analysis or validation tooling.
+analysis/phase_diagram_sweep.py,Tooling,Analysis or validation tooling.
+analysis/run_all.py,Tooling,Analysis or validation tooling.
+analysis/run_baseline_comparison.py,Tooling,Analysis or validation tooling.
+analysis/run_daughter_analysis.py,Tooling,Analysis or validation tooling.
+analysis/run_full_validation.py,Tooling,Analysis or validation tooling.
+analysis/run_robustness_check.py,Tooling,Analysis or validation tooling.
+analysis/run_semantic_evaluation.py,Tooling,Analysis or validation tooling.
+analysis/seed_sets.py,Tooling,Analysis or validation tooling.
+analysis/semantic_evaluation.py,Tooling,Analysis or validation tooling.
+analysis/spec_validation.py,Tooling,Analysis or validation tooling.
+analysis/stability_analysis.py,Tooling,Analysis or validation tooling.
+analysis/state_adapter.py,Tooling,Analysis or validation tooling.
+analysis/tau_star.py,Tooling,Analysis or validation tooling.
+analysis/telemetry_analysis_common.py,Tooling,Analysis or validation tooling.
+analysis/verdant_triangle_verification.py,Tooling,Analysis or validation tooling.
+colab/Language_Cultivation_v6_patched.py,Legacy,Operational patched runner retained as behavioral specification.
+colab/README.md,Documentation,Project documentation.
+colab/V3_Colab_Workflow.md,Documentation,Project documentation.
+colab/Verdant_V2_Replication.ipynb,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/01_clone_repo.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/02_workspace_symlink.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/03_install_packages.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/04_run_tests.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/05_run_experiments.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/06_compare_interventions.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/07_print_comparison.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/08_bundle_download.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/09_scaffold_analysis.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/10_extract_bundle.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/v3_1000cycle_run.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/v3_resume_run.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/cells/v3_self_referential.py,Example,"Notebook, Colab cell, or runnable helper script."
+colab/verdant_v2_quickstart.ipynb,Example,"Notebook, Colab cell, or runnable helper script."
+corpus/grammar/english_grammar_rules.json,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+corpus/lexicon/core_vocabulary_physical_world.json,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+corpus/lists/teaching_list_physical_world.json,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+corpus/phonemes/english_phoneme_inventory.json,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+corpus/sentences/teaching_sentences_physical_world.json,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+cultivation/README.md,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/cli.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/anthropic.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/base.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/basin_topics.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/groq.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/local.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/mistral.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/topic_variation.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/providers/tutor.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/pyproject.toml,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/runner.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/schemas.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/spec_conditions.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/spec_parser.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/spec_runner.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/specs/adaptive_cross_domain.vcult,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/specs/cross_domain.vcult,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/specs/medical_ethics.vcult,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/specs/quick_test.vcult,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/specs/reactive_medical.vcult,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/strategy/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/strategy/curriculum.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+cultivation/strategy/perturbation.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+docs/api.md,Documentation,Project documentation.
+docs/architecture.md,Documentation,Project documentation.
+docs/episodic_relational_memory_architecture.md,Documentation,Project documentation.
+docs/minimum_alive_interaction_implementation_plan.md,Documentation,Project documentation.
+docs/prompts/scaffold_depth_vs_age_codex_prompt.md,Documentation,Project documentation.
+docs/scalable_compartmentalized_memory_architecture.md,Documentation,Project documentation.
+docs/sharded_manifest_schema.md,Documentation,Project documentation.
+docs/v3_figure_readiness_audit.md,Documentation,Project documentation.
+docs/v3_implementation_plan.md,Documentation,Project documentation.
+docs/v3_packaging_reproducibility_audit.md,Documentation,Project documentation.
+docs/v3_telemetry_audit.md,Documentation,Project documentation.
+docs/v4_cognitive_physics_audit.md,Documentation,Project documentation.
+docs/v4_forensic_executable_audit.md,Documentation,Project documentation.
+docs/whitepaper_summary.md,Documentation,Project documentation.
+ethomorphic/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/bridge/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/bridge/bridge.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/bridge/emergence.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/bridge/mappings.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/coherence/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/coherence/invariants.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/ecwf/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/ecwf/core.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/ethics/__init__.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/ethics/ethomorphism.py,Core Runtime,Importable runtime/runtime-adjacent package file.
+ethomorphic/pyproject.toml,Core Runtime,Importable runtime/runtime-adjacent package file.
+notebooks/language_cultivation.ipynb,Example,"Notebook, Colab cell, or runnable helper script."
+notebooks/training_harness.ipynb,Example,"Notebook, Colab cell, or runnable helper script."
+pyproject.toml,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+requirements.txt,Runtime Dependency,"Packaging, license, requirements, or corpus data consumed by runtime/examples."
+results/v2/20260306T045715Z/backbone_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_access_concentration.pdf,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_access_concentration.png,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_age_gap_mixture.pdf,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_age_gap_mixture.png,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_basin_density_vs_emergent.pdf,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_basin_density_vs_emergent.png,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_basin_size_distribution.pdf,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_basin_size_distribution.png,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_null_distributions.pdf,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_null_distributions.png,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_scaffold_directed.pdf,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/fig_scaffold_directed.png,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/null_models.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/20260306T045715Z/two_timescale_mixture.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_0/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_0/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_0/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_1/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_1/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_1/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_10/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_10/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_10/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_11/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_11/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_11/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_12/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_12/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_12/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_13/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_13/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_13/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_14/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_14/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_14/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_15/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_15/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_15/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_16/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_16/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_16/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_17/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_17/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_17/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_18/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_18/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_18/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_19/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_19/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_19/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_2/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_2/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_2/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_3/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_3/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_3/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_4/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_4/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_4/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_5/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_5/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_5/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_6/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_6/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_6/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_7/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_7/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_7/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_8/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_8/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_8/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_9/basins.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_9/emergent_edges.csv,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v2/seed_9/metrics.json,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+results/v3/README.md,Generated Output,Experiment artifact or packaged run output; preserved pending maintainer approval.
+scripts/kernel_loop.py,Example,"Notebook, Colab cell, or runnable helper script."
+scripts/repository_summary.py,Example,"Notebook, Colab cell, or runnable helper script."
+scripts/run_once.py,Example,"Notebook, Colab cell, or runnable helper script."
+scripts/test_output_bus.py,Example,"Notebook, Colab cell, or runnable helper script."
+scripts/verdant_groq.py,Example,"Notebook, Colab cell, or runnable helper script."
+scripts/verdant_llm_cultivator.py,Example,"Notebook, Colab cell, or runnable helper script."
+scripts/verdant_repl.py,Example,"Notebook, Colab cell, or runnable helper script."
+scripts/verdant_telemetry.py,Example,"Notebook, Colab cell, or runnable helper script."
+tests/io/test_adapters.py,Test,Pytest test suite file.
+tests_v2/__init__.py,Test,Pytest test suite file.
+tests_v2/integration/__init__.py,Test,Pytest test suite file.
+tests_v2/integration/test_basin_micro_pipeline.py,Test,Pytest test suite file.
+tests_v2/integration/test_basin_telemetry.py,Test,Pytest test suite file.
+tests_v2/integration/test_budding_fires.py,Test,Pytest test suite file.
+tests_v2/integration/test_clean_concepts.py,Test,Pytest test suite file.
+tests_v2/integration/test_colab_smoke.py,Test,Pytest test suite file.
+tests_v2/integration/test_cultivation_cycle.py,Test,Pytest test suite file.
+tests_v2/integration/test_cultivation_runner.py,Test,Pytest test suite file.
+tests_v2/integration/test_ee_edges_all_paths.py,Test,Pytest test suite file.
+tests_v2/integration/test_full_validation_pipeline.py,Test,Pytest test suite file.
+tests_v2/integration/test_h1_validation.py,Test,Pytest test suite file.
+tests_v2/integration/test_phase6_dynamics.py,Test,Pytest test suite file.
+tests_v2/integration/test_phase7_ecwf_boundary.py,Test,Pytest test suite file.
+tests_v2/integration/test_phase8_tutor.py,Test,Pytest test suite file.
+tests_v2/integration/test_pipeline.py,Test,Pytest test suite file.
+tests_v2/integration/test_reactive_runner.py,Test,Pytest test suite file.
+tests_v2/integration/test_scaffold_ablation_experiment.py,Test,Pytest test suite file.
+tests_v2/integration/test_self_referential_loop.py,Test,Pytest test suite file.
+tests_v2/integration/test_spec_runner.py,Test,Pytest test suite file.
+tests_v2/integration/test_v3_scale_ready.py,Test,Pytest test suite file.
+tests_v2/integration/test_verdant_triangle.py,Test,Pytest test suite file.
+tests_v2/unit/__init__.py,Test,Pytest test suite file.
+tests_v2/unit/test_adapters.py,Test,Pytest test suite file.
+tests_v2/unit/test_attention_activation.py,Test,Pytest test suite file.
+tests_v2/unit/test_baseline_random_graph.py,Test,Pytest test suite file.
+tests_v2/unit/test_basin_budding.py,Test,Pytest test suite file.
+tests_v2/unit/test_basin_dynamics.py,Test,Pytest test suite file.
+tests_v2/unit/test_basin_persistence_analysis.py,Test,Pytest test suite file.
+tests_v2/unit/test_basin_registry.py,Test,Pytest test suite file.
+tests_v2/unit/test_basin_robustness.py,Test,Pytest test suite file.
+tests_v2/unit/test_basins.py,Test,Pytest test suite file.
+tests_v2/unit/test_boundary_emergence.py,Test,Pytest test suite file.
+tests_v2/unit/test_bridge.py,Test,Pytest test suite file.
+tests_v2/unit/test_budding.py,Test,Pytest test suite file.
+tests_v2/unit/test_budding_tuned.py,Test,Pytest test suite file.
+tests_v2/unit/test_checkpoint.py,Test,Pytest test suite file.
+tests_v2/unit/test_chunk.py,Test,Pytest test suite file.
+tests_v2/unit/test_coherence.py,Test,Pytest test suite file.
+tests_v2/unit/test_compression_stability.py,Test,Pytest test suite file.
+tests_v2/unit/test_concept_filter.py,Test,Pytest test suite file.
+tests_v2/unit/test_condition_evaluator.py,Test,Pytest test suite file.
+tests_v2/unit/test_daughter_analysis.py,Test,Pytest test suite file.
+tests_v2/unit/test_density_regulation.py,Test,Pytest test suite file.
+tests_v2/unit/test_ecwf.py,Test,Pytest test suite file.
+tests_v2/unit/test_ecwf_boundary.py,Test,Pytest test suite file.
+tests_v2/unit/test_ee_edges.py,Test,Pytest test suite file.
+tests_v2/unit/test_ethomorphic_config.py,Test,Pytest test suite file.
+tests_v2/unit/test_governance.py,Test,Pytest test suite file.
+tests_v2/unit/test_h1_coherence.py,Test,Pytest test suite file.
+tests_v2/unit/test_interventions.py,Test,Pytest test suite file.
+tests_v2/unit/test_memory.py,Test,Pytest test suite file.
+tests_v2/unit/test_mitosis.py,Test,Pytest test suite file.
+tests_v2/unit/test_pattern_extraction.py,Test,Pytest test suite file.
+tests_v2/unit/test_phase.py,Test,Pytest test suite file.
+tests_v2/unit/test_phase_diagram.py,Test,Pytest test suite file.
+tests_v2/unit/test_reactive_parser.py,Test,Pytest test suite file.
+tests_v2/unit/test_routing.py,Test,Pytest test suite file.
+tests_v2/unit/test_self_reflection.py,Test,Pytest test suite file.
+tests_v2/unit/test_semantic_evaluation.py,Test,Pytest test suite file.
+tests_v2/unit/test_spec_parser.py,Test,Pytest test suite file.
+tests_v2/unit/test_state_adapter.py,Test,Pytest test suite file.
+tests_v2/unit/test_tau_star.py,Test,Pytest test suite file.
+tests_v2/unit/test_tutor_provider.py,Test,Pytest test suite file.
+verdant_bridge.py,Core Runtime,Importable runtime/runtime-adjacent package file.

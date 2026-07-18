@@ -1,4 +1,4 @@
-# Verdant-Minds
+# Verdant Minds V4
 
 **A developmental cognitive architecture with measurable structural laws, self-referential concept formation, and a cultivation specification language.**
 
@@ -31,7 +31,7 @@ These components run through a **nine-block processing pipeline** governed by th
 
 ## Architecture
 
-For a full walkthrough of the Verdant V3 system architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
+For a full walkthrough of the Verdant Minds V4 system architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
 
 ### Want the full walkthrough?
 If you want the complete runtime map, pipeline walkthrough, configuration reference, and checkpoint/analysis guide, open [`docs/architecture.md`](docs/architecture.md).
@@ -60,7 +60,7 @@ VCult is the cultivation language for declaring experiments, providers, prompts,
 git clone https://github.com/Captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
 pip install -e .
-pip install -e ./cultivation -e ./ethomorphic -e ./verdant
+pip install -e ./cultivation -e ./ethomorphic
 ```
 
 ### Run a VCult spec
@@ -99,13 +99,20 @@ python -m cultivation.cli preview-spec \
 ## Repository Structure
 
 ```text
-ethomorphic/    — ECWF, bridge, emergence (frozen core)
-verdant/        — system, basin registry, pipeline
+ethomorphic/    — ECWF, bridge, emergence substrate
 cultivation/    — runner, CLI, VCult parser, providers, specs
-analysis/       — validation pipeline, metrics, figures
-tests_v2/       — unit and integration tests
-colab/cells/    — Colab reproduction notebooks
+corpus/         — teaching lexicon, grammar, phonemes, and sentence data
+analysis/       — validation pipeline, metrics, and figure tooling
+docs/           — architecture, API, audit, and modernization notes
+tests/          — current pytest tests that do not require the missing runtime package
+tests_v2/       — preserved historical/runtime regression tests
+colab/cells/    — Colab reproduction workflow cells
+notebooks/      — exploratory notebooks
+Paper/          — manuscript assets and verification bundles
+results/        — preserved generated research outputs
 ```
+
+> Maintainer note: this checkout currently lacks the canonical `verdant/` runtime package referenced by the tests, docs, and patched runner. The repository modernization inventory is tracked in [`docs/repository_modernization_report.md`](docs/repository_modernization_report.md), with a complete file classification in [`docs/repository_inventory.csv`](docs/repository_inventory.csv).
 
 ## License
 

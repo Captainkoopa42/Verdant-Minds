@@ -21,4 +21,4 @@ Use `V4_Colab_Workflow.md` for the ordered workflow, then paste or run the indiv
 | 09 | Scaffold analysis |
 | 10 | Extract a previously downloaded bundle |
 
-V2 notebooks were moved to `archive/v2/` and are retained only as research history.
+Legacy notebooks were moved under `archive/` and are outside the current V4 Colab workflow.

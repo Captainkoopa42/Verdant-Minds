@@ -1,4 +1,4 @@
-"""Unified adapter for Verdant V2/V3 persisted state snapshots."""
+"""Compatibility adapter for Verdant persisted state snapshots."""
 
 from __future__ import annotations
 
@@ -55,7 +55,7 @@ def _normalize_connection(item: Any) -> tuple[str, float] | None:
 
 
 class VerdantState:
-    """Unified reader for V2 and V3 state.json formats."""
+    """Unified reader for current and historical state.json formats."""
 
     def __init__(self, path: Path, raw: JsonDict, format_version: str) -> None:
         self.path = Path(path)

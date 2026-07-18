@@ -57,7 +57,7 @@ VCult is the cultivation language for declaring experiments, providers, prompts,
 
 ## V4 Submission Surface
 
-The root of this branch is intentionally narrow: one README, one installation guide, one supported demo path, one current Colab workflow, and current architecture/API documentation. Older V2/V3 material has been archived under `archive/` when retained for research history.
+The root of this branch is intentionally narrow: one README, one installation guide, one supported demo path, one current Colab workflow, and current architecture/API documentation. Older research material has been archived under `archive/` when retained for later review.
 
 `Verdant_Minds_Runner_Patched (2).py` is preserved for inspection as an experimental runner patch. It is not part of the supported V4 runtime contract; use the package CLI and VCult commands below for reproducible V4 runs.
 
@@ -96,12 +96,6 @@ python -m cultivation.cli preview-spec \
 
 - **Colab reproduction:** see [`colab/V4_Colab_Workflow.md`](colab/V4_Colab_Workflow.md) and [`colab/cells/`](colab/cells/) for the current Colab-based reproduction workflow.
 - **Validation pipeline:** see [`analysis/run_full_validation.py`](analysis/run_full_validation.py) for the end-to-end validation entry point.
-
-## Published Papers
-
-- **V1:** DOI [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
-- **V2:** DOI [10.5281/zenodo.18933639](https://doi.org/10.5281/zenodo.18933639)
-- **V4 submission branch:** this branch is the current submission surface; V1/V2/V3 artifacts are preserved as research history under `archive/` where applicable.
 
 ## Repository Structure
 

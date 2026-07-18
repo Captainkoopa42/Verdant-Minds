@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the full V3 validation pipeline and emit a consolidated report."""
+"""Run the full V4 validation pipeline and emit a consolidated report."""
 
 from __future__ import annotations
 
@@ -506,7 +506,7 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
         "run_dir": str(run_dir),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "seeds_analyzed": len(selected_seed_dirs),
-        "v3_features": {
+        "runtime_features": {
             "registry_enabled": bool(config.get("basin_use_registry", bool(registry_basins))),
             "checkpoints_found": _count_checkpoints(run_dir),
             "fast_bridge": bool(config.get("fast_bridge", False)),
@@ -531,12 +531,12 @@ def build_report(run_dir: Path, outdir: Path, seeds: int | None, n_nulls: int, s
 
     active_count = int(last_cycle.get("basin_registry_active", 0) or 0)
     dormant_count = int(last_cycle.get("basin_registry_dormant", 0) or 0)
-    checkpoints_found = report["v3_features"]["checkpoints_found"]
-    registry_label = "enabled" if report["v3_features"]["registry_enabled"] else "disabled"
-    fast_bridge_label = "enabled" if report["v3_features"]["fast_bridge"] else "disabled"
+    checkpoints_found = report["runtime_features"]["checkpoints_found"]
+    registry_label = "enabled" if report["runtime_features"]["registry_enabled"] else "disabled"
+    fast_bridge_label = "enabled" if report["runtime_features"]["fast_bridge"] else "disabled"
 
     print("=" * 60)
-    print("VERDANT V3 VALIDATION REPORT")
+    print("VERDANT V4 VALIDATION REPORT")
     print("=" * 60)
     print(f"Run: {run_dir}")
     print(f"Seeds: {len(selected_seed_dirs)}")

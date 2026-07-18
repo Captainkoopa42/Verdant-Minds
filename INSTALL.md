@@ -5,10 +5,7 @@ This guide provides detailed instructions for installing the Verdant-Minds (Unif
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
-- [Installation Methods](#installation-methods)
-  - [Development Installation (Recommended)](#development-installation-recommended)
-  - [Standard Installation](#standard-installation)
-  - [From Source](#from-source)
+- [Supported Installation Path](#supported-installation-path)
 - [GPU Support](#gpu-support)
 - [Verifying Installation](#verifying-installation)
 - [Troubleshooting](#troubleshooting)

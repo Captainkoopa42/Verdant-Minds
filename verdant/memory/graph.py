@@ -556,7 +556,7 @@ class ShardedMemoryWeb:
         self._dirty = True
         self._refresh_active_manifest(dirty=True)
 
-    def flush_shards(self, memory_root: str | Path) -> Dict[str, Any]:
+    def flush_shards(self, memory_root: str | Path, *, generation: str | None = None) -> Dict[str, Any]:
         """Persist active shard state and trigger mitosis when caps are exceeded.
 
         This is the Phase 6 router hook: callers provide a memory root containing
@@ -577,6 +577,7 @@ class ShardedMemoryWeb:
             manifest=self.manifest,
             parent_shard_id=self.active_shard_id,
             memory_root=root,
+            generation=generation,
         )
         if result is not None:
             self.active_canvas = MemoryWeb.from_state_dict(result.active_state)
@@ -598,17 +599,33 @@ class ShardedMemoryWeb:
         active_meta = self.manifest.setdefault("shards", {}).setdefault(self.active_shard_id, {})
         active_meta.setdefault("path", f"shards/{self.active_shard_id}.json")
         shard_path = root / str(active_meta["path"])
-        save_state(shard_path, {
-            "version": 1,
-            "schema": "verdant.memory_shard.v1",
-            "shard_id": self.active_shard_id,
-            "anchors": active_meta.get("anchor_labels", []),
-            "memory_web": self.active_canvas.to_state_dict(),
-        })
+        save_state(
+            shard_path,
+            {
+                "version": 1,
+                "schema": "verdant.memory_shard.v1",
+                "shard_id": self.active_shard_id,
+                "anchors": active_meta.get("anchor_labels", []),
+                "generation": generation,
+                "memory_web": self.active_canvas.to_state_dict(),
+            },
+            generation=generation,
+            temp_failpoint="active_shard_temp_written",
+            commit_failpoint="active_shard_committed",
+        )
         active_meta["dirty"] = False
         self._dirty = False
         self.manifest["updated_at"] = time.time()
-        save_state(root / "manifest.json", self.manifest)
+        if generation is not None:
+            self.manifest.setdefault("transactions", {})["committed_generation"] = generation
+            self.manifest["manifest_generation"] = generation
+        save_state(
+            root / "manifest.json",
+            self.manifest,
+            generation=generation,
+            temp_failpoint="manifest_temp_written",
+            commit_failpoint="manifest_committed",
+        )
         return {
             "mitosis_performed": False,
             "active_shard_id": self.active_shard_id,

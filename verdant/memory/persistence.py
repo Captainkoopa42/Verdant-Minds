@@ -23,7 +23,49 @@ def _fsync_directory(path: Path) -> None:
         os.close(dir_fd)
 
 
-def save_state(path: str | Path, state: Dict[str, Any]) -> None:
+def maybe_failpoint(label: str) -> None:
+    """Raise for deterministic crash-injection tests when requested."""
+    if os.environ.get("VERDANT_TX_FAILPOINT") == label:
+        raise RuntimeError(f"Injected transaction failure at {label}")
+
+
+def write_state_temp(path: str | Path, state: Dict[str, Any], *, generation: str | None = None) -> Path:
+    """Write *state* to a durable temp file in *path*'s target directory."""
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    suffix = f".{generation}.tmp" if generation else ".tmp"
+    with tempfile.NamedTemporaryFile(
+        "w",
+        encoding="utf-8",
+        dir=target.parent,
+        prefix=f".{target.name}.",
+        suffix=suffix,
+        delete=False,
+    ) as tmp:
+        tmp_path = Path(tmp.name)
+        json.dump(state, tmp, separators=(",", ":"), default=str)
+        tmp.flush()
+        os.fsync(tmp.fileno())
+    _fsync_directory(target.parent)
+    return tmp_path
+
+
+def commit_state_temp(tmp_path: str | Path, target: str | Path) -> None:
+    """Atomically promote a staged state file to *target*."""
+    target_path = Path(target)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    os.replace(Path(tmp_path), target_path)
+    _fsync_directory(target_path.parent)
+
+
+def save_state(
+    path: str | Path,
+    state: Dict[str, Any],
+    *,
+    generation: str | None = None,
+    temp_failpoint: str | None = None,
+    commit_failpoint: str | None = None,
+) -> None:
     """Atomically serialize *state* to JSON at *path*.
 
     The write is staged in the target directory, flushed with ``fsync``, and
@@ -31,25 +73,15 @@ def save_state(path: str | Path, state: Dict[str, Any]) -> None:
     partially written checkpoint if the process dies mid-write.
     """
     target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
     tmp_path: Path | None = None
 
     try:
-        with tempfile.NamedTemporaryFile(
-            "w",
-            encoding="utf-8",
-            dir=target.parent,
-            prefix=f".{target.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as tmp:
-            tmp_path = Path(tmp.name)
-            json.dump(state, tmp, separators=(",", ":"), default=str)
-            tmp.flush()
-            os.fsync(tmp.fileno())
-
-        os.replace(tmp_path, target)
-        _fsync_directory(target.parent)
+        tmp_path = write_state_temp(target, state, generation=generation)
+        if temp_failpoint:
+            maybe_failpoint(temp_failpoint)
+        commit_state_temp(tmp_path, target)
+        if commit_failpoint:
+            maybe_failpoint(commit_failpoint)
     except Exception:
         if tmp_path is not None:
             try:

@@ -18,6 +18,7 @@ import json
 from pathlib import Path
 import math
 import os
+import uuid
 from typing import Any, Dict, List, Optional
 import warnings
 
@@ -69,6 +70,7 @@ from verdant.memory.basin_state import BasinState
 from verdant.memory.graph import MemoryWeb, ShardedMemoryWeb
 from verdant.memory.router import MemoryRouter
 from verdant.memory.persistence import export_bundle, load_state as load_state_json, save_state as save_state_json
+from verdant.memory.persistence import maybe_failpoint
 from verdant.pipeline.blocks.action import ActionBlock
 from verdant.pipeline.blocks.communication import CommunicationBlock
 from verdant.pipeline.blocks.ethics import EthicsBlock
@@ -287,6 +289,7 @@ class VerdantSystem:
         self._idle_cycles: int = 0
         self._queued_self_observation: str | None = None
         self._checkpoint_path: str = "/tmp/verdant_latest.json"
+        self._last_checkpoint_recovery: Dict[str, Any] = {}
 
         # Per-system legacy NumPy RNG state. Some lower-level Verdant paths still
         # use ``np.random`` directly, so process_input temporarily installs this
@@ -1447,13 +1450,14 @@ class VerdantSystem:
     def save_state(self, path: str) -> None:
         """Save a complete system checkpoint to *path* via atomic JSON replace."""
         self._checkpoint_path = path
+        generation = f"gen_{int(time.time() * 1000)}_{uuid.uuid4().hex[:12]}"
         if hasattr(self.memory_web, "manifest"):
             self.memory_web.manifest.setdefault("runtime", {})["cycle"] = self._cycle_count
         shard_flush = {}
         if hasattr(self.memory_web, "flush_shards"):
             target_path = Path(path)
             shard_root = target_path.parent / f"{target_path.stem}_shards"
-            shard_flush = self.memory_web.flush_shards(shard_root)
+            shard_flush = self.memory_web.flush_shards(shard_root, generation=generation)
 
         state: Dict[str, Any] = {
             "version": 4,
@@ -1481,6 +1485,7 @@ class VerdantSystem:
                 "basin_registry": self._basin_registry.to_dict(),
                 "bridge_acceleration": get_fast_bridge_state(self.bridge),
                 "shard_flush": shard_flush,
+                "checkpoint_generation": generation,
                 "numpy_random_state": self._serialize_numpy_state(self._numpy_random_state),
                 "attention_buffer": {
                     **self.attention_buffer.get_state(),
@@ -1490,7 +1495,14 @@ class VerdantSystem:
             },
         }
         self._prune_state_for_save(state)
-        save_state_json(path, state)
+        maybe_failpoint("primary_checkpoint_before_temp")
+        save_state_json(
+            path,
+            state,
+            generation=generation,
+            temp_failpoint="primary_checkpoint_temp_written",
+            commit_failpoint="primary_checkpoint_committed",
+        )
 
     def load_state(self, path: str) -> None:
         """Load system state from *path*."""
@@ -1499,6 +1511,7 @@ class VerdantSystem:
         self._checkpoint_path = path
         state = load_state_json(path)
         self.memory_web = ShardedMemoryWeb.from_state_dict(state["memory_web"])
+        self._last_checkpoint_recovery = self._inspect_checkpoint_generations(path, state)
         self.ecwf = ECWFCore.from_state_dict(state["ecwf"])
         self.bridge = EthomorphicBridge(
             ecwf=self.ecwf,
@@ -1616,6 +1629,50 @@ class VerdantSystem:
         self._learning.bridge = self.bridge
         self.pipeline.memory_web = self.memory_web
         self.pipeline.bridge = self.bridge
+
+    def _inspect_checkpoint_generations(self, path: str, state: Dict[str, Any]) -> Dict[str, Any]:
+        """Report external shard generation drift without deleting uncertain data."""
+        report: Dict[str, Any] = {"policy": "primary_checkpoint_authoritative", "events": []}
+        checkpoint_generation = ((state.get("extra", {}) or {}).get("checkpoint_generation")) or "legacy-0"
+        report["checkpoint_generation"] = checkpoint_generation
+        target_path = Path(path)
+        shard_root = target_path.parent / f"{target_path.stem}_shards"
+        manifest_path = shard_root / "manifest.json"
+        if not manifest_path.exists():
+            report["events"].append({"type": "manifest_missing", "path": str(manifest_path)})
+            return report
+        try:
+            external_manifest = load_state_json(manifest_path)
+        except Exception as exc:
+            report["events"].append({"type": "manifest_unreadable", "path": str(manifest_path), "error": str(exc)})
+            return report
+        manifest_generation = external_manifest.get("manifest_generation") or (
+            (external_manifest.get("transactions", {}) or {}).get("committed_generation")
+        ) or "legacy-0"
+        report["manifest_generation"] = manifest_generation
+        if manifest_generation != checkpoint_generation:
+            report["events"].append({
+                "type": "generation_mismatch",
+                "checkpoint_generation": checkpoint_generation,
+                "manifest_generation": manifest_generation,
+                "resolution": "using_primary_checkpoint_embedded_manifest",
+            })
+        missing: list[str] = []
+        for shard_id, meta in (external_manifest.get("shards", {}) or {}).items():
+            if not isinstance(meta, dict) or meta.get("state") == "split":
+                continue
+            rel = str(meta.get("path", f"shards/{shard_id}.json"))
+            candidate = shard_root / rel
+            if not candidate.exists() and not rel.startswith("shards/"):
+                candidate = shard_root / "shards" / rel
+            if not candidate.exists():
+                missing.append(str(shard_id))
+        if missing:
+            report["events"].append({"type": "manifest_references_missing_shards", "shards": missing})
+        temps = sorted(str(p) for p in shard_root.rglob("*.tmp")) if shard_root.exists() else []
+        if temps:
+            report["events"].append({"type": "staged_temp_files_present", "paths": temps})
+        return report
 
     def export_bundle(self, path: str) -> None:
         export_bundle(

@@ -13,7 +13,7 @@ from typing import Any
 import networkx as nx
 
 from verdant.config import ETHICS_ANCHOR_THRESHOLD, SALIENCE_DECAY_RATE
-from verdant.memory.persistence import save_state
+from verdant.memory.persistence import commit_state_temp, maybe_failpoint, save_state, write_state_temp
 
 
 @dataclass(frozen=True)
@@ -55,6 +55,7 @@ def split_and_persist(
     manifest: dict[str, Any],
     parent_shard_id: str,
     memory_root: str | Path,
+    generation: str | None = None,
 ) -> MitosisResult | None:
     """Split an oversized active shard into two persisted daughter shard files.
 
@@ -89,18 +90,37 @@ def split_and_persist(
         daughters=daughters,
         weak_edges=weak_edges,
     )
+    if generation is not None:
+        updated_manifest.setdefault("transactions", {})["committed_generation"] = generation
+        updated_manifest["manifest_generation"] = generation
 
+    staged_daughters: list[tuple[Path, Path]] = []
     for daughter in daughters:
         shard_path = root / str(updated_manifest["shards"][daughter.shard_id]["path"])
-        save_state(shard_path, _shard_document(daughter))
+        tmp_path = write_state_temp(shard_path, _shard_document(daughter, generation=generation), generation=generation)
+        staged_daughters.append((tmp_path, shard_path))
+        if len(staged_daughters) == 1:
+            maybe_failpoint("mitosis_after_first_daughter_temp")
+    maybe_failpoint("mitosis_after_all_daughter_temps")
 
-    save_state(root / "manifest.json", updated_manifest)
+    manifest_path = root / "manifest.json"
+    manifest_tmp = write_state_temp(manifest_path, updated_manifest, generation=generation)
+    maybe_failpoint("mitosis_after_staged_manifest")
+
+    for tmp_path, shard_path in staged_daughters:
+        commit_state_temp(tmp_path, shard_path)
+    maybe_failpoint("mitosis_after_daughter_replacements")
+
+    commit_state_temp(manifest_tmp, manifest_path)
+    maybe_failpoint("mitosis_after_manifest_commit")
 
     parent_path_value = parent_meta.get("path")
     if isinstance(parent_path_value, str) and parent_path_value:
+        maybe_failpoint("mitosis_before_parent_retirement")
         parent_path = root / parent_path_value
         if parent_path.exists() and parent_path.name not in {f"{d.shard_id}.json" for d in daughters}:
             parent_path.unlink()
+        maybe_failpoint("mitosis_during_cleanup")
 
     active = daughters[0]
     return MitosisResult(
@@ -539,11 +559,12 @@ def _metrics_for_state(memory_web: Any, memory_store: dict[str, Any], edge_count
     return metrics
 
 
-def _shard_document(daughter: DaughterShard) -> dict[str, Any]:
+def _shard_document(daughter: DaughterShard, *, generation: str | None = None) -> dict[str, Any]:
     return {
         "version": 1,
         "schema": "verdant.memory_shard.v1",
         "shard_id": daughter.shard_id,
         "anchors": daughter.anchors,
+        "generation": generation,
         "memory_web": daughter.state,
     }

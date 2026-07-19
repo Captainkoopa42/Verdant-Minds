@@ -121,9 +121,12 @@ else:
 
 CHECKPOINT_DIR  = LOCAL_DATA / 'checkpoints'
 CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-CHECKPOINT_PATH = CHECKPOINT_DIR / 'verdant_latest.json'
+SOURCE_CHECKPOINT_PATH = CHECKPOINT_DIR / 'verdant_latest.json'
+WORKING_CHECKPOINT_PATH = CHECKPOINT_DIR / 'verdant_working.json'
+CHECKPOINT_PATH = WORKING_CHECKPOINT_PATH
 print(f"\nData root : {LOCAL_DATA}")
-print(f"Checkpoint: {CHECKPOINT_PATH}")
+print(f"Source checkpoint : {SOURCE_CHECKPOINT_PATH}")
+print(f"Working checkpoint: {WORKING_CHECKPOINT_PATH}")
 
 _DISK_MIN_GB = 10  # abort ingest if free space drops below this
 _disk_free_gb = shutil.disk_usage('/content').free // (1024**3)
@@ -141,310 +144,98 @@ if _disk_free_gb < _DISK_MIN_GB:
 # ──────────────────────────────────────────
 
 
-# ══════════════════════════════════════════════════════════════
-# MONKEY PATCHES — Applied at runtime before any verdant import
-# Tests codebase fixes without touching the actual repo files.
-# Once confirmed working, Kurzu applies these to the codebase
-# and these patches can be removed.
-#
-# Patches applied:
-#   [MP-1] VerdantSystem.load_state() — sets _checkpoint_path
-#           Fixes: shard thaw() looking in /tmp/ after every load
-#   [MP-2] ShardedMemoryWeb.thaw() — honours lru_cache_size
-#           Fixes: hardcoded "> 2" ignoring manifest lru setting
-#   [MP-3] Mitosis caps — tuned to 450/16000 (was 384/12000)
-#           Fixes: too many small shards causing excess I/O
-# ══════════════════════════════════════════════════════════════
-
-def _apply_monkey_patches():
-    import importlib, types
-
-    # ── MP-1: load_state sets _checkpoint_path ──────────────
-    try:
-        from verdant import system as _vsys_module
-        _orig_load_state = _vsys_module.VerdantSystem.load_state
-
-        def _patched_load_state(self, path: str) -> None:
-            self._checkpoint_path = path   # ← THE FIX
-            _orig_load_state(self, path)
-
-        _vsys_module.VerdantSystem.load_state = _patched_load_state
-        print("[MP-1] ✓ load_state() patched — _checkpoint_path set from path arg")
-    except Exception as e:
-        print(f"[MP-1] ✗ load_state patch failed: {e}")
-
-    # ── MP-2: thaw() honours lru_cache_size from manifest ───
-    try:
-        from verdant.memory import graph as _graph_module
-        _orig_thaw = _graph_module.ShardedMemoryWeb.thaw
-
-        def _patched_thaw(self, shard_id: str, memory_root) -> None:
-            from pathlib import Path as _Path
-            shard_id = str(shard_id)
-            root = _Path(memory_root)
-            if shard_id == self.active_shard_id:
-                return
-            if self._dirty:
-                self.flush_shards(root)
-            if shard_id in self._warm_cache:
-                canvas = self._warm_cache.pop(shard_id)
-            else:
-                meta = (self.manifest.get("shards", {}) or {}).get(shard_id, {})
-                path_value = (meta.get("path", f"shards/{shard_id}.json")
-                              if isinstance(meta, dict)
-                              else f"shards/{shard_id}.json")
-                # ── MP-2b: self-heal on missing shard file ──────────
-                # thaw() can be reached from many places (manual concept
-                # inspection, Cell 9 diagnostics, mitosis smoke tests) —
-                # too many call sites to pre-validate every one. If the
-                # target shard file genuinely doesn't exist on disk,
-                # mark it split in the manifest (so nothing tries to
-                # thaw it again), strip it from concept_index, and fall
-                # back to whatever canvas was already active instead of
-                # crashing the cell.
-                target_path = root / str(path_value)
-                if not target_path.exists() and not str(path_value).startswith("shards/"):
-                    target_path = root / "shards" / str(path_value)
-                if not target_path.exists():
-                    print(f"[thaw self-heal] shard file missing on disk: "
-                          f"{shard_id[:70]} — marking split, staying on "
-                          f"active shard '{self.active_shard_id[:60] if self.active_shard_id else 'none'}'")
-                    if isinstance(meta, dict):
-                        meta["state"] = "split"
-                    ci = self.manifest.get("concept_index", {})
-                    for label in list(ci.keys()):
-                        homes = ci[label] if isinstance(ci[label], list) else [ci[label]]
-                        homes = [h for h in homes if h != shard_id]
-                        if homes:
-                            ci[label] = homes
-                        else:
-                            del ci[label]
-                    return  # stay on current active_canvas, don't crash
-                # ──────────────────────────────────────────────────────
-                from verdant.memory.persistence import load_state as _ls
-                document = _ls(target_path)
-                from verdant.memory.graph import MemoryWeb as _MW
-                canvas = _MW.from_state_dict(
-                    document.get("memory_web", document))
-            self._strip_ghosts(canvas)
-            self.active_canvas  = canvas
-            self.active_shard_id = shard_id
-            self._warm_cache[shard_id] = self.active_canvas
-            # ── THE FIX: read lru_cache_size from manifest ──
-            lru_size = (self.manifest
-                        .get("defaults", {})
-                        .get("lru_cache_size", 2))
-            while len(self._warm_cache) > lru_size:
-                self._warm_cache.pop(next(iter(self._warm_cache)))
-            # ────────────────────────────────────────────────
-            self._refresh_active_manifest(dirty=False)
-            self._load_mandatory_bridge_ghosts(root)
-
-        _graph_module.ShardedMemoryWeb.thaw = _patched_thaw
-        print("[MP-2] ✓ thaw() patched — lru_cache_size read from manifest")
-    except Exception as e:
-        print(f"[MP-2] ✗ thaw patch failed: {e}")
-
-    # ── MP-4: memory_store/graph edge desync fix ────────────
-    try:
-        from verdant.memory import graph as _graph_module
-
-        def _remove_connection(self, a, b):
-            a, b = str(a), str(b)
-            if self.graph.has_edge(a, b):
-                self.graph.remove_edge(a, b)
-            if a in self.memory_store:
-                self.memory_store[a]["connections"] = [
-                    x for x in self.memory_store[a].get("connections", [])
-                    if str(x[0]) != b
-                ]
-            if b in self.memory_store:
-                self.memory_store[b]["connections"] = [
-                    x for x in self.memory_store[b].get("connections", [])
-                    if str(x[0]) != a
-                ]
-
-        _graph_module.MemoryWeb.remove_connection = _remove_connection
-
-        def _rebuild_memory_connection_cache(memory_web):
-            repaired = 0
-            for node in memory_web.graph.nodes:
-                if node not in memory_web.memory_store:
-                    continue
-                connections = []
-                for neighbor in memory_web.graph.neighbors(node):
-                    weight = float(
-                        memory_web.graph[node][neighbor].get("weight", 0.0))
-                    connections.append((str(neighbor), weight))
-                memory_web.memory_store[node]["connections"] = connections
-                repaired += 1
-            return repaired
-
-        def _count_memory_divergence(memory_web):
-            divergence = []
-            for node, data in memory_web.memory_store.items():
-                cached = set(str(x[0]) for x in data.get("connections", []))
-                graph_neighbors = (
-                    set(str(n) for n in memory_web.graph.neighbors(node))
-                    if node in memory_web.graph else set())
-                if cached != graph_neighbors:
-                    divergence.append({
-                        "node": node,
-                        "missing_from_memory": sorted(graph_neighbors - cached),
-                        "phantom_memory_edges": sorted(cached - graph_neighbors),
-                    })
-            return divergence
-
-        # Patch the two known unsynced call sites in basin_dynamics.py
-        from verdant.memory import basin_dynamics as _bd_module
-        import inspect as _inspect
-
-        _orig_prune = _bd_module.prune_basin_edges
-        _orig_regulate = _bd_module.regulate_density
-
-        def _traced_prune_basin_edges(memory_web, *a, **kw):
-            before = len(_count_memory_divergence(memory_web))
-            result = _orig_prune(memory_web, *a, **kw)
-            _rebuild_memory_connection_cache(memory_web)  # resync after prune
-            after = len(_count_memory_divergence(memory_web))
-            if before != after or before > 0:
-                print(f"[MP-4] prune_basin_edges: divergence {before}->0 "
-                      f"(resynced)")
-            return result
-
-        def _traced_regulate_density(memory_web, *a, **kw):
-            before = len(_count_memory_divergence(memory_web))
-            result = _orig_regulate(memory_web, *a, **kw)
-            _rebuild_memory_connection_cache(memory_web)  # resync after regulate
-            after = len(_count_memory_divergence(memory_web))
-            if before != after or before > 0:
-                print(f"[MP-4] regulate_density: divergence {before}->0 "
-                      f"(resynced)")
-            return result
-
-        _bd_module.prune_basin_edges = _traced_prune_basin_edges
-        _bd_module.regulate_density  = _traced_regulate_density
-
-        # Expose diagnostics globally for manual checks in later cells
-        global rebuild_memory_connection_cache, count_memory_divergence
-        rebuild_memory_connection_cache = _rebuild_memory_connection_cache
-        count_memory_divergence = _count_memory_divergence
-
-        print("[MP-4] ✓ memory_store/graph sync patched "
-              "(prune_basin_edges + regulate_density now auto-resync)")
-    except Exception as e:
-        print(f"[MP-4] ✗ memory sync patch failed: {e}")
-
-    print("[Monkey Patches] All patches applied.")
-
-    # ── MP-5: persist Council.influence_weights across save/load ──
-    # ROOT CAUSE FIX for mandatory bridges never forming: Council is
-    # rebuilt fresh (influence_weights reset to 1.0/1.0/1.0) every time
-    # VerdantSystem() is constructed, even when load_state() is called
-    # right after. The individual Kings' state IS saved/restored, but
-    # the Council object itself — which holds the actual ratio that
-    # becomes ethics_king_weight — is never serialized at all. This
-    # means every run's EthicsKing adaptation (+0.01 per qualifying
-    # cycle) is silently discarded, and every fresh run replays the
-    # same 0.3333 -> 0.4286 climb from scratch instead of continuing
-    # from where the last run left off. Verified against the real
-    # V4 repo: no to_state_dict/from_state_dict exists on Council,
-    # and save_state()/load_state() never reference it.
-    try:
-        from verdant import system as _vsys_module
-        _orig_save_state = _vsys_module.VerdantSystem.save_state
-        _orig_load_state2 = _vsys_module.VerdantSystem.load_state  # after MP-1 patch
-
-        def _patched_save_state(self, path: str) -> None:
-            _orig_save_state(self, path)
-            try:
-                council_state = {
-                    "influence_weights": dict(self.council.influence_weights),
-                    "interaction_history": list(self.council.interaction_history)[-200:],
-                }
-                sidecar = Path(path).with_name(Path(path).stem + "_council.json")
-                sidecar.write_text(json.dumps(council_state, indent=2), encoding='utf-8')
-            except Exception as e:
-                print(f"[MP-5] council save failed (non-fatal): {e}")
-
-        def _patched_load_state2(self, path: str) -> None:
-            _orig_load_state2(self, path)
-            try:
-                sidecar = Path(path).with_name(Path(path).stem + "_council.json")
-                if sidecar.exists():
-                    council_state = json.loads(sidecar.read_text(encoding='utf-8'))
-                    weights = council_state.get("influence_weights", {})
-                    for king, w in weights.items():
-                        if king in self.council.influence_weights:
-                            self.council.influence_weights[king] = float(w)
-                    self.council.interaction_history = council_state.get(
-                        "interaction_history", [])
-                    print(f"[MP-5] Council weights restored: "
-                          f"{self.council.influence_weights} "
-                          f"({len(self.council.interaction_history)} prior interactions)")
-                else:
-                    print(f"[MP-5] no prior council state found "
-                          f"({sidecar.name}) — starting Council fresh at 1.0/1.0/1.0")
-            except Exception as e:
-                print(f"[MP-5] council restore failed (non-fatal): {e}")
-
-        _vsys_module.VerdantSystem.save_state = _patched_save_state
-        _vsys_module.VerdantSystem.load_state = _patched_load_state2
-        print("[MP-5] ✓ Council influence_weights now persist across save/load "
-              "(sidecar file, real accumulation, no faked values)")
-    except Exception as e:
-        print(f"[MP-5] ✗ Council persistence patch failed: {e}")
-
+# ──────────────────────────────────────────
+# Native V4 runtime: no monkey patches
+# ──────────────────────────────────────────
+# The repository now natively provides checkpoint-path propagation, sharded
+# thaw/LRU behavior, graph/cache edge synchronization, council persistence,
+# mitosis bridge/index invariants, staged persistence, and generation-drift
+# inspection. This runner only orchestrates Colab cultivation and diagnostics.
 
 def validate_shard_manifest(system, checkpoint_path, label=""):
-    """Check every non-split shard in the manifest actually exists on
-    disk. Mark any missing ones as split so the router/thaw() never
-    tries to load them again, and strip them from concept_index.
-    Call this after ANY load_state() call — initial load, mid-run
-    reload, or eval-isolation restore — since all three can leave the
-    manifest pointing at shards that were never flushed to disk."""
+    """Read-only checkpoint/shard diagnostic for the native V4 runtime."""
     shard_root = Path(checkpoint_path).parent / (
         Path(checkpoint_path).stem + "_shards")
     manifest = getattr(system.memory_web, "manifest", {}) or {}
     shards = manifest.get("shards", {}) or {}
+    bridges = manifest.get("weak_bridge_edges", []) or {}
+    orphaned = manifest.get("orphaned_bridge_edges", []) or {}
+    concept_index = manifest.get("concept_index", {}) or {}
+    active = getattr(system.memory_web, "active_shard_id", None)
+    recovery = getattr(system, "_last_checkpoint_recovery", {}) or {}
     missing = []
+    shard_rows = []
     for sid, meta in shards.items():
         if not isinstance(meta, dict):
             continue
-        if meta.get("state") == "split":
-            continue
         rel = str(meta.get("path", f"shards/{sid}.json"))
-        # Handle both "basin_x.json" and "shards/basin_x.json" forms
         candidate = shard_root / rel
         if not candidate.exists() and not rel.startswith("shards/"):
             candidate = shard_root / "shards" / rel
-        if not candidate.exists():
+        exists = candidate.exists()
+        if meta.get("state") != "split" and not exists:
             missing.append(sid)
+        shard_rows.append({
+            "shard_id": sid,
+            "state": meta.get("state"),
+            "path": rel,
+            "exists": exists,
+            "nodes": meta.get("node_count"),
+            "edges": meta.get("edge_count"),
+        })
+    staged = sorted(str(p.relative_to(shard_root)) for p in shard_root.rglob("*.tmp")) if shard_root.exists() else []
+    report = {
+        "label": label,
+        "checkpoint": str(checkpoint_path),
+        "shard_root": str(shard_root),
+        "active_shard": active,
+        "shard_count": len(shards),
+        "missing_shards": missing,
+        "concept_index_count": len(concept_index) if isinstance(concept_index, dict) else 0,
+        "weak_bridge_count": len(bridges) if isinstance(bridges, list) else 0,
+        "orphaned_bridge_count": len(orphaned) if isinstance(orphaned, list) else 0,
+        "checkpoint_generation": recovery.get("checkpoint_generation"),
+        "manifest_generation": recovery.get("manifest_generation", manifest.get("manifest_generation")),
+        "recovery_events": recovery.get("events", []),
+        "staged_temp_files": staged,
+        "shards": shard_rows[:8],
+    }
+    tag = f" [{label}]" if label else ""
+    print(f"[Shard Diagnostic]{tag}")
+    print(json.dumps(report, indent=2, default=str))
+    return report
 
-    if missing:
-        tag = f" [{label}]" if label else ""
-        print(f"[Shard Validate]{tag} {len(missing)} shard(s) in manifest "
-              f"missing on disk — marking split:")
-        for sid in missing:
-            print(f"    {sid[:70]}")
-            shards[sid]["state"] = "split"
-        ci = manifest.get("concept_index", {})
-        for concept_label in list(ci.keys()):
-            homes = ci[concept_label] if isinstance(ci[concept_label], list) else [ci[concept_label]]
-            homes = [h for h in homes if h not in missing]
-            if homes:
-                ci[concept_label] = homes
-            else:
-                del ci[concept_label]
-        # If the currently active shard itself is gone, fall back to monolith
-        if getattr(system.memory_web, "active_shard_id", None) in missing:
-            print(f"[Shard Validate]{tag} active shard was missing — "
-                  f"resetting active_canvas to monolith")
-            system.memory_web.active_shard_id = "basin_monolith_000000"
-    else:
-        tag = f" [{label}]" if label else ""
-        print(f"[Shard Validate]{tag} all manifest shards verified on disk.")
-    return missing
+
+def recovery_event_policy(report):
+    fatal_types = {
+        "manifest_missing",
+        "manifest_unreadable",
+        "generation_mismatch",
+        "manifest_references_missing_shards",
+    }
+    events = report.get("recovery_events", []) if isinstance(report, dict) else []
+    fatal = [e for e in events if isinstance(e, dict) and e.get("type") in fatal_types]
+    if report.get("missing_shards"):
+        fatal.append({"type": "manifest_references_missing_shards", "shards": report["missing_shards"]})
+    warnings = [e for e in events if isinstance(e, dict) and e.get("type") not in fatal_types]
+    if report.get("staged_temp_files"):
+        warnings.append({"type": "staged_temp_files_present", "paths": report["staged_temp_files"]})
+    return {"fatal": fatal, "warnings": warnings}
+
+
+def print_recovery_policy(report, *, abort_on_fatal=False):
+    policy = recovery_event_policy(report)
+    if policy["fatal"]:
+        print("[Recovery] FATAL events:")
+        print(json.dumps(policy["fatal"], indent=2, default=str))
+        if abort_on_fatal:
+            raise RuntimeError("Fatal checkpoint/shard recovery event before cultivation")
+    if policy["warnings"]:
+        print("[Recovery] warning events:")
+        print(json.dumps(policy["warnings"], indent=2, default=str))
+    if not policy["fatal"] and not policy["warnings"]:
+        print("[Recovery] no fatal or warning recovery events reported.")
+    return policy
 
 
 def write_shard_checksums(checkpoint_path, label=""):
@@ -522,8 +313,6 @@ def verify_shard_checksums(checkpoint_path, label=""):
               f"{missing_files[:5]}")
     return {"corrupted": corrupted, "new": new_files, "missing": missing_files}
 
-_apply_monkey_patches()
-
 from verdant.system import VerdantSystem
 from verdant.io.query_interface import QueryInterface
 
@@ -559,16 +348,81 @@ def shard_status(system, label=""):
     for sid, meta in list(shards.items())[:4]:
         print(f"   - {sid[:50]} state={meta.get('state')} nodes={meta.get('node_count')}")
 
+
+def checkpoint_snapshot(system):
+    manifest = getattr(system.memory_web, "manifest", {}) or {}
+    return {
+        "nodes": system.memory_web.graph.number_of_nodes(),
+        "edges": system.memory_web.graph.number_of_edges(),
+        "cycle": int(getattr(system, "_cycle_count", 0)),
+        "active_shard": getattr(system.memory_web, "active_shard_id", "raw"),
+        "shard_count": len(manifest.get("shards", {}) if isinstance(manifest, dict) else {}),
+        "council_weights": dict(getattr(system.council, "influence_weights", {})),
+        "generation": (manifest.get("manifest_generation") if isinstance(manifest, dict) else None),
+    }
+
+
+def print_load_diagnostics(system, checkpoint_path, label="", *, abort_on_fatal=False):
+    report = validate_shard_manifest(system, checkpoint_path, label=label)
+    print_recovery_policy(report, abort_on_fatal=abort_on_fatal)
+    return report
+
+
+def smoke_save_reload(system, checkpoint_path):
+    print("\n[Smoke] Native V4 save/reload smoke test...")
+    before = checkpoint_snapshot(system)
+    smoke_inputs = [
+        "trust grows through careful attention",
+        "water flows around stone",
+        "family care protects learning",
+        "plants need light and soil",
+        "grammar joins words into meaning",
+    ]
+    for text in smoke_inputs:
+        system.process_input(text, metadata={"source": "runner_smoke"})
+    system.save_state(str(checkpoint_path))
+    write_shard_checksums(checkpoint_path, label="smoke first save")
+    after_save = checkpoint_snapshot(system)
+    del system
+    gc.collect()
+    time.sleep(1)
+    reloaded = VerdantSystem()
+    reloaded.load_state(str(checkpoint_path))
+    print_load_diagnostics(reloaded, checkpoint_path, label="smoke reload", abort_on_fatal=True)
+    after_load = checkpoint_snapshot(reloaded)
+    comparisons = {
+        "nodes": after_save["nodes"] == after_load["nodes"],
+        "edges": after_save["edges"] == after_load["edges"],
+        "cycle": after_save["cycle"] == after_load["cycle"],
+        "active_shard": after_save["active_shard"] == after_load["active_shard"],
+        "shard_count": after_save["shard_count"] == after_load["shard_count"],
+        "council_weights": after_save["council_weights"] == after_load["council_weights"],
+        "generation": after_save["generation"] == after_load["generation"],
+    }
+    print("[Smoke] baseline:", json.dumps(before, indent=2, default=str))
+    print("[Smoke] after save:", json.dumps(after_save, indent=2, default=str))
+    print("[Smoke] after load:", json.dumps(after_load, indent=2, default=str))
+    print("[Smoke] comparisons:", json.dumps(comparisons, indent=2, default=str))
+    if not all(comparisons.values()):
+        raise RuntimeError("Native V4 save/reload smoke test failed")
+    reloaded.process_input("one more smoke input after reload", metadata={"source": "runner_smoke"})
+    reloaded.save_state(str(checkpoint_path))
+    verify_shard_checksums(checkpoint_path, label="smoke after second save")
+    write_shard_checksums(checkpoint_path, label="smoke after second save")
+    print("[Smoke] passed.")
+    return reloaded
+
+
 system = VerdantSystem()
-if CHECKPOINT_PATH.exists():
-    system.load_state(str(CHECKPOINT_PATH))
-    system._checkpoint_path = str(CHECKPOINT_PATH)
-    validate_shard_manifest(system, CHECKPOINT_PATH, label="Cell 2 initial load")
-    verify_shard_checksums(CHECKPOINT_PATH, label="Cell 2 initial load")
-    print("Loaded checkpoint:", CHECKPOINT_PATH)
+if SOURCE_CHECKPOINT_PATH.exists():
+    system.load_state(str(SOURCE_CHECKPOINT_PATH))
+    print_load_diagnostics(system, SOURCE_CHECKPOINT_PATH, label="Cell 2 source load", abort_on_fatal=True)
+    verify_shard_checksums(SOURCE_CHECKPOINT_PATH, label="Cell 2 source load")
+    print("Loaded source checkpoint:", SOURCE_CHECKPOINT_PATH)
 else:
     print("No checkpoint found — starting fresh.")
-    system._checkpoint_path = str(CHECKPOINT_PATH)
+
+system = smoke_save_reload(system, WORKING_CHECKPOINT_PATH)
 
 verdant_monitor.snapshot("After load")
 print(f"Graph: {system.memory_web.graph.number_of_nodes()} nodes, "
@@ -587,7 +441,7 @@ for split_round in range(5):
     time.sleep(2)
     system = VerdantSystem()
     system.load_state(str(CHECKPOINT_PATH))
-    system._checkpoint_path = str(CHECKPOINT_PATH)
+    print_load_diagnostics(system, CHECKPOINT_PATH, label=f"Pre-split reload {split_round}", abort_on_fatal=True)
     print(f"  Reloaded: {system.memory_web.graph.number_of_nodes()} nodes")
 
 configure_mitosis(system, "watch")
@@ -2879,8 +2733,7 @@ time.sleep(2)
 
 system = VerdantSystem()
 system.load_state(str(CHECKPOINT_PATH))
-system._checkpoint_path = str(CHECKPOINT_PATH)  # CRITICAL: thaw() needs Drive path
-validate_shard_manifest(system, CHECKPOINT_PATH, label="Cell 5.5 reload")
+print_load_diagnostics(system, CHECKPOINT_PATH, label="Cell 5.5 reload", abort_on_fatal=True)
 configure_mitosis(system, "watch")
 query_interface = QueryInterface(system)
 m = system.get_metrics()
@@ -2960,7 +2813,7 @@ def log_chunk(chunk, sentence_id, sentence_text, corpus, ingest_call_n):
     # silently failing (empty/missing section, or missing
     # "influence_weights" key) and falling through to the stale
     # basin_section value above — which never reflected Council's
-    # real, MP-5-restored state. Confirmed tonight: Council genuinely
+    # real native state. Confirmed tonight: Council genuinely
     # held EthicsKing=1.5 for an entire session while every trace
     # event still logged ethics_weight=0.4286, because this block was
     # failing silently every single call. Read directly from the live
@@ -3591,12 +3444,12 @@ print("Target concepts (repeated on every sentence): care, trust, harm, boundary
 
 # ──────────────────────────────────────────
 # Cell 6e — Feed bridge-push sentences (with trace)
-# FIX (post-MP-5 diagnosis): the salience formula itself is correct
+# Native V4 salience diagnosis: the salience formula itself is correct
 # — contribution = ethics_king_weight * activation_score, read live
 # from Council.influence_weights every call. The problem was never
 # the math. It's that care/trust/harm/boundary only activated once
 # or twice per single pass, so they rarely got hit WHILE
-# ethics_king_weight was actually elevated. Now that MP-5 lets
+# ethics_king_weight was actually elevated. Native council persistence lets
 # EthicsKing accumulate toward its 1.5 cap across real sessions,
 # running multiple repeated passes IN THIS SESSION gives these four
 # concepts the repeated exposure they need while that elevated ratio
@@ -3694,7 +3547,7 @@ else:
     print("")
     print("Still under threshold after all passes this session.")
     print("This means EthicsKing's ratio hasn't climbed high enough YET —")
-    print("check '[MP-5] Council weights restored' at the top of this run's")
+    print("check the native council influence weights near the top of this run's")
     print("output. If EthicsKing is still well under its 1.5 cap, run a")
     print("few more full cultivation sessions first so Council has more")
     print("real interactions to adapt from, then re-run this cell.")
@@ -3730,7 +3583,7 @@ verify_shard_checksums(CHECKPOINT_PATH, label="Cell 7 post-save")
 write_shard_checksums(CHECKPOINT_PATH, label="Cell 7 post-save")
 
 # Show local storage used
-shard_dir = CHECKPOINT_DIR / 'verdant_latest_shards' / 'shards'
+shard_dir = CHECKPOINT_DIR / f'{CHECKPOINT_PATH.stem}_shards' / 'shards'
 n_shards  = len(list(shard_dir.glob('*.json'))) if shard_dir.exists() else 0
 used_gb   = sum(f.stat().st_size for f in CHECKPOINT_DIR.rglob('*') if f.is_file()) / (1024**3)
 print(f"\nLocal data: {n_shards} shard files | {used_gb:.2f} GB used")
@@ -3750,7 +3603,7 @@ shard_status(system, "After save")
 # filename. save_state() only flushes shards that are dirty/active —
 # it does not guarantee every manifest-referenced shard gets copied
 # into a NEW shard directory. Cell 7 already wrote a complete shard
-# set under verdant_latest_shards/ moments ago; writing to that same
+# set under the matching working shard root moments ago; writing to that same
 # path again just re-flushes onto the complete set instead of
 # creating a second, incomplete one under a different name.
 # ──────────────────────────────────────────
@@ -3891,13 +3744,7 @@ system.process_input(
 print(f"Active shard before ecology evaluation: "
       f"{getattr(system.memory_web,'active_shard_id','raw')[:60]}")
 
-# run_session needs to find cloze items in the sentences file.
-# Point it at the ecology sentences path via the teaching list.
-# Note: run_session reads sentences from fixed path — we patch it here.
-import importlib
-import verdant.io.see_and_say as _sas_module
-
-_orig_run = _sas_module.run_session
+# Evaluate ecology cloze items directly from the generated ecology sentences.
 
 def _ecology_run_session(teaching_list_path, query_interface):
     from pathlib import Path as _Path
@@ -4201,8 +4048,7 @@ else:
           f"({_pre_eval_shard_count} shards) — restoring anyway for safety.")
 
 system.load_state(str(_EVAL_SNAPSHOT_PATH))
-system._checkpoint_path = str(CHECKPOINT_PATH)  # MP-1 covers this too, belt+suspenders
-validate_shard_manifest(system, CHECKPOINT_PATH, label="Cell 8.9 eval-restore")
+print_load_diagnostics(system, _EVAL_SNAPSHOT_PATH, label="Cell 8.9 eval-restore", abort_on_fatal=True)
 print(f"[Eval Isolation] Restored. Active shard: "
       f"{getattr(system.memory_web,'active_shard_id','raw')[:60]}")
 gc.collect()

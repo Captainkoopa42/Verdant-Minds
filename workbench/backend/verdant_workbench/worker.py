@@ -23,6 +23,13 @@ from .models import (
 from verdant_kernel import ExperienceCommand
 
 
+DEFAULT_REQUEST_TIMEOUT = 20.0
+EXPLORER_REQUEST_TIMEOUTS = {
+    "living_explorer_frame": 30.0,
+    "living_explorer_timeline": 60.0,
+}
+
+
 def _worker_main(connection, initial: dict[str, Any]) -> None:
     adapter: VerdantEngineAdapter | None = None
     try:
@@ -190,14 +197,20 @@ class EngineWorkerSupervisor:
     def alive(self) -> bool:
         return self._process.is_alive()
 
-    def request(self, action: str, payload: dict[str, Any] | None = None, *, timeout: float = 20.0) -> dict[str, Any]:
+    def request(self, action: str, payload: dict[str, Any] | None = None, *, timeout: float | None = None) -> dict[str, Any]:
         request = WorkerRequest(action=action, payload=payload or {})
+        effective_timeout = EXPLORER_REQUEST_TIMEOUTS.get(action, DEFAULT_REQUEST_TIMEOUT) if timeout is None else timeout
         with self._lock:
             if not self.alive:
                 raise RuntimeError("Verdant engine worker is not alive.")
             self._connection.send(request.model_dump(mode="json"))
-            if not self._connection.poll(timeout):
-                raise TimeoutError(f"Engine worker timed out handling {action}.")
+            if not self._connection.poll(effective_timeout):
+                if action in EXPLORER_REQUEST_TIMEOUTS:
+                    raise RuntimeError(
+                        f"Living Explorer is temporarily busy: engine worker did not answer {action} "
+                        f"within {effective_timeout:.0f}s. Verdant may still be running; retry the Explorer after the current work finishes."
+                    )
+                raise TimeoutError(f"Engine worker timed out handling {action} after {effective_timeout:.0f}s.")
             response = WorkerResponse.model_validate(self._connection.recv())
         if not response.ok:
             raise RuntimeError(f"Worker {response.error_type}: {response.error_message}\n{response.payload.get('traceback','')}")

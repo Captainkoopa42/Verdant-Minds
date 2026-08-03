@@ -27,6 +27,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     os.environ["VERDANT_WORKBENCH_HOME"] = str(Path(args.home).resolve())
+
+    # Local runtime safety policy: historical Living Explorer reconstruction is
+    # forensic work and must never monopolize the organism worker while the
+    # developmental queue is actively cultivating.
+    from verdant_workbench.runtime_stability import install_runtime_stability_patches
+    install_runtime_stability_patches()
+
     if args.check:
         from verdant_workbench.run_service import DurableRunService
         service = DurableRunService(os.environ["VERDANT_WORKBENCH_HOME"])

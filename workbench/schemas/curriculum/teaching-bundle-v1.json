@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verdant.teaching.bundle.v1",
+  "title": "Verdant Editable Teaching Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "language_scaffold",
+    "items"
+  ],
+  "properties": {
+    "schema": {
+      "const": "verdant.teaching.bundle.v1"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "language_scaffold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grammar_rules",
+        "lexicon"
+      ],
+      "properties": {
+        "grammar_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lexicon": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item_id",
+          "context_id"
+        ],
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "context_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_text": {
+            "type": "string"
+          },
+          "modality": {
+            "type": "string"
+          },
+          "concepts": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "relations": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "feature_vector": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "number"
+            }
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "provenance": {
+            "type": "object"
+          },
+          "grammar_annotation": {
+            "type": "object"
+          },
+          "lexicon_annotation": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "event_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "semantic_evidence_kind": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+Verdant Workbench WB-07 verification summary
+
+Engine baseline: 189 / 189 passing, verified in fresh partitions
+  124 core/kernel/media/workspace/etc.
+   32 M12-M15 development/plasticity/structures/compilation
+   16 M16-M17 interaction/hierarchy
+    9 M18 refolding
+    8 M19 benchmark (5 + 3 fresh partitions)
+
+Workbench integration: 43 / 43 passing, verified in fresh partitions
+   3 adapter/equivalence
+   4 WB-02 persistence
+   3 WB-03 live console
+  10 WB-04 / WB-04.1 curriculum + grammar
+   6 WB-05 forensic structures
+   7 WB-06 living explorer
+   3 worker/API
+   7 WB-07 experiments
+
+Combined collected and verified: 232 tests
+
+WB-07 machine proof: PASS
+Reference curriculum SHA-256:
+38ffb6c25056b7f0134e5f2dd923fe08b9cca05318a66f38e3c7582eb102ce4b
+
+Reproduced scientific-result SHA-256:
+c7bc5180354a8a20a3db081000a9c5124ffcbd77da4f860d0ee6214c937c36a7
+
+Reference P causal work: 1 -> 7 -> 1
+Reference Q causal work: 3 -> 8 -> 3
+
+The known very-long single pytest process slowdown remains present in this container.
+Fresh partitions were used for verification rather than treating infrastructure timeouts as logical failures.

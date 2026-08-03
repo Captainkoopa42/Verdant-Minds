@@ -1,0 +1,5 @@
+{"event_key":"alien-triad-001","context_id":"world-a-context-1","labels":["kren","tar","vel"],"feature_vector":[1,0,0]}
+{"event_key":"alien-triad-002","context_id":"world-a-context-2","labels":["kren","tar","vel"],"feature_vector":[1,0,0]}
+{"event_key":"alien-triad-003","context_id":"world-a-context-1","labels":["kren","tar","vel"],"feature_vector":[1,0,0]}
+{"event_key":"alien-triad-004","context_id":"world-a-context-2","labels":["kren","tar","vel"],"feature_vector":[1,0,0]}
+{"event_key":"alien-triad-005","context_id":"world-a-context-1","labels":["kren","tar","vel"],"feature_vector":[1,0,0]}

@@ -1,0 +1,1089 @@
+{
+  "council_report": {
+    "assessments": [
+      {
+        "assessment_id": "king_assessment_13cbdc0e84a5228232639d4c",
+        "attention_candidate_ids": [],
+        "confidence": 1.0,
+        "constraints": [],
+        "details": {
+          "resonance_event_count": 0,
+          "resonance_used_as_evidence": false
+        },
+        "evidence_refs": [
+          "evidence_129948b5bf07e8dd50b09e92",
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_89d903adf3a79ec19994eeee",
+          "evidence_9c85f2d19365a9763fa08e6b",
+          "evidence_a78c883c979bd89fc34f6e51",
+          "evidence_b54e3de14aa96f21fb050788",
+          "evidence_d0d761644b8f0a22f2c8bd22"
+        ],
+        "jurisdiction": "epistemic_support",
+        "king": "DataKing",
+        "proposal_id": "council_proposal_b72cc775688c69ceca0e6203",
+        "rationale_codes": [
+          "explicit_preserved_evidence_present",
+          "resonance_is_not_evidence"
+        ],
+        "recommendation": "support",
+        "score": 1.0
+      },
+      {
+        "assessment_id": "king_assessment_ee6f6a272557c7c76cecda7c",
+        "attention_candidate_ids": [],
+        "confidence": 1.0,
+        "constraints": [],
+        "details": {
+          "boundary_sensitive": false,
+          "consent_present": false,
+          "consent_required": false,
+          "declared_harm_risk": 0.0,
+          "effective_harm_risk": 0.0,
+          "learned_action_risk": 0.0,
+          "reversibility": 1.0,
+          "uncertainty_increment": 0.0,
+          "veto_threshold": 0.65
+        },
+        "evidence_refs": [
+          "evidence_129948b5bf07e8dd50b09e92",
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_89d903adf3a79ec19994eeee",
+          "evidence_9c85f2d19365a9763fa08e6b",
+          "evidence_a78c883c979bd89fc34f6e51",
+          "evidence_b54e3de14aa96f21fb050788",
+          "evidence_d0d761644b8f0a22f2c8bd22"
+        ],
+        "jurisdiction": "consequence_permission_boundary",
+        "king": "EthicsKing",
+        "proposal_id": "council_proposal_b72cc775688c69ceca0e6203",
+        "rationale_codes": [
+          "risk_within_current_permission_policy"
+        ],
+        "recommendation": "permit",
+        "score": 1.0
+      },
+      {
+        "assessment_id": "king_assessment_c3cbf0d305146cdb2abfded8",
+        "attention_candidate_ids": [],
+        "confidence": 0.5762499999999999,
+        "constraints": [],
+        "details": {
+          "attention_budget": 1.0,
+          "attention_signal": 0.0,
+          "contradiction_boost": 0.0,
+          "priority_threshold": 0.55,
+          "requested_resource": 0.2
+        },
+        "evidence_refs": [],
+        "jurisdiction": "bounded_present_priority",
+        "king": "ForefrontKing",
+        "proposal_id": "council_proposal_b72cc775688c69ceca0e6203",
+        "rationale_codes": [
+          "contradiction_priority_without_truth_authority",
+          "finite_attention_budget"
+        ],
+        "recommendation": "prioritize",
+        "score": 0.6525
+      }
+    ],
+    "authorized_operations": [
+      "promote_proto_object:object_candidate_ddc3c2d33f845ef319cea936"
+    ],
+    "blocked_operations": [],
+    "constraints": [],
+    "cycle": 16,
+    "disposition": "approve",
+    "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+    "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+    "policy_snapshot": {
+      "attention_budget": 1.0,
+      "decision_method": "constitutional_rule_order",
+      "enabled_kings": {
+        "DataKing": true,
+        "EthicsKing": true,
+        "ForefrontKing": true
+      },
+      "ethics_veto_threshold": 0.65,
+      "forefront_priority_threshold": 0.55,
+      "learned_action_risk": {},
+      "legacy_weights_used_for_decision": false,
+      "outcome_learning_rate": 0.8,
+      "policy_version": "council-v1",
+      "revision": 0,
+      "t_g": 0.5,
+      "weights": {
+        "DataKing": 1.0,
+        "EthicsKing": 1.5,
+        "ForefrontKing": 1.0
+      }
+    },
+    "proposal": {
+      "action_class": "earned_proto_object_promotion",
+      "attention_candidate_ids": [],
+      "boundary_sensitive": false,
+      "consent_present": false,
+      "consent_required": false,
+      "created_cycle": 16,
+      "description": "Promote an evidence-supported persistent object candidate to a canonical proto-object without installing a human category label.",
+      "evidence_refs": [
+        "evidence_129948b5bf07e8dd50b09e92",
+        "evidence_3d924be3cd0a55e153ee9b33",
+        "evidence_89d903adf3a79ec19994eeee",
+        "evidence_9c85f2d19365a9763fa08e6b",
+        "evidence_a78c883c979bd89fc34f6e51",
+        "evidence_b54e3de14aa96f21fb050788",
+        "evidence_d0d761644b8f0a22f2c8bd22"
+      ],
+      "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+      "harm_risk": 0.0,
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "metadata": {
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "episode_count": 2,
+        "observation_count": 7,
+        "semantic_category_preinstalled": false,
+        "support_score": 0.8
+      },
+      "novelty": 0.9,
+      "operation": "promote_proto_object:object_candidate_ddc3c2d33f845ef319cea936",
+      "predicted_information_gain": 0.9,
+      "proposal_id": "council_proposal_b72cc775688c69ceca0e6203",
+      "proposal_kind": "structural_promotion",
+      "relevance": 0.95,
+      "requested_resource": 0.2,
+      "resonance_event_ids": [],
+      "reversibility": 1.0,
+      "safe_alternatives": [],
+      "state_fingerprint": "854f03004bc5a2183aba626d9e249d4c1ea096a7895d4b78ad6ec34b0b8a39ef",
+      "target_claim_id": null,
+      "urgency": 0.25
+    },
+    "rationale_codes": [
+      "all_enabled_jurisdictions_allow_commitment",
+      "constitutional_rule_order"
+    ],
+    "report_id": "council_report_bf5fd799d8958c190d7c3891",
+    "required_evidence": [],
+    "safe_alternatives": [],
+    "state_fingerprint": "854f03004bc5a2183aba626d9e249d4c1ea096a7895d4b78ad6ec34b0b8a39ef"
+  },
+  "observation_reports": [
+    {
+      "candidates": [],
+      "competing_candidate_ids": [],
+      "cycle": 1,
+      "disposition": "create",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [
+          0.2,
+          0.4,
+          0.6,
+          0.8
+        ],
+        "common_motion_supported": false,
+        "episode_id": "episode-1",
+        "evidence_ref": "evidence_a78c883c979bd89fc34f6e51",
+        "frame_index": 0,
+        "kind": "visible",
+        "metadata": {
+          "controlled_numeric_features": true,
+          "human_object_label": null
+        },
+        "modality": "vision_native",
+        "motion": [
+          0.1,
+          0.0
+        ],
+        "position": [
+          0.0,
+          0.0
+        ],
+        "target_candidate_id": null
+      },
+      "operation": "track_object_candidate:object_candidate_ddc3c2d33f845ef319cea936",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.2,
+          0.4,
+          0.6,
+          0.8
+        ],
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "common_motion_count": 0,
+        "competing_candidate_ids": [],
+        "created_cycle": 2,
+        "episode_ids": [
+          "episode-1"
+        ],
+        "evidence_refs": [
+          "evidence_a78c883c979bd89fc34f6e51"
+        ],
+        "last_episode_id": "episode-1",
+        "last_frame_index": 0,
+        "last_motion": [
+          0.1,
+          0.0
+        ],
+        "last_position": [
+          0.0,
+          0.0
+        ],
+        "observation_ids": [
+          "object_observation_f6f514bbacd5b483fb8ca93f"
+        ],
+        "occlusion_count": 0,
+        "persistence_count": 0,
+        "promoted_concept_id": null,
+        "reappearance_count": 0,
+        "status": "tracking",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 0.0,
+          "persistence": 0.0,
+          "reappearance": 0.0,
+          "recurrence": 0.5,
+          "transformation": 0.0,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.075
+        },
+        "support_score": 0.075,
+        "transformation_count": 0,
+        "updated_cycle": 2,
+        "visible_observation_count": 1
+      },
+      "report_id": "object_observation_report_f7e83ed0e86b01365d8c09d6",
+      "selected_candidate_id": null,
+      "structural_fingerprint": "a3e326024967d640e49bfcd0e8c22c1206272450a6936ad3368a1f43c96425dc"
+    },
+    {
+      "candidates": [
+        {
+          "appearance_similarity": 0.8259374137457506,
+          "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+          "eligible": true,
+          "episode_continuity": 1.0,
+          "motion_alignment": 1.0,
+          "position_fit": 1.0,
+          "rank": 1,
+          "rejection_codes": [],
+          "score": 0.9129687068728753
+        }
+      ],
+      "competing_candidate_ids": [],
+      "cycle": 3,
+      "disposition": "associate",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [
+          0.3,
+          0.35,
+          0.65,
+          0.75
+        ],
+        "common_motion_supported": true,
+        "episode_id": "episode-1",
+        "evidence_ref": "evidence_3d924be3cd0a55e153ee9b33",
+        "frame_index": 1,
+        "kind": "visible",
+        "metadata": {
+          "controlled_numeric_features": true,
+          "human_object_label": null
+        },
+        "modality": "vision_native",
+        "motion": [
+          0.1,
+          0.0
+        ],
+        "position": [
+          0.1,
+          0.0
+        ],
+        "target_candidate_id": null
+      },
+      "operation": "track_object_candidate:object_candidate_ddc3c2d33f845ef319cea936",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.25,
+          0.375,
+          0.625,
+          0.775
+        ],
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "common_motion_count": 1,
+        "competing_candidate_ids": [],
+        "created_cycle": 2,
+        "episode_ids": [
+          "episode-1"
+        ],
+        "evidence_refs": [
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_a78c883c979bd89fc34f6e51"
+        ],
+        "last_episode_id": "episode-1",
+        "last_frame_index": 1,
+        "last_motion": [
+          0.1,
+          0.0
+        ],
+        "last_position": [
+          0.1,
+          0.0
+        ],
+        "observation_ids": [
+          "object_observation_9d50728efe86afab7134701a",
+          "object_observation_f6f514bbacd5b483fb8ca93f"
+        ],
+        "occlusion_count": 0,
+        "persistence_count": 1,
+        "promoted_concept_id": null,
+        "reappearance_count": 0,
+        "status": "tracking",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 0.5,
+          "persistence": 0.3333333333333333,
+          "reappearance": 0.0,
+          "recurrence": 0.5,
+          "transformation": 0.5,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.2916666666666667
+        },
+        "support_score": 0.2916666666666667,
+        "transformation_count": 1,
+        "updated_cycle": 4,
+        "visible_observation_count": 2
+      },
+      "report_id": "object_observation_report_6aac4ef6209851844fc8c120",
+      "selected_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+      "structural_fingerprint": "1afacb8f3bedc6bfdfd23864256294683d2d7a594c6a8c96afba2add97eff5b9"
+    },
+    {
+      "candidates": [
+        {
+          "appearance_similarity": 0.7058540933406823,
+          "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+          "eligible": true,
+          "episode_continuity": 1.0,
+          "motion_alignment": 1.0,
+          "position_fit": 1.0,
+          "rank": 1,
+          "rejection_codes": [],
+          "score": 0.8529270466703411
+        }
+      ],
+      "competing_candidate_ids": [],
+      "cycle": 5,
+      "disposition": "associate",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [
+          0.12,
+          0.48,
+          0.52,
+          0.88
+        ],
+        "common_motion_supported": true,
+        "episode_id": "episode-1",
+        "evidence_ref": "evidence_d0d761644b8f0a22f2c8bd22",
+        "frame_index": 2,
+        "kind": "visible",
+        "metadata": {
+          "controlled_numeric_features": true,
+          "human_object_label": null
+        },
+        "modality": "vision_native",
+        "motion": [
+          0.1,
+          0.0
+        ],
+        "position": [
+          0.2,
+          0.0
+        ],
+        "target_candidate_id": null
+      },
+      "operation": "track_object_candidate:object_candidate_ddc3c2d33f845ef319cea936",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.20666666666666667,
+          0.41,
+          0.59,
+          0.81
+        ],
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "common_motion_count": 2,
+        "competing_candidate_ids": [],
+        "created_cycle": 2,
+        "episode_ids": [
+          "episode-1"
+        ],
+        "evidence_refs": [
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_a78c883c979bd89fc34f6e51",
+          "evidence_d0d761644b8f0a22f2c8bd22"
+        ],
+        "last_episode_id": "episode-1",
+        "last_frame_index": 2,
+        "last_motion": [
+          0.1,
+          0.0
+        ],
+        "last_position": [
+          0.2,
+          0.0
+        ],
+        "observation_ids": [
+          "object_observation_9d50728efe86afab7134701a",
+          "object_observation_dcfa0bca990f752a257725ef",
+          "object_observation_f6f514bbacd5b483fb8ca93f"
+        ],
+        "occlusion_count": 0,
+        "persistence_count": 2,
+        "promoted_concept_id": null,
+        "reappearance_count": 0,
+        "status": "tracking",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 1.0,
+          "persistence": 0.6666666666666666,
+          "reappearance": 0.0,
+          "recurrence": 0.5,
+          "transformation": 1.0,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.5083333333333333
+        },
+        "support_score": 0.5083333333333333,
+        "transformation_count": 2,
+        "updated_cycle": 6,
+        "visible_observation_count": 3
+      },
+      "report_id": "object_observation_report_47ffc2f89859b0bcfb734af2",
+      "selected_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+      "structural_fingerprint": "c681c776f20e8aaa633bf40dc7fa8dcf3bbd050101fbe57a6796b74411a14beb"
+    },
+    {
+      "candidates": [],
+      "competing_candidate_ids": [],
+      "cycle": 7,
+      "disposition": "update_target",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [],
+        "common_motion_supported": false,
+        "episode_id": "episode-1",
+        "evidence_ref": "evidence_89d903adf3a79ec19994eeee",
+        "frame_index": 3,
+        "kind": "occlusion",
+        "metadata": {
+          "visibility": "temporarily_absent"
+        },
+        "modality": "vision_native",
+        "motion": null,
+        "position": null,
+        "target_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936"
+      },
+      "operation": "track_object_candidate:object_candidate_ddc3c2d33f845ef319cea936",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.20666666666666667,
+          0.41,
+          0.59,
+          0.81
+        ],
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "common_motion_count": 2,
+        "competing_candidate_ids": [],
+        "created_cycle": 2,
+        "episode_ids": [
+          "episode-1"
+        ],
+        "evidence_refs": [
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_89d903adf3a79ec19994eeee",
+          "evidence_a78c883c979bd89fc34f6e51",
+          "evidence_d0d761644b8f0a22f2c8bd22"
+        ],
+        "last_episode_id": "episode-1",
+        "last_frame_index": 3,
+        "last_motion": [
+          0.1,
+          0.0
+        ],
+        "last_position": [
+          0.2,
+          0.0
+        ],
+        "observation_ids": [
+          "object_observation_34f0419554ea08a8d4d20dac",
+          "object_observation_9d50728efe86afab7134701a",
+          "object_observation_dcfa0bca990f752a257725ef",
+          "object_observation_f6f514bbacd5b483fb8ca93f"
+        ],
+        "occlusion_count": 1,
+        "persistence_count": 2,
+        "promoted_concept_id": null,
+        "reappearance_count": 0,
+        "status": "occluded",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 1.0,
+          "persistence": 0.6666666666666666,
+          "reappearance": 0.0,
+          "recurrence": 0.5,
+          "transformation": 1.0,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.5083333333333333
+        },
+        "support_score": 0.5083333333333333,
+        "transformation_count": 2,
+        "updated_cycle": 8,
+        "visible_observation_count": 3
+      },
+      "report_id": "object_observation_report_7f320c7b2fa0d3a52fe261a2",
+      "selected_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+      "structural_fingerprint": "6600f8399613b4625a9dffa8ba4f61d0cd49cafbc895aa287c0946ad9e1aff82"
+    },
+    {
+      "candidates": [
+        {
+          "appearance_similarity": 0.746409289026776,
+          "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+          "eligible": true,
+          "episode_continuity": 1.0,
+          "motion_alignment": 1.0,
+          "position_fit": 0.7142857142857144,
+          "rank": 1,
+          "rejection_codes": [],
+          "score": 0.8017760730848166
+        }
+      ],
+      "competing_candidate_ids": [],
+      "cycle": 9,
+      "disposition": "associate",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [
+          0.32,
+          0.32,
+          0.68,
+          0.72
+        ],
+        "common_motion_supported": true,
+        "episode_id": "episode-1",
+        "evidence_ref": "evidence_9c85f2d19365a9763fa08e6b",
+        "frame_index": 4,
+        "kind": "visible",
+        "metadata": {
+          "controlled_numeric_features": true,
+          "human_object_label": null
+        },
+        "modality": "vision_native",
+        "motion": [
+          0.1,
+          0.0
+        ],
+        "position": [
+          0.4,
+          0.0
+        ],
+        "target_candidate_id": null
+      },
+      "operation": "track_object_candidate:object_candidate_ddc3c2d33f845ef319cea936",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.235,
+          0.3875,
+          0.6125,
+          0.7875000000000001
+        ],
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "common_motion_count": 3,
+        "competing_candidate_ids": [],
+        "created_cycle": 2,
+        "episode_ids": [
+          "episode-1"
+        ],
+        "evidence_refs": [
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_89d903adf3a79ec19994eeee",
+          "evidence_9c85f2d19365a9763fa08e6b",
+          "evidence_a78c883c979bd89fc34f6e51",
+          "evidence_d0d761644b8f0a22f2c8bd22"
+        ],
+        "last_episode_id": "episode-1",
+        "last_frame_index": 4,
+        "last_motion": [
+          0.1,
+          0.0
+        ],
+        "last_position": [
+          0.4,
+          0.0
+        ],
+        "observation_ids": [
+          "object_observation_34f0419554ea08a8d4d20dac",
+          "object_observation_65c453d9a20720fcda6b03e9",
+          "object_observation_9d50728efe86afab7134701a",
+          "object_observation_dcfa0bca990f752a257725ef",
+          "object_observation_f6f514bbacd5b483fb8ca93f"
+        ],
+        "occlusion_count": 1,
+        "persistence_count": 3,
+        "promoted_concept_id": null,
+        "reappearance_count": 1,
+        "status": "tracking",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 1.0,
+          "persistence": 1.0,
+          "reappearance": 1.0,
+          "recurrence": 0.5,
+          "transformation": 1.0,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.7250000000000001
+        },
+        "support_score": 0.7250000000000001,
+        "transformation_count": 3,
+        "updated_cycle": 10,
+        "visible_observation_count": 4
+      },
+      "report_id": "object_observation_report_17531cc019e39a795fff1496",
+      "selected_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+      "structural_fingerprint": "a1a4aee1342c2983b864267d910892c0d09cf7bafdff76af854a327855e3043f"
+    },
+    {
+      "candidates": [
+        {
+          "appearance_similarity": 0.9816849856485854,
+          "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+          "eligible": true,
+          "episode_continuity": 0.35,
+          "motion_alignment": 0.55,
+          "position_fit": 0.55,
+          "rank": 1,
+          "rejection_codes": [],
+          "score": 0.7458424928242927
+        }
+      ],
+      "competing_candidate_ids": [],
+      "cycle": 11,
+      "disposition": "associate",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [
+          0.24,
+          0.38,
+          0.62,
+          0.78
+        ],
+        "common_motion_supported": true,
+        "episode_id": "episode-2",
+        "evidence_ref": "evidence_129948b5bf07e8dd50b09e92",
+        "frame_index": 0,
+        "kind": "visible",
+        "metadata": {
+          "controlled_numeric_features": true,
+          "human_object_label": null
+        },
+        "modality": "vision_native",
+        "motion": [
+          0.1,
+          0.0
+        ],
+        "position": [
+          0.0,
+          0.2
+        ],
+        "target_candidate_id": null
+      },
+      "operation": "track_object_candidate:object_candidate_ddc3c2d33f845ef319cea936",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.236,
+          0.386,
+          0.6140000000000001,
+          0.7860000000000001
+        ],
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "common_motion_count": 4,
+        "competing_candidate_ids": [],
+        "created_cycle": 2,
+        "episode_ids": [
+          "episode-1",
+          "episode-2"
+        ],
+        "evidence_refs": [
+          "evidence_129948b5bf07e8dd50b09e92",
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_89d903adf3a79ec19994eeee",
+          "evidence_9c85f2d19365a9763fa08e6b",
+          "evidence_a78c883c979bd89fc34f6e51",
+          "evidence_d0d761644b8f0a22f2c8bd22"
+        ],
+        "last_episode_id": "episode-2",
+        "last_frame_index": 0,
+        "last_motion": [
+          0.1,
+          0.0
+        ],
+        "last_position": [
+          0.0,
+          0.2
+        ],
+        "observation_ids": [
+          "object_observation_34f0419554ea08a8d4d20dac",
+          "object_observation_55d13a7356174642ae0ea2cd",
+          "object_observation_65c453d9a20720fcda6b03e9",
+          "object_observation_9d50728efe86afab7134701a",
+          "object_observation_dcfa0bca990f752a257725ef",
+          "object_observation_f6f514bbacd5b483fb8ca93f"
+        ],
+        "occlusion_count": 1,
+        "persistence_count": 3,
+        "promoted_concept_id": null,
+        "reappearance_count": 1,
+        "status": "tracking",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 1.0,
+          "persistence": 1.0,
+          "reappearance": 1.0,
+          "recurrence": 1.0,
+          "transformation": 1.0,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.8
+        },
+        "support_score": 0.8,
+        "transformation_count": 3,
+        "updated_cycle": 12,
+        "visible_observation_count": 5
+      },
+      "report_id": "object_observation_report_b087dc072a5222c276dc30e1",
+      "selected_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+      "structural_fingerprint": "8d36cc174c41c04989eb560fc3858be3c8d74a109bac2407bebe8bd8fc238091"
+    },
+    {
+      "candidates": [
+        {
+          "appearance_similarity": 0.7706446466368324,
+          "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+          "eligible": true,
+          "episode_continuity": 1.0,
+          "motion_alignment": 1.0,
+          "position_fit": 1.0,
+          "rank": 1,
+          "rejection_codes": [],
+          "score": 0.8853223233184162
+        }
+      ],
+      "competing_candidate_ids": [],
+      "cycle": 13,
+      "disposition": "associate",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [
+          0.14,
+          0.47,
+          0.53,
+          0.87
+        ],
+        "common_motion_supported": true,
+        "episode_id": "episode-2",
+        "evidence_ref": "evidence_b54e3de14aa96f21fb050788",
+        "frame_index": 1,
+        "kind": "visible",
+        "metadata": {
+          "controlled_numeric_features": true,
+          "human_object_label": null
+        },
+        "modality": "vision_native",
+        "motion": [
+          0.1,
+          0.0
+        ],
+        "position": [
+          0.1,
+          0.2
+        ],
+        "target_candidate_id": null
+      },
+      "operation": "track_object_candidate:object_candidate_ddc3c2d33f845ef319cea936",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.21999999999999997,
+          0.4000000000000001,
+          0.6000000000000001,
+          0.8000000000000002
+        ],
+        "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+        "common_motion_count": 5,
+        "competing_candidate_ids": [],
+        "created_cycle": 2,
+        "episode_ids": [
+          "episode-1",
+          "episode-2"
+        ],
+        "evidence_refs": [
+          "evidence_129948b5bf07e8dd50b09e92",
+          "evidence_3d924be3cd0a55e153ee9b33",
+          "evidence_89d903adf3a79ec19994eeee",
+          "evidence_9c85f2d19365a9763fa08e6b",
+          "evidence_a78c883c979bd89fc34f6e51",
+          "evidence_b54e3de14aa96f21fb050788",
+          "evidence_d0d761644b8f0a22f2c8bd22"
+        ],
+        "last_episode_id": "episode-2",
+        "last_frame_index": 1,
+        "last_motion": [
+          0.1,
+          0.0
+        ],
+        "last_position": [
+          0.1,
+          0.2
+        ],
+        "observation_ids": [
+          "object_observation_34f0419554ea08a8d4d20dac",
+          "object_observation_4cc49c8f95809e27caa295cc",
+          "object_observation_55d13a7356174642ae0ea2cd",
+          "object_observation_65c453d9a20720fcda6b03e9",
+          "object_observation_9d50728efe86afab7134701a",
+          "object_observation_dcfa0bca990f752a257725ef",
+          "object_observation_f6f514bbacd5b483fb8ca93f"
+        ],
+        "occlusion_count": 1,
+        "persistence_count": 4,
+        "promoted_concept_id": null,
+        "reappearance_count": 1,
+        "status": "eligible",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 1.0,
+          "persistence": 1.0,
+          "reappearance": 1.0,
+          "recurrence": 1.0,
+          "transformation": 1.0,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.8
+        },
+        "support_score": 0.8,
+        "transformation_count": 4,
+        "updated_cycle": 14,
+        "visible_observation_count": 6
+      },
+      "report_id": "object_observation_report_ec3b27a747a5abaaa62d96eb",
+      "selected_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+      "structural_fingerprint": "7a05b533deb1853c660b9f505864de8c69cc54319d8f73cb02d926244d662faf"
+    },
+    {
+      "candidates": [
+        {
+          "appearance_similarity": 0.9772098577951462,
+          "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+          "eligible": false,
+          "episode_continuity": 1.0,
+          "motion_alignment": 0.5555555555555556,
+          "position_fit": 0.0,
+          "rank": 1,
+          "rejection_codes": [
+            "predicted_position_mismatch"
+          ],
+          "score": 0.6719382622309065
+        }
+      ],
+      "competing_candidate_ids": [
+        "object_candidate_ddc3c2d33f845ef319cea936"
+      ],
+      "cycle": 15,
+      "disposition": "create",
+      "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+      "observation": {
+        "appearance_features": [
+          0.22,
+          0.39,
+          0.61,
+          0.79
+        ],
+        "common_motion_supported": false,
+        "episode_id": "episode-2",
+        "evidence_ref": "evidence_cfc8aee7d0cd0e4bc84164aa",
+        "frame_index": 2,
+        "kind": "visible",
+        "metadata": {
+          "controlled_numeric_features": true,
+          "human_object_label": null
+        },
+        "modality": "vision_native",
+        "motion": [
+          -0.1,
+          0.0
+        ],
+        "position": [
+          2.0,
+          0.2
+        ],
+        "target_candidate_id": null
+      },
+      "operation": "track_object_candidate:object_candidate_1acf93dda07f2abbe0a743e9",
+      "policy_revision": 0,
+      "proposed_candidate": {
+        "ambiguity_count": 0,
+        "appearance_centroid": [
+          0.22,
+          0.39,
+          0.61,
+          0.79
+        ],
+        "candidate_id": "object_candidate_1acf93dda07f2abbe0a743e9",
+        "common_motion_count": 0,
+        "competing_candidate_ids": [
+          "object_candidate_ddc3c2d33f845ef319cea936"
+        ],
+        "created_cycle": 16,
+        "episode_ids": [
+          "episode-2"
+        ],
+        "evidence_refs": [
+          "evidence_cfc8aee7d0cd0e4bc84164aa"
+        ],
+        "last_episode_id": "episode-2",
+        "last_frame_index": 2,
+        "last_motion": [
+          -0.1,
+          0.0
+        ],
+        "last_position": [
+          2.0,
+          0.2
+        ],
+        "observation_ids": [
+          "object_observation_005411c407636217757a0766"
+        ],
+        "occlusion_count": 0,
+        "persistence_count": 0,
+        "promoted_concept_id": null,
+        "reappearance_count": 0,
+        "status": "tracking",
+        "support_components": {
+          "ambiguity_penalty": 0.0,
+          "common_motion": 0.0,
+          "persistence": 0.0,
+          "reappearance": 0.0,
+          "recurrence": 0.5,
+          "transformation": 0.0,
+          "weighted_penalty": 0.0,
+          "weighted_positive": 0.075
+        },
+        "support_score": 0.075,
+        "transformation_count": 0,
+        "updated_cycle": 16,
+        "visible_observation_count": 1
+      },
+      "report_id": "object_observation_report_72e8a3c416cb51275f439104",
+      "selected_candidate_id": null,
+      "structural_fingerprint": "3248d5f0d17cc12bca0d53a062b79efd4b5fbad6c6bb9eeb3cc63fbb2b82e831"
+    }
+  ],
+  "promotion_report": {
+    "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+    "candidate_snapshot": {
+      "ambiguity_count": 0,
+      "appearance_centroid": [
+        0.21999999999999997,
+        0.4000000000000001,
+        0.6000000000000001,
+        0.8000000000000002
+      ],
+      "candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+      "common_motion_count": 5,
+      "competing_candidate_ids": [],
+      "created_cycle": 2,
+      "episode_ids": [
+        "episode-1",
+        "episode-2"
+      ],
+      "evidence_refs": [
+        "evidence_129948b5bf07e8dd50b09e92",
+        "evidence_3d924be3cd0a55e153ee9b33",
+        "evidence_89d903adf3a79ec19994eeee",
+        "evidence_9c85f2d19365a9763fa08e6b",
+        "evidence_a78c883c979bd89fc34f6e51",
+        "evidence_b54e3de14aa96f21fb050788",
+        "evidence_d0d761644b8f0a22f2c8bd22"
+      ],
+      "last_episode_id": "episode-2",
+      "last_frame_index": 1,
+      "last_motion": [
+        0.1,
+        0.0
+      ],
+      "last_position": [
+        0.1,
+        0.2
+      ],
+      "observation_ids": [
+        "object_observation_34f0419554ea08a8d4d20dac",
+        "object_observation_4cc49c8f95809e27caa295cc",
+        "object_observation_55d13a7356174642ae0ea2cd",
+        "object_observation_65c453d9a20720fcda6b03e9",
+        "object_observation_9d50728efe86afab7134701a",
+        "object_observation_dcfa0bca990f752a257725ef",
+        "object_observation_f6f514bbacd5b483fb8ca93f"
+      ],
+      "occlusion_count": 1,
+      "persistence_count": 4,
+      "promoted_concept_id": null,
+      "reappearance_count": 1,
+      "status": "eligible",
+      "support_components": {
+        "ambiguity_penalty": 0.0,
+        "common_motion": 1.0,
+        "persistence": 1.0,
+        "reappearance": 1.0,
+        "recurrence": 1.0,
+        "transformation": 1.0,
+        "weighted_penalty": 0.0,
+        "weighted_positive": 0.8
+      },
+      "support_score": 0.8,
+      "transformation_count": 4,
+      "updated_cycle": 14,
+      "visible_observation_count": 6
+    },
+    "cycle": 16,
+    "disposition": "promote",
+    "evidence_refs": [
+      "evidence_129948b5bf07e8dd50b09e92",
+      "evidence_3d924be3cd0a55e153ee9b33",
+      "evidence_89d903adf3a79ec19994eeee",
+      "evidence_9c85f2d19365a9763fa08e6b",
+      "evidence_a78c883c979bd89fc34f6e51",
+      "evidence_b54e3de14aa96f21fb050788",
+      "evidence_d0d761644b8f0a22f2c8bd22"
+    ],
+    "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+    "operation": "promote_proto_object:object_candidate_ddc3c2d33f845ef319cea936",
+    "policy_revision": 0,
+    "proposed_concept_id": "concept_851a396e990a1aefb653bb41",
+    "proposed_label": "proto-object-ddc3c2d33f84",
+    "rejection_codes": [],
+    "report_id": "object_promotion_report_dacb81ce88d4f210beeda3e1",
+    "structural_fingerprint": "5a2a33ff4b2da2313f125b2d4a0970a98321205f48604d5fa0a5794716a2282b"
+  }
+}

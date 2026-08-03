@@ -1,0 +1,30 @@
+{
+  "schema": "verdant.workbench.wb041.proof.v1",
+  "title": "WB-04.1 Editable Teaching Records Proof",
+  "compiled_sha256": "d7753b87d130653bb113703b88e3a0c401766b93ece3f914246e3e385073fe38",
+  "source_sha256": "1877c88b9c29bd9604746fa20afc3830a789f832bae4505e01cc52cf73a9749b",
+  "curriculum_id": "vcurr_89bcce5960474cdf9a606dcc1592cd9c",
+  "curriculum_artifact_sha256": "3034dddc8f3d807910ba09849092f47411e50e9c9a1cf05fd250df3dbce8b9ac",
+  "experience_item_count": 3,
+  "scaffold_item_count": 4,
+  "queued_item_count": 7,
+  "final_cycle": 16,
+  "final_state_revision": 16,
+  "final_fingerprint": "1b47f31e5da0d0649878746a2675707bc4b9d5fd54fe546161eb7b8e87955fc2",
+  "claim_count": 2,
+  "contradiction_count": 1,
+  "enabled_grammar_rules": [
+    "transitive_svo"
+  ],
+  "gates": {
+    "editable_bundle_compiled": true,
+    "source_sentence_not_used_as_hidden_semantic_parser": true,
+    "language_scaffold_queued_before_experiences": true,
+    "grammar_rule_installed": true,
+    "lexicon_installed": true,
+    "contradictory_claims_accepted": true,
+    "frozen_package_roundtrips_scaffold": true
+  },
+  "all_gates_pass": true,
+  "example_curriculum": "workbench/artifacts/wb041_editable_teaching_example.vcurr"
+}

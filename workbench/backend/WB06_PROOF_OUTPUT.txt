@@ -1,0 +1,66 @@
+{
+  "all_gates_pass": true,
+  "gates": {
+    "live_head_equals_replay_head": true,
+    "lod_reports_omission": true,
+    "p_development_is_visible": true,
+    "plasticity_layer_is_recorded": true,
+    "q_promotion_is_visible": true,
+    "refolding_is_visible": true,
+    "timeline_projection_is_non_mutating": true,
+    "workspace_layer_is_recorded": true
+  },
+  "lod_probe": {
+    "max_edges": 1,
+    "max_nodes": 2,
+    "omitted_edges": 2,
+    "omitted_nodes": 1,
+    "priority_node_count": 3,
+    "rendered_edges": 1,
+    "rendered_nodes": 2,
+    "total_edges": 3,
+    "total_nodes": 3
+  },
+  "name": "Living Explorer",
+  "p_structure_id": "structure_3e12fa013bb245e3e0827451",
+  "p_timeline": {
+    "canonical_fingerprint_after": "4897c121114cdb0d0e85266ef3dc7de2d196135eeec4610f4f078eef85f32790",
+    "canonical_fingerprint_before": "4897c121114cdb0d0e85266ef3dc7de2d196135eeec4610f4f078eef85f32790",
+    "frame_count": 31,
+    "head_counts": {
+      "concepts_recorded_through_cycle": 3,
+      "p_candidates": 1,
+      "p_structures": 1,
+      "plastic_associations": 3,
+      "q_candidates": 0,
+      "q_structures": 0,
+      "workspace_active": 3
+    },
+    "head_direct_sha256": "7576deeb87ce7db71cb2ed1169ecb947f7eb5fd9a37344239660b1013696ceae",
+    "head_frame_sha256": "7576deeb87ce7db71cb2ed1169ecb947f7eb5fd9a37344239660b1013696ceae",
+    "marker_kinds": [
+      "PLASTICITY",
+      "P_CANDIDATE",
+      "P_PROMOTED",
+      "P_USED",
+      "RESONANCE",
+      "WORKSPACE"
+    ],
+    "plastic_edge_count": 3,
+    "workspace_active": 3
+  },
+  "q_timeline": {
+    "frame_count": 140,
+    "layered_structure_id": "layered_structure_6fff321a318a9ffefae1e723",
+    "q_count_at_head": 1,
+    "q_promoted_visible": true
+  },
+  "refold_timeline": {
+    "child_count_at_head": 2,
+    "frame_count": 187,
+    "parent_available_at_head": false,
+    "parent_structure_id": "structure_c9a28c27f80de00fe0ffa9a3",
+    "refold_marker_count": 1
+  },
+  "workbench_milestone": "WB-06"
+}

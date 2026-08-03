@@ -1,0 +1,22 @@
+{
+  "all_gates_pass": true,
+  "capture_count": 2,
+  "http_capture": {
+    "artifact_sha256": "0112fc35371ffe4b753768b9f58c5f9fe5a0ccd6472eb4a2a03f61edef7d7cf8",
+    "authorization_header_seen_by_fixture": true,
+    "capture_id": "capture_a1b6e07d16b54bff95b8ea96de56f8cc",
+    "secret_reference_name": "VERDANT_WB08_PROOF_SECRET",
+    "secret_value_present_in_artifact": false,
+    "valid_teaching_bundle": true
+  },
+  "manual_capture": {
+    "artifact_sha256": "f8e9cd950924af538f03909dad535a22dccf5f319244bfb85c4ea7151481637c",
+    "capture_id": "capture_783f52ab026349f6a476de73246f9098",
+    "compiled_item_count": 1,
+    "compiled_sha256": "01e5edb9156ae8b98aac12b021f13694191514d146aafa71923d62f0a5a5711f",
+    "response_sha256": "19956be8c0ed5ab12f32806390f67d1f5eb0aed42aafce1dd472165697fb5453",
+    "valid_teaching_bundle": true
+  },
+  "provider_count": 2,
+  "schema": "verdant.workbench.wb08-proof.v1"
+}

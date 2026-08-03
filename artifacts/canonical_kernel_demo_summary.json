@@ -1,0 +1,34 @@
+{
+  "checkpoint": "artifacts/canonical_kernel_demo.vdk",
+  "checkpoint_sha256": "c2ebfcd0b2b02600121c927b565a3c3435cc39b8ff77c9245e96515649ed9df1",
+  "experience_result": {
+    "concept_ids": [
+      "concept_9369755714ad0afde5e2dc26",
+      "concept_180929394dce5e96df7de78d",
+      "concept_79dab2c1f93f211a66634290"
+    ],
+    "cycle": 1,
+    "event_key": "physics-0001",
+    "observation_evidence_id": "evidence_3c62fec4cd09597226a007c0",
+    "relation_ids": [
+      "relation_8a5bc5f66bb10d0385135f0a",
+      "relation_a31441baece2a20fa78f0a8f"
+    ],
+    "replayed": false,
+    "transition_id": "transition_cb84459240bf20162766a1cd",
+    "translation_evidence_id": "evidence_d274b4e70a3b56bb271ea97b"
+  },
+  "kernel_fingerprint": "8b020484a0565052e4d422567387a47c5c14f76a1582c5e5cb45d30c84d1d1aa",
+  "metrics": {
+    "average_neighbor_count": 1.3333333333333333,
+    "concept_count": 3,
+    "cycle": 1,
+    "directed_density": 0.3333333333333333,
+    "evidence_count": 2,
+    "field_history_count": 1,
+    "field_norm": 0.9999999999999999,
+    "relation_count": 2,
+    "transition_count": 1
+  },
+  "semantic_fingerprint": "6bf927e9295b2f1cf0b7c6436f88e52d2f5c3a0485dcccd63a4c340975ea5934"
+}

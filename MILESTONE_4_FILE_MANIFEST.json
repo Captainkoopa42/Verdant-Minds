@@ -1,0 +1,427 @@
+{
+  "file_count": 84,
+  "files": [
+    {
+      "path": "MILESTONE_1_REPORT.md",
+      "sha256": "5ccf63f7ce5e538befcf3d1acc071faee30fef490a61252ebeeb5c1d0047388c",
+      "size_bytes": 2760
+    },
+    {
+      "path": "MILESTONE_2_FILE_MANIFEST.json",
+      "sha256": "f436c3ba6cf4987e3a5c11f832ac720ec1beaf197d18fcb4205c9e3697251c37",
+      "size_bytes": 10843
+    },
+    {
+      "path": "MILESTONE_2_REPORT.md",
+      "sha256": "d8293bb41a5617d30a0d528ef89e417ed0f322f0e6fca50e6166f1ee6d77fee2",
+      "size_bytes": 5773
+    },
+    {
+      "path": "MILESTONE_3_FILE_MANIFEST.json",
+      "sha256": "6eef40eda4c1a57fbfd9daac763dc0c7a513902382c3107b0e5be1f421ac09a0",
+      "size_bytes": 13450
+    },
+    {
+      "path": "MILESTONE_3_REPORT.md",
+      "sha256": "a533959ee4f33369597463c854f578b0a5381935aa761edbddebe6cf33e96f67",
+      "size_bytes": 7927
+    },
+    {
+      "path": "MILESTONE_4_REPORT.md",
+      "sha256": "642d02b39cd9f913f77a411e3129cc48797031300e03176da9bcf25b6217e851",
+      "size_bytes": 9193
+    },
+    {
+      "path": "README.md",
+      "sha256": "0066164dc51b102f92cf09bb4ae5c463d82a9de126f34c069987de510d71e346",
+      "size_bytes": 3424
+    },
+    {
+      "path": "artifacts/canonical_kernel_demo.vdk",
+      "sha256": "c2ebfcd0b2b02600121c927b565a3c3435cc39b8ff77c9245e96515649ed9df1",
+      "size_bytes": 9525
+    },
+    {
+      "path": "artifacts/canonical_kernel_demo_summary.json",
+      "sha256": "ae79693624a0e32a762b2fc186538b2b1555e694489548878db0c72baa44fbe8",
+      "size_bytes": 1196
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/dog-push-past.ecchunk.zip",
+      "sha256": "4928cc15d6458acb0e24207a9b3917577dc45f7e712f848fced606b52f57a828",
+      "size_bytes": 11224
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/dog-push-present.ecchunk.zip",
+      "sha256": "97272beca0b92ba5fa3a2f7190e35f5ec917aef5e8ab00d6954a239b521d3154",
+      "size_bytes": 11293
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/door-open-negative.ecchunk.zip",
+      "sha256": "0afc88fb42db8ce6373db4c66ba6cfbab2151123456d37210e4d9c4938232b24",
+      "size_bytes": 11245
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/door-open-positive.ecchunk.zip",
+      "sha256": "374a4e67eac11f461407a58897fd6d8816a094b0d04b1b69be1e87bd9f0f1ffa",
+      "size_bytes": 11218
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_01.ecchunk.zip",
+      "sha256": "3102af81f9042d0fc05b27493b11db66577b1462a4474a5dea711597cf170ffe",
+      "size_bytes": 11583
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_02.ecchunk.zip",
+      "sha256": "e4f5af889dc1b7495365fa940181d151b8d996f58d7c572ebd071f31ab0b5708",
+      "size_bytes": 11540
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_03.ecchunk.zip",
+      "sha256": "2b90b843e825e0aafd667876a0fb917ef4277d0716177fdb097216f1f884ee9d",
+      "size_bytes": 11537
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_04.ecchunk.zip",
+      "sha256": "2f33df8c154c431144cf428a8a3aee77338c165e8fd5c168954015ec984183ce",
+      "size_bytes": 11552
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_05.ecchunk.zip",
+      "sha256": "93aaeadaa8c0b846591a7bc4801e7fb372550e8b7e1836f7842473d3dc2b7d84",
+      "size_bytes": 11569
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_06.ecchunk.zip",
+      "sha256": "832ac44428a827a9803ec9f9a3c698e95d65d71963c28aae81ebe540e54c6496",
+      "size_bytes": 11585
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_07.ecchunk.zip",
+      "sha256": "8c99a9bd59e8df91afb2b2bae41d113e1e761013606805add55a7f1954074f32",
+      "size_bytes": 11584
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_08.ecchunk.zip",
+      "sha256": "4c94d28da2b564a41ca8863038a9def74e441e8a4dea49b8c2ad5180b9dd1c0f",
+      "size_bytes": 11560
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_09.ecchunk.zip",
+      "sha256": "5a3ac24cec3b9658050c919565e5b583259209be584a85c100d25889b0e774b0",
+      "size_bytes": 11555
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_10.ecchunk.zip",
+      "sha256": "be8090eceb131a262a08fb12a9e611c973ce590349ec08efd11cb69b424218c4",
+      "size_bytes": 11601
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_11.ecchunk.zip",
+      "sha256": "6a6f1216fd9c86a751e2cfcbd3ab8d4c02d480a57ce3fdbc935ed9317b1e040e",
+      "size_bytes": 11615
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_12.ecchunk.zip",
+      "sha256": "4fc442334f0955b961d2b38499ab8feca82db7e5c103ef1f5ac816fc71f4a44a",
+      "size_bytes": 11627
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_13.ecchunk.zip",
+      "sha256": "9007b40478f93ca35fe46329e90c7da96343f292411c0a336d79bcf1ed697258",
+      "size_bytes": 11596
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_14.ecchunk.zip",
+      "sha256": "f192f44334b3448f1ea82ad600d20398747fefa49af5a5a85d6ee1a7d056fee9",
+      "size_bytes": 11572
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_15.ecchunk.zip",
+      "sha256": "59f8aaf2a8573da4ae029e803bbb79e45c0f6848c59c4f0d5ab0d0bdcfbd4c84",
+      "size_bytes": 11590
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/lexeme_16.ecchunk.zip",
+      "sha256": "89df6c44ca6fd5e434a86048d7bab9fffdc60aebf1806b6748a351905445ff9e",
+      "size_bytes": 11638
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/light-before-sound.ecchunk.zip",
+      "sha256": "b9ae441a36e80c36870938b91431773b2577dfb9779a4ccaaf73ad413668237a",
+      "size_bytes": 11392
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/malformed-order.ecchunk.zip",
+      "sha256": "73bd1e5f67efa2c1705f4deba3ad83bda11120036fcdb2a3c483ad6577bb1e2e",
+      "size_bytes": 11166
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/novel-composition.ecchunk.zip",
+      "sha256": "af9ae01b0c1e39e660cb6c6bb8bebaafd21d199099bb25df70341f93e9c38ecf",
+      "size_bytes": 11265
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/push-ab.ecchunk.zip",
+      "sha256": "90c07d0be1fa08bba6a7dc6503a040bac46666baf2d090af490fee32cd89ce70",
+      "size_bytes": 11152
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/push-ba.ecchunk.zip",
+      "sha256": "a4ebc909fc0e345cda849ba99292f0450e0582a2102c9435a15f58ad3851a5ea",
+      "size_bytes": 11157
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/rule_copular_property.ecchunk.zip",
+      "sha256": "5a8be6f89505cb123d216c2f5a5551786fb05a6994d4797b967669d836d6b48c",
+      "size_bytes": 11798
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/rule_temporal_before.ecchunk.zip",
+      "sha256": "5af1fea13aab46e95b4a89ee90eff2f2fa22d451b611c4dff5898a0916ff4552",
+      "size_bytes": 11768
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/rule_transitive_svo.ecchunk.zip",
+      "sha256": "225a76142c62a9f283d752aff0ed7c834fd3cab0aed465ea7adbac8707559aba",
+      "size_bytes": 9867
+    },
+    {
+      "path": "artifacts/milestone_2_chunks/sound-before-light.ecchunk.zip",
+      "sha256": "1344fdf185684d8a372ff9b7c31af4eeb2e860b08bee2fde224c4b721319d3f2",
+      "size_bytes": 11373
+    },
+    {
+      "path": "artifacts/milestone_2_demo_stdout.json",
+      "sha256": "dfc64ecb969e8752b3bb9ce55f137ceda310c8d3d6cc41919382bb958c8cb260",
+      "size_bytes": 22190
+    },
+    {
+      "path": "artifacts/milestone_2_language_demo.vdk",
+      "sha256": "864549fbb2db1bd5aaa13fe888b0d95d5630be9e1e7467d18b05dfeaeae2b2bc",
+      "size_bytes": 199240
+    },
+    {
+      "path": "artifacts/milestone_2_language_summary.json",
+      "sha256": "f2d6927dc58fd21a2f22e49ce1f0d00acad8b287ac26e98711587be936c2b492",
+      "size_bytes": 22189
+    },
+    {
+      "path": "artifacts/milestone_3_chunks/controlled-outcome-blocked.ecchunk.zip",
+      "sha256": "6dd90ceac6120bb2c38be85293cb10a4714ee494b65f8b6f56f95f488edff44b",
+      "size_bytes": 11570
+    },
+    {
+      "path": "artifacts/milestone_3_chunks/controlled-visual-closed.ecchunk.zip",
+      "sha256": "134e603e6330ad67686103531fb3261adef8ec76b8d7d7a5175adb95c87f1ea7",
+      "size_bytes": 9452
+    },
+    {
+      "path": "artifacts/milestone_3_chunks/indicator-bright-negative.ecchunk.zip",
+      "sha256": "3a47261b7ec6b6a34d098261805b557b27645ba70309265867c6574170197021",
+      "size_bytes": 11482
+    },
+    {
+      "path": "artifacts/milestone_3_chunks/indicator-bright-positive.ecchunk.zip",
+      "sha256": "23aa33570d5ee6fca3915e35c0f8f6296689ab7e4630e0e72418f81803cd59cf",
+      "size_bytes": 11494
+    },
+    {
+      "path": "artifacts/milestone_3_claims_demo.vdk",
+      "sha256": "d13be4ee90791d0dc600d69519f8aa87f72ff57b7334abc50569275cb3e340c3",
+      "size_bytes": 141800
+    },
+    {
+      "path": "artifacts/milestone_3_claims_summary.json",
+      "sha256": "6d974e58278595df5d3dd881c76dda8982e3fed67353ca10dd9b4ae2417c14df",
+      "size_bytes": 8282
+    },
+    {
+      "path": "artifacts/milestone_3_demo_stdout.json",
+      "sha256": "f92c46f933f66b8fb39883f3f035878a6693c166c696b620c31c6e9b38a210de",
+      "size_bytes": 8283
+    },
+    {
+      "path": "artifacts/milestone_4_demo_stdout.json",
+      "sha256": "dfa505c952fafb7891e8ee683f2de0bf24ec2855f0b4525f6a11bfbaf047f14c",
+      "size_bytes": 29007
+    },
+    {
+      "path": "artifacts/milestone_4_ecwf_demo.vdk",
+      "sha256": "17996e82e8781794c262165baa986de5a9fe357d13e5579cd11a792584ae4c87",
+      "size_bytes": 520739
+    },
+    {
+      "path": "artifacts/milestone_4_ecwf_summary.json",
+      "sha256": "83267365a2ebc1a3579cecd95c787653f5e6299cee49b7e473a4f2f3e3f1daa1",
+      "size_bytes": 29006
+    },
+    {
+      "path": "artifacts/milestone_4_resonance_query.ecchunk.zip",
+      "sha256": "88883993121eca505377cdccc9047d98aebaeba3e1056113eeab482f7fcd88ca",
+      "size_bytes": 9432
+    },
+    {
+      "path": "cognitive_chunk_v2/README.md",
+      "sha256": "e963cb230881209f605802c5595b06160c6ae8e01e3b4292fc5b37ea52a9fd9d",
+      "size_bytes": 494
+    },
+    {
+      "path": "cognitive_chunk_v2/__init__.py",
+      "sha256": "81283a67bfbde0e0657043b7a2b48289ed003de332b6b4b5ae7cfee90f7f7202",
+      "size_bytes": 554
+    },
+    {
+      "path": "cognitive_chunk_v2/archive.py",
+      "sha256": "d84d5c1999b4be93f7bf5f47d1f17c57022a3ee63e24b266ebb0653355fb27b0",
+      "size_bytes": 3271
+    },
+    {
+      "path": "cognitive_chunk_v2/demo.py",
+      "sha256": "ab2b0f129f3392b1d66330a7f4ff3b9d876f7252f74dea74a82eeddfd73faede",
+      "size_bytes": 5481
+    },
+    {
+      "path": "cognitive_chunk_v2/models.py",
+      "sha256": "2c9deb46fbde0c58c6c6ee89b6ac84a47adfadc978117b369514bbbd46be6b7f",
+      "size_bytes": 8949
+    },
+    {
+      "path": "cognitive_chunk_v2/permissions.py",
+      "sha256": "b05966ef0a81e7f8862d793e11f2f33d8fb3738a9f6ec2fdb921786baf1b23dd",
+      "size_bytes": 3306
+    },
+    {
+      "path": "cognitive_chunk_v2/pipeline.py",
+      "sha256": "92961f7285c3b32e84dfb0ea5ba69c81a145ff230d2193f1c7f44669d88212a1",
+      "size_bytes": 17497
+    },
+    {
+      "path": "cognitive_chunk_v2/substrate.py",
+      "sha256": "584f64e6be2cd7be446b71197b3fe689414d9df19d6390ac7f4de4acfb757451",
+      "size_bytes": 2956
+    },
+    {
+      "path": "cognitive_chunk_v2/translators.py",
+      "sha256": "c9936467c7f1f3e4882a17d2db37e8d42bf3f7e92d72b302f18649cf5da40805",
+      "size_bytes": 8779
+    },
+    {
+      "path": "pytest.ini",
+      "sha256": "b160d82f7811555051f8966d8e02750a985227c1d022208c784e606946f2eada",
+      "size_bytes": 42
+    },
+    {
+      "path": "tests/test_chunk_v2.py",
+      "sha256": "2960ed85dd2dae4f26c2e5ed1df0fce2fd34541899c5be1721942140551427dd",
+      "size_bytes": 3100
+    },
+    {
+      "path": "tests/test_claims_phase.py",
+      "sha256": "3c5e6d9f4c977fb5bb3bf2a7eaa85e49ef558fea8d9bf34eae8dc467c2df007e",
+      "size_bytes": 10382
+    },
+    {
+      "path": "tests/test_ecwf_phase.py",
+      "sha256": "9ccb9a85e0f14e0cbf2e9485a93e4eacbb24fbbf780c69eddb4096340580d530",
+      "size_bytes": 9220
+    },
+    {
+      "path": "tests/test_language_phase.py",
+      "sha256": "ed82985cdf02db0eb4ee268b1509d9b4d77b295bd8674b69bef0fc1ffd1949e4",
+      "size_bytes": 8469
+    },
+    {
+      "path": "tests/test_verdant_kernel.py",
+      "sha256": "12a9387ab3c4a2d37853eb622cce6897a55ab91d4caea3b2a360eedfc6ecee84",
+      "size_bytes": 9681
+    },
+    {
+      "path": "verdant_claims/__init__.py",
+      "sha256": "1c74149d42019216a6a6e333c26b8d2b796f47838952f6686294ef821108cc97",
+      "size_bytes": 125
+    },
+    {
+      "path": "verdant_claims/demo.py",
+      "sha256": "a8d825cfe7c2241b26e631f57f8a37611db46ca3fba65b6139c40b2dc262b38e",
+      "size_bytes": 6989
+    },
+    {
+      "path": "verdant_claims/pipeline.py",
+      "sha256": "e70b622f3b524dbd8210bf5ae1dad28494668ebb63aa41a1ff15750a2b2a0b27",
+      "size_bytes": 4071
+    },
+    {
+      "path": "verdant_ecwf/__init__.py",
+      "sha256": "cae88bbc7201707e124c5155f0643c484482a255bd8959ec5681fda61a636e12",
+      "size_bytes": 123
+    },
+    {
+      "path": "verdant_ecwf/demo.py",
+      "sha256": "a5cc2ebb926b0ae43f1774e36f67b8bb06bdc11f7e5b79c06c5f7d72147dad58",
+      "size_bytes": 6738
+    },
+    {
+      "path": "verdant_ecwf/pipeline.py",
+      "sha256": "e8d3acefbd0aade703bea5ab4c7345c3ead3301475cc77338bcfc07e9097e4c8",
+      "size_bytes": 2076
+    },
+    {
+      "path": "verdant_kernel/__init__.py",
+      "sha256": "c3cd062a5b404eaaa5c33d3847f165e37a6315c4357a59f95fb3f3583fdd0c18",
+      "size_bytes": 1525
+    },
+    {
+      "path": "verdant_kernel/checkpoint.py",
+      "sha256": "e515ef77726f7aff8cd305d68ecfd1e424b1b812ee77c82cfa66ccbcc9168c8f",
+      "size_bytes": 2565
+    },
+    {
+      "path": "verdant_kernel/chunk_adapter.py",
+      "sha256": "fb22d86d2bdbd7e3fc3201eaca9c0955467ca565a650c44deb6c8facb8c43127",
+      "size_bytes": 2765
+    },
+    {
+      "path": "verdant_kernel/demo.py",
+      "sha256": "9e24e1dffa538c484b1d461ed1ee5d6227865339e725f33145e1757e34a0b04d",
+      "size_bytes": 2368
+    },
+    {
+      "path": "verdant_kernel/kernel.py",
+      "sha256": "1aaca502b1e35772c8325281877a61949a7f0ff0404d416d3a257d2acfff5964",
+      "size_bytes": 62038
+    },
+    {
+      "path": "verdant_kernel/models.py",
+      "sha256": "9e82387decd4d15abcc84c6a8b8ac6f3edfd3a9d5129ec6a9b1b42e60028ea2e",
+      "size_bytes": 20642
+    },
+    {
+      "path": "verdant_language/__init__.py",
+      "sha256": "0c4987ec8eaa5930174582b2ae4b58c3229359dbd5c687c75d902ac4fb04287c",
+      "size_bytes": 666
+    },
+    {
+      "path": "verdant_language/demo.py",
+      "sha256": "64f70a60b537d06da49d51e791d1f032d1f2b736c2d972b8239174870fcbfc70",
+      "size_bytes": 5130
+    },
+    {
+      "path": "verdant_language/grammar.py",
+      "sha256": "4fa0c27430f19dfdf238e854f6cdf0b5ea6cabc2c3b484e7d6295a74494ba7e6",
+      "size_bytes": 16966
+    },
+    {
+      "path": "verdant_language/models.py",
+      "sha256": "17f7ac9deafa8cb67f8afe5b026f45873988d231f73b58ea5084e93a1583733e",
+      "size_bytes": 3780
+    },
+    {
+      "path": "verdant_language/pipeline.py",
+      "sha256": "4c87099baca65c3837941708b9550124a9de3e7262796837eac3d25ae08fbedc",
+      "size_bytes": 11824
+    }
+  ],
+  "milestone": 4,
+  "root": "verdant_rebuild"
+}

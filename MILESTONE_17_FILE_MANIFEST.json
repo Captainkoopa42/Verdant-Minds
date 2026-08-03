@@ -1,0 +1,80 @@
+{
+  "files": [
+    {
+      "bytes": 281,
+      "path": "verdant_hierarchy/__init__.py",
+      "sha256": "04747c926ef29a85766e8b9e2a21ddf9669cae8965d1f25295f9a73b3054be3b"
+    },
+    {
+      "bytes": 26717,
+      "path": "verdant_hierarchy/pipeline.py",
+      "sha256": "bac4f7c504e0a0875a6f246f7542b61f39ea0b782d79e4552cc9c49291b55606"
+    },
+    {
+      "bytes": 5984,
+      "path": "verdant_hierarchy/demo.py",
+      "sha256": "4a8c92d5b8e08b8732b67034c8744982bb88d9488bd0e242ac81a6cd94013de7"
+    },
+    {
+      "bytes": 10286,
+      "path": "tests/test_hierarchy_phase.py",
+      "sha256": "fcd753b83011ca4346da5d88c183e6d918aa44a745ef0f1aa534803ba32f2d00"
+    },
+    {
+      "bytes": 10988,
+      "path": "MILESTONE_17_REPORT.md",
+      "sha256": "cd10948ea20742630da4aef1ac527405fc2cc79aeca7ea342cd9edc0b18880a5"
+    },
+    {
+      "bytes": 9691,
+      "path": "README.md",
+      "sha256": "fc3f1670b1c3ac1145fb6f094c6ade5704637f60cfb2bc93b7ee015dfdb7bf83"
+    },
+    {
+      "bytes": 129885,
+      "path": "verdant_kernel/models.py",
+      "sha256": "f7ec02bcc44e48faffc72095f24eb9f9c14174816fb199d4e94fa7471ae2c86d"
+    },
+    {
+      "bytes": 245555,
+      "path": "verdant_kernel/kernel.py",
+      "sha256": "0152d3db2acfb2345c58be6e739a228a491a575af67e2131e158002cdfa090e8"
+    },
+    {
+      "bytes": 8723,
+      "path": "verdant_kernel/__init__.py",
+      "sha256": "2c6c803224397bba1dc207b1190a6cab9ffe9a7ecc03d17285c40e2694127909"
+    },
+    {
+      "bytes": 33174,
+      "path": "run_verdant_cultivation.py",
+      "sha256": "dedadb77545817f91ed017e876c404bd8a9785af1164c30b919ebb05a9a0b101"
+    },
+    {
+      "bytes": 100,
+      "path": "verdant_rebuild_test_output_milestone_17_part1.txt",
+      "sha256": "f1af0721b1315ea6314ad369c1b21d049cca27e4ad82bc8de6f03359ff446360"
+    },
+    {
+      "bytes": 181,
+      "path": "verdant_rebuild_test_output_milestone_17_part2.txt",
+      "sha256": "4b8aeb3f1064387da1f51a724a484e2f868dd67f45dfd5047afceb0df5839fe8"
+    },
+    {
+      "bytes": 7498,
+      "path": "artifacts/milestone_17_hierarchy_summary.json",
+      "sha256": "8077722b0248862881af2bb8623ae5105b73c4d437f54dc807916b00bcbb1e31"
+    },
+    {
+      "bytes": 7499,
+      "path": "artifacts/milestone_17_demo_stdout.json",
+      "sha256": "542faed1738fcc3608b00bd6870e71babdbff96429c1876c3929296ff320007a"
+    },
+    {
+      "bytes": 1093798,
+      "path": "artifacts/milestone_17_hierarchy_demo.vdk",
+      "sha256": "287b36f3c8926952d1615fde9ffd9a1e25f38a6ac49a8a4f526265c562115cc6"
+    }
+  ],
+  "milestone": 17
+}

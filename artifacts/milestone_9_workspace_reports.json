@@ -1,0 +1,787 @@
+{
+  "cycle_one": {
+    "admitted_candidate_ids": [
+      "workspace_candidate_966ad1e2634a475b8d09dd0d",
+      "workspace_candidate_a939df697397877169c430bc",
+      "workspace_candidate_ad6a03c47db485f22674693c",
+      "workspace_candidate_c112760596ac03806c571520",
+      "workspace_candidate_c64120e1734c83ee62c780ee",
+      "workspace_candidate_de2a7462834451524f19d77f"
+    ],
+    "assessments": [
+      {
+        "allocated_resource": 0.13,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_0503eba24d476799de6406b6",
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "Council constraints for safe inspection",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 4,
+          "resource_request": 0.13,
+          "signals": {
+            "action_value": 0.7,
+            "contradiction_pressure": 1.0,
+            "ethical_salience": 1.0,
+            "evidence_grounding": 0.9,
+            "novelty": 0.4,
+            "prediction_error": 0.0,
+            "relevance": 1.0,
+            "resonance": 0.0
+          },
+          "source_kind": "governance_constraint",
+          "source_ref": "council_decision_3bd0d28ebcf0103f7cead81c"
+        },
+        "candidate_id": "workspace_candidate_a939df697397877169c430bc",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.06999999999999999,
+          "contradiction": 0.14,
+          "ethics": 0.1,
+          "evidence": 0.216,
+          "novelty": 0.024,
+          "prediction_error": 0.0,
+          "relevance": 0.17,
+          "resonance": 0.0,
+          "resource_penalty": 0.010400000000000001,
+          "stickiness": 0.0
+        },
+        "disposition": "admit",
+        "effective_score": 0.7096,
+        "rank": 1,
+        "raw_score": 0.72,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.16,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_0503eba24d476799de6406b6",
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "door-state contradiction",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 4,
+          "resource_request": 0.16,
+          "signals": {
+            "action_value": 0.0,
+            "contradiction_pressure": 1.0,
+            "ethical_salience": 0.6,
+            "evidence_grounding": 0.9,
+            "novelty": 0.4,
+            "prediction_error": 0.8,
+            "relevance": 1.0,
+            "resonance": 0.0
+          },
+          "source_kind": "contradiction",
+          "source_ref": "contradiction_61e513a3130993c0d84e50ef"
+        },
+        "candidate_id": "workspace_candidate_c112760596ac03806c571520",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.0,
+          "contradiction": 0.14,
+          "ethics": 0.06,
+          "evidence": 0.216,
+          "novelty": 0.024,
+          "prediction_error": 0.11200000000000002,
+          "relevance": 0.17,
+          "resonance": 0.0,
+          "resource_penalty": 0.0128,
+          "stickiness": 0.0
+        },
+        "disposition": "admit",
+        "effective_score": 0.7091999999999999,
+        "rank": 2,
+        "raw_score": 0.722,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.18,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "current closed-door observation",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 4,
+          "resource_request": 0.18,
+          "signals": {
+            "action_value": 0.3,
+            "contradiction_pressure": 1.0,
+            "ethical_salience": 0.2,
+            "evidence_grounding": 1.0,
+            "novelty": 0.7,
+            "prediction_error": 0.4,
+            "relevance": 1.0,
+            "resonance": 0.0
+          },
+          "source_kind": "current_evidence",
+          "source_ref": "evidence_e085b516259dc5464c885ce9"
+        },
+        "candidate_id": "workspace_candidate_de2a7462834451524f19d77f",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.03,
+          "contradiction": 0.14,
+          "ethics": 0.020000000000000004,
+          "evidence": 0.24,
+          "novelty": 0.041999999999999996,
+          "prediction_error": 0.05600000000000001,
+          "relevance": 0.17,
+          "resonance": 0.0,
+          "resource_penalty": 0.0144,
+          "stickiness": 0.0
+        },
+        "disposition": "admit",
+        "effective_score": 0.6836000000000002,
+        "rank": 3,
+        "raw_score": 0.6980000000000002,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.14,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_0503eba24d476799de6406b6",
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "authorized inspect-door action",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": "inspect_door",
+          "persistence_cycles": 4,
+          "resource_request": 0.14,
+          "signals": {
+            "action_value": 1.0,
+            "contradiction_pressure": 0.0,
+            "ethical_salience": 0.7,
+            "evidence_grounding": 0.9,
+            "novelty": 0.3,
+            "prediction_error": 0.2,
+            "relevance": 1.0,
+            "resonance": 0.0
+          },
+          "source_kind": "authorized_action",
+          "source_ref": "council_decision_3bd0d28ebcf0103f7cead81c"
+        },
+        "candidate_id": "workspace_candidate_ad6a03c47db485f22674693c",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.1,
+          "contradiction": 0.0,
+          "ethics": 0.06999999999999999,
+          "evidence": 0.216,
+          "novelty": 0.018,
+          "prediction_error": 0.028000000000000004,
+          "relevance": 0.17,
+          "resonance": 0.0,
+          "resource_penalty": 0.011200000000000002,
+          "stickiness": 0.0
+        },
+        "disposition": "admit",
+        "effective_score": 0.5908,
+        "rank": 4,
+        "raw_score": 0.602,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.14,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_129948b5bf07e8dd50b09e92",
+            "evidence_3d924be3cd0a55e153ee9b33",
+            "evidence_89d903adf3a79ec19994eeee"
+          ],
+          "label": "earned proto-object in the current scene",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 4,
+          "resource_request": 0.14,
+          "signals": {
+            "action_value": 0.4,
+            "contradiction_pressure": 0.0,
+            "ethical_salience": 0.0,
+            "evidence_grounding": 0.85,
+            "novelty": 0.8,
+            "prediction_error": 0.3,
+            "relevance": 0.8,
+            "resonance": 0.0
+          },
+          "source_kind": "proto_object",
+          "source_ref": "object_candidate_ddc3c2d33f845ef319cea936"
+        },
+        "candidate_id": "workspace_candidate_c64120e1734c83ee62c780ee",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.04000000000000001,
+          "contradiction": 0.0,
+          "ethics": 0.0,
+          "evidence": 0.204,
+          "novelty": 0.048,
+          "prediction_error": 0.042,
+          "relevance": 0.136,
+          "resonance": 0.0,
+          "resource_penalty": 0.011200000000000002,
+          "stickiness": 0.0
+        },
+        "disposition": "admit",
+        "effective_score": 0.45879999999999993,
+        "rank": 5,
+        "raw_score": 0.4699999999999999,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.1,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_129948b5bf07e8dd50b09e92",
+            "evidence_3d924be3cd0a55e153ee9b33",
+            "evidence_89d903adf3a79ec19994eeee"
+          ],
+          "label": "active canonical shard context",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 4,
+          "resource_request": 0.1,
+          "signals": {
+            "action_value": 0.3,
+            "contradiction_pressure": 0.0,
+            "ethical_salience": 0.0,
+            "evidence_grounding": 0.7,
+            "novelty": 0.2,
+            "prediction_error": 0.0,
+            "relevance": 0.7,
+            "resonance": 0.0
+          },
+          "source_kind": "shard_context",
+          "source_ref": "root"
+        },
+        "candidate_id": "workspace_candidate_966ad1e2634a475b8d09dd0d",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.03,
+          "contradiction": 0.0,
+          "ethics": 0.0,
+          "evidence": 0.16799999999999998,
+          "novelty": 0.012,
+          "prediction_error": 0.0,
+          "relevance": 0.119,
+          "resonance": 0.0,
+          "resource_penalty": 0.008,
+          "stickiness": 0.0
+        },
+        "disposition": "admit",
+        "effective_score": 0.32099999999999995,
+        "rank": 6,
+        "raw_score": 0.32899999999999996,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.0,
+        "candidate": {
+          "binding_refs": [],
+          "evidence_refs": [
+            "evidence_0503eba24d476799de6406b6",
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "ECWF possibility candidate",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 4,
+          "resource_request": 0.12,
+          "signals": {
+            "action_value": 0.0,
+            "contradiction_pressure": 0.0,
+            "ethical_salience": 0.0,
+            "evidence_grounding": 0.2,
+            "novelty": 0.7,
+            "prediction_error": 0.0,
+            "relevance": 0.9,
+            "resonance": 0.2507822334365271
+          },
+          "source_kind": "resonance",
+          "source_ref": "attention_bbe2effc830d0fb0df9229e2"
+        },
+        "candidate_id": "workspace_candidate_de88c0da101b421157cf7bc9",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.0,
+          "contradiction": 0.0,
+          "ethics": 0.0,
+          "evidence": 0.048,
+          "novelty": 0.041999999999999996,
+          "prediction_error": 0.0,
+          "relevance": 0.15300000000000002,
+          "resonance": 0.012539111671826357,
+          "resource_penalty": 0.0096,
+          "stickiness": 0.0
+        },
+        "disposition": "suppress",
+        "effective_score": 0.24593911167182636,
+        "rank": 7,
+        "raw_score": 0.25553911167182636,
+        "rejection_codes": [
+          "below_admission_threshold"
+        ]
+      }
+    ],
+    "cycle": 22,
+    "evicted_item_ids": [],
+    "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+    "operation": "advance_bounded_workspace",
+    "policy_revision": 0,
+    "report_id": "workspace_admission_report_a0864df6817da42fd4a0f7af",
+    "resource_budget": 1.0,
+    "structural_fingerprint": "fee3ffdd0854c34a336c2bd19e7160cf30622e1a94b65f1f58b7d04da14b6e63",
+    "suppressed_candidate_ids": [
+      "workspace_candidate_de88c0da101b421157cf7bc9"
+    ],
+    "total_allocated_resource": 0.85
+  },
+  "cycle_two": {
+    "admitted_candidate_ids": [
+      "workspace_candidate_79a0a746051f31a41815f079",
+      "workspace_candidate_aad572f3818836a8851056f9",
+      "workspace_candidate_aead588af6231f4944843810",
+      "workspace_candidate_b60d828e52c4f8ce7db2196e",
+      "workspace_candidate_b8b46617279cac8a00ac24cd",
+      "workspace_candidate_ce4edcf4eaa24ee0211cafd8"
+    ],
+    "assessments": [
+      {
+        "allocated_resource": 0.18,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_d2f6548771e89403368be233"
+          ],
+          "label": "current inspection outcome",
+          "metadata": {
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 4,
+          "resource_request": 0.18,
+          "signals": {
+            "action_value": 0.5,
+            "contradiction_pressure": 0.8,
+            "ethical_salience": 0.4,
+            "evidence_grounding": 1.0,
+            "novelty": 0.8,
+            "prediction_error": 0.15,
+            "relevance": 1.0,
+            "resonance": 0.0
+          },
+          "source_kind": "current_evidence",
+          "source_ref": "evidence_d2f6548771e89403368be233"
+        },
+        "candidate_id": "workspace_candidate_aad572f3818836a8851056f9",
+        "carried_from_item_id": null,
+        "components": {
+          "action": 0.05,
+          "contradiction": 0.11200000000000002,
+          "ethics": 0.04000000000000001,
+          "evidence": 0.24,
+          "novelty": 0.048,
+          "prediction_error": 0.021,
+          "relevance": 0.17,
+          "resonance": 0.0,
+          "resource_penalty": 0.0144,
+          "stickiness": 0.0
+        },
+        "disposition": "admit",
+        "effective_score": 0.6666000000000002,
+        "rank": 1,
+        "raw_score": 0.6810000000000002,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.13,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_0503eba24d476799de6406b6",
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "Council constraints for safe inspection",
+          "metadata": {
+            "carried_forward": true,
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 1,
+          "resource_request": 0.13,
+          "signals": {
+            "action_value": 0.504,
+            "contradiction_pressure": 0.72,
+            "ethical_salience": 0.72,
+            "evidence_grounding": 0.648,
+            "novelty": 0.288,
+            "prediction_error": 0.0,
+            "relevance": 0.72,
+            "resonance": 0.0
+          },
+          "source_kind": "governance_constraint",
+          "source_ref": "council_decision_3bd0d28ebcf0103f7cead81c"
+        },
+        "candidate_id": "workspace_candidate_b8b46617279cac8a00ac24cd",
+        "carried_from_item_id": "workspace_item_092f2434cdcdca3b4a359daf",
+        "components": {
+          "action": 0.0504,
+          "contradiction": 0.1008,
+          "ethics": 0.072,
+          "evidence": 0.15552,
+          "novelty": 0.017279999999999997,
+          "prediction_error": 0.0,
+          "relevance": 0.12240000000000001,
+          "resonance": 0.0,
+          "resource_penalty": 0.010400000000000001,
+          "stickiness": 0.08
+        },
+        "disposition": "admit",
+        "effective_score": 0.588,
+        "rank": 2,
+        "raw_score": 0.5184,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.16,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_0503eba24d476799de6406b6",
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "door-state contradiction",
+          "metadata": {
+            "carried_forward": true,
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 1,
+          "resource_request": 0.16,
+          "signals": {
+            "action_value": 0.0,
+            "contradiction_pressure": 0.72,
+            "ethical_salience": 0.432,
+            "evidence_grounding": 0.648,
+            "novelty": 0.288,
+            "prediction_error": 0.576,
+            "relevance": 0.72,
+            "resonance": 0.0
+          },
+          "source_kind": "contradiction",
+          "source_ref": "contradiction_61e513a3130993c0d84e50ef"
+        },
+        "candidate_id": "workspace_candidate_b60d828e52c4f8ce7db2196e",
+        "carried_from_item_id": "workspace_item_c6dd61c58c79e4cb90cda564",
+        "components": {
+          "action": 0.0,
+          "contradiction": 0.1008,
+          "ethics": 0.0432,
+          "evidence": 0.15552,
+          "novelty": 0.017279999999999997,
+          "prediction_error": 0.08064,
+          "relevance": 0.12240000000000001,
+          "resonance": 0.0,
+          "resource_penalty": 0.0128,
+          "stickiness": 0.08
+        },
+        "disposition": "admit",
+        "effective_score": 0.5870399999999999,
+        "rank": 3,
+        "raw_score": 0.51984,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.14,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_0503eba24d476799de6406b6",
+            "evidence_e085b516259dc5464c885ce9"
+          ],
+          "label": "authorized inspect-door action",
+          "metadata": {
+            "carried_forward": true,
+            "milestone_9_controlled_source": true
+          },
+          "operation": "inspect_door",
+          "persistence_cycles": 1,
+          "resource_request": 0.14,
+          "signals": {
+            "action_value": 0.72,
+            "contradiction_pressure": 0.0,
+            "ethical_salience": 0.504,
+            "evidence_grounding": 0.648,
+            "novelty": 0.216,
+            "prediction_error": 0.144,
+            "relevance": 0.72,
+            "resonance": 0.0
+          },
+          "source_kind": "authorized_action",
+          "source_ref": "council_decision_3bd0d28ebcf0103f7cead81c"
+        },
+        "candidate_id": "workspace_candidate_aead588af6231f4944843810",
+        "carried_from_item_id": "workspace_item_7a2c78407e90b58106a546ef",
+        "components": {
+          "action": 0.072,
+          "contradiction": 0.0,
+          "ethics": 0.0504,
+          "evidence": 0.15552,
+          "novelty": 0.01296,
+          "prediction_error": 0.02016,
+          "relevance": 0.12240000000000001,
+          "resonance": 0.0,
+          "resource_penalty": 0.011200000000000002,
+          "stickiness": 0.08
+        },
+        "disposition": "admit",
+        "effective_score": 0.50224,
+        "rank": 4,
+        "raw_score": 0.43344000000000005,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.14,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_129948b5bf07e8dd50b09e92",
+            "evidence_3d924be3cd0a55e153ee9b33",
+            "evidence_89d903adf3a79ec19994eeee"
+          ],
+          "label": "earned proto-object in the current scene",
+          "metadata": {
+            "carried_forward": true,
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 1,
+          "resource_request": 0.14,
+          "signals": {
+            "action_value": 0.288,
+            "contradiction_pressure": 0.0,
+            "ethical_salience": 0.0,
+            "evidence_grounding": 0.612,
+            "novelty": 0.576,
+            "prediction_error": 0.216,
+            "relevance": 0.576,
+            "resonance": 0.0
+          },
+          "source_kind": "proto_object",
+          "source_ref": "object_candidate_ddc3c2d33f845ef319cea936"
+        },
+        "candidate_id": "workspace_candidate_ce4edcf4eaa24ee0211cafd8",
+        "carried_from_item_id": "workspace_item_67e4dfbfbf6a6aa8ca24f55e",
+        "components": {
+          "action": 0.0288,
+          "contradiction": 0.0,
+          "ethics": 0.0,
+          "evidence": 0.14687999999999998,
+          "novelty": 0.034559999999999994,
+          "prediction_error": 0.030240000000000003,
+          "relevance": 0.09792,
+          "resonance": 0.0,
+          "resource_penalty": 0.011200000000000002,
+          "stickiness": 0.08
+        },
+        "disposition": "admit",
+        "effective_score": 0.40719999999999995,
+        "rank": 5,
+        "raw_score": 0.3383999999999999,
+        "rejection_codes": []
+      },
+      {
+        "allocated_resource": 0.1,
+        "candidate": {
+          "binding_refs": [
+            "contradiction_61e513a3130993c0d84e50ef",
+            "council_decision_3bd0d28ebcf0103f7cead81c",
+            "object_candidate_ddc3c2d33f845ef319cea936"
+          ],
+          "evidence_refs": [
+            "evidence_129948b5bf07e8dd50b09e92",
+            "evidence_3d924be3cd0a55e153ee9b33",
+            "evidence_89d903adf3a79ec19994eeee"
+          ],
+          "label": "active canonical shard context",
+          "metadata": {
+            "carried_forward": true,
+            "milestone_9_controlled_source": true
+          },
+          "operation": null,
+          "persistence_cycles": 1,
+          "resource_request": 0.1,
+          "signals": {
+            "action_value": 0.216,
+            "contradiction_pressure": 0.0,
+            "ethical_salience": 0.0,
+            "evidence_grounding": 0.504,
+            "novelty": 0.144,
+            "prediction_error": 0.0,
+            "relevance": 0.504,
+            "resonance": 0.0
+          },
+          "source_kind": "shard_context",
+          "source_ref": "root"
+        },
+        "candidate_id": "workspace_candidate_79a0a746051f31a41815f079",
+        "carried_from_item_id": "workspace_item_a334ca77604f420d7bd98bf3",
+        "components": {
+          "action": 0.0216,
+          "contradiction": 0.0,
+          "ethics": 0.0,
+          "evidence": 0.12096,
+          "novelty": 0.008639999999999998,
+          "prediction_error": 0.0,
+          "relevance": 0.08568,
+          "resonance": 0.0,
+          "resource_penalty": 0.008,
+          "stickiness": 0.08
+        },
+        "disposition": "admit",
+        "effective_score": 0.30888,
+        "rank": 6,
+        "raw_score": 0.23688,
+        "rejection_codes": []
+      }
+    ],
+    "cycle": 25,
+    "evicted_item_ids": [],
+    "kernel_id": "kernel_9f4b42cb7bd1e708b9f6c1de",
+    "operation": "advance_bounded_workspace",
+    "policy_revision": 0,
+    "report_id": "workspace_admission_report_62f4a0536dace1cbc6a65106",
+    "resource_budget": 1.0,
+    "structural_fingerprint": "6d3cdac36ae175842c1efeb61a7cc33a7942d24823ab02f9d13a93ef5ee51eda",
+    "suppressed_candidate_ids": [],
+    "total_allocated_resource": 0.85
+  },
+  "writeback": {
+    "committed_cycle": 25,
+    "disposition": "resolve",
+    "event_id": "workspace_writeback_event_65e32241363861d0c04e701c",
+    "evidence_refs": [
+      "evidence_d2f6548771e89403368be233"
+    ],
+    "item_snapshot": {
+      "admission_report_id": "workspace_admission_report_a0864df6817da42fd4a0f7af",
+      "admitted_cycle": 23,
+      "allocated_resource": 0.18,
+      "binding_refs": [
+        "contradiction_61e513a3130993c0d84e50ef",
+        "council_decision_3bd0d28ebcf0103f7cead81c",
+        "object_candidate_ddc3c2d33f845ef319cea936"
+      ],
+      "candidate_id": "workspace_candidate_de2a7462834451524f19d77f",
+      "components": {
+        "action": 0.03,
+        "contradiction": 0.14,
+        "ethics": 0.020000000000000004,
+        "evidence": 0.24,
+        "novelty": 0.041999999999999996,
+        "prediction_error": 0.05600000000000001,
+        "relevance": 0.17,
+        "resonance": 0.0,
+        "resource_penalty": 0.0144,
+        "stickiness": 0.0
+      },
+      "effective_score": 0.6836000000000002,
+      "evidence_refs": [
+        "evidence_e085b516259dc5464c885ce9"
+      ],
+      "expires_cycle": 26,
+      "item_id": "workspace_item_b3f65b20d334e9b8fa16405f",
+      "label": "current closed-door observation",
+      "metadata": {
+        "milestone_9_controlled_source": true
+      },
+      "operation": null,
+      "raw_score": 0.6980000000000002,
+      "signals": {
+        "action_value": 0.3,
+        "contradiction_pressure": 1.0,
+        "ethical_salience": 0.2,
+        "evidence_grounding": 1.0,
+        "novelty": 0.7,
+        "prediction_error": 0.4,
+        "relevance": 1.0,
+        "resonance": 0.0
+      },
+      "source_kind": "current_evidence",
+      "source_ref": "evidence_e085b516259dc5464c885ce9",
+      "updated_cycle": 23
+    },
+    "reason": "The immediate sensory focus was resolved by the inspection outcome.",
+    "semantic_mutation_permitted": false
+  }
+}

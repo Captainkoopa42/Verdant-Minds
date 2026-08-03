@@ -1,0 +1,334 @@
+{
+  "all_gates_pass": true,
+  "arm_metrics": {
+    "A_graph_only": {
+      "arm": "A_graph_only",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": null,
+      "family_comparison_work": 4,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 30,
+      "layered_structures": 0,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 7,
+      "local_structure_used": false,
+      "persistent_bytes": 155098,
+      "plastic_associations": 0,
+      "plastic_density": null,
+      "plastic_edge_ratio": null,
+      "plastic_max_degree": null,
+      "promoted_structures": 0,
+      "structure_candidates": 0,
+      "training_wall_seconds": 0.17378683101924253
+    },
+    "B_graph_plus_ecwf": {
+      "arm": "B_graph_plus_ecwf",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": false,
+      "family_comparison_work": 4,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 30,
+      "layered_structures": 0,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 7,
+      "local_structure_used": false,
+      "persistent_bytes": 155103,
+      "plastic_associations": 0,
+      "plastic_density": null,
+      "plastic_edge_ratio": null,
+      "plastic_max_degree": null,
+      "promoted_structures": 0,
+      "structure_candidates": 0,
+      "training_wall_seconds": 0.10379466399535886
+    },
+    "C_plastic_no_folds": {
+      "arm": "C_plastic_no_folds",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": null,
+      "family_comparison_work": 4,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 120,
+      "layered_structures": 0,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 7,
+      "local_structure_used": false,
+      "persistent_bytes": 875482,
+      "plastic_associations": 15,
+      "plastic_density": 0.07894736842105263,
+      "plastic_edge_ratio": 0.75,
+      "plastic_max_degree": 3,
+      "promoted_structures": 0,
+      "structure_candidates": 0,
+      "training_wall_seconds": 3.473591301990382
+    },
+    "D_full_earned_folds": {
+      "arm": "D_full_earned_folds",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": null,
+      "family_comparison_work": 3,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 158,
+      "layered_structures": 1,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 1,
+      "local_structure_used": true,
+      "persistent_bytes": 1100166,
+      "plastic_associations": 15,
+      "plastic_density": 0.07894736842105263,
+      "plastic_edge_ratio": 0.75,
+      "plastic_max_degree": 3,
+      "promoted_structures": 5,
+      "structure_candidates": 5,
+      "training_wall_seconds": 4.907716936006182
+    }
+  },
+  "assertions": [
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "same_external_curriculum_count_all_arms",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.same_external_curriculum_count_all_arms"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "target_abstraction_not_taught",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.target_abstraction_not_taught"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "d_forms_earned_structures",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.d_forms_earned_structures"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "d_forms_higher_order_q",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.d_forms_higher_order_q"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "c_has_plasticity_without_promoted_folds",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.c_has_plasticity_without_promoted_folds"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "all_arms_reconstruct_heldout_world",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.all_arms_reconstruct_heldout_world"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "d_uses_compiled_structure",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.d_uses_compiled_structure"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "p_ablation_restoration_is_causal",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.p_ablation_restoration_is_causal"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "q_ablation_restoration_is_causal",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.q_ablation_restoration_is_causal"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "d_rejects_star_from_path_family",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.d_rejects_star_from_path_family"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "refolding_preserves_lineage",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.refolding_preserves_lineage"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "refolding_preserves_semantic_counts",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.refolding_preserves_semantic_counts"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "c_long_run_within_caps",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.c_long_run_within_caps"
+    },
+    {
+      "actual": true,
+      "error": null,
+      "expected": true,
+      "label": "d_long_run_within_caps",
+      "op": "true",
+      "passed": true,
+      "path": "headline_checks.d_long_run_within_caps"
+    }
+  ],
+  "causal_controls": {
+    "ablated_work": 7,
+    "gain_followed_structure": true,
+    "q_ablated_work": 8,
+    "q_gain_followed_object": true,
+    "q_restored_work": 3,
+    "restored_work": 1,
+    "same_family_matches": true,
+    "same_reconstruction": true,
+    "with_q_work": 3,
+    "with_structure_work": 1
+  },
+  "curriculum_event_count": 30,
+  "curriculum_sha256": "38ffb6c25056b7f0134e5f2dd923fe08b9cca05318a66f38e3c7582eb102ce4b",
+  "experiment_id": "vexp_f83d87502f064c1b9a4eeeb99b399e64",
+  "experiment_run_id": "xrun_66be26e99e2d449994a5ca0e8a62ceb2",
+  "exports": {
+    "source_experiment": "/mnt/data/wb07_work/workbench/artifacts/wb07_m19_reference_experiment.vexp",
+    "verification_package": "/mnt/data/wb07_work/workbench/artifacts/wb07_m19_verification_package.vexp"
+  },
+  "fork": {
+    "artifact_sha256": "39b33f6fcc73f45295fa627dab580fcfb73b5c97c42ad315acc7cfd005888750",
+    "artifact_size_bytes": 4257,
+    "created_at": "2026-08-03T02:23:50.465751+00:00",
+    "experiment_id": "vexp_935d8f31ffba439bb4a7151bd8ebae43",
+    "manifest_sha256": "4748f996b322f55bde3228291397d3e54f103b7a5f3a71f2b24bb5aa50e8dd50",
+    "parent_experiment_id": "vexp_f83d87502f064c1b9a4eeeb99b399e64",
+    "project_id": "proj_wb07_proof",
+    "protocol_id": "ethomorphism.m19.v1",
+    "title": "M19 Seed 1902 Fork",
+    "version": 1
+  },
+  "gates": {
+    "all_manifest_assertions_pass": true,
+    "all_reference_headline_checks_pass": true,
+    "arms_use_independent_canonical_state": true,
+    "d_compiled_local_work_preserved": true,
+    "experiment_marked_verified": true,
+    "experiment_runs_outside_workbench_process": true,
+    "fork_is_new_immutable_artifact": true,
+    "fork_preserves_parent_lineage": true,
+    "p_causal_result_preserved": true,
+    "q_causal_result_preserved": true,
+    "reference_curriculum_hash_locked": true,
+    "reference_curriculum_self_contained_30_events": true,
+    "reproduction_hash_matches": true,
+    "result_package_integrity_verified": true,
+    "source_package_integrity_verified": true
+  },
+  "refolding": {
+    "child_member_sets": [
+      [
+        "ra1",
+        "ra2",
+        "ra3"
+      ],
+      [
+        "rb1",
+        "rb2",
+        "rb3"
+      ]
+    ],
+    "disposition": "split",
+    "lineage_preserved": true,
+    "parent_dormant_after_success": true,
+    "parent_preserved": true,
+    "produced_children": 2,
+    "semantic_counts_unchanged": true
+  },
+  "reproduced_scientific_result_sha256": "c7bc5180354a8a20a3db081000a9c5124ffcbd77da4f860d0ee6214c937c36a7",
+  "schema": "verdant.workbench.wb07-proof.v1",
+  "scientific_result_sha256": "c7bc5180354a8a20a3db081000a9c5124ffcbd77da4f860d0ee6214c937c36a7",
+  "source_experiment_sha256": "452b4eca4597046490fa5b2a74cb0ac7d28eea2080c22ba87c6c2fba8377a79a",
+  "worker_isolation": {
+    "arm_ids": [
+      "A_graph_only",
+      "B_graph_plus_ecwf",
+      "C_plastic_no_folds",
+      "D_full_earned_folds"
+    ],
+    "arm_state_isolation": true,
+    "experiment_worker_pid": 36956,
+    "mode": "dedicated experiment subprocess; independent kernel/runtime per arm",
+    "process_start_method": "fork"
+  }
+}

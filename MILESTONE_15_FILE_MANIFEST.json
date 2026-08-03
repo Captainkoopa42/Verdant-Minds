@@ -1,0 +1,87 @@
+{
+  "files": [
+    {
+      "path": "verdant_kernel/models.py",
+      "sha256": "15f218e8ec4bfb5f50c6b18b919dd52570ea32e8286b3dee1adf876548fa2dae",
+      "size_bytes": 107288
+    },
+    {
+      "path": "verdant_kernel/kernel.py",
+      "sha256": "66d70dba8ef8510ee24b54732614d8bacd315dd14dff2a042d6c636e8d5878c7",
+      "size_bytes": 211291
+    },
+    {
+      "path": "verdant_kernel/__init__.py",
+      "sha256": "7c8448d07d638e9e3468bfede331e30d81a89469993aaa5f3385a9967fd9cdb8",
+      "size_bytes": 7035
+    },
+    {
+      "path": "verdant_workspace/pipeline.py",
+      "sha256": "149456100fe286e18a49456383921ede033f5e21863d9d274d6bd2bc0ab4e31f",
+      "size_bytes": 22969
+    },
+    {
+      "path": "verdant_plasticity/pipeline.py",
+      "sha256": "49a02a25fc8117a503984dd544a63842d9129b2c7574758e3462c4044237c92e",
+      "size_bytes": 21233
+    },
+    {
+      "path": "verdant_development/pipeline.py",
+      "sha256": "5c76dcb634d355433196be58eb2ab7a496fcf177a7919fb05438294f8bf5c0bf",
+      "size_bytes": 19246
+    },
+    {
+      "path": "verdant_compilation/__init__.py",
+      "sha256": "b3feb67207489aa9f28605010d515b69179e32c4c686a6f00fb0638ceeb05327",
+      "size_bytes": 141
+    },
+    {
+      "path": "verdant_compilation/pipeline.py",
+      "sha256": "2e8d1b6699ba3f7a2ffeac61f2f1f497828062fc0c241171a6a5a62ad6781654",
+      "size_bytes": 8563
+    },
+    {
+      "path": "verdant_compilation/demo.py",
+      "sha256": "8128b6ccf1125a9ae7a87f50b8243654d7d1d0936b187958327257943aaf3302",
+      "size_bytes": 4742
+    },
+    {
+      "path": "tests/test_compilation_phase.py",
+      "sha256": "011df590f7d9644e22b15a4491b5ababd2da7c4a84de710fbfea90dad46827de",
+      "size_bytes": 9039
+    },
+    {
+      "path": "run_verdant_cultivation.py",
+      "sha256": "cc7edd37c64e000201a5d9d1d2177925ccf66658455b9a2ae05e19617bf7f9d5",
+      "size_bytes": 21031
+    },
+    {
+      "path": "MILESTONE_15_REPORT.md",
+      "sha256": "c9779dc8ac4e9e30cfeb0dda75c1f27a9f120aa72909fb371ff07383f67f0f67",
+      "size_bytes": 10197
+    },
+    {
+      "path": "README.md",
+      "sha256": "a0cf63fab0ccb46772ec700f68195daa45441d33d107e52daf88812de070ef7e",
+      "size_bytes": 7803
+    },
+    {
+      "path": "artifacts/milestone_15_compilation_summary.json",
+      "sha256": "f82287a07cc4d1c6dc7047ac9209ea7fef05b6eab3598e36446623c06632cebb",
+      "size_bytes": 4509
+    },
+    {
+      "path": "artifacts/milestone_15_compilation_demo.vdk",
+      "sha256": "f310f007f0c014712762562b2b1be1a3d6abcffb0350d0a610a5067ebd5949a1",
+      "size_bytes": 466554
+    },
+    {
+      "path": "artifacts/milestone_15_demo_stdout.json",
+      "sha256": "935dbe6265932351f8265a73a9951cebd990e1e6fd33d1869d327315bb909992",
+      "size_bytes": 4510
+    }
+  ],
+  "full_test_suite": "156 passed",
+  "milestone": 15,
+  "name": "Cognitive Compilation"
+}

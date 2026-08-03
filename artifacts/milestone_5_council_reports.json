@@ -1,0 +1,364 @@
+{
+  "force_through_door": {
+    "assessments": [
+      {
+        "assessment_id": "king_assessment_8625544697b8b0f96cbc5cef",
+        "attention_candidate_ids": [],
+        "confidence": 0.998,
+        "constraints": [
+          "target_claim_not_currently_supported"
+        ],
+        "details": {
+          "contradiction_id": "contradiction_1897a6e5898650e819250350",
+          "current_belief_id": "claim_921ad0b64cb9d6bed921fb7f",
+          "resonance_event_count": 1,
+          "resonance_used_as_evidence": false,
+          "target_claim_id": "claim_4dba514709f92e106ecfab76",
+          "target_claim_status": "rejected",
+          "target_net_score": -0.42800000000000005,
+          "target_refutation_score": 0.998,
+          "target_support_score": 0.57
+        },
+        "evidence_refs": [
+          "evidence_1b471e559d070b5b0bd3ea20",
+          "evidence_beaeaa3691dac865adc76e86",
+          "evidence_eb5f770b8925a1b5652fef0c"
+        ],
+        "jurisdiction": "epistemic_support",
+        "king": "DataKing",
+        "proposal_id": "council_proposal_1856d9fb418328caf7e79253",
+        "rationale_codes": [
+          "opposed_by_current_belief",
+          "resonance_is_not_evidence"
+        ],
+        "recommendation": "oppose",
+        "score": 0.0
+      },
+      {
+        "assessment_id": "king_assessment_d3202a64c41270daf8d7533b",
+        "attention_candidate_ids": [],
+        "confidence": 0.9,
+        "constraints": [
+          "high_harm_risk_low_reversibility"
+        ],
+        "details": {
+          "boundary_sensitive": false,
+          "consent_present": false,
+          "consent_required": false,
+          "declared_harm_risk": 0.75,
+          "effective_harm_risk": 0.9,
+          "learned_action_risk": 0.0,
+          "reversibility": 0.15,
+          "uncertainty_increment": 0.15,
+          "veto_threshold": 0.65
+        },
+        "evidence_refs": [
+          "evidence_1b471e559d070b5b0bd3ea20",
+          "evidence_beaeaa3691dac865adc76e86",
+          "evidence_eb5f770b8925a1b5652fef0c"
+        ],
+        "jurisdiction": "consequence_permission_boundary",
+        "king": "EthicsKing",
+        "proposal_id": "council_proposal_1856d9fb418328caf7e79253",
+        "rationale_codes": [
+          "harm_prevention"
+        ],
+        "recommendation": "deny",
+        "score": 0.09999999999999998
+      },
+      {
+        "assessment_id": "king_assessment_e540a5be6c4cfc7442799ab0",
+        "attention_candidate_ids": [
+          "attention_8526083bef60609faf8fe808",
+          "attention_89d11b4cb22824a330e58f8f",
+          "attention_ad27736fddc3c28041114811",
+          "attention_becab71629ac08b073c4b5da",
+          "attention_c455c58f52b89052055e6f99"
+        ],
+        "confidence": 0.6108733119544969,
+        "constraints": [],
+        "details": {
+          "attention_budget": 1.0,
+          "attention_signal": 0.6174662390899377,
+          "contradiction_boost": 1.0,
+          "priority_threshold": 0.55,
+          "requested_resource": 0.1
+        },
+        "evidence_refs": [],
+        "jurisdiction": "bounded_present_priority",
+        "king": "ForefrontKing",
+        "proposal_id": "council_proposal_1856d9fb418328caf7e79253",
+        "rationale_codes": [
+          "contradiction_priority_without_truth_authority",
+          "finite_attention_budget"
+        ],
+        "recommendation": "prioritize",
+        "score": 0.7217466239089939
+      }
+    ],
+    "authorized_operations": [],
+    "blocked_operations": [
+      "force_forward_through_door"
+    ],
+    "constraints": [
+      "high_harm_risk_low_reversibility",
+      "target_claim_not_currently_supported"
+    ],
+    "cycle": 20,
+    "disposition": "deny",
+    "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+    "kernel_id": "kernel_d954b555a1d64c4b9174bc74",
+    "policy_snapshot": {
+      "attention_budget": 1.0,
+      "decision_method": "constitutional_rule_order",
+      "enabled_kings": {
+        "DataKing": true,
+        "EthicsKing": true,
+        "ForefrontKing": true
+      },
+      "ethics_veto_threshold": 0.65,
+      "forefront_priority_threshold": 0.55,
+      "learned_action_risk": {},
+      "legacy_weights_used_for_decision": false,
+      "outcome_learning_rate": 0.8,
+      "policy_version": "council-v1",
+      "revision": 0,
+      "t_g": 0.5,
+      "weights": {
+        "DataKing": 1.0,
+        "EthicsKing": 1.5,
+        "ForefrontKing": 1.0
+      }
+    },
+    "proposal": {
+      "action_class": "forceful_forward_movement",
+      "attention_candidate_ids": [
+        "attention_8526083bef60609faf8fe808",
+        "attention_89d11b4cb22824a330e58f8f",
+        "attention_ad27736fddc3c28041114811",
+        "attention_becab71629ac08b073c4b5da",
+        "attention_c455c58f52b89052055e6f99"
+      ],
+      "boundary_sensitive": false,
+      "consent_present": false,
+      "consent_required": false,
+      "created_cycle": 20,
+      "description": "Attempt forceful forward movement through the disputed doorway.",
+      "evidence_refs": [
+        "evidence_1b471e559d070b5b0bd3ea20",
+        "evidence_beaeaa3691dac865adc76e86",
+        "evidence_eb5f770b8925a1b5652fef0c"
+      ],
+      "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+      "harm_risk": 0.75,
+      "kernel_id": "kernel_d954b555a1d64c4b9174bc74",
+      "metadata": {},
+      "novelty": 0.2,
+      "operation": "force_forward_through_door",
+      "predicted_information_gain": 0.4,
+      "proposal_id": "council_proposal_1856d9fb418328caf7e79253",
+      "proposal_kind": "act",
+      "relevance": 1.0,
+      "requested_resource": 0.1,
+      "resonance_event_ids": [
+        "resonance_event_f87bb48161a47bcd3d632b0e"
+      ],
+      "reversibility": 0.15,
+      "safe_alternatives": [
+        "inspect_door"
+      ],
+      "state_fingerprint": "b3ad45f3bd41840df9cc3cd8d8ebdc91b7a765c999fd753028b4a64e5a11ba08",
+      "target_claim_id": "claim_4dba514709f92e106ecfab76",
+      "urgency": 0.8
+    },
+    "rationale_codes": [
+      "constitutional_rule_order",
+      "ethics_hard_constraint"
+    ],
+    "report_id": "council_report_9194e1a4eb06d1d2a28b9663",
+    "required_evidence": [],
+    "safe_alternatives": [
+      "inspect_door"
+    ],
+    "state_fingerprint": "b3ad45f3bd41840df9cc3cd8d8ebdc91b7a765c999fd753028b4a64e5a11ba08"
+  },
+  "safe_door_inspection": {
+    "assessments": [
+      {
+        "assessment_id": "king_assessment_0cecbc7f851e216510c19f4d",
+        "attention_candidate_ids": [],
+        "confidence": 0.998,
+        "constraints": [
+          "target_claim_not_currently_supported"
+        ],
+        "details": {
+          "contradiction_id": "contradiction_1897a6e5898650e819250350",
+          "current_belief_id": "claim_921ad0b64cb9d6bed921fb7f",
+          "resonance_event_count": 1,
+          "resonance_used_as_evidence": false,
+          "target_claim_id": "claim_4dba514709f92e106ecfab76",
+          "target_claim_status": "rejected",
+          "target_net_score": -0.42800000000000005,
+          "target_refutation_score": 0.998,
+          "target_support_score": 0.57
+        },
+        "evidence_refs": [
+          "evidence_1b471e559d070b5b0bd3ea20",
+          "evidence_beaeaa3691dac865adc76e86",
+          "evidence_eb5f770b8925a1b5652fef0c"
+        ],
+        "jurisdiction": "epistemic_support",
+        "king": "DataKing",
+        "proposal_id": "council_proposal_228f7cf50bd6fc9e70111a67",
+        "rationale_codes": [
+          "investigation_may_test_opposed_claim",
+          "resonance_is_not_evidence"
+        ],
+        "recommendation": "request_evidence",
+        "score": 0.0
+      },
+      {
+        "assessment_id": "king_assessment_a712706c0fa9f829fc3f127b",
+        "attention_candidate_ids": [],
+        "confidence": 0.95,
+        "constraints": [],
+        "details": {
+          "boundary_sensitive": false,
+          "consent_present": false,
+          "consent_required": false,
+          "declared_harm_risk": 0.05,
+          "effective_harm_risk": 0.05,
+          "learned_action_risk": 0.0,
+          "reversibility": 1.0,
+          "uncertainty_increment": 0.0,
+          "veto_threshold": 0.65
+        },
+        "evidence_refs": [
+          "evidence_1b471e559d070b5b0bd3ea20",
+          "evidence_beaeaa3691dac865adc76e86",
+          "evidence_eb5f770b8925a1b5652fef0c"
+        ],
+        "jurisdiction": "consequence_permission_boundary",
+        "king": "EthicsKing",
+        "proposal_id": "council_proposal_228f7cf50bd6fc9e70111a67",
+        "rationale_codes": [
+          "risk_within_current_permission_policy"
+        ],
+        "recommendation": "permit",
+        "score": 0.95
+      },
+      {
+        "assessment_id": "king_assessment_d33156b59052fe68ab0625c9",
+        "attention_candidate_ids": [
+          "attention_8526083bef60609faf8fe808",
+          "attention_89d11b4cb22824a330e58f8f",
+          "attention_ad27736fddc3c28041114811",
+          "attention_becab71629ac08b073c4b5da",
+          "attention_c455c58f52b89052055e6f99"
+        ],
+        "confidence": 0.6508733119544969,
+        "constraints": [],
+        "details": {
+          "attention_budget": 1.0,
+          "attention_signal": 0.6174662390899377,
+          "contradiction_boost": 1.0,
+          "priority_threshold": 0.55,
+          "requested_resource": 0.1
+        },
+        "evidence_refs": [],
+        "jurisdiction": "bounded_present_priority",
+        "king": "ForefrontKing",
+        "proposal_id": "council_proposal_228f7cf50bd6fc9e70111a67",
+        "rationale_codes": [
+          "contradiction_priority_without_truth_authority",
+          "finite_attention_budget"
+        ],
+        "recommendation": "prioritize",
+        "score": 0.8017466239089938
+      }
+    ],
+    "authorized_operations": [
+      "inspect_door"
+    ],
+    "blocked_operations": [],
+    "constraints": [
+      "result_must_return_through_evidence_pipeline",
+      "target_claim_not_currently_supported"
+    ],
+    "cycle": 21,
+    "disposition": "approve_with_constraints",
+    "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+    "kernel_id": "kernel_d954b555a1d64c4b9174bc74",
+    "policy_snapshot": {
+      "attention_budget": 1.0,
+      "decision_method": "constitutional_rule_order",
+      "enabled_kings": {
+        "DataKing": true,
+        "EthicsKing": true,
+        "ForefrontKing": true
+      },
+      "ethics_veto_threshold": 0.65,
+      "forefront_priority_threshold": 0.55,
+      "learned_action_risk": {},
+      "legacy_weights_used_for_decision": false,
+      "outcome_learning_rate": 0.8,
+      "policy_version": "council-v1",
+      "revision": 0,
+      "t_g": 0.5,
+      "weights": {
+        "DataKing": 1.0,
+        "EthicsKing": 1.5,
+        "ForefrontKing": 1.0
+      }
+    },
+    "proposal": {
+      "action_class": "visual_door_inspection",
+      "attention_candidate_ids": [
+        "attention_8526083bef60609faf8fe808",
+        "attention_89d11b4cb22824a330e58f8f",
+        "attention_ad27736fddc3c28041114811",
+        "attention_becab71629ac08b073c4b5da",
+        "attention_c455c58f52b89052055e6f99"
+      ],
+      "boundary_sensitive": false,
+      "consent_present": false,
+      "consent_required": false,
+      "created_cycle": 21,
+      "description": "Inspect the doorway without applying force.",
+      "evidence_refs": [
+        "evidence_1b471e559d070b5b0bd3ea20",
+        "evidence_beaeaa3691dac865adc76e86",
+        "evidence_eb5f770b8925a1b5652fef0c"
+      ],
+      "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+      "harm_risk": 0.05,
+      "kernel_id": "kernel_d954b555a1d64c4b9174bc74",
+      "metadata": {},
+      "novelty": 0.2,
+      "operation": "inspect_door",
+      "predicted_information_gain": 1.0,
+      "proposal_id": "council_proposal_228f7cf50bd6fc9e70111a67",
+      "proposal_kind": "investigate",
+      "relevance": 1.0,
+      "requested_resource": 0.1,
+      "resonance_event_ids": [
+        "resonance_event_f87bb48161a47bcd3d632b0e"
+      ],
+      "reversibility": 1.0,
+      "safe_alternatives": [],
+      "state_fingerprint": "12f3124e79a750a2871cb99dd805f3b7af2b7c18cd05d804144230edfbef909b",
+      "target_claim_id": "claim_4dba514709f92e106ecfab76",
+      "urgency": 0.6
+    },
+    "rationale_codes": [
+      "constitutional_rule_order",
+      "safe_investigation_authorized"
+    ],
+    "report_id": "council_report_41fa8082db87c00f1ae79ca3",
+    "required_evidence": [
+      "evidence_to_resolve_uncertainty"
+    ],
+    "safe_alternatives": [],
+    "state_fingerprint": "12f3124e79a750a2871cb99dd805f3b7af2b7c18cd05d804144230edfbef909b"
+  }
+}

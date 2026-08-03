@@ -1,0 +1,213 @@
+{
+  "arms": {
+    "A_graph_only": {
+      "arm": "A_graph_only",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": null,
+      "family_comparison_work": 4,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 30,
+      "layered_structures": 0,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 7,
+      "local_structure_used": false,
+      "persistent_bytes": 155098,
+      "plastic_associations": 0,
+      "plastic_density": null,
+      "plastic_edge_ratio": null,
+      "plastic_max_degree": null,
+      "promoted_structures": 0,
+      "structure_candidates": 0,
+      "training_wall_seconds": 0.10429451100026199
+    },
+    "B_graph_plus_ecwf": {
+      "arm": "B_graph_plus_ecwf",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": false,
+      "family_comparison_work": 4,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 30,
+      "layered_structures": 0,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 7,
+      "local_structure_used": false,
+      "persistent_bytes": 155103,
+      "plastic_associations": 0,
+      "plastic_density": null,
+      "plastic_edge_ratio": null,
+      "plastic_max_degree": null,
+      "promoted_structures": 0,
+      "structure_candidates": 0,
+      "training_wall_seconds": 0.10321295100129646
+    },
+    "C_plastic_no_folds": {
+      "arm": "C_plastic_no_folds",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": null,
+      "family_comparison_work": 4,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 120,
+      "layered_structures": 0,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 7,
+      "local_structure_used": false,
+      "persistent_bytes": 875482,
+      "plastic_associations": 15,
+      "plastic_density": 0.07894736842105263,
+      "plastic_edge_ratio": 0.75,
+      "plastic_max_degree": 3,
+      "promoted_structures": 0,
+      "structure_candidates": 0,
+      "training_wall_seconds": 3.4190915429990127
+    },
+    "D_full_earned_folds": {
+      "arm": "D_full_earned_folds",
+      "canonical_relations": 15,
+      "concepts": 20,
+      "curriculum_events": 30,
+      "ecwf_top1_exact_cue": null,
+      "family_comparison_work": 3,
+      "family_matches": [
+        "world-a",
+        "world-b",
+        "world-c"
+      ],
+      "family_selectivity_success": true,
+      "family_transfer_success": true,
+      "internal_cycles": 158,
+      "layered_structures": 1,
+      "local_reconstruction_members": 4,
+      "local_reconstruction_success": true,
+      "local_reconstruction_work": 1,
+      "local_structure_used": true,
+      "persistent_bytes": 1100166,
+      "plastic_associations": 15,
+      "plastic_density": 0.07894736842105263,
+      "plastic_edge_ratio": 0.75,
+      "plastic_max_degree": 3,
+      "promoted_structures": 5,
+      "structure_candidates": 5,
+      "training_wall_seconds": 4.821811370000432
+    }
+  },
+  "causal_controls": {
+    "ablated_work": 7,
+    "gain_followed_structure": true,
+    "q_ablated_work": 8,
+    "q_gain_followed_object": true,
+    "q_restored_work": 3,
+    "restored_work": 1,
+    "same_family_matches": true,
+    "same_reconstruction": true,
+    "with_q_work": 3,
+    "with_structure_work": 1
+  },
+  "config": {
+    "noise_concepts": 16,
+    "noise_repeats": 1,
+    "relation_type": "linked",
+    "repeats_per_edge": 2,
+    "seed": 1901,
+    "state_dim": 16
+  },
+  "curriculum_sha256": "38ffb6c25056b7f0134e5f2dd923fe08b9cca05318a66f38e3c7582eb102ce4b",
+  "headline_checks": {
+    "all_arms_identify_path_family_under_evaluator": true,
+    "all_arms_reconstruct_heldout_world": true,
+    "c_has_plasticity_without_promoted_folds": true,
+    "c_long_run_within_caps": true,
+    "d_forms_earned_structures": true,
+    "d_forms_higher_order_q": true,
+    "d_long_run_within_caps": true,
+    "d_rejects_star_from_path_family": true,
+    "d_uses_compiled_structure": true,
+    "p_ablation_restoration_is_causal": true,
+    "q_ablation_restoration_is_causal": true,
+    "refolding_preserves_lineage": true,
+    "refolding_preserves_semantic_counts": true,
+    "same_external_curriculum_count_all_arms": true,
+    "target_abstraction_not_taught": true
+  },
+  "interpretation": {
+    "fairness": "All four arms receive the same ordered primitive edge curriculum, seed, state dimension, and hidden family labels are never installed in canonical Verdant state. C and D additionally share the same developmental resource/plasticity policies; their intended difference is fold promotion/use.",
+    "not_claimed": "This benchmark does not establish general intelligence, autonomous language-level theory discovery, or learned manifold geometry. World boundaries and scoring labels exist only in the external evaluator.",
+    "scope": "Controlled synthetic benchmark of representational formation, reuse, family recognition, ablation/restoration, refolding, and saturation health."
+  },
+  "long_run_health": {
+    "C_plastic_no_folds": {
+      "arm": "C_plastic_no_folds",
+      "canonical_density": 0.26666666666666666,
+      "concepts": 16,
+      "degree_cap": 8,
+      "density": 0.26666666666666666,
+      "edge_ratio": 2.0,
+      "edge_ratio_cap": 4.0,
+      "max_degree": 4,
+      "plastic_associations": 32,
+      "within_degree_cap": true,
+      "within_edge_ratio_cap": true
+    },
+    "D_full_earned_folds": {
+      "arm": "D_full_earned_folds",
+      "canonical_density": 0.26666666666666666,
+      "concepts": 16,
+      "degree_cap": 8,
+      "density": 0.26666666666666666,
+      "edge_ratio": 2.0,
+      "edge_ratio_cap": 4.0,
+      "max_degree": 4,
+      "plastic_associations": 32,
+      "within_degree_cap": true,
+      "within_edge_ratio_cap": true
+    }
+  },
+  "refolding": {
+    "child_member_sets": [
+      [
+        "ra1",
+        "ra2",
+        "ra3"
+      ],
+      [
+        "rb1",
+        "rb2",
+        "rb3"
+      ]
+    ],
+    "disposition": "split",
+    "lineage_preserved": true,
+    "parent_dormant_after_success": true,
+    "parent_preserved": true,
+    "produced_children": 2,
+    "semantic_counts_unchanged": true
+  },
+  "schema": "verdant.ethomorphism_benchmark.v1",
+  "target_abstraction_taught": false
+}

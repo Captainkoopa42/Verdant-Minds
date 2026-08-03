@@ -1,0 +1,31 @@
+{
+  "canonical_relation_count": 0,
+  "concept_count": 14,
+  "configured_max_degree": 4,
+  "configured_max_edge_ratio": 2.0,
+  "configured_strength_budget": 1.6,
+  "cycle": 320,
+  "fingerprint": "3e652be045068bdfedf0dc2929d87803388f861f75aaf88c9eba6b80dda67993",
+  "kren_tar_strength_trajectory": [
+    0.19408,
+    0.29401408,
+    0.39873335690703127,
+    0.4880469464123218,
+    0.5641552154545917,
+    0.6289813208355238
+  ],
+  "max_plasticity_degree": 4,
+  "max_total_strength_per_concept": 0.9017870218865204,
+  "milestone": 13,
+  "plasticity_association_count": 25,
+  "plasticity_density": 0.27472527472527475,
+  "plasticity_edge_ratio": 1.7857142857142858,
+  "plasticity_event_count": 80,
+  "probe_after_local_recall": [
+    "tar"
+  ],
+  "probe_before_local_recall": [],
+  "semantic_relation_firewall_held": true,
+  "tar_recalled_after_learning": true,
+  "title": "Local Plasticity Without Saturation"
+}

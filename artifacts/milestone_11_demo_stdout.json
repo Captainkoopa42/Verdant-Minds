@@ -1,0 +1,129 @@
+{
+  "important_boundaries": [
+    "Original user files are preserved before decoding.",
+    "Decoded samples are stored separately from original files.",
+    "Unsupported files are preserved without fabricated interpretation.",
+    "A still image cannot provide invented motion or persistence.",
+    "Perceptual regions remain nonsemantic until the existing Council-authorized objecthood path promotes a candidate."
+  ],
+  "llm_in_loop": false,
+  "metrics": {
+    "active_shard_id": "root",
+    "attention_candidate_count": 0,
+    "average_neighbor_count": 0.0,
+    "claim_count": 0,
+    "concept_count": 1,
+    "contradiction_count": 0,
+    "council_decision_count": 1,
+    "cycle": 73,
+    "directed_density": 0.0,
+    "evidence_count": 44,
+    "field_address_count": 1,
+    "field_history_count": 22,
+    "field_norm": 0.9999999999999999,
+    "governance_outcome_count": 0,
+    "object_candidate_count": 1,
+    "object_observation_count": 16,
+    "object_observation_event_count": 16,
+    "object_promotion_event_count": 1,
+    "perceptual_binding_event_count": 3,
+    "promoted_proto_object_count": 1,
+    "relation_count": 0,
+    "resonance_event_count": 0,
+    "resonance_profile_count": 0,
+    "revision_count": 0,
+    "routing_event_count": 0,
+    "sensory_archive_count": 4,
+    "sensory_sample_count": 22,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "synchronization_group_count": 22,
+    "temporal_event_assembly_count": 4,
+    "temporal_event_count": 4,
+    "transition_count": 73,
+    "workspace_active_item_count": 0,
+    "workspace_allocated_resource": 0,
+    "workspace_cycle_event_count": 0,
+    "workspace_writeback_event_count": 0
+  },
+  "milestone": 11,
+  "native_media": {
+    "audio_sample_count": 5,
+    "sensory_sample_count": 22,
+    "temporal_event_count": 4,
+    "vision_sample_count": 17
+  },
+  "perception": {
+    "binding_event_count": 3,
+    "developed_candidate": {
+      "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+      "common_motion_count": 11,
+      "episode_count": 3,
+      "occlusion_count": 1,
+      "persistence_count": 12,
+      "reappearance_count": 1,
+      "support_score": 0.8,
+      "transformation_count": 7,
+      "visible_observation_count": 15
+    },
+    "frame_count": 17,
+    "object_candidate_count": 1,
+    "region_count": 15
+  },
+  "persistence": {
+    "branch_generation": 1,
+    "branch_id": "lineage_branch_9fac38a3e92e6f8029cdc9bb",
+    "branch_label": "milestone-11-demo-branch",
+    "branch_preserves_historical_kernel_id": true,
+    "checkpoint": "/mnt/data/verdant_rebuild/artifacts/milestone_11_media_perception_demo.vdk",
+    "checkpoint_sha256": "c062049a687682fe1ee7febea99b2f872f5bb45646ed6ea9194d8e45c492731c",
+    "exact_checkpoint_reload": true,
+    "run_package": "/mnt/data/verdant_rebuild/artifacts/milestone_11_demo_run.vrun.zip",
+    "run_package_id": "run_package_b0b2c860cef8210b39569647",
+    "run_package_inspection_matches": true
+  },
+  "pretrained_detector_in_loop": false,
+  "promotion": {
+    "concept_id": "concept_378590c330abb6977c1c7d84",
+    "council_disposition": "approve",
+    "disposition": "promote",
+    "machine_generated_label": "proto-object-0d8ab3ac5b93",
+    "rejection_codes": [],
+    "semantic_category_preinstalled": false
+  },
+  "semantic_boundary": {
+    "claims": 0,
+    "concepts_after_governed_promotion": 1,
+    "concepts_after_tracking_before_promotion": 0,
+    "contradictions": 0,
+    "relations": 0
+  },
+  "title": "User Media Import and Native Perceptual Binding",
+  "user_file_gateway": {
+    "archive_only_or_unsupported_count": 1,
+    "import_count": 5,
+    "media_import_archives": [
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_image_dab7ee7be706.vmi.zip",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_audio_b4f06180242e.vmi.zip",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_clip_one_397f0a96e1c9.vmi.zip",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_clip_two_5561e3af11a3.vmi.zip",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_unknown_0bd724e126e9.vmi.zip"
+    ],
+    "sensory_archives": [
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_7828cdf0395f6e81337d32ca.vsa.zip",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_5a997c990bb308a7c233d928.vsa.zip",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_09f64ef2d336bc04103dcb2c.vsa.zip",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_0c02626e639c951be4047b6c.vsa.zip"
+    ],
+    "source_files": [
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_image.png",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_audio.wav",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_clip_one.mp4",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_clip_two.mp4",
+      "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_unknown.bin"
+    ],
+    "translated_count": 4
+  }
+}

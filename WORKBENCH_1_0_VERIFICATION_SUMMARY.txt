@@ -1,0 +1,37 @@
+VERDANT MINDS V5 / WORKBENCH 1.0.1 VERIFICATION SUMMARY
+=======================================================
+
+RELEASE ID: verdant-minds-v5-workbench-1.0.1
+ENGINE SOURCE SHA256:    62f8b3346c7efdacfea812b454a90ae78c6c7f1a19767fefc49b5d620269d77e
+WORKBENCH SOURCE SHA256: 9e7ab8c3498dd8df85632c856a9b0e05eb8dc0d598155930cacd7907786a7b49
+DEPENDENCY LOCK SHA256:  323a0ffa50cfd72be26962410e28c3471704c626bad11faa99026b2c4abe61bc
+
+ENGINE BASELINE: 189 passing
+  124 core/kernel/language/media/workspace/etc.
+   32 M12-M15 development/plasticity/structures/compilation
+   16 M16-M17 interaction/hierarchy
+    9 M18 refolding
+    8 M19 benchmark (fresh node-level verification where required)
+
+WORKBENCH: 61 passing
+   56 WB-00 through WB-09 integration/contract tests
+    5 1.0.1 release-audit/build-identity tests
+
+TOTAL: 250 verified passing tests
+
+Machine proofs:
+  workbench/artifacts/wb08_provider_connections_proof.json  all_gates_pass=true
+  workbench/artifacts/wb09_workbench_1_0_proof.json          all_gates_pass=true
+
+Operational diagnostic:
+  python run_verdant_workbench.py --home <path> --check
+  reports exact release/build identity plus artifact/provider/plugin status.
+
+Release verifier:
+  python verify_release.py
+  python verify_release.py --with-proofs
+
+NOTE: The hosted validation environment still exhibits cumulative slowdown across
+long chains of heavy numerical pytest processes. The authoritative method is the
+fresh-process partition/node execution encoded by verify_release.py and used during
+release validation. The test assertions themselves are unchanged.

@@ -1,0 +1,230 @@
+{
+  "base_checkpoint": "/mnt/data/verdant_rebuild/artifacts/milestone_7_objects_demo.vdk",
+  "checkpoint": "/mnt/data/verdant_rebuild/artifacts/milestone_9_workspace_demo.vdk",
+  "checkpoint_sha256": "02f6488cebcd9e342fa3536ef318cc0e93461acf5d73336f53b6a7f1a8cbd864",
+  "cycle_one": {
+    "active_count": 6,
+    "allocated_resource": 0.85,
+    "assessments": [
+      {
+        "allocated_resource": 0.13,
+        "disposition": "admit",
+        "effective_score": 0.7096,
+        "label": "Council constraints for safe inspection",
+        "rejection_codes": [],
+        "source_kind": "governance_constraint"
+      },
+      {
+        "allocated_resource": 0.16,
+        "disposition": "admit",
+        "effective_score": 0.7091999999999999,
+        "label": "door-state contradiction",
+        "rejection_codes": [],
+        "source_kind": "contradiction"
+      },
+      {
+        "allocated_resource": 0.18,
+        "disposition": "admit",
+        "effective_score": 0.6836000000000002,
+        "label": "current closed-door observation",
+        "rejection_codes": [],
+        "source_kind": "current_evidence"
+      },
+      {
+        "allocated_resource": 0.14,
+        "disposition": "admit",
+        "effective_score": 0.5908,
+        "label": "authorized inspect-door action",
+        "rejection_codes": [],
+        "source_kind": "authorized_action"
+      },
+      {
+        "allocated_resource": 0.14,
+        "disposition": "admit",
+        "effective_score": 0.45879999999999993,
+        "label": "earned proto-object in the current scene",
+        "rejection_codes": [],
+        "source_kind": "proto_object"
+      },
+      {
+        "allocated_resource": 0.1,
+        "disposition": "admit",
+        "effective_score": 0.32099999999999995,
+        "label": "active canonical shard context",
+        "rejection_codes": [],
+        "source_kind": "shard_context"
+      },
+      {
+        "allocated_resource": 0.0,
+        "disposition": "suppress",
+        "effective_score": 0.24593911167182636,
+        "label": "ECWF possibility candidate",
+        "rejection_codes": [
+          "below_admission_threshold"
+        ],
+        "source_kind": "resonance"
+      }
+    ],
+    "broadcast_count": 5,
+    "candidate_count": 7,
+    "current_evidence_admitted": true,
+    "resonance_admitted": false,
+    "resource_budget": 1.0
+  },
+  "cycle_two": {
+    "active_count": 6,
+    "active_items": [
+      {
+        "effective_score": 0.588,
+        "expires_cycle": 26,
+        "item_id": "workspace_item_092f2434cdcdca3b4a359daf",
+        "label": "Council constraints for safe inspection",
+        "resource": 0.13,
+        "source_kind": "governance_constraint"
+      },
+      {
+        "effective_score": 0.40719999999999995,
+        "expires_cycle": 26,
+        "item_id": "workspace_item_67e4dfbfbf6a6aa8ca24f55e",
+        "label": "earned proto-object in the current scene",
+        "resource": 0.14,
+        "source_kind": "proto_object"
+      },
+      {
+        "effective_score": 0.50224,
+        "expires_cycle": 26,
+        "item_id": "workspace_item_7a2c78407e90b58106a546ef",
+        "label": "authorized inspect-door action",
+        "resource": 0.14,
+        "source_kind": "authorized_action"
+      },
+      {
+        "effective_score": 0.30888,
+        "expires_cycle": 26,
+        "item_id": "workspace_item_a334ca77604f420d7bd98bf3",
+        "label": "active canonical shard context",
+        "resource": 0.1,
+        "source_kind": "shard_context"
+      },
+      {
+        "effective_score": 0.5870399999999999,
+        "expires_cycle": 26,
+        "item_id": "workspace_item_c6dd61c58c79e4cb90cda564",
+        "label": "door-state contradiction",
+        "resource": 0.16,
+        "source_kind": "contradiction"
+      },
+      {
+        "effective_score": 0.6666000000000002,
+        "expires_cycle": 29,
+        "item_id": "workspace_item_fca76f1d2161c01f108e5f7f",
+        "label": "current inspection outcome",
+        "resource": 0.18,
+        "source_kind": "current_evidence"
+      }
+    ],
+    "allocated_resource": 0.85,
+    "broadcast_count": 4
+  },
+  "exact_checkpoint_reload": true,
+  "important_boundaries": [
+    "The workspace coordinates existing records and cannot create concepts, relations, claims, or evidence.",
+    "The finite-resource score is an explicit experimental scheduling policy, not a claim of human attention.",
+    "The demonstration uses controlled numerical and textual evidence rather than live device streams.",
+    "Workspace broadcast means cross-subsystem availability inside this architecture; it is not evidence of consciousness."
+  ],
+  "integrated_sources_presented": [
+    "current_evidence",
+    "temporal_event",
+    "recalled_evidence",
+    "resonance",
+    "contradiction",
+    "proto_object",
+    "shard_context",
+    "governance_constraint",
+    "authorized_action"
+  ],
+  "integrated_state": {
+    "active_shard_id": "root",
+    "authorized_operation": "inspect_door",
+    "contradiction_id": "contradiction_61e513a3130993c0d84e50ef",
+    "council_decision_event_id": "council_decision_3bd0d28ebcf0103f7cead81c",
+    "proto_object_candidate_id": "object_candidate_ddc3c2d33f845ef319cea936",
+    "resonance_event_id": "resonance_event_1647961cf0f623913692af29"
+  },
+  "llm_in_loop": false,
+  "metrics": {
+    "active_shard_id": "root",
+    "attention_candidate_count": 2,
+    "average_neighbor_count": 0.0,
+    "claim_count": 2,
+    "concept_count": 3,
+    "contradiction_count": 1,
+    "council_decision_count": 2,
+    "cycle": 26,
+    "directed_density": 0.0,
+    "evidence_count": 25,
+    "field_address_count": 3,
+    "field_history_count": 11,
+    "field_norm": 1.0,
+    "governance_outcome_count": 0,
+    "object_candidate_count": 2,
+    "object_observation_count": 8,
+    "object_observation_event_count": 8,
+    "object_promotion_event_count": 1,
+    "perceptual_binding_event_count": 0,
+    "promoted_proto_object_count": 1,
+    "relation_count": 0,
+    "resonance_event_count": 1,
+    "resonance_profile_count": 2,
+    "revision_count": 1,
+    "routing_event_count": 0,
+    "sensory_archive_count": 0,
+    "sensory_sample_count": 0,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "synchronization_group_count": 0,
+    "temporal_event_assembly_count": 0,
+    "temporal_event_count": 0,
+    "transition_count": 26,
+    "workspace_active_item_count": 6,
+    "workspace_allocated_resource": 0.8500000000000001,
+    "workspace_cycle_event_count": 2,
+    "workspace_writeback_event_count": 1
+  },
+  "milestone": 9,
+  "pretrained_attention_policy_in_loop": false,
+  "reports": "/mnt/data/verdant_rebuild/artifacts/milestone_9_workspace_reports.json",
+  "semantic_truth_unchanged_by_workspace": true,
+  "title": "Bounded Active Developmental Workspace",
+  "workspace_policy": {
+    "action_weight": 0.1,
+    "broadcast_threshold": 0.45,
+    "carry_decay": 0.72,
+    "contradiction_weight": 0.14,
+    "current_evidence_reserve": 0.25,
+    "ethics_weight": 0.1,
+    "evidence_weight": 0.24,
+    "max_active_items": 7,
+    "maximum_persistence_cycles": 4,
+    "minimum_admission_score": 0.28,
+    "novelty_weight": 0.06,
+    "prediction_error_weight": 0.14,
+    "relevance_weight": 0.17,
+    "resonance_budget_fraction": 0.2,
+    "resonance_weight": 0.05,
+    "resource_budget": 1.0,
+    "resource_penalty_weight": 0.08,
+    "revision": 0,
+    "stickiness_weight": 0.08
+  },
+  "writeback": {
+    "disposition": "resolve",
+    "outcome_evidence_refs": [
+      "evidence_d2f6548771e89403368be233"
+    ],
+    "resolved_item_id": "workspace_item_b3f65b20d334e9b8fa16405f"
+  }
+}

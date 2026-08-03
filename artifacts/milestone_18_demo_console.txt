@@ -1,0 +1,98 @@
+{
+  "children": [
+    {
+      "contradiction_tolerance": 1.0,
+      "edge_count": 3,
+      "lineage_parent_structure_id": "structure_c9a28c27f80de00fe0ffa9a3",
+      "lineage_root_structure_id": "structure_c9a28c27f80de00fe0ffa9a3",
+      "member_labels": [
+        "a1",
+        "a2",
+        "a3"
+      ],
+      "opaque_name": "P_11f43c163788",
+      "perturbation_survival": 0.3324993734450244,
+      "revision_index": 1,
+      "structure_id": "refolded_structure_11f43c1637884945609584bd"
+    },
+    {
+      "contradiction_tolerance": 1.0,
+      "edge_count": 3,
+      "lineage_parent_structure_id": "structure_c9a28c27f80de00fe0ffa9a3",
+      "lineage_root_structure_id": "structure_c9a28c27f80de00fe0ffa9a3",
+      "member_labels": [
+        "b1",
+        "b2",
+        "b3"
+      ],
+      "opaque_name": "P_f16d3a6b6ab4",
+      "perturbation_survival": 0.3366346547827681,
+      "revision_index": 1,
+      "structure_id": "refolded_structure_f16d3a6b6ab475393de96502"
+    }
+  ],
+  "compilation_after_refold_a1": {
+    "low_level_work": 1,
+    "reconstructed_labels": [
+      "a1",
+      "a2",
+      "a3"
+    ],
+    "structure_id": "refolded_structure_11f43c1637884945609584bd"
+  },
+  "compilation_after_refold_b1": {
+    "low_level_work": 1,
+    "reconstructed_labels": [
+      "b1",
+      "b2",
+      "b3"
+    ],
+    "structure_id": "refolded_structure_f16d3a6b6ab475393de96502"
+  },
+  "compilation_before_refold": {
+    "low_level_work": 1,
+    "reconstructed_labels": [
+      "a1",
+      "a2",
+      "a3",
+      "b1",
+      "b2",
+      "b3"
+    ],
+    "structure_id": "structure_c9a28c27f80de00fe0ffa9a3"
+  },
+  "final_disposition": "split",
+  "mature_challenge_count": 3,
+  "milestone": 18,
+  "name": "Refolding Under Contradiction",
+  "parent": {
+    "available_after_refold": false,
+    "frozen_edge_count": 9,
+    "member_labels": [
+      "a1",
+      "a2",
+      "a3",
+      "b1",
+      "b2",
+      "b3"
+    ],
+    "opaque_name": "P_c9a28c27f80d",
+    "structure_id": "structure_c9a28c27f80de00fe0ffa9a3"
+  },
+  "refold_event_count": 1,
+  "refolded_structure_count": 2,
+  "removed_edge_count": 3,
+  "semantic_counts_after": {
+    "claims": 0,
+    "concepts": 6,
+    "relations": 0
+  },
+  "semantic_counts_before": {
+    "claims": 0,
+    "concepts": 6,
+    "relations": 0
+  },
+  "semantic_firewall_held": true,
+  "single_observation_disposition": "stable",
+  "structural_challenge_count": 3
+}

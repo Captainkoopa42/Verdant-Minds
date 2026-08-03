@@ -1,0 +1,114 @@
+{
+  "best_verified_target": "structure_704d0f68959009222a2a892d",
+  "control_disposition": "field_only",
+  "control_field_similarity": 0.980887221983921,
+  "control_symbolic_similarity": 0.62,
+  "interaction_event_id": "structure_interaction_event_7d10a07dec3c3f70880ec1a4",
+  "isomorphic_disposition": "verified_alignment",
+  "isomorphic_field_similarity": 0.9998725999981122,
+  "isomorphic_symbolic_similarity": 0.9940965271376768,
+  "isomorphic_target": {
+    "id": "structure_704d0f68959009222a2a892d",
+    "labels": [
+      "b1",
+      "b2",
+      "b3",
+      "b4"
+    ],
+    "shape": "4-node path"
+  },
+  "metrics": {
+    "ablated_structure_count": 0,
+    "active_shard_id": "root",
+    "attention_candidate_count": 141,
+    "average_neighbor_count": 0.0,
+    "claim_count": 0,
+    "compilation_probe_event_count": 0,
+    "concept_count": 12,
+    "contradiction_count": 0,
+    "council_decision_count": 3,
+    "cycle": 172,
+    "directed_density": 0.0,
+    "eligible_structure_candidate_count": 0,
+    "evidence_count": 108,
+    "field_address_count": 12,
+    "field_history_count": 36,
+    "field_norm": 1.0,
+    "governance_outcome_count": 0,
+    "object_candidate_count": 0,
+    "object_observation_count": 0,
+    "object_observation_event_count": 0,
+    "object_promotion_event_count": 0,
+    "perceptual_binding_event_count": 0,
+    "plasticity_association_count": 9,
+    "plasticity_event_count": 36,
+    "plasticity_total_strength": 4.795933760475319,
+    "promoted_proto_object_count": 0,
+    "promoted_structure_count": 3,
+    "relation_count": 0,
+    "resonance_event_count": 36,
+    "resonance_profile_count": 12,
+    "revision_count": 0,
+    "routing_event_count": 0,
+    "sensory_archive_count": 0,
+    "sensory_sample_count": 0,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "structure_availability_event_count": 0,
+    "structure_candidate_count": 3,
+    "structure_interaction_event_count": 1,
+    "structure_observation_event_count": 21,
+    "structure_promotion_event_count": 3,
+    "synchronization_group_count": 0,
+    "temporal_event_assembly_count": 0,
+    "temporal_event_count": 0,
+    "transition_count": 172,
+    "workspace_active_item_count": 5,
+    "workspace_allocated_resource": 0.66,
+    "workspace_cycle_event_count": 36,
+    "workspace_writeback_event_count": 0
+  },
+  "milestone": 16,
+  "nonisomorphic_control": {
+    "id": "structure_7c352d7896a4ddbbc580323c",
+    "labels": [
+      "c1",
+      "c2",
+      "c3",
+      "c4"
+    ],
+    "shape": "4-node star"
+  },
+  "semantic_store_unchanged_by_interaction": true,
+  "source_structure": {
+    "id": "structure_30530737cd2fc8f44fb415cf",
+    "labels": [
+      "a1",
+      "a2",
+      "a3",
+      "a4"
+    ],
+    "shape": "4-node path"
+  },
+  "surface_symbol_overlap": 0,
+  "verified_role_mapping": [
+    [
+      "a2",
+      "b2"
+    ],
+    [
+      "a3",
+      "b3"
+    ],
+    [
+      "a4",
+      "b4"
+    ],
+    [
+      "a1",
+      "b1"
+    ]
+  ]
+}

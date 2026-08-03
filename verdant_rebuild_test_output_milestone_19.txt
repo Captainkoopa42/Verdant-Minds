@@ -1,0 +1,11 @@
+Milestone 19 partitioned verification
+
+part 1: 124 passed
+part 2: 32 passed
+part 3: 16 passed
+part 4: 9 passed
+part 5a: 4 passed (4 deselected)
+part 5b1: 2 passed
+part 5b2: 2 passed
+
+Total unique tests verified: 189 passed

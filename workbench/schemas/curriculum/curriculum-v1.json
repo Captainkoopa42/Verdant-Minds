@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verdant.curriculum.v1",
+  "title": "Verdant Workbench Curriculum Package Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "compiler_version",
+    "package_id",
+    "title",
+    "source_format",
+    "state_dim",
+    "source_sha256",
+    "compiled_sha256",
+    "item_count"
+  ],
+  "properties": {
+    "schema": {
+      "const": "verdant.curriculum.v1"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "package_id": {
+      "type": "string",
+      "pattern": "^vcurr_[a-f0-9]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_format": {
+      "enum": [
+        "primitive_lines",
+        "experience_jsonl",
+        "teaching_bundle_json"
+      ]
+    },
+    "state_dim": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "compiled_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "item_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "scaffold_item_count": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

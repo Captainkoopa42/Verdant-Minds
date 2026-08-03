@@ -1,0 +1,96 @@
+{
+  "milestone": 19,
+  "name": "Ethomorphism Benchmark Harness",
+  "files": [
+    {
+      "path": "verdant_benchmarks/__init__.py",
+      "bytes": 233,
+      "sha256": "1b7154ae0dbb500803439734624b781c62acadba5a06ad0e0966c791714f6eaf"
+    },
+    {
+      "path": "verdant_benchmarks/ethomorphism.py",
+      "bytes": 35907,
+      "sha256": "17e3d19fa79b96877547d4a3ae04f7a505f796d4c5e35347f282f7e66eb5b1b0"
+    },
+    {
+      "path": "verdant_benchmarks/demo.py",
+      "bytes": 657,
+      "sha256": "f7c727ee13dc3bdbe9dc68dee53b037ad3c8ee466ee3c0e7412a7669ff6a1d6d"
+    },
+    {
+      "path": "run_ethomorphism_benchmark.py",
+      "bytes": 1004,
+      "sha256": "bf56d3f9926cd5fcbd9d405089c893ac49d63f95b8c3544371e9fd7ca08008d1"
+    },
+    {
+      "path": "tests/test_benchmark_phase.py",
+      "bytes": 4006,
+      "sha256": "daa0b1c277d8d439e64e7e5add0d9f14e4d15967119c0bf1b130582e02e1bbd8"
+    },
+    {
+      "path": "MILESTONE_19_REPORT.md",
+      "bytes": 11237,
+      "sha256": "440e6effd9b95f09ccb876bc83e07ce286d7d5b5160424074edb7136607edf2d"
+    },
+    {
+      "path": "README.md",
+      "bytes": 11202,
+      "sha256": "9840c749c5e99b19fd60fed175d8f5db2474b0cf073e0552a5de0e747a93f019"
+    },
+    {
+      "path": "artifacts/milestone_19_benchmark_summary.json",
+      "bytes": 6875,
+      "sha256": "9aeb9d9ba43ad4140d7d2f5d2a8832c153a9a79d6b5b6cb984069d72c16361c5"
+    },
+    {
+      "path": "artifacts/milestone_19_demo_stdout.json",
+      "bytes": 6875,
+      "sha256": "9aeb9d9ba43ad4140d7d2f5d2a8832c153a9a79d6b5b6cb984069d72c16361c5"
+    },
+    {
+      "path": "artifacts/milestone_19_arm_comparison.csv",
+      "bytes": 786,
+      "sha256": "0d6b5df031688a18a08656f01726e65d8a3003f7a221038da78169a9633f0453"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19.txt",
+      "bytes": 223,
+      "sha256": "28ae56c9c8e61d061469472c19327e3d8355de1f399088549dcf4b6436a0704d"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19_part1.txt",
+      "bytes": 181,
+      "sha256": "e1b1929395d8df4ec50b8cbeb323935c5523b4b925eb607a14261a7a622e7b8b"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19_part2.txt",
+      "bytes": 100,
+      "sha256": "cdca9d46109a1139be3c2a9ef768ab516bacc8cd00f008a3e49b60804a365883"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19_part3.txt",
+      "bytes": 100,
+      "sha256": "549d30eec754dda1c2a52594af55191ce245e3bce61da760916312bc995e10b6"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19_part4.txt",
+      "bytes": 99,
+      "sha256": "f9bc77dae4e824ddf6aa32a49cd1ab94497525d611c53e0901d5d971be18658f"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19_part5a.txt",
+      "bytes": 113,
+      "sha256": "21fc22918679312dbdaec341626371d6ced4c3bb545e683bc62a729cf3f4d44c"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19_part5b1.txt",
+      "bytes": 99,
+      "sha256": "c1d44ae5710836771c3a0b614939d57eeb2352c2c84837eae82875ab5635dedf"
+    },
+    {
+      "path": "verdant_rebuild_test_output_milestone_19_part5b2.txt",
+      "bytes": 99,
+      "sha256": "bd7a731ddc79404c17b08a70ec654a674181d6577b36c3c7bfdc982d153c768a"
+    }
+  ]
+}

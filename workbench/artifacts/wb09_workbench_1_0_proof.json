@@ -1,0 +1,58 @@
+{
+  "all_gates_pass": true,
+  "checkpoint": {
+    "artifact_sha256": "c549a7363558053374b06b7012cfb003abd9172f38e38ee0c96253674500042a",
+    "canonical_fingerprint": "c27a49ae9e699049bc8243cad5804ad75f3871921bbf564a51a992c78529ab1b",
+    "checkpoint_id": "ckpt_5e826919e378490d8af090dd4b4533aa"
+  },
+  "crash_recovery": {
+    "recovered_stale_runs": 1,
+    "run_status_after_recovery": "closed"
+  },
+  "integrity_after_restart": {
+    "all_ok": true,
+    "artifact_count": 1,
+    "checkpoints": [
+      {
+        "artifact_sha256": "c549a7363558053374b06b7012cfb003abd9172f38e38ee0c96253674500042a",
+        "checkpoint_id": "ckpt_5e826919e378490d8af090dd4b4533aa",
+        "ok": true
+      }
+    ],
+    "curricula": [],
+    "experiments": [],
+    "provider_captures": [],
+    "schema": "verdant.workbench.integrity.v1"
+  },
+  "integrity_before_restart": {
+    "all_ok": true,
+    "artifact_count": 1,
+    "checkpoints": [
+      {
+        "artifact_sha256": "c549a7363558053374b06b7012cfb003abd9172f38e38ee0c96253674500042a",
+        "checkpoint_id": "ckpt_5e826919e378490d8af090dd4b4533aa",
+        "ok": true
+      }
+    ],
+    "curricula": [],
+    "experiments": [],
+    "provider_captures": [],
+    "schema": "verdant.workbench.integrity.v1"
+  },
+  "plugin": {
+    "discovered_plugin_count": 1,
+    "input_sha256": "a40839d8268b3f9b617a12739e8a5a6136ee2fdb9a0ec281a90abd29bdf2ffd5",
+    "kind": "metric",
+    "metric": {
+      "inputs": {
+        "concept_count": 3.0,
+        "relation_count": 0.0
+      },
+      "metric_id": "relation_per_concept",
+      "value": 0.0
+    },
+    "output_sha256": "2bb3a5b2d7cd6f59bc4f9a62f2fcef7a3f6ab519e6e4dcfacb6f7ec010e616f0",
+    "plugin_id": "example_metric"
+  },
+  "schema": "verdant.workbench.wb09-proof.v1"
+}

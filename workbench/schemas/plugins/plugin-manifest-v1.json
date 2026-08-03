@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verdant.plugin.manifest.v1",
+  "title": "Verdant Workbench Plugin Manifest",
+  "type": "object",
+  "required": ["schema", "plugin_id", "name", "version", "api_version", "kind", "entrypoint", "permissions", "code_sha256"],
+  "properties": {
+    "schema": {"const": "verdant.plugin.manifest.v1"},
+    "api_version": {"const": "verdant.workbench.plugin.v1"},
+    "plugin_id": {"type": "string"},
+    "name": {"type": "string"},
+    "version": {"type": "string"},
+    "kind": {"enum": ["metric", "exporter", "curriculum_provider"]},
+    "entrypoint": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "permissions": {"type": "array", "items": {"enum": ["read_snapshot", "read_metrics", "write_export"]}},
+    "code_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": false
+}

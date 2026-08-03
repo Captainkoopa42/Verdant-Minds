@@ -1,0 +1,222 @@
+{
+  "ablated_q": {
+    "baseline_cost": {
+      "base_structures_compared": 4,
+      "layered_prototypes_compared": 0,
+      "matched_members": 3,
+      "symbolic_verifications": 4
+    },
+    "compression_gain": 0.0,
+    "cost": {
+      "base_structures_compared": 4,
+      "layered_prototypes_compared": 0,
+      "matched_members": 3,
+      "symbolic_verifications": 4
+    },
+    "cycle": 159,
+    "disposition": "fallback_member_scan",
+    "kernel_id": "kernel_b5b8f753792920c319621f76",
+    "layered_structure_id": null,
+    "matched_structure_ids": [
+      "structure_30530737cd2fc8f44fb415cf",
+      "structure_704d0f68959009222a2a892d",
+      "structure_7c352d7896a4ddbbc580323c"
+    ],
+    "operation": "recognize_structural_family",
+    "policy_revision": 1,
+    "query_structure_id": "structure_ee28065b7ca2e207ca055f82",
+    "report_id": "layered_probe_report_7b626a27ede164e4f40dea20",
+    "structural_fingerprint": "b53e305b0eb7bff44fa668461d8d2b105a9cf7ee038e0565c919b4c009b78b01"
+  },
+  "candidate_progression": [
+    {
+      "alignment_cohesion": 0.9796973990200002,
+      "interaction_events": 1,
+      "pair_coverage": 0.6666666666666666,
+      "prototype_cohesion": 0.9992500401578323,
+      "status": "tracking"
+    },
+    {
+      "alignment_cohesion": 0.978884433671964,
+      "interaction_events": 2,
+      "pair_coverage": 1.0,
+      "prototype_cohesion": 0.9992500401578323,
+      "status": "tracking"
+    },
+    {
+      "alignment_cohesion": 0.978884433671964,
+      "interaction_events": 3,
+      "pair_coverage": 1.0,
+      "prototype_cohesion": 0.9992500401578323,
+      "status": "eligible"
+    }
+  ],
+  "family_member_structure_ids": [
+    "structure_30530737cd2fc8f44fb415cf",
+    "structure_704d0f68959009222a2a892d",
+    "structure_7c352d7896a4ddbbc580323c"
+  ],
+  "higher_order_candidate_id": "hierarchy_candidate_4f49e197dd588d01285364c4",
+  "layered_opaque_name": "Q_6fff321a318a",
+  "layered_structure_id": "layered_structure_6fff321a318a9ffefae1e723",
+  "metrics": {
+    "ablated_layered_structure_count": 0,
+    "ablated_structure_count": 0,
+    "active_shard_id": "root",
+    "attention_candidate_count": 117,
+    "average_neighbor_count": 0.0,
+    "claim_count": 0,
+    "compilation_probe_event_count": 0,
+    "concept_count": 20,
+    "contradiction_count": 0,
+    "council_decision_count": 6,
+    "cycle": 160,
+    "directed_density": 0.0,
+    "eligible_hierarchy_candidate_count": 0,
+    "eligible_structure_candidate_count": 0,
+    "evidence_count": 90,
+    "field_address_count": 20,
+    "field_history_count": 30,
+    "field_norm": 1.0,
+    "governance_outcome_count": 0,
+    "hierarchy_candidate_count": 1,
+    "hierarchy_observation_event_count": 3,
+    "hierarchy_promotion_event_count": 1,
+    "layered_probe_event_count": 0,
+    "layered_structure_count": 1,
+    "object_candidate_count": 0,
+    "object_observation_count": 0,
+    "object_observation_event_count": 0,
+    "object_promotion_event_count": 0,
+    "perceptual_binding_event_count": 0,
+    "plasticity_association_count": 15,
+    "plasticity_event_count": 30,
+    "plasticity_total_strength": 7.531191175968692,
+    "promoted_proto_object_count": 0,
+    "promoted_structure_count": 5,
+    "relation_count": 0,
+    "resonance_event_count": 30,
+    "resonance_profile_count": 20,
+    "revision_count": 0,
+    "routing_event_count": 0,
+    "sensory_archive_count": 0,
+    "sensory_sample_count": 0,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "structure_availability_event_count": 0,
+    "structure_candidate_count": 5,
+    "structure_interaction_event_count": 3,
+    "structure_observation_event_count": 20,
+    "structure_promotion_event_count": 5,
+    "synchronization_group_count": 0,
+    "temporal_event_assembly_count": 0,
+    "temporal_event_count": 0,
+    "transition_count": 160,
+    "workspace_active_item_count": 4,
+    "workspace_allocated_resource": 0.58,
+    "workspace_cycle_event_count": 30,
+    "workspace_writeback_event_count": 0
+  },
+  "milestone": 17,
+  "novel_query_structure_id": "structure_ee28065b7ca2e207ca055f82",
+  "quality_at_promotion": {
+    "alignment_cohesion": 0.978884433671964,
+    "boundary_selectivity": 1.0,
+    "causal_utility": 0.0,
+    "evidence_diversity": 1.0,
+    "pair_coverage": 1.0,
+    "prototype_cohesion": 0.9992500401578323,
+    "recurrence": 1.0
+  },
+  "restored_q": {
+    "baseline_cost": {
+      "base_structures_compared": 4,
+      "layered_prototypes_compared": 0,
+      "matched_members": 3,
+      "symbolic_verifications": 4
+    },
+    "compression_gain": 0.625,
+    "cost": {
+      "base_structures_compared": 1,
+      "layered_prototypes_compared": 1,
+      "matched_members": 3,
+      "symbolic_verifications": 1
+    },
+    "cycle": 160,
+    "disposition": "use_layered_structure",
+    "kernel_id": "kernel_b5b8f753792920c319621f76",
+    "layered_structure_id": "layered_structure_6fff321a318a9ffefae1e723",
+    "matched_structure_ids": [
+      "structure_30530737cd2fc8f44fb415cf",
+      "structure_704d0f68959009222a2a892d",
+      "structure_7c352d7896a4ddbbc580323c"
+    ],
+    "operation": "recognize_structural_family",
+    "policy_revision": 1,
+    "query_structure_id": "structure_ee28065b7ca2e207ca055f82",
+    "report_id": "layered_probe_report_8065e483557b105782549340",
+    "structural_fingerprint": "bf8b7aa3cbbfeddee2e172aa981b0a56922cfef72fa94af40e71a7b26fcbe186"
+  },
+  "semantic_counts": {
+    "claims": 0,
+    "concepts": 20,
+    "relations": 0
+  },
+  "unrelated_control": {
+    "baseline_cost": {
+      "base_structures_compared": 4,
+      "layered_prototypes_compared": 0,
+      "matched_members": 0,
+      "symbolic_verifications": 4
+    },
+    "compression_gain": 0.0,
+    "cost": {
+      "base_structures_compared": 4,
+      "layered_prototypes_compared": 0,
+      "matched_members": 0,
+      "symbolic_verifications": 4
+    },
+    "cycle": 160,
+    "disposition": "fallback_member_scan",
+    "kernel_id": "kernel_b5b8f753792920c319621f76",
+    "layered_structure_id": null,
+    "matched_structure_ids": [],
+    "operation": "recognize_structural_family",
+    "policy_revision": 1,
+    "query_structure_id": "structure_6228c139bc387c48b437a9f1",
+    "report_id": "layered_probe_report_cae9f8b28e49c082fddce7b5",
+    "structural_fingerprint": "bf8b7aa3cbbfeddee2e172aa981b0a56922cfef72fa94af40e71a7b26fcbe186"
+  },
+  "unrelated_star_structure_id": "structure_6228c139bc387c48b437a9f1",
+  "with_q": {
+    "baseline_cost": {
+      "base_structures_compared": 4,
+      "layered_prototypes_compared": 0,
+      "matched_members": 3,
+      "symbolic_verifications": 4
+    },
+    "compression_gain": 0.625,
+    "cost": {
+      "base_structures_compared": 1,
+      "layered_prototypes_compared": 1,
+      "matched_members": 3,
+      "symbolic_verifications": 1
+    },
+    "cycle": 158,
+    "disposition": "use_layered_structure",
+    "kernel_id": "kernel_b5b8f753792920c319621f76",
+    "layered_structure_id": "layered_structure_6fff321a318a9ffefae1e723",
+    "matched_structure_ids": [
+      "structure_30530737cd2fc8f44fb415cf",
+      "structure_704d0f68959009222a2a892d",
+      "structure_7c352d7896a4ddbbc580323c"
+    ],
+    "operation": "recognize_structural_family",
+    "policy_revision": 1,
+    "query_structure_id": "structure_ee28065b7ca2e207ca055f82",
+    "report_id": "layered_probe_report_f4967347bdefe789196c083c",
+    "structural_fingerprint": "bf8b7aa3cbbfeddee2e172aa981b0a56922cfef72fa94af40e71a7b26fcbe186"
+  }
+}

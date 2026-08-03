@@ -1,0 +1,193 @@
+{
+  "$defs": {
+    "ExperimentAssertion": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "op": {
+          "default": "true",
+          "enum": [
+            "eq",
+            "true",
+            "false",
+            "gte",
+            "lte"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "ExperimentAssertion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "arms": {
+      "default": [
+        "A_graph_only",
+        "B_graph_plus_ecwf",
+        "C_plastic_no_folds",
+        "D_full_earned_folds"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "title": "Arms",
+      "type": "array"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    },
+    "curriculum_event_count": {
+      "title": "Curriculum Event Count",
+      "type": "integer"
+    },
+    "curriculum_sha256": {
+      "title": "Curriculum Sha256",
+      "type": "string"
+    },
+    "dependency_lock_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "engine_baseline": {
+      "default": "verdant-m19",
+      "title": "Engine Baseline",
+      "type": "string"
+    },
+    "engine_source_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "expected_assertions": {
+      "items": {
+        "$ref": "#/$defs/ExperimentAssertion"
+      },
+      "title": "Expected Assertions",
+      "type": "array"
+    },
+    "experiment_id": {
+      "title": "Experiment Id",
+      "type": "string"
+    },
+    "interventions": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Interventions",
+      "type": "array"
+    },
+    "metrics": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Metrics",
+      "type": "array"
+    },
+    "parent_experiment_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Experiment Id"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "protocol_config": {
+      "additionalProperties": true,
+      "title": "Protocol Config",
+      "type": "object"
+    },
+    "protocol_id": {
+      "const": "ethomorphism.m19.v1",
+      "default": "ethomorphism.m19.v1",
+      "title": "Protocol Id",
+      "type": "string"
+    },
+    "release_id": {
+      "type": "string"
+    },
+    "resource_lock": {
+      "additionalProperties": true,
+      "title": "Resource Lock",
+      "type": "object"
+    },
+    "schema": {
+      "const": "verdant.experiment.v1",
+      "default": "verdant.experiment.v1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    },
+    "workbench_schema": {
+      "default": "workbench-1.0.1",
+      "title": "Workbench Schema",
+      "type": "string"
+    },
+    "workbench_source_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "experiment_id",
+    "project_id",
+    "title",
+    "version",
+    "created_at",
+    "protocol_config",
+    "curriculum_sha256",
+    "curriculum_event_count",
+    "resource_lock",
+    "metrics",
+    "interventions",
+    "expected_assertions"
+  ],
+  "title": "ExperimentManifest",
+  "type": "object"
+}

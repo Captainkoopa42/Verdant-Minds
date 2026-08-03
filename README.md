@@ -1,112 +1,272 @@
-# Verdant-Minds
+# Verdant Minds V5 — Verdant Engine + Workbench 1.0.1
 
-**A developmental cognitive architecture with measurable structural laws, self-referential concept formation, and a cultivation specification language.**
+Verdant Minds V5 packages the independent rebuild through Milestone 19 together with **Verdant Workbench 1.0.1**, a local-first laboratory for teaching, running, observing, branching, falsifying, reproducing, and extending Verdant experiments.
 
-![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+## Quick start
 
-📚 Architecture walkthrough: [Architecture](docs/architecture.md)
-
-## Key Results
-
-- **Temporal scaffolding:** earlier-share = **1.000** across **1000 cycles**, with **44,850** emergent-emergent edges.
-- **Developmental onset invariant:** within tested configurations, onset appears at **cycle 9** with **T_g = 0.5725** across **47 configurations** on **8 axes**.
-- **Self-referential concept formation:** **56%** of emergents are self-referential, and a self-model basin appears spontaneously.
-- **Semantic coherence:** **97%** meaningful at **1000 cycles**.
-- **Basin genealogy:** **70 basins**, **3 generations**, **85%** daughter forge fraction.
-- **H1 coherence:** **100%** valid with a **zero violation rate**.
-- **Baseline separation:** **21 standard deviations** from random graphs.
-- **VCult language:** declarative and reactive cultivation specifications for controlled developmental runs.
-
-## What Verdant Is
-
-Verdant couples three subsystems into a single developmental architecture:
-
-- **ECWF** maintains a continuous wave-like state that carries activation, thermodynamic pressure, and structural priors.
-- **MemoryWeb** stores a mutable concept graph that can preserve history while remaining developmentally plastic.
-- **Ethomorphic Bridge** converts co-activation into edge reinforcement and emergent concept formation.
-
-These components run through a **nine-block processing pipeline** governed by the **Three Kings** control structure. Ethics is not an afterthought; it is embedded directly into the geometry and governance of the system.
-
-## Architecture
-
-For a full walkthrough of the Verdant V3 system architecture, pipeline flow, basin lifecycle, governance model, and checkpointing behavior, see [docs/architecture.md](docs/architecture.md).
-
-### Want the full walkthrough?
-If you want the complete runtime map, pipeline walkthrough, configuration reference, and checkpoint/analysis guide, open [`docs/architecture.md`](docs/architecture.md).
-
-### ECWF
-The ECWF layer provides the continuous state substrate that tracks activation flow, thermodynamic gradients, and the conditions under which concepts can stabilize or dissolve.
-
-### MemoryWeb
-MemoryWeb is the mutable graph memory where concepts, links, and historical traces accumulate, reorganize, and become available for later developmental reuse.
-
-### Ethomorphic Bridge
-The Ethomorphic Bridge links continuous dynamics to symbolic structure by turning repeated co-activation into reinforced relations and new emergent concepts.
-
-### Basin Dynamics and Registry
-Verdant tracks developmental basins, daughter formation, and lineage structure through the basin registry so attractors can be measured, compared, and reproduced.
-
-### Self-Referential Loop
-A self-referential loop arises when emergent concepts increasingly point back into their own developmental history, producing spontaneous self-model structure rather than hand-authored self-representations.
-
-### VCult Language
-VCult is the cultivation language for declaring experiments, providers, prompts, and reactive rules so developmental runs can be specified, previewed, and validated from versioned text specs.
-
-## Quick Start
+Python 3.11+ is required. Install the tested release environment from `requirements-lock.txt`, then launch from the repository root:
 
 ```bash
-git clone https://github.com/Captainkoopa42/Verdant-Minds.git
-cd Verdant-Minds
-pip install -e .
-pip install -e ./cultivation -e ./ethomorphic -e ./verdant
+python -m pip install -r requirements-lock.txt
+PYTHONPATH=.:workbench/backend python run_verdant_workbench.py --open-browser
 ```
 
-### Run a VCult spec
+Default local URL: `http://127.0.0.1:8765/`.
+
+Verify the release before a publication or benchmark run:
 
 ```bash
-python -m cultivation.cli cultivate \
-  --spec cultivation/specs/quick_test.vcult \
-  --seeds 0-2 --outdir outputs
+python verify_release.py
 ```
 
-### Run validation
+Optional final provider/plugin machine proofs:
 
 ```bash
-python analysis/run_full_validation.py \
-  --run-dir outputs/run_* --seeds 3 --outdir validation
+python verify_release.py --with-proofs
 ```
 
-### Preview a spec
+The dependency-free UI is checked in under `workbench/frontend/dist/`; npm is not required to run Workbench.
 
-```bash
-python -m cultivation.cli preview-spec \
-  --spec cultivation/specs/medical_ethics.vcult --cycles 20
-```
+## V5 laboratory surfaces
 
-## Reproduction
+- Organism / Cultivate — create, run, pause, step, save, reopen, and fork developmental lineages.
+- Curriculum / Grammar — editable teaching records, deterministic `.vcurr`, controlled language scaffolds.
+- Structures / Explorer — inspect P/Q formation, causal ablation, replay, and recorded living timelines.
+- Evidence / Timeline — inspect canonical evidence/knowledge and immutable run/checkpoint/event history.
+- Experiments — freeze, run, reproduce, fork, and export `.vexp` verification packages.
+- Connections — capture external LLM/provider output as editable, replayable teaching artifacts.
+- Engineering — integrity checks, exact build identity, and capability-limited plugin diagnostics.
 
-- **Colab reproduction:** see [`colab/cells/`](colab/cells/) for the complete Colab-based reproduction workflow.
-- **Validation pipeline:** see [`analysis/run_full_validation.py`](analysis/run_full_validation.py) for the end-to-end validation entry point.
+## Scientific boundary
 
-## Published Papers
+**The UI commands the engine; the UI does not contain cognition. Anything the UI claims must trace to a recorded engine state/event.** External LLMs are optional curriculum authors, not part of Verdant's cognitive substrate.
 
-- **V1:** DOI [10.5281/zenodo.18870656](https://doi.org/10.5281/zenodo.18870656)
-- **V2:** DOI [10.5281/zenodo.18933639](https://doi.org/10.5281/zenodo.18933639)
-- **V3:** github.com/Captainkoopa42/Verdant-Minds/tree/V3 (Zenodo DOI pending)
+---
 
-## Repository Structure
+# Verdant Minds — Independent Rebuild
+
+This directory is the active clean-room Verdant Minds rebuild.
+
+The current runtime is fully local and contains no LLM, foundation model, pretrained object detector, speech recognizer, or cloud cognition path. Handwritten curricula, preserved native media, explicit evidence, the continuous field, canonical memory, governance, and developmental promotion remain inside the local system.
+
+## Current architecture
 
 ```text
-ethomorphic/    — ECWF, bridge, emergence (frozen core)
-verdant/        — system, basin registry, pipeline
-cultivation/    — runner, CLI, VCult parser, providers, specs
-analysis/       — validation pipeline, metrics, figures
-tests_v2/       — unit and integration tests
-colab/cells/    — Colab reproduction notebooks
+chosen text or media
+→ exact native preservation
+→ typed evidence and temporal events
+→ low-level continuous translation
+→ ECWF possibility field
+→ canonical concepts, relations, and claims
+→ contradiction and revision
+→ Three Kings and Council
+→ bounded shards and routing
+→ earned proto-objects
+→ bounded active workspace
+→ native perceptual continuity
+→ unified developmental heartbeat (experience → field → bounded foreground)
+→ bounded local plasticity (foreground coactivation → competitive learned traces → later recall)
+→ earned relational structures (recurring selective configurations → opaque promoted operands)
+→ cognitive compilation (P becomes a reusable bounded operand)
+→ cross-symbolic structure interaction (continuous retrieval → symbolic verification)
+→ layered structure formation (verified P families → opaque higher-order Q operands)
+→ lineage-preserving refolding under contradiction
+→ four-arm Ethomorphism benchmark + causal ablation harness
 ```
 
-## License
+The active runtime currently stops at perception, memory, governance, and developmental organization. Hardware-output implementation is outside the runtime and deliberately deferred.
 
-MIT
+## Completed active milestones
+
+1. Canonical kernel and exact persistence
+2. Handwritten language and grammar pathway
+3. Claims, contradiction, and revision
+4. Persistent ECWF and evidence-bounded resonance
+5. Three Kings and Council governance
+6. Bounded shards and grounded routing
+7. Earned proto-object formation
+9. Bounded active developmental workspace
+10. Native vision/audio translation and temporal event memory
+11. User-media import and native perceptual binding
+12. Unified developmental heartbeat
+13. Local plasticity without saturation
+14. Earned relational structures
+15. Cognitive compilation
+16. Cross-symbolic structure interaction
+17. Layered concept formation
+18. Refolding under contradiction
+19. Ethomorphism benchmark harness
+
+Milestone 8 was deleted by project decision. Its number remains unused so the documentation lineage is not rewritten.
+
+## Test status
+
+```text
+189 passed (verified in fresh pytest partitions: 124 + 32 + 16 + 9 + 8)
+```
+
+The suite covers canonical persistence, deterministic replay, evidence gating, grammar, contradiction, ECWF purity, Council decisions, shard routing, objecthood, workspace allocation, native archives, user-file import, run branching, perceptual continuity, the atomic developmental heartbeat, bounded plasticity, anti-saturation constraints, causal local-recall ablation, earned relational candidate formation, independent promotion gates, boundary-selectivity rejection, opaque Council-authorized structure promotion, cognitive compilation with ablation/restoration, cross-symbolic structure verification, higher-order Q formation/use, lineage-preserving refolding, and the four-arm Ethomorphism benchmark harness.
+
+## Use your own image, audio, video, folder, or run package
+
+From this directory:
+
+```bash
+python run_verdant_media.py --input "path/to/photo.png" --output-dir "my_run"
+python run_verdant_media.py --input "path/to/audio.wav" --output-dir "my_run"
+python run_verdant_media.py --input "path/to/clip.mp4" --start 2 --end 8 --output-dir "my_run"
+python run_verdant_media.py --input "path/to/folder" --output-dir "my_run"
+```
+
+Repeat `--input` to combine files:
+
+```bash
+python run_verdant_media.py \
+  --input "first_view.png" \
+  --input "second_view.png" \
+  --input "sound.wav" \
+  --output-dir "comparison_run"
+```
+
+When `--input` is omitted, the runner attempts to open a graphical file chooser.
+
+### Continue a previous Verdant
+
+```bash
+python run_verdant_media.py \
+  --run-source "previous_run.vrun.zip" \
+  --run-mode continue \
+  --input "new_clip.mp4" \
+  --output-dir "continued_run"
+```
+
+### Branch without rewriting the parent history
+
+```bash
+python run_verdant_media.py \
+  --run-source "previous_run.vrun.zip" \
+  --run-mode branch \
+  --branch-label "alternate-curriculum" \
+  --input "new_material.wav" \
+  --output-dir "branched_run"
+```
+
+The historical `kernel_id` is preserved because existing notarized records depend on it. A new `branch_id`, branch label, generation, parent checkpoint hash, and ancestor lineage identify the diverging path.
+
+### Inspect without ingestion
+
+```bash
+python run_verdant_media.py \
+  --input "unknown_file.bin" \
+  --inspect-only \
+  --output-dir "inspection"
+```
+
+### Preserve without decoding
+
+```bash
+python run_verdant_media.py \
+  --input "anything.dat" \
+  --archive-only \
+  --output-dir "archive_only_run"
+```
+
+## File behavior
+
+Every regular file can be preserved exactly, subject to the configured size limit.
+
+Actively decoded formats include common:
+
+- images: PNG, JPEG, WebP, BMP, TIFF;
+- audio: WAV, FLAC, MP3, OGG, M4A, AAC, AIFF;
+- video: MP4, MOV, MKV, WebM, AVI, M4V.
+
+Text, JSON, CSV, and unknown binary files are preserved even when no translator is active. Preservation never implies interpretation.
+
+Each imported source produces:
+
+- `.vmi.zip` — exact original source and import manifest;
+- `.vsa.zip` — decoded native samples, when a translator succeeds;
+- `current_run.vdk` — canonical checkpoint;
+- `current_run.vrun.zip` — portable run package with checkpoint and companions;
+- `media_import_summary.json` — human- and machine-readable report.
+
+See `USER_MEDIA_IMPORT_GUIDE.md` for full instructions.
+
+## Important boundaries
+
+- A decoded image region is not automatically an object.
+- A still image cannot supply invented motion or persistence.
+- Visual similarity can propose continuity but cannot establish identity by itself.
+- Unsupported files remain preserved but uninterpreted.
+- ECWF resonance can rank existing possibilities but cannot create evidence.
+- Local plastic associations are developmental traces, not canonical semantic relations.
+- Association-driven recall can influence workspace attention but cannot bootstrap its own reinforcement.
+- Perceptual tracking creates no concepts, relations, claims, or contradictions.
+- Proto-object promotion requires accumulated evidence and Council authorization.
+- Learned relational configurations remain `StructureCandidate` records until independent gates pass.
+- Promoted relational structures are opaque cognitive operands; promotion does not create semantic concepts, relations, or claims.
+- Cross-symbolic field similarity proposes possibilities; symbolic unfolding must verify them.
+- Higher-order `Q` structures are built from previously earned `P` structures and remain nonsemantic unless later evidence supports interpretation.
+- Structure boundary selectivity is a first-class anti-saturation gate.
+- Native source bytes remain available after later reinterpretation.
+
+## Hand-driven cultivation runner
+
+The interactive experimental runner now covers Milestones 14–18:
+
+```bash
+python run_verdant_cultivation.py
+```
+
+Use `teach`, `probe`, `candidates`, `promote`, `compile`, `compare`, `interact`, `hierarchy`, `promoteq`, `qprobe`, `qcompare`, `save`, and `export` to cultivate and inspect both lower-order and higher-order earned structures.
+
+## Run tests
+
+```bash
+pytest -q
+```
+
+## Key documents
+
+- `MILESTONE_19_REPORT.md` — four-arm Ethomorphism benchmark, ablations, transfer controls, refolding, and saturation health
+- `MILESTONE_18_REPORT.md` — lineage-preserving refolding under contradiction
+- `MILESTONE_17_REPORT.md` — higher-order Q formation, novel-task use, and causal Q ablation/restoration
+- `MILESTONE_16_REPORT.md` — cross-symbolic structure interaction and symbolic verification
+- `MILESTONE_15_REPORT.md` — cognitive compilation and causal P ablation/restoration
+- `MILESTONE_14_REPORT.md` — earned relational structures, promotion gates, and cultivation runner
+- `MILESTONE_13_REPORT.md` — bounded local plasticity, causal recall, and anti-saturation results
+- `MILESTONE_12_REPORT.md` — unified developmental heartbeat and controlled results
+- `MILESTONE_11_REPORT.md` — user-media import and native perceptual binding
+- `USER_MEDIA_IMPORT_GUIDE.md` — using your own files and previous run packages
+- `MOTOR_SUBSYSTEM_REMOVAL_RECORD.md` — exact removal record for the deferred hardware-output work
+- `FUTURE_MOTOR_IMPLEMENTATION_DESIGN.md` — dormant future design document, not imported by the runtime
+
+## Milestone 15 — Cognitive Compilation
+
+The rebuild now allows a promoted earned `StructureRecord` to enter the bounded workspace as an `EARNED_STRUCTURE` operand. `verdant_compilation` provides pure/committed reconstruction probes plus controlled ablation/restoration. The controlled M15 demo reconstructs the same five-member learned region with low-level work `1 → 15 → 1` across `WITH P → ABLATE P → RESTORE P`. This is a deliberately narrow structural-accounting benchmark, not a general speedup claim. See `MILESTONE_15_REPORT.md`.
+
+
+## Milestone 16 — Cross-Symbolic Structure Interaction
+
+Promoted `P` operands now expose label-independent relational signatures for broad continuous retrieval. Retrieved possibilities are then independently unfolded and symbolically aligned; field similarity alone cannot establish an analogy. See `MILESTONE_16_REPORT.md`.
+
+
+## Milestone 17 — Layered Concept Formation
+
+Repeated verified interactions among already-earned `P` structures can now produce a higher-order `HierarchyCandidate`, Council-authorized opaque `Q` operand, and a layered family probe. The controlled demo forms Q from three independently earned path structures, uses Q on a later unseen path structure with comparison work `3` versus a low-level audit baseline of `8`, loses that gain when Q is ablated, and recovers it when Q is restored. See `MILESTONE_17_REPORT.md`.
+
+## Milestone 18 — Refolding Under Contradiction
+
+Promoted earned structures now preserve immutable historical bodies while accepting recurrent, evidence-grounded challenges to frozen internal dependencies. Pure inspection returns `stable`, `revise`, `split`, or `unresolved`; successful revisions/splits are Council-authorized, preserve parent/root lineage, recompute the surviving structure's continuous prototype, and normally make the historical parent dormant rather than deleting it. See `MILESTONE_18_REPORT.md` and `verdant_refolding/`.
+
+
+## Milestone 19 — Ethomorphism Benchmark Harness
+
+Run the fixed four-arm synthetic benchmark with:
+
+```bash
+python run_ethomorphism_benchmark.py
+```
+
+The harness gives the same primitive curriculum to graph-only, graph+ECWF, plastic-no-fold, and full earned-fold arms; then performs held-out reconstruction, P/Q ablation-restoration, family selectivity, refolding, and anti-saturation assays. Hidden family labels exist only in the external evaluator. See `MILESTONE_19_REPORT.md`.

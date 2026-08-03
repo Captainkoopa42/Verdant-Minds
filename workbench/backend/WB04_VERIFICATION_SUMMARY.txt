@@ -1,0 +1,18 @@
+Verdant Workbench WB-04 verification summary
+
+Engine regression partitions:
+- 124 passed: kernel/chunk/language/claims/ECWF/governance/shards/objects/workspace/sensory/media/perception
+- 32 passed: M12-M15 development/plasticity/structures/compilation
+- 16 passed: M16-M17 interaction/hierarchy
+- 9 passed: M18 refolding
+- 8 passed: M19 benchmark (verified in fresh individual pytest processes where needed)
+Total engine: 189 passed
+
+Workbench:
+- 19 passed, including 6 WB-04 curriculum/grammar tests
+
+Combined verified total: 208 passed
+
+WB-04 machine proof: PASS
+Reference curriculum SHA-256: 38ffb6c25056b7f0134e5f2dd923fe08b9cca05318a66f38e3c7582eb102ce4b
+Workbench/direct final fingerprint: d46c43ee0bc6d3b0e1bbe83b62486062b8225ccf74f9d94fccb2435b57d3300f

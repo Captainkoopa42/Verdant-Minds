@@ -1,0 +1,82 @@
+{
+  "all_gates_pass": true,
+  "gates": {
+    "graph_is_record_backed": true,
+    "p_ablation_removes_advantage": true,
+    "p_reconstruction_unchanged": true,
+    "p_restoration_restores_advantage": true,
+    "p_traces_to_candidate_history": true,
+    "p_traces_to_exact_evidence": true,
+    "p_traces_to_governance": true,
+    "q_inspector_reads_real_hierarchy": true,
+    "q_replay_is_non_mutating": true,
+    "replay_is_non_mutating": true
+  },
+  "name": "Structures + Forensic Explorer",
+  "p_candidate_history_frames": 6,
+  "p_candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+  "p_causal_ablation": {
+    "ablated_structure_id": null,
+    "ablated_work": 6,
+    "available_after": true,
+    "cue_label": "kren",
+    "restored_structure_id": "structure_3e12fa013bb245e3e0827451",
+    "restored_work": 1,
+    "same_reconstruction": true,
+    "with_p_structure_id": "structure_3e12fa013bb245e3e0827451",
+    "with_p_work": 1
+  },
+  "p_evidence_event_keys": [
+    "wb05-proof-0",
+    "wb05-proof-0",
+    "wb05-proof-0",
+    "wb05-proof-1",
+    "wb05-proof-1",
+    "wb05-proof-1",
+    "wb05-proof-2",
+    "wb05-proof-2",
+    "wb05-proof-2",
+    "wb05-proof-3",
+    "wb05-proof-3",
+    "wb05-proof-3",
+    "wb05-proof-4",
+    "wb05-proof-4",
+    "wb05-proof-4",
+    "wb05-proof-5",
+    "wb05-proof-5",
+    "wb05-proof-5",
+    "wb05-proof-6",
+    "wb05-proof-6",
+    "wb05-proof-6"
+  ],
+  "p_evidence_records": 21,
+  "p_frozen_edges": 3,
+  "p_graph": {
+    "edges": 3,
+    "nodes": 3
+  },
+  "p_member_labels": [
+    "kren",
+    "tar",
+    "vel"
+  ],
+  "p_replay": {
+    "fingerprint_after": "dcce45623d1c957c6408bae4bbfb34abfdab376bd21bd86792b26a6be627e919",
+    "fingerprint_before": "dcce45623d1c957c6408bae4bbfb34abfdab376bd21bd86792b26a6be627e919",
+    "frame_count": 7,
+    "live_fingerprint_after": "dcce45623d1c957c6408bae4bbfb34abfdab376bd21bd86792b26a6be627e919",
+    "live_fingerprint_before": "dcce45623d1c957c6408bae4bbfb34abfdab376bd21bd86792b26a6be627e919",
+    "mutated": false
+  },
+  "p_structure_id": "structure_3e12fa013bb245e3e0827451",
+  "q_evidence_records": 54,
+  "q_graph": {
+    "edges": 3,
+    "nodes": 4
+  },
+  "q_member_count": 3,
+  "q_replay_frames": 4,
+  "q_replay_mutated": false,
+  "q_structure_id": "layered_structure_6fff321a318a9ffefae1e723",
+  "workbench_milestone": "WB-05"
+}

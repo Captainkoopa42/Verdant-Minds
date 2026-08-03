@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verdant.provider.capture.v1",
+  "title": "Verdant Provider Capture",
+  "type": "object",
+  "required": ["schema", "capture_id", "provider_id", "request_sha256", "response_sha256", "request", "raw_response"],
+  "properties": {
+    "schema": {"const": "verdant.provider.capture.v1"},
+    "capture_id": {"type": "string"},
+    "provider_id": {"type": "string"},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "response_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "request": {"type": "object"},
+    "raw_response": {"type": "string"},
+    "parsed_teaching_bundle": {"type": ["object", "null"]},
+    "parse_error": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

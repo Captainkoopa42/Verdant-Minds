@@ -1,0 +1,18 @@
+* text=auto eol=lf
+
+*.db -text
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.gif -text
+*.ico -text
+*.wav -text
+*.mp3 -text
+*.zip -text
+*.vcurr -text
+*.vexp -text
+*.vpcap -text
+*.npy -text
+*.npz -text
+*.bin -text
+*.pkl -text

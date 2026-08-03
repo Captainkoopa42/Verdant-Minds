@@ -1,0 +1,191 @@
+{
+  "active_shard_label": "ecology",
+  "bridges": {
+    "shard_bridge_7b9e18bfd891449555b08fc9": {
+      "evidence_count": 3,
+      "portal_count": 4,
+      "source_label": "root",
+      "target_label": "ecology",
+      "traversal_count": 1
+    },
+    "shard_bridge_eabbee55eb0f5fca41eae480": {
+      "evidence_count": 6,
+      "portal_count": 6,
+      "source_label": "physics",
+      "target_label": "ecology",
+      "traversal_count": 2
+    }
+  },
+  "curriculum": "handwritten controlled lessons",
+  "exact_checkpoint_reload": true,
+  "first_route_direct_cue_retained": true,
+  "first_route_selected_ecology_despite_physics_resonance": true,
+  "ghost_bridge_count": 0,
+  "llm_in_loop": false,
+  "metrics": {
+    "active_shard_id": "shard_ba1ef5f491ee08f3cd8429f3",
+    "attention_candidate_count": 8,
+    "average_neighbor_count": 1.5,
+    "claim_count": 0,
+    "concept_count": 12,
+    "contradiction_count": 0,
+    "council_decision_count": 6,
+    "cycle": 19,
+    "directed_density": 0.06818181818181818,
+    "evidence_count": 18,
+    "field_address_count": 12,
+    "field_history_count": 6,
+    "field_norm": 1.0,
+    "governance_outcome_count": 0,
+    "relation_count": 9,
+    "resonance_event_count": 1,
+    "resonance_profile_count": 12,
+    "revision_count": 0,
+    "routing_event_count": 3,
+    "shard_bridge_count": 2,
+    "shard_count": 4,
+    "shard_formation_event_count": 3,
+    "specialized_shard_count": 3,
+    "transition_count": 19
+  },
+  "milestone": 6,
+  "policy": {
+    "contamination_penalty": 0.12,
+    "continuity_weight": 0.1,
+    "direct_weight": 0.5,
+    "evidence_weight": 0.1,
+    "max_concepts_per_shard": 32,
+    "max_portals_per_bridge": 8,
+    "max_relations_per_shard": 96,
+    "minimum_direct_grounding": 0.34,
+    "minimum_route_score": 0.45,
+    "relation_weight": 0.18,
+    "resonance_weight": 0.12,
+    "revision": 0,
+    "thaw_penalty": 0.06
+  },
+  "root_catalog": {
+    "concept_count": 12,
+    "relation_count": 9
+  },
+  "routes": [
+    {
+      "bridge_id": "shard_bridge_7b9e18bfd891449555b08fc9",
+      "contamination": 0.0,
+      "direct_cue_concept_ids": [
+        "concept_15b3c9e24eb7a3ad50a637d6",
+        "concept_5bb5680f3ccc77487c6ba5c3",
+        "concept_cb769648cbeec64f85863cce"
+      ],
+      "direct_grounding": 1.0,
+      "evidence_refs": [
+        "evidence_72cebf66c9080b4418d3d0bc",
+        "evidence_c755d85ad0d7df9fa5ce4f85",
+        "evidence_e0929a45fc772ca73e630212"
+      ],
+      "from_shard": "root",
+      "relation_support": 1.0,
+      "resonance_support": 0.25782434616123434,
+      "route_score": 0.903438921539348,
+      "thaw_cost": 0.125,
+      "to_label": "ecology",
+      "to_shard": "shard_ba1ef5f491ee08f3cd8429f3"
+    },
+    {
+      "bridge_id": "shard_bridge_eabbee55eb0f5fca41eae480",
+      "contamination": 0.0,
+      "direct_cue_concept_ids": [
+        "concept_16a4df203283a3d1b288fe92",
+        "concept_763af599a75f6ea5677bd982",
+        "concept_9369755714ad0afde5e2dc26"
+      ],
+      "direct_grounding": 1.0,
+      "evidence_refs": [
+        "evidence_180812b632316d55c4669603",
+        "evidence_36f15a33d57e7f424a4f9653",
+        "evidence_8af7650f967fd116c7fd72f1"
+      ],
+      "from_shard": "shard_ba1ef5f491ee08f3cd8429f3",
+      "relation_support": 1.0,
+      "resonance_support": 0.0,
+      "route_score": 0.7725,
+      "thaw_cost": 0.125,
+      "to_label": "physics",
+      "to_shard": "shard_9f709c5ee5854fe73e84642a"
+    },
+    {
+      "bridge_id": "shard_bridge_eabbee55eb0f5fca41eae480",
+      "contamination": 0.0,
+      "direct_cue_concept_ids": [
+        "concept_15b3c9e24eb7a3ad50a637d6",
+        "concept_5bb5680f3ccc77487c6ba5c3",
+        "concept_cb769648cbeec64f85863cce"
+      ],
+      "direct_grounding": 1.0,
+      "evidence_refs": [
+        "evidence_07a789ae40cac9cc0bcdd3f3",
+        "evidence_6b2c4ee8fb59a43d3ee4da69",
+        "evidence_781803b2e5d945dcaaef087a"
+      ],
+      "from_shard": "shard_9f709c5ee5854fe73e84642a",
+      "relation_support": 1.0,
+      "resonance_support": 0.0,
+      "route_score": 0.8225,
+      "thaw_cost": 0.125,
+      "to_label": "ecology",
+      "to_shard": "shard_ba1ef5f491ee08f3cd8429f3"
+    }
+  ],
+  "routing_created_semantic_truth": false,
+  "semantic_counts_after_first_route": {
+    "claims": 0,
+    "concepts": 12,
+    "evidence": 12,
+    "relations": 9
+  },
+  "semantic_counts_before_first_route": {
+    "claims": 0,
+    "concepts": 12,
+    "evidence": 12,
+    "relations": 9
+  },
+  "specialized_shards": {
+    "ecology": {
+      "concept_count": 4,
+      "relation_count": 3,
+      "shard_id": "shard_ba1ef5f491ee08f3cd8429f3",
+      "signature_labels": [
+        "watershed",
+        "rainfall",
+        "habitat",
+        "wildfire"
+      ],
+      "status": "active"
+    },
+    "interaction": {
+      "concept_count": 4,
+      "relation_count": 3,
+      "shard_id": "shard_aa0c343a21086c3385c1c9ca",
+      "signature_labels": [
+        "trust",
+        "repair",
+        "care",
+        "boundary"
+      ],
+      "status": "dormant"
+    },
+    "physics": {
+      "concept_count": 4,
+      "relation_count": 3,
+      "shard_id": "shard_9f709c5ee5854fe73e84642a",
+      "signature_labels": [
+        "mass",
+        "acceleration",
+        "gravity",
+        "force"
+      ],
+      "status": "dormant"
+    }
+  },
+  "title": "Bounded Specialization and Evidence-Grounded Routing"
+}

@@ -1,0 +1,140 @@
+{
+  "ablated": {
+    "baseline_cost": {
+      "associations_traversed": 10,
+      "concepts_inspected": 5,
+      "estimated_workspace_resource": 0.3,
+      "reconstructed_concepts": 5,
+      "structure_operands_used": 0,
+      "structures_inspected": 0
+    },
+    "compression_gain": 0.0,
+    "cost": {
+      "associations_traversed": 10,
+      "concepts_inspected": 5,
+      "estimated_workspace_resource": 0.3,
+      "reconstructed_concepts": 5,
+      "structure_operands_used": 0,
+      "structures_inspected": 0
+    },
+    "cue_concept_ids": [
+      "concept_d6579daefa0274798eecb964"
+    ],
+    "cycle": 48,
+    "disposition": "fallback_low_level",
+    "kernel_id": "kernel_110b8a58c1759ce0ef5cd043",
+    "operation": "reconstruct_relational_region",
+    "policy_revision": 0,
+    "reconstructed_concept_ids": [
+      "concept_391e1ce807f5ed13c57fe2bd",
+      "concept_8e419c4920f39aee5119dc5f",
+      "concept_c1ed54df091677897e1fb94b",
+      "concept_d6579daefa0274798eecb964",
+      "concept_e4a2923d2ae3493a1e32a414"
+    ],
+    "report_id": "compilation_probe_report_87b3b387d667cd0298b458f6",
+    "structural_fingerprint": "e36c6c356d55646728410c6019940ad206eac25581dbd9b46725de4da8e8f199",
+    "structure_id": null
+  },
+  "candidate_id": "structure_candidate_ba627dc619b7a6f0782816b2",
+  "causal_checks": {
+    "ablated_low_level_work": 15,
+    "ablation_removed_compiled_path": true,
+    "compiled_low_level_work": 1,
+    "compression_gain": 0.9333333333333333,
+    "restoration_returned_compiled_path": true,
+    "restored_low_level_work": 1,
+    "same_reconstruction_all_three": true
+  },
+  "member_count": 5,
+  "member_labels_human_readable": [
+    "kren",
+    "mip",
+    "tar",
+    "vel",
+    "zog"
+  ],
+  "milestone": 15,
+  "name": "Cognitive Compilation",
+  "opaque_name": "P_466cdd1a0f17",
+  "restored": {
+    "baseline_cost": {
+      "associations_traversed": 10,
+      "concepts_inspected": 5,
+      "estimated_workspace_resource": 0.3,
+      "reconstructed_concepts": 5,
+      "structure_operands_used": 0,
+      "structures_inspected": 0
+    },
+    "compression_gain": 0.9333333333333333,
+    "cost": {
+      "associations_traversed": 0,
+      "concepts_inspected": 1,
+      "estimated_workspace_resource": 0.06,
+      "reconstructed_concepts": 5,
+      "structure_operands_used": 1,
+      "structures_inspected": 1
+    },
+    "cue_concept_ids": [
+      "concept_d6579daefa0274798eecb964"
+    ],
+    "cycle": 50,
+    "disposition": "use_structure",
+    "kernel_id": "kernel_110b8a58c1759ce0ef5cd043",
+    "operation": "reconstruct_relational_region",
+    "policy_revision": 0,
+    "reconstructed_concept_ids": [
+      "concept_391e1ce807f5ed13c57fe2bd",
+      "concept_8e419c4920f39aee5119dc5f",
+      "concept_c1ed54df091677897e1fb94b",
+      "concept_d6579daefa0274798eecb964",
+      "concept_e4a2923d2ae3493a1e32a414"
+    ],
+    "report_id": "compilation_probe_report_b268ab05b26130bed7f25885",
+    "structural_fingerprint": "16434403e14eabba484b018703d60097a64a765301eda1dd5036fa8b3be7f4cf",
+    "structure_id": "structure_466cdd1a0f17911009b9d6cc"
+  },
+  "semantic_counts_after_test": {
+    "claims": 0,
+    "concepts": 5,
+    "relations": 0
+  },
+  "structure_id": "structure_466cdd1a0f17911009b9d6cc",
+  "with_structure": {
+    "baseline_cost": {
+      "associations_traversed": 10,
+      "concepts_inspected": 5,
+      "estimated_workspace_resource": 0.3,
+      "reconstructed_concepts": 5,
+      "structure_operands_used": 0,
+      "structures_inspected": 0
+    },
+    "compression_gain": 0.9333333333333333,
+    "cost": {
+      "associations_traversed": 0,
+      "concepts_inspected": 1,
+      "estimated_workspace_resource": 0.06,
+      "reconstructed_concepts": 5,
+      "structure_operands_used": 1,
+      "structures_inspected": 1
+    },
+    "cue_concept_ids": [
+      "concept_d6579daefa0274798eecb964"
+    ],
+    "cycle": 46,
+    "disposition": "use_structure",
+    "kernel_id": "kernel_110b8a58c1759ce0ef5cd043",
+    "operation": "reconstruct_relational_region",
+    "policy_revision": 0,
+    "reconstructed_concept_ids": [
+      "concept_391e1ce807f5ed13c57fe2bd",
+      "concept_8e419c4920f39aee5119dc5f",
+      "concept_c1ed54df091677897e1fb94b",
+      "concept_d6579daefa0274798eecb964",
+      "concept_e4a2923d2ae3493a1e32a414"
+    ],
+    "report_id": "compilation_probe_report_98480203738a3ccf975e667a",
+    "structural_fingerprint": "16434403e14eabba484b018703d60097a64a765301eda1dd5036fa8b3be7f4cf",
+    "structure_id": "structure_466cdd1a0f17911009b9d6cc"
+  }
+}

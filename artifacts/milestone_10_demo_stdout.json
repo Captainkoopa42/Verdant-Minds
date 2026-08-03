@@ -1,0 +1,166 @@
+{
+  "archive": {
+    "archive_id": "sensory_archive_3a9a224b265a987da2765075",
+    "archive_sha256": "46c7b57c1507fe7a6618d8b3878cfe537f4f1c20583fefecd53289dbbbf1f80b",
+    "manifest_sha256": "2a5cc365c835900fc74c06ed6971427dea43e2178f91a22af8b6341ae8dd41ae",
+    "native_payloads_preserved": true,
+    "sample_count": 16,
+    "verified_sha256": "46c7b57c1507fe7a6618d8b3878cfe537f4f1c20583fefecd53289dbbbf1f80b"
+  },
+  "events": [
+    {
+      "archive_ids": [
+        "sensory_archive_3a9a224b265a987da2765075"
+      ],
+      "boundary_reason": "time_gap",
+      "end_timestamp_ns": 10244000000,
+      "event_id": "temporal_event_e2dbeeafd40dc834b0a966f5",
+      "evidence_count": 16,
+      "group_count": 4,
+      "maximum_change_score": 0.0032875306261760952,
+      "modalities": [
+        "audio",
+        "vision"
+      ],
+      "sample_count": 8,
+      "start_timestamp_ns": 10000000000
+    },
+    {
+      "archive_ids": [
+        "sensory_archive_3a9a224b265a987da2765075"
+      ],
+      "boundary_reason": "stream_end",
+      "end_timestamp_ns": 10864000000,
+      "event_id": "temporal_event_02a9caa0c773023673271da8",
+      "evidence_count": 16,
+      "group_count": 4,
+      "maximum_change_score": 0.017074215306686416,
+      "modalities": [
+        "audio",
+        "vision"
+      ],
+      "sample_count": 8,
+      "start_timestamp_ns": 10620000000
+    }
+  ],
+  "exact_checkpoint_reload": true,
+  "kernel_metrics": {
+    "active_shard_id": "root",
+    "attention_candidate_count": 0,
+    "average_neighbor_count": 0.0,
+    "claim_count": 0,
+    "concept_count": 0,
+    "contradiction_count": 0,
+    "council_decision_count": 0,
+    "cycle": 35,
+    "directed_density": 0.0,
+    "evidence_count": 32,
+    "field_address_count": 0,
+    "field_history_count": 16,
+    "field_norm": 0.9999999999999999,
+    "governance_outcome_count": 0,
+    "object_candidate_count": 0,
+    "object_observation_count": 0,
+    "object_observation_event_count": 0,
+    "object_promotion_event_count": 0,
+    "perceptual_binding_event_count": 0,
+    "promoted_proto_object_count": 0,
+    "relation_count": 0,
+    "resonance_event_count": 0,
+    "resonance_profile_count": 0,
+    "revision_count": 0,
+    "routing_event_count": 0,
+    "sensory_archive_count": 1,
+    "sensory_sample_count": 16,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "synchronization_group_count": 8,
+    "temporal_event_assembly_count": 1,
+    "temporal_event_count": 2,
+    "transition_count": 35,
+    "workspace_active_item_count": 1,
+    "workspace_allocated_resource": 0.38,
+    "workspace_cycle_event_count": 1,
+    "workspace_writeback_event_count": 0
+  },
+  "milestone": 10,
+  "schema_version": "1.0.0-alpha",
+  "semantic_boundary": {
+    "claim_count": 0,
+    "concept_count": 0,
+    "contradiction_count": 0,
+    "relation_count": 0,
+    "semantic_categories_supplied": false
+  },
+  "sensory": {
+    "complete_group_count": 8,
+    "event_boundaries": [
+      "time_gap",
+      "stream_end"
+    ],
+    "maximum_observed_clock_skew_ns": 4000000,
+    "modality_counts": {
+      "audio": 8,
+      "vision": 8
+    },
+    "sample_count": 16,
+    "synchronization_group_count": 8,
+    "temporal_event_count": 2,
+    "translator_examples": {
+      "audio": {
+        "delta_score": 0.0,
+        "feature_vector": [
+          0.0033115386962890626,
+          0.17585381461579672,
+          0.1580028533935547,
+          0.249969482421875,
+          0.058577405857740586,
+          0.1700406975522728,
+          0.8439860508660082,
+          0.0912162647248975,
+          0.06479768440909438,
+          0.0
+        ],
+        "payload_nbytes": 480,
+        "payload_sha256": "2536d28fc826170e7b86f16e7779dd41f7627c75f02d5bcc55e8c04c3961fbe9",
+        "sample_id": "sensory_sample_cc7cfafe553b6d82acaf45a3",
+        "semantic_categories_supplied": false,
+        "signature_length": 16,
+        "translation_kind": "pcm_energy_zero_crossing_spectrum"
+      },
+      "vision": {
+        "delta_score": 0.0,
+        "feature_vector": [
+          0.12640931372549022,
+          0.21120994667428467,
+          0.0,
+          0.8235294117647058,
+          0.4258908886213312,
+          0.5112858015975047,
+          0.022896900695762175,
+          0.015217391304347825,
+          0.0
+        ],
+        "payload_nbytes": 768,
+        "payload_sha256": "3b2638a7e55ed84b5057c8d0ae880cc142262adbc0f50d59c1557d5d31ab2175",
+        "sample_id": "sensory_sample_cfd2d291808adb5ccb1586d8",
+        "semantic_categories_supplied": false,
+        "signature_length": 64,
+        "translation_kind": "low_level_luminance_geometry"
+      }
+    }
+  },
+  "title": "Native Sensory Translation and Temporal Event Memory",
+  "workspace": {
+    "active_item_ids": [
+      "workspace_item_34570afc64cbeda525db8818"
+    ],
+    "allocated_resource": 0.38,
+    "broadcast_item_ids": [
+      "workspace_item_34570afc64cbeda525db8818"
+    ],
+    "temporal_event_admitted": true
+  }
+}

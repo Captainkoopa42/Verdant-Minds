@@ -1,0 +1,90 @@
+{
+  "files": [
+    {
+      "bytes": 123,
+      "path": "verdant_refolding/__init__.py",
+      "sha256": "7abc0a3677e4821024177201a5b3abead31b2ba4f41c2327d90e53bf9b8c830e"
+    },
+    {
+      "bytes": 16819,
+      "path": "verdant_refolding/pipeline.py",
+      "sha256": "785a0298d8d492933113aae28d9960da50fea5c5e16a410d98d96e5209f8be67"
+    },
+    {
+      "bytes": 9560,
+      "path": "verdant_refolding/demo.py",
+      "sha256": "5fcc514fe17ba76924a88e7fa1d03a8e1938161f0f00e8780c9b3ca24215a489"
+    },
+    {
+      "bytes": 13323,
+      "path": "tests/test_refolding_phase.py",
+      "sha256": "f05c4a3404624e874b9c532e718bf8895a0787ef02efa034ee24e67b34be5005"
+    },
+    {
+      "bytes": 16777,
+      "path": "MILESTONE_18_REPORT.md",
+      "sha256": "0acd2c8d63efa6398aabb18d76ca340422d06c1eabe186c38a4556f200fcffff"
+    },
+    {
+      "bytes": 10238,
+      "path": "README.md",
+      "sha256": "342f086e8627ac09b8d31cd5177a1c9afe35a0eef8f8ebf8a05292b19eb73a7c"
+    },
+    {
+      "bytes": 140441,
+      "path": "verdant_kernel/models.py",
+      "sha256": "199210096527f27ad843fac36f4d54b700921f42a104192a697871b9ccd5cd6c"
+    },
+    {
+      "bytes": 263012,
+      "path": "verdant_kernel/kernel.py",
+      "sha256": "e4273b32323556fe5e493c6eece43d761f3584580c63f212193c1f88c318c0ba"
+    },
+    {
+      "bytes": 9003,
+      "path": "verdant_kernel/__init__.py",
+      "sha256": "2e6ce9880410aa0567c603c0bc7e7fbed3c85a7c21d86860b25e732bdd54b94e"
+    },
+    {
+      "bytes": 39649,
+      "path": "run_verdant_cultivation.py",
+      "sha256": "60f4352b5c90a3fee78d282cc16d718eec53793e5f5b206985152904e639b52a"
+    },
+    {
+      "bytes": 180,
+      "path": "verdant_rebuild_test_output_milestone_18_part1.txt",
+      "sha256": "94d3bfc64287716a192012df746a1279ba5381530134ff16c4d1e93d9b8df0cf"
+    },
+    {
+      "bytes": 100,
+      "path": "verdant_rebuild_test_output_milestone_18_part2a.txt",
+      "sha256": "a52171a53c2da760dac7b67734e5e48d1103149611c6ef395289fedfcbe890c2"
+    },
+    {
+      "bytes": 100,
+      "path": "verdant_rebuild_test_output_milestone_18_part3.txt",
+      "sha256": "6f949482fa381a5636bbbb130717be3655b04c90b18ae3e30468340e68c7fba9"
+    },
+    {
+      "bytes": 2405,
+      "path": "artifacts/milestone_18_refolding_summary.json",
+      "sha256": "30d0d7fd5146837e189b3ae22b71537ee259ae60fda2def8526e667764d76afb"
+    },
+    {
+      "bytes": 2405,
+      "path": "artifacts/milestone_18_demo_stdout.json",
+      "sha256": "30d0d7fd5146837e189b3ae22b71537ee259ae60fda2def8526e667764d76afb"
+    },
+    {
+      "bytes": 2406,
+      "path": "artifacts/milestone_18_demo_console.txt",
+      "sha256": "410f28dce46adf6bf40a23b8630fd2ee882fcbf8392ad0dde4628ed0699bc1ca"
+    },
+    {
+      "bytes": 1890086,
+      "path": "artifacts/milestone_18_refolding_demo.vdk",
+      "sha256": "d8371c229d06e95020034c67ea2f2bdde17c6394f382508e1906e4c2206687b8"
+    }
+  ],
+  "milestone": 18
+}

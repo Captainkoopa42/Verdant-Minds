@@ -1,0 +1,1890 @@
+{
+  "council_report": {
+    "assessments": [
+      {
+        "assessment_id": "king_assessment_ea7059f213c725fd30369aec",
+        "attention_candidate_ids": [],
+        "confidence": 1.0,
+        "constraints": [],
+        "details": {
+          "resonance_event_count": 0,
+          "resonance_used_as_evidence": false
+        },
+        "evidence_refs": [
+          "evidence_0fff1b63a55afbcf6061fe91",
+          "evidence_57dbf08ff4afc58feb5cef71",
+          "evidence_6f66ae379acb3ad4cb6fc7d5",
+          "evidence_72986f6cd984336d51bf89f5",
+          "evidence_7feb24573deb980ac74bf619",
+          "evidence_82832448a3b2497fafdca258",
+          "evidence_842da2f51cc5e65341ec6106",
+          "evidence_842e8c8d8d4915cc534ab46b",
+          "evidence_8af998e08d7718139d6c3a5e",
+          "evidence_98e77935d4672519e4934c19",
+          "evidence_aa1157e125302eae1c5592cc",
+          "evidence_ab40f4091f309b4a9a689227",
+          "evidence_c5a3f0ba7f879c7899268265",
+          "evidence_d54c84713f81e2c6035f7dbf",
+          "evidence_d971a38b96191183d44a7b52",
+          "evidence_e8a31d261e04faa62787818e"
+        ],
+        "jurisdiction": "epistemic_support",
+        "king": "DataKing",
+        "proposal_id": "council_proposal_4906d1cda11f61e734f23377",
+        "rationale_codes": [
+          "explicit_preserved_evidence_present",
+          "resonance_is_not_evidence"
+        ],
+        "recommendation": "support",
+        "score": 1.0
+      },
+      {
+        "assessment_id": "king_assessment_7db6874821db27a5eb6c71c9",
+        "attention_candidate_ids": [],
+        "confidence": 1.0,
+        "constraints": [],
+        "details": {
+          "boundary_sensitive": false,
+          "consent_present": false,
+          "consent_required": false,
+          "declared_harm_risk": 0.0,
+          "effective_harm_risk": 0.0,
+          "learned_action_risk": 0.0,
+          "reversibility": 1.0,
+          "uncertainty_increment": 0.0,
+          "veto_threshold": 0.65
+        },
+        "evidence_refs": [
+          "evidence_0fff1b63a55afbcf6061fe91",
+          "evidence_57dbf08ff4afc58feb5cef71",
+          "evidence_6f66ae379acb3ad4cb6fc7d5",
+          "evidence_72986f6cd984336d51bf89f5",
+          "evidence_7feb24573deb980ac74bf619",
+          "evidence_82832448a3b2497fafdca258",
+          "evidence_842da2f51cc5e65341ec6106",
+          "evidence_842e8c8d8d4915cc534ab46b",
+          "evidence_8af998e08d7718139d6c3a5e",
+          "evidence_98e77935d4672519e4934c19",
+          "evidence_aa1157e125302eae1c5592cc",
+          "evidence_ab40f4091f309b4a9a689227",
+          "evidence_c5a3f0ba7f879c7899268265",
+          "evidence_d54c84713f81e2c6035f7dbf",
+          "evidence_d971a38b96191183d44a7b52",
+          "evidence_e8a31d261e04faa62787818e"
+        ],
+        "jurisdiction": "consequence_permission_boundary",
+        "king": "EthicsKing",
+        "proposal_id": "council_proposal_4906d1cda11f61e734f23377",
+        "rationale_codes": [
+          "risk_within_current_permission_policy"
+        ],
+        "recommendation": "permit",
+        "score": 1.0
+      },
+      {
+        "assessment_id": "king_assessment_d0407a2cac3fda0bdc766897",
+        "attention_candidate_ids": [],
+        "confidence": 0.5762499999999999,
+        "constraints": [],
+        "details": {
+          "attention_budget": 1.0,
+          "attention_signal": 0.0,
+          "contradiction_boost": 0.0,
+          "priority_threshold": 0.55,
+          "requested_resource": 0.2
+        },
+        "evidence_refs": [],
+        "jurisdiction": "bounded_present_priority",
+        "king": "ForefrontKing",
+        "proposal_id": "council_proposal_4906d1cda11f61e734f23377",
+        "rationale_codes": [
+          "contradiction_priority_without_truth_authority",
+          "finite_attention_budget"
+        ],
+        "recommendation": "prioritize",
+        "score": 0.6525
+      }
+    ],
+    "authorized_operations": [
+      "promote_proto_object:object_candidate_0d8ab3ac5b93522474e668ae"
+    ],
+    "blocked_operations": [],
+    "constraints": [],
+    "cycle": 71,
+    "disposition": "approve",
+    "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+    "kernel_id": "kernel_ecbb9dff66b48a1ff59b3842",
+    "policy_snapshot": {
+      "attention_budget": 1.0,
+      "decision_method": "constitutional_rule_order",
+      "enabled_kings": {
+        "DataKing": true,
+        "EthicsKing": true,
+        "ForefrontKing": true
+      },
+      "ethics_veto_threshold": 0.65,
+      "forefront_priority_threshold": 0.55,
+      "learned_action_risk": {},
+      "legacy_weights_used_for_decision": false,
+      "outcome_learning_rate": 0.8,
+      "policy_version": "council-v1",
+      "revision": 0,
+      "t_g": 0.5,
+      "weights": {
+        "DataKing": 1.0,
+        "EthicsKing": 1.5,
+        "ForefrontKing": 1.0
+      }
+    },
+    "proposal": {
+      "action_class": "earned_proto_object_promotion",
+      "attention_candidate_ids": [],
+      "boundary_sensitive": false,
+      "consent_present": false,
+      "consent_required": false,
+      "created_cycle": 71,
+      "description": "Promote an evidence-supported persistent object candidate to a canonical proto-object without installing a human category label.",
+      "evidence_refs": [
+        "evidence_0fff1b63a55afbcf6061fe91",
+        "evidence_57dbf08ff4afc58feb5cef71",
+        "evidence_6f66ae379acb3ad4cb6fc7d5",
+        "evidence_72986f6cd984336d51bf89f5",
+        "evidence_7feb24573deb980ac74bf619",
+        "evidence_82832448a3b2497fafdca258",
+        "evidence_842da2f51cc5e65341ec6106",
+        "evidence_842e8c8d8d4915cc534ab46b",
+        "evidence_8af998e08d7718139d6c3a5e",
+        "evidence_98e77935d4672519e4934c19",
+        "evidence_aa1157e125302eae1c5592cc",
+        "evidence_ab40f4091f309b4a9a689227",
+        "evidence_c5a3f0ba7f879c7899268265",
+        "evidence_d54c84713f81e2c6035f7dbf",
+        "evidence_d971a38b96191183d44a7b52",
+        "evidence_e8a31d261e04faa62787818e"
+      ],
+      "governance_fingerprint": "ff6b2f10cdc7ec294ebad64d563130b9a07bd0b05c59115b3be8418aac5fe0eb",
+      "harm_risk": 0.0,
+      "kernel_id": "kernel_ecbb9dff66b48a1ff59b3842",
+      "metadata": {
+        "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+        "episode_count": 3,
+        "observation_count": 16,
+        "semantic_category_preinstalled": false,
+        "support_score": 0.8
+      },
+      "novelty": 0.9,
+      "operation": "promote_proto_object:object_candidate_0d8ab3ac5b93522474e668ae",
+      "predicted_information_gain": 0.9,
+      "proposal_id": "council_proposal_4906d1cda11f61e734f23377",
+      "proposal_kind": "structural_promotion",
+      "relevance": 0.95,
+      "requested_resource": 0.2,
+      "resonance_event_ids": [],
+      "reversibility": 1.0,
+      "safe_alternatives": [],
+      "state_fingerprint": "a43ccf81197a96e27f37884a861e17da922051a2a9c55cbf6a3b4c42714160fc",
+      "target_claim_id": null,
+      "urgency": 0.25
+    },
+    "rationale_codes": [
+      "all_enabled_jurisdictions_allow_commitment",
+      "constitutional_rule_order"
+    ],
+    "report_id": "council_report_d2e382ed7acd4f79bfd69b30",
+    "required_evidence": [],
+    "safe_alternatives": [],
+    "state_fingerprint": "a43ccf81197a96e27f37884a861e17da922051a2a9c55cbf6a3b4c42714160fc"
+  },
+  "imports": [
+    {
+      "media_archive": {
+        "archive_sha256": "12abe678320a08dbdf953f04f2ecb062ee0da99f0332c0ea20464ebbe83c4b80",
+        "import_id": "media_import_7828cdf0395f6e81337d32ca",
+        "path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_image_dab7ee7be706.vmi.zip",
+        "source_sha256": "dab7ee7be706e730f6bacf437b69e4fda010455a9458c66a2eb4229a2a7ec8f4"
+      },
+      "media_kind": "image",
+      "metadata": {
+        "decoded_channels": 3,
+        "decoded_height": 72,
+        "decoded_width": 96,
+        "still_image": true
+      },
+      "mime_type": "image/png",
+      "notes": [
+        "Original file preserved in .vmi.zip.",
+        "Decoded samples preserved separately in .vsa.zip.",
+        "No semantic categories were supplied by the importer."
+      ],
+      "sensory_archive_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_7828cdf0395f6e81337d32ca.vsa.zip",
+      "source_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_image.png",
+      "temporal_event_ids": [
+        "temporal_event_b5cfca3837cc8f4df1f58ba7"
+      ],
+      "translated": true,
+      "translation_status": "ingested"
+    },
+    {
+      "media_archive": {
+        "archive_sha256": "decbb31d48300ba9306c69f4203639d8186d50c119a4bd7ffbc2a4be1dac094a",
+        "import_id": "media_import_5a997c990bb308a7c233d928",
+        "path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_audio_b4f06180242e.vmi.zip",
+        "source_sha256": "b4f06180242e69694463cb1150461e5b92de708c4bbcdc8121bd4129f76a0b1d"
+      },
+      "media_kind": "audio",
+      "metadata": {
+        "sample_rate_hz": 8000,
+        "source_channels": 1,
+        "source_frames": 8000,
+        "window_seconds": 0.2
+      },
+      "mime_type": "audio/x-wav",
+      "notes": [
+        "Original file preserved in .vmi.zip.",
+        "Decoded samples preserved separately in .vsa.zip.",
+        "No semantic categories were supplied by the importer."
+      ],
+      "sensory_archive_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_5a997c990bb308a7c233d928.vsa.zip",
+      "source_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_audio.wav",
+      "temporal_event_ids": [
+        "temporal_event_7f6ecae5ba821d296816cdef"
+      ],
+      "translated": true,
+      "translation_status": "ingested"
+    },
+    {
+      "media_archive": {
+        "archive_sha256": "5f92599fb9782e0a4161d76de3e43a2e3fa15aa08d8f0db23d6d02ef9e692b1b",
+        "import_id": "media_import_09f64ef2d336bc04103dcb2c",
+        "path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_clip_one_397f0a96e1c9.vmi.zip",
+        "source_sha256": "397f0a96e1c9e46c26e562292bc798d944d7e2c4850912e159ce6bc75cc05d3b"
+      },
+      "media_kind": "video",
+      "metadata": {
+        "notes": [],
+        "sampled_audio_packets": 0,
+        "sampled_visual_frames": 9,
+        "selected_end_seconds": null,
+        "selected_start_seconds": 0.0,
+        "source_fps": 5.0,
+        "source_frame_count": 9,
+        "source_height": 72,
+        "source_width": 96
+      },
+      "mime_type": "video/mp4",
+      "notes": [
+        "Original file preserved in .vmi.zip.",
+        "Decoded samples preserved separately in .vsa.zip.",
+        "No semantic categories were supplied by the importer."
+      ],
+      "sensory_archive_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_09f64ef2d336bc04103dcb2c.vsa.zip",
+      "source_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_clip_one.mp4",
+      "temporal_event_ids": [
+        "temporal_event_c85ad215263da12a82d32f00"
+      ],
+      "translated": true,
+      "translation_status": "ingested"
+    },
+    {
+      "media_archive": {
+        "archive_sha256": "09e140dfc4c99d15fd6f92fb9d9443a7ffa76d2f1f8f78bcc383994afd9efede",
+        "import_id": "media_import_0c02626e639c951be4047b6c",
+        "path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_clip_two_5561e3af11a3.vmi.zip",
+        "source_sha256": "5561e3af11a33a54589ac9fee7eed6dfb2877330c38b7bbef4981eeebf88958d"
+      },
+      "media_kind": "video",
+      "metadata": {
+        "notes": [],
+        "sampled_audio_packets": 0,
+        "sampled_visual_frames": 7,
+        "selected_end_seconds": null,
+        "selected_start_seconds": 0.0,
+        "source_fps": 5.0,
+        "source_frame_count": 7,
+        "source_height": 72,
+        "source_width": 96
+      },
+      "mime_type": "video/mp4",
+      "notes": [
+        "Original file preserved in .vmi.zip.",
+        "Decoded samples preserved separately in .vsa.zip.",
+        "No semantic categories were supplied by the importer."
+      ],
+      "sensory_archive_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/sensory_archives/media_import_0c02626e639c951be4047b6c.vsa.zip",
+      "source_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_clip_two.mp4",
+      "temporal_event_ids": [
+        "temporal_event_171a2882318da0ada4cc9f74"
+      ],
+      "translated": true,
+      "translation_status": "ingested"
+    },
+    {
+      "media_archive": {
+        "archive_sha256": "863b384b1b35ad8216e26f3c310e483dfed654a9110e18bac713be2c5a0755b3",
+        "import_id": "media_import_83cd4bb329395137519b9f9e",
+        "path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_imported/media_imports/chosen_unknown_0bd724e126e9.vmi.zip",
+        "source_sha256": "0bd724e126e907b680633114b2f4b9a44f607f293b353fdf6f14cc41700e60b9"
+      },
+      "media_kind": "unknown_binary",
+      "metadata": {
+        "semantic_interpretation_attempted": false
+      },
+      "mime_type": "application/octet-stream",
+      "notes": [
+        "Exact source bytes preserved. No active translator supports this file type yet."
+      ],
+      "sensory_archive_path": null,
+      "source_path": "/mnt/data/verdant_rebuild/artifacts/milestone_11_user_media/chosen_unknown.bin",
+      "temporal_event_ids": [],
+      "translated": false,
+      "translation_status": "translation_unavailable"
+    }
+  ],
+  "perceptual_reports": [
+    {
+      "frames": [
+        {
+          "frame_index": 0,
+          "image_sha256": "23848a6d358da125b209af480b5fc761f4bcdd7a03443b46b1d6b17a7252a8cd",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8431372549019609,
+                1.1102230246251565e-16,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.14756944444444445,
+                1.0,
+                0.8823529411764706,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608
+              ],
+              "area_fraction": 0.14756944444444445,
+              "bbox_norm": [
+                0.3125,
+                0.2777777777777778,
+                0.6666666666666666,
+                0.6944444444444444
+              ],
+              "centroid_norm": [
+                0.48947368421052634,
+                0.4859154929577465
+              ],
+              "common_motion_supported": false,
+              "evidence_ref": "evidence_c5a3f0ba7f879c7899268265",
+              "frame_index": 0,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_2eb4568f2ff4e928e3ebd51d",
+                "source_archive_member_path": "samples/sensory_sample_7d4ba673fc53edbcdd65923a.bin",
+                "source_sequence_number": 0,
+                "source_timestamp_ns": 0
+              },
+              "motion": [
+                0.0,
+                0.0
+              ],
+              "prior_region_id": null,
+              "region_id": "perceptual_region_b30ee6a1fe5cb4695d66eae3",
+              "sample_id": "sensory_sample_7d4ba673fc53edbcdd65923a",
+              "temporal_event_id": "temporal_event_b5cfca3837cc8f4df1f58ba7"
+            }
+          ],
+          "sample_id": "sensory_sample_7d4ba673fc53edbcdd65923a",
+          "temporal_event_id": "temporal_event_b5cfca3837cc8f4df1f58ba7",
+          "unmatched_prior_region_ids": []
+        }
+      ],
+      "initial_cycle": 4,
+      "kernel_id": "kernel_ecbb9dff66b48a1ff59b3842",
+      "occlusion_bindings": [],
+      "operation": "bind_native_perception:perceptual_window_a79894f0dff2435c83c7fd5b",
+      "output_state_fingerprint": "8bad4ae3ddea67ef049e37f8493b881f4c4d58987c6a722917588b59a81182d5",
+      "policy_revision": 0,
+      "region_bindings": [
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "create",
+          "object_observation_event_id": "object_observation_event_3b4ccd71fb0944be2d35f6ef",
+          "object_observation_id": "object_observation_2ddc8ad9e0f2fa75b846441b",
+          "region_id": "perceptual_region_b30ee6a1fe5cb4695d66eae3"
+        }
+      ],
+      "report_id": "perceptual_binding_report_6aa1c0bd87470b0f412aba25",
+      "resulting_candidate_ids": [
+        "object_candidate_0d8ab3ac5b93522474e668ae"
+      ],
+      "sample_ids": [
+        "sensory_sample_7d4ba673fc53edbcdd65923a"
+      ],
+      "structural_fingerprint": "32cab22733f09db00032acc0173550727909ac5c31837d5311c31216cc94bb86",
+      "temporal_event_ids": [
+        "temporal_event_b5cfca3837cc8f4df1f58ba7"
+      ]
+    },
+    {
+      "frames": [
+        {
+          "frame_index": 0,
+          "image_sha256": "8623ffa74d466a0057b5c3e13072ce11698a35532db504f9b4f089d60508c2e6",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.801420568227291,
+                0.004032841237210595,
+                0.7843137254901961,
+                0.8156862745098039,
+                0.8,
+                0.8,
+                0.8,
+                0.028356481481481483,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.803921568627451,
+                0.8,
+                0.8,
+                0.803921568627451,
+                0.803921568627451,
+                0.8,
+                0.8,
+                0.803921568627451,
+                0.8,
+                0.8,
+                0.8,
+                0.8,
+                0.803921568627451,
+                0.803921568627451,
+                0.803921568627451,
+                0.8
+              ],
+              "area_fraction": 0.028356481481481483,
+              "bbox_norm": [
+                0.0625,
+                0.3333333333333333,
+                0.20833333333333334,
+                0.5277777777777778
+              ],
+              "centroid_norm": [
+                0.13157894736842105,
+                0.4295774647887324
+              ],
+              "common_motion_supported": false,
+              "evidence_ref": "evidence_72986f6cd984336d51bf89f5",
+              "frame_index": 0,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_d4cc782554997a53c4c63acd",
+                "source_archive_member_path": "samples/sensory_sample_793fbde490fd90499477309f.bin",
+                "source_sequence_number": 0,
+                "source_timestamp_ns": 0
+              },
+              "motion": [
+                0.0,
+                0.0
+              ],
+              "prior_region_id": null,
+              "region_id": "perceptual_region_3b4990a7300ce8de61ee828b",
+              "sample_id": "sensory_sample_793fbde490fd90499477309f",
+              "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+            }
+          ],
+          "sample_id": "sensory_sample_793fbde490fd90499477309f",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 1,
+          "image_sha256": "18f01d9ae953c8808522d8d39bdbb517e3f64054e0866371c83d19ee629bb078",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8119447779111645,
+                0.00630461673649115,
+                0.7843137254901961,
+                0.8235294117647058,
+                0.8117647058823529,
+                0.8156862745098039,
+                0.8156862745098039,
+                0.028356481481481483,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8117647058823529,
+                0.8156862745098039,
+                0.8156862745098039,
+                0.807843137254902,
+                0.8117647058823529,
+                0.8156862745098039,
+                0.8156862745098039,
+                0.807843137254902,
+                0.8117647058823529,
+                0.8156862745098039,
+                0.8117647058823529,
+                0.803921568627451,
+                0.8117647058823529,
+                0.8156862745098039,
+                0.8117647058823529,
+                0.803921568627451
+              ],
+              "area_fraction": 0.028356481481481483,
+              "bbox_norm": [
+                0.125,
+                0.3333333333333333,
+                0.2708333333333333,
+                0.5277777777777778
+              ],
+              "centroid_norm": [
+                0.19473684210526315,
+                0.4295774647887324
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_7feb24573deb980ac74bf619",
+              "frame_index": 1,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_d4cc782554997a53c4c63acd",
+                "source_archive_member_path": "samples/sensory_sample_1d3f7b510493321fe50db771.bin",
+                "source_sequence_number": 1,
+                "source_timestamp_ns": 200000000
+              },
+              "motion": [
+                0.06315789473684211,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_3b4990a7300ce8de61ee828b",
+              "region_id": "perceptual_region_e91cbb42b2ebabb97837ef78",
+              "sample_id": "sensory_sample_1d3f7b510493321fe50db771",
+              "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+            }
+          ],
+          "sample_id": "sensory_sample_1d3f7b510493321fe50db771",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 2,
+          "image_sha256": "9a48928447978d2077e8a6b7eb234c7a32ea2c4d8e90bc93382bac0be2f7902c",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8246298519407763,
+                0.007095002691775876,
+                0.8,
+                0.8470588235294118,
+                0.8196078431372549,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.028356481481481483,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8313725490196079,
+                0.8235294117647058,
+                0.8156862745098039,
+                0.8196078431372549,
+                0.8313725490196079,
+                0.8235294117647058
+              ],
+              "area_fraction": 0.028356481481481483,
+              "bbox_norm": [
+                0.1875,
+                0.3333333333333333,
+                0.3333333333333333,
+                0.5277777777777778
+              ],
+              "centroid_norm": [
+                0.2578947368421053,
+                0.4295774647887324
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_aa1157e125302eae1c5592cc",
+              "frame_index": 2,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_d4cc782554997a53c4c63acd",
+                "source_archive_member_path": "samples/sensory_sample_1fc1bd70cc593d5ed88f5fca.bin",
+                "source_sequence_number": 2,
+                "source_timestamp_ns": 400000000
+              },
+              "motion": [
+                0.06315789473684214,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_e91cbb42b2ebabb97837ef78",
+              "region_id": "perceptual_region_5e381ad76be1dc3d56f70e43",
+              "sample_id": "sensory_sample_1fc1bd70cc593d5ed88f5fca",
+              "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+            }
+          ],
+          "sample_id": "sensory_sample_1fc1bd70cc593d5ed88f5fca",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 3,
+          "image_sha256": "92e3526074bf8e81011b4d0e3c4f91ae99dddafd62b216c28087afdbee919c34",
+          "region_proposals": [],
+          "sample_id": "sensory_sample_1f4276671f21596d9aaeb277",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": [
+            "perceptual_region_5e381ad76be1dc3d56f70e43"
+          ]
+        },
+        {
+          "frame_index": 4,
+          "image_sha256": "92e3526074bf8e81011b4d0e3c4f91ae99dddafd62b216c28087afdbee919c34",
+          "region_proposals": [],
+          "sample_id": "sensory_sample_d541708b55cba1d62688a8bd",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 5,
+          "image_sha256": "45c43af02e7c32539269d7d0a044d103b9a3398c117beea8d1feb82b19440209",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8254101640656264,
+                0.004048741931293114,
+                0.8,
+                0.8352941176470589,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.028356481481481483,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8196078431372549
+              ],
+              "area_fraction": 0.028356481481481483,
+              "bbox_norm": [
+                0.375,
+                0.3333333333333333,
+                0.5208333333333334,
+                0.5277777777777778
+              ],
+              "centroid_norm": [
+                0.4473684210526316,
+                0.4295774647887324
+              ],
+              "common_motion_supported": false,
+              "evidence_ref": "evidence_8af998e08d7718139d6c3a5e",
+              "frame_index": 5,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_d4cc782554997a53c4c63acd",
+                "source_archive_member_path": "samples/sensory_sample_cdd74a1fb700359fc34753ce.bin",
+                "source_sequence_number": 5,
+                "source_timestamp_ns": 1000000000
+              },
+              "motion": [
+                0.0,
+                0.0
+              ],
+              "prior_region_id": null,
+              "region_id": "perceptual_region_6cdcdb22dc4dc382f76e7063",
+              "sample_id": "sensory_sample_cdd74a1fb700359fc34753ce",
+              "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+            }
+          ],
+          "sample_id": "sensory_sample_cdd74a1fb700359fc34753ce",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 6,
+          "image_sha256": "1c9e402092992051c543a27d66866938da657dfbccd62975d3b651b72972776f",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8034813925570229,
+                0.006409185248689313,
+                0.788235294117647,
+                0.8156862745098039,
+                0.8,
+                0.8,
+                0.807843137254902,
+                0.028356481481481483,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.803921568627451,
+                0.803921568627451,
+                0.8,
+                0.796078431372549,
+                0.803921568627451,
+                0.803921568627451,
+                0.8,
+                0.796078431372549,
+                0.807843137254902,
+                0.8,
+                0.8,
+                0.8,
+                0.8117647058823529,
+                0.807843137254902,
+                0.807843137254902,
+                0.803921568627451
+              ],
+              "area_fraction": 0.028356481481481483,
+              "bbox_norm": [
+                0.4375,
+                0.3333333333333333,
+                0.5833333333333334,
+                0.5277777777777778
+              ],
+              "centroid_norm": [
+                0.5105263157894737,
+                0.4295774647887324
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_e8a31d261e04faa62787818e",
+              "frame_index": 6,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_d4cc782554997a53c4c63acd",
+                "source_archive_member_path": "samples/sensory_sample_0a03b15d9df22949b55aaeea.bin",
+                "source_sequence_number": 6,
+                "source_timestamp_ns": 1200000000
+              },
+              "motion": [
+                0.06315789473684214,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_6cdcdb22dc4dc382f76e7063",
+              "region_id": "perceptual_region_7efd322a1e595ec596027ce4",
+              "sample_id": "sensory_sample_0a03b15d9df22949b55aaeea",
+              "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+            }
+          ],
+          "sample_id": "sensory_sample_0a03b15d9df22949b55aaeea",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 7,
+          "image_sha256": "e9b7540ffea833d4557c1e0c27cd8cb69c9be5c5b2b1c2fde248310e4fe64963",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8136054421768708,
+                0.00644145847390439,
+                0.792156862745098,
+                0.8235294117647058,
+                0.8117647058823529,
+                0.8156862745098039,
+                0.8156862745098039,
+                0.028356481481481483,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8196078431372549,
+                0.8156862745098039,
+                0.8156862745098039,
+                0.8117647058823529,
+                0.8196078431372549,
+                0.8156862745098039,
+                0.8156862745098039,
+                0.8117647058823529,
+                0.8117647058823529,
+                0.807843137254902,
+                0.807843137254902,
+                0.807843137254902,
+                0.8156862745098039,
+                0.8117647058823529,
+                0.8117647058823529,
+                0.807843137254902
+              ],
+              "area_fraction": 0.028356481481481483,
+              "bbox_norm": [
+                0.5,
+                0.3333333333333333,
+                0.6458333333333334,
+                0.5277777777777778
+              ],
+              "centroid_norm": [
+                0.5736842105263158,
+                0.4295774647887324
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_0fff1b63a55afbcf6061fe91",
+              "frame_index": 7,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_d4cc782554997a53c4c63acd",
+                "source_archive_member_path": "samples/sensory_sample_9aa0b04433214608b0c86b73.bin",
+                "source_sequence_number": 7,
+                "source_timestamp_ns": 1400000000
+              },
+              "motion": [
+                0.06315789473684208,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_7efd322a1e595ec596027ce4",
+              "region_id": "perceptual_region_663b3360287f02bf26103da9",
+              "sample_id": "sensory_sample_9aa0b04433214608b0c86b73",
+              "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+            }
+          ],
+          "sample_id": "sensory_sample_9aa0b04433214608b0c86b73",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 8,
+          "image_sha256": "14223e9fa345b9ade3595625efff861b4b145e27f87120f6f7db1abf9b60e699",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.82452981192477,
+                0.005989715820990318,
+                0.796078431372549,
+                0.8392156862745098,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.028356481481481483,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8235294117647058,
+                0.8313725490196079,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8313725490196079,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8235294117647058
+              ],
+              "area_fraction": 0.028356481481481483,
+              "bbox_norm": [
+                0.5625,
+                0.3333333333333333,
+                0.7083333333333334,
+                0.5277777777777778
+              ],
+              "centroid_norm": [
+                0.6368421052631579,
+                0.4295774647887324
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_6f66ae379acb3ad4cb6fc7d5",
+              "frame_index": 8,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_d4cc782554997a53c4c63acd",
+                "source_archive_member_path": "samples/sensory_sample_d811b6d131538679de9903d0.bin",
+                "source_sequence_number": 8,
+                "source_timestamp_ns": 1600000000
+              },
+              "motion": [
+                0.06315789473684208,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_663b3360287f02bf26103da9",
+              "region_id": "perceptual_region_868b72b3989f0a2220896702",
+              "sample_id": "sensory_sample_d811b6d131538679de9903d0",
+              "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+            }
+          ],
+          "sample_id": "sensory_sample_d811b6d131538679de9903d0",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00",
+          "unmatched_prior_region_ids": []
+        }
+      ],
+      "initial_cycle": 38,
+      "kernel_id": "kernel_ecbb9dff66b48a1ff59b3842",
+      "occlusion_bindings": [
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "evidence_ref": "evidence_d971a38b96191183d44a7b52",
+          "frame_index": 3,
+          "object_observation_event_id": "object_observation_event_bcd59dbb74185ddd24c89fbc",
+          "object_observation_id": "object_observation_8c74fc07af85bfea165d318b",
+          "temporal_event_id": "temporal_event_c85ad215263da12a82d32f00"
+        }
+      ],
+      "operation": "bind_native_perception:perceptual_window_677694b1de89f91adeafbf32",
+      "output_state_fingerprint": "47c16999a356e551320d5815e52214d1c65128bf0e45e2b7072720eabfe895c5",
+      "policy_revision": 0,
+      "region_bindings": [
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_792be893659add80da59ede0",
+          "object_observation_id": "object_observation_2ab5c9552e7d3550a2f19ffe",
+          "region_id": "perceptual_region_3b4990a7300ce8de61ee828b"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_6b204cba490d4a7c93c38ec3",
+          "object_observation_id": "object_observation_3fa060d4154808f39f0fde98",
+          "region_id": "perceptual_region_e91cbb42b2ebabb97837ef78"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_ed8ccaa98b2579f0dbb9b616",
+          "object_observation_id": "object_observation_6905a482867c92c520edb2f1",
+          "region_id": "perceptual_region_5e381ad76be1dc3d56f70e43"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_9b0aeac4646e9dbe5504343b",
+          "object_observation_id": "object_observation_5228b42f0f1a33b2e7f2c297",
+          "region_id": "perceptual_region_6cdcdb22dc4dc382f76e7063"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_1647c87425e1a29c2e18c0a9",
+          "object_observation_id": "object_observation_267ba08e24a04b411590e485",
+          "region_id": "perceptual_region_7efd322a1e595ec596027ce4"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_474f8221e27a021dfcf3743d",
+          "object_observation_id": "object_observation_171b37fba6b9af66199c94ff",
+          "region_id": "perceptual_region_663b3360287f02bf26103da9"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_d4bf28e1ad935928b51ccecf",
+          "object_observation_id": "object_observation_efdfde700748d48a423e52b4",
+          "region_id": "perceptual_region_868b72b3989f0a2220896702"
+        }
+      ],
+      "report_id": "perceptual_binding_report_07d455998801d32e7fde4bb1",
+      "resulting_candidate_ids": [
+        "object_candidate_0d8ab3ac5b93522474e668ae"
+      ],
+      "sample_ids": [
+        "sensory_sample_0a03b15d9df22949b55aaeea",
+        "sensory_sample_1d3f7b510493321fe50db771",
+        "sensory_sample_1f4276671f21596d9aaeb277",
+        "sensory_sample_1fc1bd70cc593d5ed88f5fca",
+        "sensory_sample_793fbde490fd90499477309f",
+        "sensory_sample_9aa0b04433214608b0c86b73",
+        "sensory_sample_cdd74a1fb700359fc34753ce",
+        "sensory_sample_d541708b55cba1d62688a8bd",
+        "sensory_sample_d811b6d131538679de9903d0"
+      ],
+      "structural_fingerprint": "659a79fbd053675b44e7c687a7c8cb14fef2b29845d1cbab03a182319554d180",
+      "temporal_event_ids": [
+        "temporal_event_c85ad215263da12a82d32f00"
+      ]
+    },
+    {
+      "frames": [
+        {
+          "frame_index": 0,
+          "image_sha256": "701f146801557702ce87a46127ef34b9f6b19d2a500105aca1bcb9dcd6ed769e",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8199215686274511,
+                0.005310215177979843,
+                0.792156862745098,
+                0.8431372549019608,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.032552083333333336,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8156862745098039
+              ],
+              "area_fraction": 0.032552083333333336,
+              "bbox_norm": [
+                0.0625,
+                0.3333333333333333,
+                0.21875,
+                0.5416666666666666
+              ],
+              "centroid_norm": [
+                0.1368421052631579,
+                0.43661971830985913
+              ],
+              "common_motion_supported": false,
+              "evidence_ref": "evidence_82832448a3b2497fafdca258",
+              "frame_index": 0,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_6703eb48c0599ca527624d8f",
+                "source_archive_member_path": "samples/sensory_sample_872885947927beb371654c81.bin",
+                "source_sequence_number": 0,
+                "source_timestamp_ns": 0
+              },
+              "motion": [
+                0.0,
+                0.0
+              ],
+              "prior_region_id": null,
+              "region_id": "perceptual_region_3deafdd55744e321ab8b8b76",
+              "sample_id": "sensory_sample_872885947927beb371654c81",
+              "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74"
+            }
+          ],
+          "sample_id": "sensory_sample_872885947927beb371654c81",
+          "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 1,
+          "image_sha256": "2373f3317517bde3ce97c8926972f29dabb17114f89743d6577301fcb1cdf965",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8314771241830067,
+                0.007300814504870949,
+                0.8,
+                0.8509803921568627,
+                0.8235294117647058,
+                0.8352941176470589,
+                0.8352941176470589,
+                0.032552083333333336,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8274509803921568,
+                0.8352941176470589,
+                0.8352941176470589,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8352941176470589,
+                0.8352941176470589,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8352941176470589,
+                0.8352941176470589,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8392156862745098,
+                0.8352941176470589,
+                0.8274509803921568
+              ],
+              "area_fraction": 0.032552083333333336,
+              "bbox_norm": [
+                0.125,
+                0.3333333333333333,
+                0.28125,
+                0.5416666666666666
+              ],
+              "centroid_norm": [
+                0.2,
+                0.43661971830985913
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_ab40f4091f309b4a9a689227",
+              "frame_index": 1,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_6703eb48c0599ca527624d8f",
+                "source_archive_member_path": "samples/sensory_sample_15b9e3f18f3dbe7f23d1b9b2.bin",
+                "source_sequence_number": 1,
+                "source_timestamp_ns": 200000000
+              },
+              "motion": [
+                0.06315789473684211,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_3deafdd55744e321ab8b8b76",
+              "region_id": "perceptual_region_369672f27f8e3b26eafbe9c9",
+              "sample_id": "sensory_sample_15b9e3f18f3dbe7f23d1b9b2",
+              "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74"
+            }
+          ],
+          "sample_id": "sensory_sample_15b9e3f18f3dbe7f23d1b9b2",
+          "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 2,
+          "image_sha256": "bc190cfa11430ecde08b9454f60a9939ab0bc7be81061b0a961b68df413a2f85",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8474771241830066,
+                0.007022126834697842,
+                0.8196078431372549,
+                0.8666666666666667,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.032552083333333336,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.8470588235294118,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.8470588235294118,
+                0.8470588235294118,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8392156862745098,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8470588235294118,
+                0.8392156862745098
+              ],
+              "area_fraction": 0.032552083333333336,
+              "bbox_norm": [
+                0.1875,
+                0.3333333333333333,
+                0.34375,
+                0.5416666666666666
+              ],
+              "centroid_norm": [
+                0.2631578947368421,
+                0.43661971830985913
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_842da2f51cc5e65341ec6106",
+              "frame_index": 2,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_6703eb48c0599ca527624d8f",
+                "source_archive_member_path": "samples/sensory_sample_6f8f05c158a695048cb7f22c.bin",
+                "source_sequence_number": 2,
+                "source_timestamp_ns": 400000000
+              },
+              "motion": [
+                0.06315789473684208,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_369672f27f8e3b26eafbe9c9",
+              "region_id": "perceptual_region_c56d9c2751abc67e806959da",
+              "sample_id": "sensory_sample_6f8f05c158a695048cb7f22c",
+              "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74"
+            }
+          ],
+          "sample_id": "sensory_sample_6f8f05c158a695048cb7f22c",
+          "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 3,
+          "image_sha256": "36671fe282d7a82009a3613fe6b8f3ffdc7e286e91f71e1f33b0d5f13df657cf",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8217516339869283,
+                0.006174364201464259,
+                0.792156862745098,
+                0.8470588235294118,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.032552083333333336,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8235294117647058
+              ],
+              "area_fraction": 0.032552083333333336,
+              "bbox_norm": [
+                0.25,
+                0.3333333333333333,
+                0.40625,
+                0.5416666666666666
+              ],
+              "centroid_norm": [
+                0.3263157894736842,
+                0.43661971830985913
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_842e8c8d8d4915cc534ab46b",
+              "frame_index": 3,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_6703eb48c0599ca527624d8f",
+                "source_archive_member_path": "samples/sensory_sample_b0e1503398d14aa589991014.bin",
+                "source_sequence_number": 3,
+                "source_timestamp_ns": 600000000
+              },
+              "motion": [
+                0.06315789473684214,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_c56d9c2751abc67e806959da",
+              "region_id": "perceptual_region_922ea35e6d404192ea1b8dd3",
+              "sample_id": "sensory_sample_b0e1503398d14aa589991014",
+              "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74"
+            }
+          ],
+          "sample_id": "sensory_sample_b0e1503398d14aa589991014",
+          "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 4,
+          "image_sha256": "a78596a617ee1f293c18480cb3042775f358f083623d34fe2940313b71b1a9e2",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8313376906318084,
+                0.0075137010302576334,
+                0.796078431372549,
+                0.8509803921568627,
+                0.8274509803921568,
+                0.8352941176470589,
+                0.8352941176470589,
+                0.032552083333333336,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8313725490196079,
+                0.8352941176470589,
+                0.8313725490196079,
+                0.8313725490196079,
+                0.8313725490196079,
+                0.8352941176470589,
+                0.8313725490196079,
+                0.8313725490196079,
+                0.8274509803921568,
+                0.8313725490196079,
+                0.8352941176470589,
+                0.8274509803921568,
+                0.8274509803921568,
+                0.8313725490196079,
+                0.8313725490196079,
+                0.8274509803921568
+              ],
+              "area_fraction": 0.032552083333333336,
+              "bbox_norm": [
+                0.3125,
+                0.3333333333333333,
+                0.46875,
+                0.5416666666666666
+              ],
+              "centroid_norm": [
+                0.3894736842105263,
+                0.43661971830985913
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_57dbf08ff4afc58feb5cef71",
+              "frame_index": 4,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_6703eb48c0599ca527624d8f",
+                "source_archive_member_path": "samples/sensory_sample_ce578b4724f5fe16e283328b.bin",
+                "source_sequence_number": 4,
+                "source_timestamp_ns": 800000000
+              },
+              "motion": [
+                0.06315789473684208,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_922ea35e6d404192ea1b8dd3",
+              "region_id": "perceptual_region_53dd0edc0cc03d75213dd913",
+              "sample_id": "sensory_sample_ce578b4724f5fe16e283328b",
+              "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74"
+            }
+          ],
+          "sample_id": "sensory_sample_ce578b4724f5fe16e283328b",
+          "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 5,
+          "image_sha256": "2afd63e4150883164400b3e44d54ae450dce9f06ce1b31931e0802f733c54cce",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8477908496732026,
+                0.006479020055863019,
+                0.8156862745098039,
+                0.8666666666666667,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.032552083333333336,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.8509803921568627,
+                0.8470588235294118,
+                0.8470588235294118,
+                0.8509803921568627,
+                0.8549019607843137,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8431372549019608,
+                0.8392156862745098
+              ],
+              "area_fraction": 0.032552083333333336,
+              "bbox_norm": [
+                0.375,
+                0.3333333333333333,
+                0.53125,
+                0.5416666666666666
+              ],
+              "centroid_norm": [
+                0.45263157894736844,
+                0.43661971830985913
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_d54c84713f81e2c6035f7dbf",
+              "frame_index": 5,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_6703eb48c0599ca527624d8f",
+                "source_archive_member_path": "samples/sensory_sample_242cfdf4e464b22e9b15e276.bin",
+                "source_sequence_number": 5,
+                "source_timestamp_ns": 1000000000
+              },
+              "motion": [
+                0.06315789473684214,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_53dd0edc0cc03d75213dd913",
+              "region_id": "perceptual_region_cbf6f68638f4042bf81d28ee",
+              "sample_id": "sensory_sample_242cfdf4e464b22e9b15e276",
+              "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74"
+            }
+          ],
+          "sample_id": "sensory_sample_242cfdf4e464b22e9b15e276",
+          "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74",
+          "unmatched_prior_region_ids": []
+        },
+        {
+          "frame_index": 6,
+          "image_sha256": "71bc019ece174432b7918a0e71e9ee1eae50eaaf03678e2e13b6b15da5daff26",
+          "region_proposals": [
+            {
+              "appearance_features": [
+                0.8234074074074076,
+                0.007248868584554645,
+                0.792156862745098,
+                0.8470588235294118,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.032552083333333336,
+                1.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8274509803921568,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8235294117647058,
+                0.8196078431372549,
+                0.8196078431372549,
+                0.8235294117647058
+              ],
+              "area_fraction": 0.032552083333333336,
+              "bbox_norm": [
+                0.4375,
+                0.3333333333333333,
+                0.59375,
+                0.5416666666666666
+              ],
+              "centroid_norm": [
+                0.5157894736842106,
+                0.43661971830985913
+              ],
+              "common_motion_supported": true,
+              "evidence_ref": "evidence_98e77935d4672519e4934c19",
+              "frame_index": 6,
+              "metadata": {
+                "invented_motion": false,
+                "perceptual_region_only": true,
+                "semantic_category_preinstalled": false,
+                "source_archive_id": "sensory_archive_6703eb48c0599ca527624d8f",
+                "source_archive_member_path": "samples/sensory_sample_9fe572b261f6e5c89ba0bc0b.bin",
+                "source_sequence_number": 6,
+                "source_timestamp_ns": 1200000000
+              },
+              "motion": [
+                0.06315789473684214,
+                0.0
+              ],
+              "prior_region_id": "perceptual_region_cbf6f68638f4042bf81d28ee",
+              "region_id": "perceptual_region_b8b7e7e91d06b66085fc67d8",
+              "sample_id": "sensory_sample_9fe572b261f6e5c89ba0bc0b",
+              "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74"
+            }
+          ],
+          "sample_id": "sensory_sample_9fe572b261f6e5c89ba0bc0b",
+          "temporal_event_id": "temporal_event_171a2882318da0ada4cc9f74",
+          "unmatched_prior_region_ids": []
+        }
+      ],
+      "initial_cycle": 63,
+      "kernel_id": "kernel_ecbb9dff66b48a1ff59b3842",
+      "occlusion_bindings": [],
+      "operation": "bind_native_perception:perceptual_window_0e7285ad7f2c583398a01cad",
+      "output_state_fingerprint": "819b3b9296da8f235a64820e6d8afa81dff7d63af484b16efadf86c904cab384",
+      "policy_revision": 0,
+      "region_bindings": [
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_007d53865f24f1fdfd762805",
+          "object_observation_id": "object_observation_c80e430cb3286bba4b4037b1",
+          "region_id": "perceptual_region_3deafdd55744e321ab8b8b76"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_43decd4788e71ba8262354c3",
+          "object_observation_id": "object_observation_c618d17838d07f198f1e36da",
+          "region_id": "perceptual_region_369672f27f8e3b26eafbe9c9"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_2199a6f53a6afdf8d29d2de2",
+          "object_observation_id": "object_observation_f1f36ddbbdf5b2cb98f21479",
+          "region_id": "perceptual_region_c56d9c2751abc67e806959da"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_124661699c90c6d66f068e39",
+          "object_observation_id": "object_observation_a13d4d9790e55dbe68abc793",
+          "region_id": "perceptual_region_922ea35e6d404192ea1b8dd3"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_9ea9da682a2eb54f92e08a47",
+          "object_observation_id": "object_observation_824eec92a56c016f3bcbe9eb",
+          "region_id": "perceptual_region_53dd0edc0cc03d75213dd913"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_6f89f7177e4804d9c0f8cd9d",
+          "object_observation_id": "object_observation_c9f8a89d6e04386c123fa8d7",
+          "region_id": "perceptual_region_cbf6f68638f4042bf81d28ee"
+        },
+        {
+          "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+          "disposition": "associate",
+          "object_observation_event_id": "object_observation_event_02eea5e2e52078c00472ea55",
+          "object_observation_id": "object_observation_cbc1528e94bd1f05c0810a9e",
+          "region_id": "perceptual_region_b8b7e7e91d06b66085fc67d8"
+        }
+      ],
+      "report_id": "perceptual_binding_report_e9608129a37577466b9bed5c",
+      "resulting_candidate_ids": [
+        "object_candidate_0d8ab3ac5b93522474e668ae"
+      ],
+      "sample_ids": [
+        "sensory_sample_15b9e3f18f3dbe7f23d1b9b2",
+        "sensory_sample_242cfdf4e464b22e9b15e276",
+        "sensory_sample_6f8f05c158a695048cb7f22c",
+        "sensory_sample_872885947927beb371654c81",
+        "sensory_sample_9fe572b261f6e5c89ba0bc0b",
+        "sensory_sample_b0e1503398d14aa589991014",
+        "sensory_sample_ce578b4724f5fe16e283328b"
+      ],
+      "structural_fingerprint": "e38c4aa5c85c1c426743ef18b10747201f616fb9ddf11e217cd48d58bcbad6fa",
+      "temporal_event_ids": [
+        "temporal_event_171a2882318da0ada4cc9f74"
+      ]
+    }
+  ],
+  "promotion_report": {
+    "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+    "candidate_snapshot": {
+      "ambiguity_count": 0,
+      "appearance_centroid": [
+        0.8247548441598862,
+        0.00582471150200287,
+        0.7997385620915034,
+        0.841045751633987,
+        0.8222222222222224,
+        0.8261437908496734,
+        0.8269281045751635,
+        0.03826195987654322,
+        1.0,
+        0.9921568627450981,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.8250980392156865,
+        0.8269281045751635,
+        0.8261437908496734,
+        0.8235294117647061,
+        0.8250980392156865,
+        0.8269281045751635,
+        0.8261437908496734,
+        0.8235294117647061,
+        0.8232679738562093,
+        0.8248366013071897,
+        0.8258823529411766,
+        0.8214379084967321,
+        0.8235294117647061,
+        0.8253594771241831,
+        0.8250980392156865,
+        0.8214379084967321
+      ],
+      "candidate_id": "object_candidate_0d8ab3ac5b93522474e668ae",
+      "common_motion_count": 11,
+      "competing_candidate_ids": [],
+      "created_cycle": 5,
+      "episode_ids": [
+        "temporal_event_171a2882318da0ada4cc9f74",
+        "temporal_event_b5cfca3837cc8f4df1f58ba7",
+        "temporal_event_c85ad215263da12a82d32f00"
+      ],
+      "evidence_refs": [
+        "evidence_0fff1b63a55afbcf6061fe91",
+        "evidence_57dbf08ff4afc58feb5cef71",
+        "evidence_6f66ae379acb3ad4cb6fc7d5",
+        "evidence_72986f6cd984336d51bf89f5",
+        "evidence_7feb24573deb980ac74bf619",
+        "evidence_82832448a3b2497fafdca258",
+        "evidence_842da2f51cc5e65341ec6106",
+        "evidence_842e8c8d8d4915cc534ab46b",
+        "evidence_8af998e08d7718139d6c3a5e",
+        "evidence_98e77935d4672519e4934c19",
+        "evidence_aa1157e125302eae1c5592cc",
+        "evidence_ab40f4091f309b4a9a689227",
+        "evidence_c5a3f0ba7f879c7899268265",
+        "evidence_d54c84713f81e2c6035f7dbf",
+        "evidence_d971a38b96191183d44a7b52",
+        "evidence_e8a31d261e04faa62787818e"
+      ],
+      "last_episode_id": "temporal_event_171a2882318da0ada4cc9f74",
+      "last_frame_index": 6,
+      "last_motion": [
+        0.06315789473684214,
+        0.0
+      ],
+      "last_position": [
+        0.5157894736842106,
+        0.43661971830985913
+      ],
+      "observation_ids": [
+        "object_observation_171b37fba6b9af66199c94ff",
+        "object_observation_267ba08e24a04b411590e485",
+        "object_observation_2ab5c9552e7d3550a2f19ffe",
+        "object_observation_2ddc8ad9e0f2fa75b846441b",
+        "object_observation_3fa060d4154808f39f0fde98",
+        "object_observation_5228b42f0f1a33b2e7f2c297",
+        "object_observation_6905a482867c92c520edb2f1",
+        "object_observation_824eec92a56c016f3bcbe9eb",
+        "object_observation_8c74fc07af85bfea165d318b",
+        "object_observation_a13d4d9790e55dbe68abc793",
+        "object_observation_c618d17838d07f198f1e36da",
+        "object_observation_c80e430cb3286bba4b4037b1",
+        "object_observation_c9f8a89d6e04386c123fa8d7",
+        "object_observation_cbc1528e94bd1f05c0810a9e",
+        "object_observation_efdfde700748d48a423e52b4",
+        "object_observation_f1f36ddbbdf5b2cb98f21479"
+      ],
+      "occlusion_count": 1,
+      "persistence_count": 12,
+      "promoted_concept_id": null,
+      "reappearance_count": 1,
+      "status": "eligible",
+      "support_components": {
+        "ambiguity_penalty": 0.0,
+        "common_motion": 1.0,
+        "persistence": 1.0,
+        "reappearance": 1.0,
+        "recurrence": 1.0,
+        "transformation": 1.0,
+        "weighted_penalty": 0.0,
+        "weighted_positive": 0.8
+      },
+      "support_score": 0.8,
+      "transformation_count": 7,
+      "updated_cycle": 70,
+      "visible_observation_count": 15
+    },
+    "cycle": 71,
+    "disposition": "promote",
+    "evidence_refs": [
+      "evidence_0fff1b63a55afbcf6061fe91",
+      "evidence_57dbf08ff4afc58feb5cef71",
+      "evidence_6f66ae379acb3ad4cb6fc7d5",
+      "evidence_72986f6cd984336d51bf89f5",
+      "evidence_7feb24573deb980ac74bf619",
+      "evidence_82832448a3b2497fafdca258",
+      "evidence_842da2f51cc5e65341ec6106",
+      "evidence_842e8c8d8d4915cc534ab46b",
+      "evidence_8af998e08d7718139d6c3a5e",
+      "evidence_98e77935d4672519e4934c19",
+      "evidence_aa1157e125302eae1c5592cc",
+      "evidence_ab40f4091f309b4a9a689227",
+      "evidence_c5a3f0ba7f879c7899268265",
+      "evidence_d54c84713f81e2c6035f7dbf",
+      "evidence_d971a38b96191183d44a7b52",
+      "evidence_e8a31d261e04faa62787818e"
+    ],
+    "kernel_id": "kernel_ecbb9dff66b48a1ff59b3842",
+    "operation": "promote_proto_object:object_candidate_0d8ab3ac5b93522474e668ae",
+    "policy_revision": 1,
+    "proposed_concept_id": "concept_378590c330abb6977c1c7d84",
+    "proposed_label": "proto-object-0d8ab3ac5b93",
+    "rejection_codes": [],
+    "report_id": "object_promotion_report_d553c1581b2fbfe2d9fb162e",
+    "structural_fingerprint": "3708c5bb3c928e076176318a871a5aa629264b32301b5c2bf31212c00794d754"
+  }
+}

@@ -1,0 +1,251 @@
+{
+  "checkpoint": "/mnt/data/verdant_rebuild/artifacts/milestone_3_claims_demo.vdk",
+  "checkpoint_sha256": "d13be4ee90791d0dc600d69519f8aa87f72ff57b7334abc50569275cb3e340c3",
+  "claims": [
+    {
+      "claim_id": "claim_4dba514709f92e106ecfab76",
+      "net_score": -0.18290000000000006,
+      "object": "lexeme:open",
+      "polarity": "affirmed",
+      "predicate": "has_property",
+      "refutation_evidence_count": 2,
+      "refutation_score": 0.998,
+      "status": "rejected",
+      "subject": "lexeme:door",
+      "superseded_by_claim_id": "claim_921ad0b64cb9d6bed921fb7f",
+      "support_evidence_count": 2,
+      "support_score": 0.8150999999999999,
+      "support_sources": [
+        "human_testimony",
+        "human_testimony"
+      ]
+    },
+    {
+      "claim_id": "claim_921ad0b64cb9d6bed921fb7f",
+      "net_score": 0.18290000000000006,
+      "object": "lexeme:open",
+      "polarity": "negated",
+      "predicate": "has_property",
+      "refutation_evidence_count": 2,
+      "refutation_score": 0.8150999999999999,
+      "status": "confirmed",
+      "subject": "lexeme:door",
+      "superseded_by_claim_id": null,
+      "support_evidence_count": 2,
+      "support_score": 0.998,
+      "support_sources": [
+        "direct_observation",
+        "physical_outcome"
+      ]
+    },
+    {
+      "claim_id": "claim_3f35ec0693de6bb95d00b08f",
+      "net_score": 0.0,
+      "object": "bright",
+      "polarity": "affirmed",
+      "predicate": "has_property",
+      "refutation_evidence_count": 1,
+      "refutation_score": 0.9,
+      "status": "contested",
+      "subject": "indicator",
+      "superseded_by_claim_id": null,
+      "support_evidence_count": 1,
+      "support_score": 0.9,
+      "support_sources": [
+        "direct_observation"
+      ]
+    },
+    {
+      "claim_id": "claim_e50d8373c9b0c437ec97559c",
+      "net_score": 0.0,
+      "object": "bright",
+      "polarity": "negated",
+      "predicate": "has_property",
+      "refutation_evidence_count": 1,
+      "refutation_score": 0.9,
+      "status": "contested",
+      "subject": "indicator",
+      "superseded_by_claim_id": null,
+      "support_evidence_count": 1,
+      "support_score": 0.9,
+      "support_sources": [
+        "direct_observation"
+      ]
+    }
+  ],
+  "claims_not_made": [
+    "live sensory grounding",
+    "truth from source class alone",
+    "unrestricted logical reasoning",
+    "consciousness"
+  ],
+  "contradictions": [
+    {
+      "claim_ids": [
+        "claim_3f35ec0693de6bb95d00b08f",
+        "claim_e50d8373c9b0c437ec97559c"
+      ],
+      "claim_key": "claimkey_15c2c22f3195bb34f1c2199e",
+      "contradiction_id": "contradiction_08f4854d548f2fcb3b88a0aa",
+      "detected_cycle": 23,
+      "evidence_refs": [
+        "evidence_000952ee5fd9f7f0048717eb",
+        "evidence_d45bc86ae9ae61758b2e6e1a"
+      ],
+      "latest_revision_id": null,
+      "preferred_claim_id": null,
+      "status": "active",
+      "updated_cycle": 23
+    },
+    {
+      "claim_ids": [
+        "claim_4dba514709f92e106ecfab76",
+        "claim_921ad0b64cb9d6bed921fb7f"
+      ],
+      "claim_key": "claimkey_10d55b921642955892834ab7",
+      "contradiction_id": "contradiction_1897a6e5898650e819250350",
+      "detected_cycle": 19,
+      "evidence_refs": [
+        "evidence_91a169e6dd8d9fee04c66a55",
+        "evidence_c2b978055d374d5d23093cba",
+        "evidence_e47ac5e0adde50eeebf2ed55",
+        "evidence_f1d16c3cfb18510b72cf2bea"
+      ],
+      "latest_revision_id": "revision_d2dc92fdcb6e23355dad6176",
+      "preferred_claim_id": "claim_921ad0b64cb9d6bed921fb7f",
+      "status": "weighted",
+      "updated_cycle": 21
+    }
+  ],
+  "controlled_claim_chunk_archives": [
+    "/mnt/data/verdant_rebuild/artifacts/milestone_3_chunks/controlled-visual-closed.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_3_chunks/controlled-outcome-blocked.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_3_chunks/indicator-bright-positive.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_3_chunks/indicator-bright-negative.ecchunk.zip"
+  ],
+  "current_door_belief": {
+    "attributes": {
+      "controlled_milestone_3_source": true
+    },
+    "claim_id": "claim_921ad0b64cb9d6bed921fb7f",
+    "claim_key": "claimkey_10d55b921642955892834ab7",
+    "created_cycle": 19,
+    "net_score": 0.18290000000000006,
+    "object_concept_id": "concept_a16866f2f67415fa5a12cf47",
+    "polarity": "negated",
+    "predicate": "has_property",
+    "refutation_ledger": [
+      {
+        "confidence": 0.95,
+        "cycle": 21,
+        "effective_weight": 0.57,
+        "evidence_id": "evidence_91a169e6dd8d9fee04c66a55",
+        "rationale": "Handwritten teacher property statement parsed by taught grammar.",
+        "source_class": "human_testimony",
+        "source_weight": 0.6,
+        "stance": "refute"
+      },
+      {
+        "confidence": 0.95,
+        "cycle": 18,
+        "effective_weight": 0.57,
+        "evidence_id": "evidence_c2b978055d374d5d23093cba",
+        "rationale": "Handwritten teacher property statement parsed by taught grammar.",
+        "source_class": "human_testimony",
+        "source_weight": 0.6,
+        "stance": "refute"
+      }
+    ],
+    "refutation_score": 0.8150999999999999,
+    "status": "confirmed",
+    "subject_concept_id": "concept_8736f46827154709995435b4",
+    "superseded_by_claim_id": null,
+    "support_ledger": [
+      {
+        "confidence": 1.0,
+        "cycle": 19,
+        "effective_weight": 0.9,
+        "evidence_id": "evidence_e47ac5e0adde50eeebf2ed55",
+        "rationale": "Controlled visual evidence conflicts with teacher testimony.",
+        "source_class": "direct_observation",
+        "source_weight": 0.9,
+        "stance": "support"
+      },
+      {
+        "confidence": 1.0,
+        "cycle": 20,
+        "effective_weight": 0.98,
+        "evidence_id": "evidence_f1d16c3cfb18510b72cf2bea",
+        "rationale": "Physical consequence independently supports the closed-door claim.",
+        "source_class": "physical_outcome",
+        "source_weight": 0.98,
+        "stance": "support"
+      }
+    ],
+    "support_score": 0.998,
+    "updated_cycle": 21
+  },
+  "current_indicator_belief": null,
+  "description": "Typed claims, weighted epistemic source classes, localized contradictions, and history-preserving revision.",
+  "epistemic_policy": {
+    "confirmation_threshold": 0.8,
+    "minimum_preference_score": 0.02,
+    "resolution_margin": 0.15,
+    "revision": 0,
+    "source_weights": {
+      "direct_observation": 0.9,
+      "external_testimony": 0.5,
+      "human_testimony": 0.6,
+      "physical_outcome": 0.98,
+      "self_action": 0.85,
+      "system_inference": 0.4,
+      "translation": 0.2
+    }
+  },
+  "important_boundary": "Direct-observation and physical-outcome source classes are controlled test declarations in Milestone 3; live external device sources are not connected.",
+  "kernel_id": "kernel_89e482f09699f476d62212df",
+  "metrics": {
+    "average_neighbor_count": 0.96,
+    "claim_count": 4,
+    "concept_count": 25,
+    "contradiction_count": 2,
+    "cycle": 23,
+    "directed_density": 0.02,
+    "evidence_count": 69,
+    "field_history_count": 23,
+    "field_norm": 0.9999999999999999,
+    "relation_count": 12,
+    "revision_count": 1,
+    "transition_count": 23
+  },
+  "milestone": 3,
+  "revisions": [
+    {
+      "contradiction_id": "contradiction_1897a6e5898650e819250350",
+      "cycle": 19,
+      "evidence_refs": [
+        "evidence_c2b978055d374d5d23093cba",
+        "evidence_e47ac5e0adde50eeebf2ed55"
+      ],
+      "policy_snapshot": {
+        "confirmation_threshold": 0.8,
+        "minimum_preference_score": 0.02,
+        "resolution_margin": 0.15,
+        "revision": 0,
+        "source_weights": {
+          "direct_observation": 0.9,
+          "external_testimony": 0.5,
+          "human_testimony": 0.6,
+          "physical_outcome": 0.98,
+          "self_action": 0.85,
+          "system_inference": 0.4,
+          "translation": 0.2
+        }
+      },
+      "prior_claim_id": "claim_4dba514709f92e106ecfab76",
+      "reason": "Current belief changed because weighted evidence crossed the configured contradiction-resolution margin.",
+      "revised_to_claim_id": "claim_921ad0b64cb9d6bed921fb7f",
+      "revision_id": "revision_d2dc92fdcb6e23355dad6176"
+    }
+  ]
+}

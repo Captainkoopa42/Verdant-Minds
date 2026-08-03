@@ -1,0 +1,203 @@
+{
+  "checkpoint": "/mnt/data/verdant_rebuild/artifacts/milestone_5_governance_demo.vdk",
+  "checkpoint_sha256": "e127c9cb0c057f6e4ede686b047f13162e2c722bf94b7361e700b6ed12173ddc",
+  "claims_not_made": [
+    "general moral reasoning",
+    "autonomous policy discovery",
+    "live embodied action",
+    "consciousness"
+  ],
+  "council_reports": "/mnt/data/verdant_rebuild/artifacts/milestone_5_council_reports.json",
+  "description": "Constitutionally separated Data, Forefront, and Ethics Kings; rule-ordered Council decisions and operation authorization.",
+  "door_case": {
+    "affirmative_claim_id": "claim_4dba514709f92e106ecfab76",
+    "current_belief_id": "claim_921ad0b64cb9d6bed921fb7f",
+    "force_authorized_operations": [],
+    "force_blocked_operations": [
+      "force_forward_through_door"
+    ],
+    "force_decision": "deny",
+    "force_decision_event_id": "council_decision_90f876b406f7c6c5d64641dd",
+    "force_safe_alternatives": [
+      "inspect_door"
+    ],
+    "inspection_decision_event_id": "council_decision_a5c4599bae57df01a3824f56",
+    "king_assessments": {
+      "DataKing": {
+        "assessment_id": "king_assessment_8625544697b8b0f96cbc5cef",
+        "attention_candidate_ids": [],
+        "confidence": 0.998,
+        "constraints": [
+          "target_claim_not_currently_supported"
+        ],
+        "details": {
+          "contradiction_id": "contradiction_1897a6e5898650e819250350",
+          "current_belief_id": "claim_921ad0b64cb9d6bed921fb7f",
+          "resonance_event_count": 1,
+          "resonance_used_as_evidence": false,
+          "target_claim_id": "claim_4dba514709f92e106ecfab76",
+          "target_claim_status": "rejected",
+          "target_net_score": -0.42800000000000005,
+          "target_refutation_score": 0.998,
+          "target_support_score": 0.57
+        },
+        "evidence_refs": [
+          "evidence_1b471e559d070b5b0bd3ea20",
+          "evidence_beaeaa3691dac865adc76e86",
+          "evidence_eb5f770b8925a1b5652fef0c"
+        ],
+        "jurisdiction": "epistemic_support",
+        "king": "DataKing",
+        "proposal_id": "council_proposal_1856d9fb418328caf7e79253",
+        "rationale_codes": [
+          "opposed_by_current_belief",
+          "resonance_is_not_evidence"
+        ],
+        "recommendation": "oppose",
+        "score": 0.0
+      },
+      "EthicsKing": {
+        "assessment_id": "king_assessment_d3202a64c41270daf8d7533b",
+        "attention_candidate_ids": [],
+        "confidence": 0.9,
+        "constraints": [
+          "high_harm_risk_low_reversibility"
+        ],
+        "details": {
+          "boundary_sensitive": false,
+          "consent_present": false,
+          "consent_required": false,
+          "declared_harm_risk": 0.75,
+          "effective_harm_risk": 0.9,
+          "learned_action_risk": 0.0,
+          "reversibility": 0.15,
+          "uncertainty_increment": 0.15,
+          "veto_threshold": 0.65
+        },
+        "evidence_refs": [
+          "evidence_1b471e559d070b5b0bd3ea20",
+          "evidence_beaeaa3691dac865adc76e86",
+          "evidence_eb5f770b8925a1b5652fef0c"
+        ],
+        "jurisdiction": "consequence_permission_boundary",
+        "king": "EthicsKing",
+        "proposal_id": "council_proposal_1856d9fb418328caf7e79253",
+        "rationale_codes": [
+          "harm_prevention"
+        ],
+        "recommendation": "deny",
+        "score": 0.09999999999999998
+      },
+      "ForefrontKing": {
+        "assessment_id": "king_assessment_e540a5be6c4cfc7442799ab0",
+        "attention_candidate_ids": [
+          "attention_8526083bef60609faf8fe808",
+          "attention_89d11b4cb22824a330e58f8f",
+          "attention_ad27736fddc3c28041114811",
+          "attention_becab71629ac08b073c4b5da",
+          "attention_c455c58f52b89052055e6f99"
+        ],
+        "confidence": 0.6108733119544969,
+        "constraints": [],
+        "details": {
+          "attention_budget": 1.0,
+          "attention_signal": 0.6174662390899377,
+          "contradiction_boost": 1.0,
+          "priority_threshold": 0.55,
+          "requested_resource": 0.1
+        },
+        "evidence_refs": [],
+        "jurisdiction": "bounded_present_priority",
+        "king": "ForefrontKing",
+        "proposal_id": "council_proposal_1856d9fb418328caf7e79253",
+        "rationale_codes": [
+          "contradiction_priority_without_truth_authority",
+          "finite_attention_budget"
+        ],
+        "recommendation": "prioritize",
+        "score": 0.7217466239089939
+      }
+    },
+    "negated_claim_id": "claim_921ad0b64cb9d6bed921fb7f",
+    "resonance_candidate_count": 5,
+    "resonance_event_id": "resonance_event_f87bb48161a47bcd3d632b0e",
+    "safe_inspection_authorized_operations": [
+      "inspect_door"
+    ],
+    "safe_inspection_constraints": [
+      "result_must_return_through_evidence_pipeline",
+      "target_claim_not_currently_supported"
+    ],
+    "safe_inspection_decision": "approve_with_constraints"
+  },
+  "governance_policy": {
+    "attention_budget": 1.0,
+    "enabled_kings": {
+      "DataKing": true,
+      "EthicsKing": true,
+      "ForefrontKing": true
+    },
+    "ethics_veto_threshold": 0.65,
+    "forefront_priority_threshold": 0.55,
+    "learned_action_risk": {},
+    "outcome_learning_rate": 0.8,
+    "policy_version": "council-v1",
+    "revision": 0,
+    "t_g": 0.5,
+    "weights": {
+      "DataKing": 1.0,
+      "EthicsKing": 1.5,
+      "ForefrontKing": 1.0
+    }
+  },
+  "important_boundaries": [
+    "The Council does not create evidence, concepts, relations, or claims.",
+    "Resonance affects Forefront availability but is never Data King evidence.",
+    "The three King assessments are combined by explicit rule order, not a weighted average.",
+    "Physical outcomes are controlled declarations in this milestone."
+  ],
+  "kernel_id": "kernel_d954b555a1d64c4b9174bc74",
+  "metrics": {
+    "active_shard_id": "root",
+    "attention_candidate_count": 5,
+    "average_neighbor_count": 0.7619047619047619,
+    "claim_count": 2,
+    "concept_count": 21,
+    "contradiction_count": 1,
+    "council_decision_count": 2,
+    "cycle": 22,
+    "directed_density": 0.01904761904761905,
+    "evidence_count": 57,
+    "field_address_count": 21,
+    "field_history_count": 19,
+    "field_norm": 1.0,
+    "governance_outcome_count": 0,
+    "object_candidate_count": 0,
+    "object_observation_count": 0,
+    "object_observation_event_count": 0,
+    "object_promotion_event_count": 0,
+    "perceptual_binding_event_count": 0,
+    "promoted_proto_object_count": 0,
+    "relation_count": 8,
+    "resonance_event_count": 1,
+    "resonance_profile_count": 21,
+    "revision_count": 1,
+    "routing_event_count": 0,
+    "sensory_archive_count": 0,
+    "sensory_sample_count": 0,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "synchronization_group_count": 0,
+    "temporal_event_assembly_count": 0,
+    "temporal_event_count": 0,
+    "transition_count": 22,
+    "workspace_active_item_count": 0,
+    "workspace_allocated_resource": 0,
+    "workspace_cycle_event_count": 0,
+    "workspace_writeback_event_count": 0
+  },
+  "milestone": 5,
+  "resonance_query_archive": "/mnt/data/verdant_rebuild/artifacts/milestone_5_door_resonance_query.ecchunk.zip"
+}

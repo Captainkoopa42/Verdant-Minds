@@ -1,0 +1,131 @@
+{
+  "adapter_checkpoint_sha256": "f1cb1b95407bdafa9b5d79ed8052faef990020b547ef212758e05ab3e5111d4a",
+  "adapter_fingerprint": "26e75274743f28ca9300b341c084ca0075980fd4463969de85864a6630596b45",
+  "checkpoint_bytes_equal": true,
+  "commands": 5,
+  "direct_checkpoint_sha256": "f1cb1b95407bdafa9b5d79ed8052faef990020b547ef212758e05ab3e5111d4a",
+  "direct_fingerprint": "26e75274743f28ca9300b341c084ca0075980fd4463969de85864a6630596b45",
+  "fingerprints_equal": true,
+  "metrics": {
+    "ablated_layered_structure_count": 0,
+    "ablated_structure_count": 0,
+    "active_shard_id": "root",
+    "attention_candidate_count": 14,
+    "average_neighbor_count": 0.0,
+    "claim_count": 0,
+    "compilation_probe_event_count": 0,
+    "concept_count": 3,
+    "contradiction_count": 0,
+    "council_decision_count": 0,
+    "cycle": 22,
+    "directed_density": 0.0,
+    "eligible_hierarchy_candidate_count": 0,
+    "eligible_structure_candidate_count": 0,
+    "evidence_count": 15,
+    "field_address_count": 3,
+    "field_history_count": 5,
+    "field_norm": 1.0,
+    "governance_outcome_count": 0,
+    "hierarchy_candidate_count": 0,
+    "hierarchy_observation_event_count": 0,
+    "hierarchy_promotion_event_count": 0,
+    "layered_probe_event_count": 0,
+    "layered_structure_count": 0,
+    "object_candidate_count": 0,
+    "object_observation_count": 0,
+    "object_observation_event_count": 0,
+    "object_promotion_event_count": 0,
+    "perceptual_binding_event_count": 0,
+    "plasticity_association_count": 3,
+    "plasticity_event_count": 5,
+    "plasticity_total_strength": 0.8090386212075166,
+    "promoted_proto_object_count": 0,
+    "promoted_structure_count": 0,
+    "refolded_structure_count": 0,
+    "relation_count": 0,
+    "resonance_event_count": 5,
+    "resonance_profile_count": 3,
+    "revision_count": 0,
+    "routing_event_count": 0,
+    "sensory_archive_count": 0,
+    "sensory_sample_count": 0,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "structural_challenge_count": 0,
+    "structure_availability_event_count": 0,
+    "structure_candidate_count": 1,
+    "structure_interaction_event_count": 0,
+    "structure_observation_event_count": 2,
+    "structure_promotion_event_count": 0,
+    "structure_refold_event_count": 0,
+    "synchronization_group_count": 0,
+    "temporal_event_assembly_count": 0,
+    "temporal_event_count": 0,
+    "transition_count": 22,
+    "workspace_active_item_count": 4,
+    "workspace_allocated_resource": 0.56,
+    "workspace_cycle_event_count": 5,
+    "workspace_writeback_event_count": 0
+  },
+  "metrics_equal": true,
+  "receipts": [
+    {
+      "command_id": "cmd_proof-001",
+      "event_types": [
+        "EVIDENCE_ACCEPTED",
+        "RESONANCE_COMMITTED",
+        "WORKSPACE_CYCLE",
+        "PLASTICITY_CHANGED"
+      ],
+      "state_revision_after": 4
+    },
+    {
+      "command_id": "cmd_proof-002",
+      "event_types": [
+        "EVIDENCE_ACCEPTED",
+        "RESONANCE_COMMITTED",
+        "WORKSPACE_CYCLE",
+        "PLASTICITY_CHANGED"
+      ],
+      "state_revision_after": 8
+    },
+    {
+      "command_id": "cmd_proof-003",
+      "event_types": [
+        "EVIDENCE_ACCEPTED",
+        "RESONANCE_COMMITTED",
+        "WORKSPACE_CYCLE",
+        "PLASTICITY_CHANGED"
+      ],
+      "state_revision_after": 12
+    },
+    {
+      "command_id": "cmd_proof-004",
+      "event_types": [
+        "EVIDENCE_ACCEPTED",
+        "RESONANCE_COMMITTED",
+        "WORKSPACE_CYCLE",
+        "PLASTICITY_CHANGED",
+        "STRUCTURE_CANDIDATE_OBSERVED"
+      ],
+      "state_revision_after": 17
+    },
+    {
+      "command_id": "cmd_proof-005",
+      "event_types": [
+        "EVIDENCE_ACCEPTED",
+        "RESONANCE_COMMITTED",
+        "WORKSPACE_CYCLE",
+        "PLASTICITY_CHANGED",
+        "STRUCTURE_CANDIDATE_OBSERVED"
+      ],
+      "state_revision_after": 22
+    }
+  ],
+  "run_label": "wb-equivalence-proof",
+  "schema": "verdant.workbench.wb01-equivalence-proof.v1",
+  "seed": 1901,
+  "state_dim": 16
+}

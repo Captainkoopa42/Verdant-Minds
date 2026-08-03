@@ -1,0 +1,5 @@
+arm,curriculum_events,internal_cycles,concepts,canonical_relations,plastic_associations,promoted_structures,layered_structures,local_reconstruction_work,local_reconstruction_success,local_structure_used,family_comparison_work,family_transfer_success,family_selectivity_success,plastic_density,plastic_edge_ratio,plastic_max_degree,persistent_bytes,training_wall_seconds
+A_graph_only,30,30,20,15,0,0,0,7,True,False,4,True,True,,,,155098,0.10429451100026199
+B_graph_plus_ecwf,30,30,20,15,0,0,0,7,True,False,4,True,True,,,,155103,0.10321295100129646
+C_plastic_no_folds,30,120,20,15,15,0,0,7,True,False,4,True,True,0.07894736842105263,0.75,3,875482,3.4190915429990127
+D_full_earned_folds,30,158,20,15,15,5,1,1,True,True,3,True,True,0.07894736842105263,0.75,3,1100166,4.821811370000432

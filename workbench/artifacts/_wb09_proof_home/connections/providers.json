@@ -1,0 +1,1 @@
+{"providers":[{"display_name":"Manual / External LLM Paste","enabled":true,"endpoint_url":null,"extra_headers":{},"kind":"paste","model":null,"provider_id":"provider_paste","schema":"verdant.provider.config.v1","secret_env":null,"timeout_seconds":60.0}],"schema":"verdant.providers.index.v1"}

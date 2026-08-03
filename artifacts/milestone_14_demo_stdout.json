@@ -1,0 +1,247 @@
+{
+  "candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+  "candidate_members": [
+    "vel",
+    "tar",
+    "kren"
+  ],
+  "candidate_quality_before_promotion": {
+    "boundary_selectivity": 1.0,
+    "compression_gain": 0.0,
+    "contradiction_tolerance": 1.0,
+    "cross_context_stability": 1.0,
+    "evidence_diversity": 1.0,
+    "internal_cohesion": 0.6579595268271765,
+    "perturbation_survival": 0.0,
+    "reconstructability": 0.8111470438996721,
+    "recurrence": 1.0
+  },
+  "field_prototype_sha256": "1b1a24ac47709454ce662500564b43e7cb24016f6ada76dde681c1e790e5b5f4",
+  "formation_trace": [
+    {
+      "experience_index": 0,
+      "plastic_association_strengths": {
+        "plasticity_association_01555f1e1227673531b8182d": 0.19408,
+        "plasticity_association_4415858078ecf2a1664daf54": 0.19408,
+        "plasticity_association_c685b409209626c032c354c8": 0.21693254601857964
+      },
+      "structure_candidate_count": 0
+    },
+    {
+      "candidate": {
+        "candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+        "occurrence_count": 1,
+        "quality": {
+          "boundary_selectivity": 1.0,
+          "compression_gain": 0.0,
+          "contradiction_tolerance": 1.0,
+          "cross_context_stability": 1.0,
+          "evidence_diversity": 0.5,
+          "internal_cohesion": 0.30717074989675947,
+          "perturbation_survival": 0.0,
+          "reconstructability": 0.5542298709892489,
+          "recurrence": 0.25
+        },
+        "status": "tracking"
+      },
+      "experience_index": 1,
+      "plastic_association_strengths": {
+        "plasticity_association_01555f1e1227673531b8182d": 0.29401408,
+        "plasticity_association_4415858078ecf2a1664daf54": 0.29401408,
+        "plasticity_association_c685b409209626c032c354c8": 0.3334840896902784
+      },
+      "structure_candidate_count": 1
+    },
+    {
+      "candidate": {
+        "candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+        "occurrence_count": 2,
+        "quality": {
+          "boundary_selectivity": 1.0,
+          "compression_gain": 0.0,
+          "contradiction_tolerance": 1.0,
+          "cross_context_stability": 1.0,
+          "evidence_diversity": 0.75,
+          "internal_cohesion": 0.3986002673126296,
+          "perturbation_survival": 0.0,
+          "reconstructability": 0.6313479764065373,
+          "recurrence": 0.5
+        },
+        "status": "tracking"
+      },
+      "experience_index": 2,
+      "plastic_association_strengths": {
+        "plasticity_association_01555f1e1227673531b8182d": 0.38155633408,
+        "plasticity_association_4415858078ecf2a1664daf54": 0.38155633408,
+        "plasticity_association_c685b409209626c032c354c8": 0.4326881337778886
+      },
+      "structure_candidate_count": 1
+    },
+    {
+      "candidate": {
+        "candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+        "occurrence_count": 3,
+        "quality": {
+          "boundary_selectivity": 1.0,
+          "compression_gain": 0.0,
+          "contradiction_tolerance": 1.0,
+          "cross_context_stability": 1.0,
+          "evidence_diversity": 1.0,
+          "internal_cohesion": 0.477871124212866,
+          "perturbation_survival": 0.0,
+          "reconstructability": 0.6912822319522367,
+          "recurrence": 0.75
+        },
+        "status": "tracking"
+      },
+      "experience_index": 3,
+      "plastic_association_strengths": {
+        "plasticity_association_01555f1e1227673531b8182d": 0.45824334865408,
+        "plasticity_association_4415858078ecf2a1664daf54": 0.45824334865408,
+        "plasticity_association_c685b409209626c032c354c8": 0.5171266753304381
+      },
+      "structure_candidate_count": 1
+    },
+    {
+      "candidate": {
+        "candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+        "occurrence_count": 4,
+        "quality": {
+          "boundary_selectivity": 1.0,
+          "compression_gain": 0.0,
+          "contradiction_tolerance": 1.0,
+          "cross_context_stability": 1.0,
+          "evidence_diversity": 1.0,
+          "internal_cohesion": 0.5466132515036429,
+          "perturbation_survival": 0.0,
+          "reconstructability": 0.7393329774219752,
+          "recurrence": 1.0
+        },
+        "status": "eligible"
+      },
+      "experience_index": 4,
+      "plastic_association_strengths": {
+        "plasticity_association_01555f1e1227673531b8182d": 0.525421173420974,
+        "plasticity_association_4415858078ecf2a1664daf54": 0.525421173420974,
+        "plasticity_association_c685b409209626c032c354c8": 0.5889974076689808
+      },
+      "structure_candidate_count": 1
+    },
+    {
+      "candidate": {
+        "candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+        "occurrence_count": 5,
+        "quality": {
+          "boundary_selectivity": 1.0,
+          "compression_gain": 0.0,
+          "contradiction_tolerance": 1.0,
+          "cross_context_stability": 1.0,
+          "evidence_diversity": 1.0,
+          "internal_cohesion": 0.6062362719603073,
+          "perturbation_survival": 0.0,
+          "reconstructability": 0.7786117594541629,
+          "recurrence": 1.0
+        },
+        "status": "eligible"
+      },
+      "experience_index": 5,
+      "plastic_association_strengths": {
+        "plasticity_association_01555f1e1227673531b8182d": 0.5842689479167733,
+        "plasticity_association_4415858078ecf2a1664daf54": 0.5842689479167733,
+        "plasticity_association_c685b409209626c032c354c8": 0.6501709200473751
+      },
+      "structure_candidate_count": 1
+    },
+    {
+      "candidate": {
+        "candidate_id": "structure_candidate_95326e72af2ac41b42add2c9",
+        "occurrence_count": 6,
+        "quality": {
+          "boundary_selectivity": 1.0,
+          "compression_gain": 0.0,
+          "contradiction_tolerance": 1.0,
+          "cross_context_stability": 1.0,
+          "evidence_diversity": 1.0,
+          "internal_cohesion": 0.6579595268271765,
+          "perturbation_survival": 0.0,
+          "reconstructability": 0.8111470438996721,
+          "recurrence": 1.0
+        },
+        "status": "eligible"
+      },
+      "experience_index": 6,
+      "plastic_association_strengths": {
+        "plasticity_association_01555f1e1227673531b8182d": 0.6358195983750934,
+        "plasticity_association_4415858078ecf2a1664daf54": 0.6358195983750934,
+        "plasticity_association_c685b409209626c032c354c8": 0.7022393837313426
+      },
+      "structure_candidate_count": 1
+    }
+  ],
+  "metrics": {
+    "active_shard_id": "root",
+    "attention_candidate_count": 21,
+    "average_neighbor_count": 0.0,
+    "claim_count": 0,
+    "concept_count": 3,
+    "contradiction_count": 0,
+    "council_decision_count": 1,
+    "cycle": 36,
+    "directed_density": 0.0,
+    "eligible_structure_candidate_count": 0,
+    "evidence_count": 21,
+    "field_address_count": 3,
+    "field_history_count": 7,
+    "field_norm": 1.0,
+    "governance_outcome_count": 0,
+    "object_candidate_count": 0,
+    "object_observation_count": 0,
+    "object_observation_event_count": 0,
+    "object_promotion_event_count": 0,
+    "perceptual_binding_event_count": 0,
+    "plasticity_association_count": 3,
+    "plasticity_event_count": 7,
+    "plasticity_total_strength": 1.9738785804815295,
+    "promoted_proto_object_count": 0,
+    "promoted_structure_count": 1,
+    "relation_count": 0,
+    "resonance_event_count": 7,
+    "resonance_profile_count": 3,
+    "revision_count": 0,
+    "routing_event_count": 0,
+    "sensory_archive_count": 0,
+    "sensory_sample_count": 0,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "structure_candidate_count": 1,
+    "structure_observation_event_count": 6,
+    "structure_promotion_event_count": 1,
+    "synchronization_group_count": 0,
+    "temporal_event_assembly_count": 0,
+    "temporal_event_count": 0,
+    "transition_count": 36,
+    "workspace_active_item_count": 3,
+    "workspace_allocated_resource": 0.5,
+    "workspace_cycle_event_count": 7,
+    "workspace_writeback_event_count": 0
+  },
+  "milestone": 14,
+  "name": "Earned Relational Structures",
+  "opaque_name": "P_3e12fa013bb2",
+  "promotion_disposition": "promote",
+  "promotion_rejection_codes": [],
+  "semantic_counts_after_promotion": {
+    "claims": 0,
+    "concepts": 3,
+    "relations": 0
+  },
+  "semantic_counts_before_promotion": {
+    "claims": 0,
+    "concepts": 3,
+    "relations": 0
+  },
+  "semantic_label_preinstalled": false,
+  "structure_id": "structure_3e12fa013bb245e3e0827451"
+}

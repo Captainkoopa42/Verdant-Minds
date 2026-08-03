@@ -1,0 +1,34 @@
+{
+  "active_runtime_boundary": "user media preservation, vision/audio temporal memory, perceptual continuity, and governed proto-object promotion",
+  "active_schema_version": "1.0.0-alpha",
+  "active_test_result": "124 passed",
+  "deleted_active_components": [
+    "verdant_skills/",
+    "tests/test_skills_phase.py",
+    "Milestone 8 active report, manifest, checkpoint, summaries, reports, and stdout artifact",
+    "Kernel skill models, state, methods, metrics, fingerprints, and invariants",
+    "Workspace SKILL source path",
+    "Native TELEMETRY modality and translator",
+    "wheel/yaw/current/body telemetry fixtures",
+    "robot curriculum fixture",
+    "probe-extension and actuator fixtures",
+    "proto-object causal-interaction observation kind and policy gate"
+  ],
+  "external_recovery_backups_not_packaged_as_active_runtime": [
+    "verdant_rebuild_pre_m10_backup",
+    "verdant_rebuild_pre_m11_backup",
+    "verdant_rebuild_pre_m5_backup",
+    "verdant_rebuild_pre_m9_backup"
+  ],
+  "preserved_archive_forbidden_term_hits": [],
+  "python_source_forbidden_term_hits": [],
+  "removed_runtime_present": false,
+  "retained_general_non_hardware_abstractions": [
+    "EvidenceKind.ACTION",
+    "EvidenceKind.OUTCOME",
+    "GovernanceProposalKind.ACT",
+    "WorkspaceSourceKind.AUTHORIZED_ACTION"
+  ],
+  "stale_active_milestone_8_files": [],
+  "stale_pre_milestone_backup_directories_inside_active_tree": []
+}

@@ -1,0 +1,683 @@
+{
+  "analyses": [
+    {
+      "concept_ids": [
+        "concept_796a0fef712f4899c0d8799d",
+        "concept_0d7a721772994296fd0cdb3d",
+        "concept_01554df3bfd8d0718c2de2ee",
+        "concept_571628169e2953db5c88eff0",
+        "concept_4d0573fee54d5a8de62577fb",
+        "concept_a94a02c13b5f04a461160a34"
+      ],
+      "event_key": "push-ab",
+      "frame": {
+        "confidence": 0.92,
+        "first_event": null,
+        "frame_type": "transitive",
+        "object": "b",
+        "polarity": "affirmed",
+        "predicate": "push",
+        "property": null,
+        "rule_id": "transitive_svo",
+        "second_event": null,
+        "sentence": "A pushes B.",
+        "subject": "a",
+        "tokens": [
+          {
+            "category": "noun",
+            "index": 0,
+            "lemma": "a",
+            "normalized": "a",
+            "surface": "A"
+          },
+          {
+            "category": "verb",
+            "index": 1,
+            "lemma": "push",
+            "normalized": "pushes",
+            "surface": "pushes"
+          },
+          {
+            "category": "noun",
+            "index": 2,
+            "lemma": "b",
+            "normalized": "b",
+            "surface": "B"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_d013ae00c50891a5018b6e52",
+        "relation_4ee070e6c093c272b1950b33",
+        "relation_134257deaeea1bb20c9c233b",
+        "relation_7b263f0435c3e3cacacdcaf2",
+        "relation_449fd6669751dab5982d0784",
+        "relation_bb1750184a76e38f3e1ebf4f"
+      ],
+      "sentence": "A pushes B."
+    },
+    {
+      "concept_ids": [
+        "concept_796a0fef712f4899c0d8799d",
+        "concept_0d7a721772994296fd0cdb3d",
+        "concept_01554df3bfd8d0718c2de2ee",
+        "concept_571628169e2953db5c88eff0",
+        "concept_4d0573fee54d5a8de62577fb",
+        "concept_c27fdc575e011a23e6d23cba"
+      ],
+      "event_key": "push-ba",
+      "frame": {
+        "confidence": 0.92,
+        "first_event": null,
+        "frame_type": "transitive",
+        "object": "a",
+        "polarity": "affirmed",
+        "predicate": "push",
+        "property": null,
+        "rule_id": "transitive_svo",
+        "second_event": null,
+        "sentence": "B pushes A.",
+        "subject": "b",
+        "tokens": [
+          {
+            "category": "noun",
+            "index": 0,
+            "lemma": "b",
+            "normalized": "b",
+            "surface": "B"
+          },
+          {
+            "category": "verb",
+            "index": 1,
+            "lemma": "push",
+            "normalized": "pushes",
+            "surface": "pushes"
+          },
+          {
+            "category": "noun",
+            "index": 2,
+            "lemma": "a",
+            "normalized": "a",
+            "surface": "A"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_ab6d99c6c80e2c2ded892128",
+        "relation_262c1ea543678439fdf8a6ad",
+        "relation_631f5a3b6c5871722884171d",
+        "relation_2ca81e6ea41bdbb829bb9101",
+        "relation_0cc44e031fdcbdbe1818fb8f",
+        "relation_43f844ae4b674aa11922248c"
+      ],
+      "sentence": "B pushes A."
+    },
+    {
+      "concept_ids": [
+        "concept_dcb646e3022fe01f91d39171",
+        "concept_8736f46827154709995435b4",
+        "concept_a16866f2f67415fa5a12cf47",
+        "concept_4d0573fee54d5a8de62577fb",
+        "concept_55181934f5386a9fc2319aa8"
+      ],
+      "event_key": "door-open-positive",
+      "frame": {
+        "confidence": 0.95,
+        "first_event": null,
+        "frame_type": "property",
+        "object": null,
+        "polarity": "affirmed",
+        "predicate": null,
+        "property": "open",
+        "rule_id": "copular_property",
+        "second_event": null,
+        "sentence": "The door is open.",
+        "subject": "door",
+        "tokens": [
+          {
+            "category": "determiner",
+            "index": 0,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "The"
+          },
+          {
+            "category": "noun",
+            "index": 1,
+            "lemma": "door",
+            "normalized": "door",
+            "surface": "door"
+          },
+          {
+            "category": "copula",
+            "index": 2,
+            "lemma": "be",
+            "normalized": "is",
+            "surface": "is"
+          },
+          {
+            "category": "adjective",
+            "index": 3,
+            "lemma": "open",
+            "normalized": "open",
+            "surface": "open"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_9cf28606191521f3c8f48d6f",
+        "relation_2f284ae59398ceaf08648b32",
+        "relation_b978861f22a8177875437cb2",
+        "relation_c0d4f9393e6adfeb977d7ca1",
+        "relation_4c35223b4cd9a999ceb49627"
+      ],
+      "sentence": "The door is open."
+    },
+    {
+      "concept_ids": [
+        "concept_dcb646e3022fe01f91d39171",
+        "concept_8736f46827154709995435b4",
+        "concept_a16866f2f67415fa5a12cf47",
+        "concept_3eb6eac43796c4ba01e181d3",
+        "concept_6aedd912ed337ec2158358d4"
+      ],
+      "event_key": "door-open-negative",
+      "frame": {
+        "confidence": 0.95,
+        "first_event": null,
+        "frame_type": "property",
+        "object": null,
+        "polarity": "negated",
+        "predicate": null,
+        "property": "open",
+        "rule_id": "copular_property",
+        "second_event": null,
+        "sentence": "The door is not open.",
+        "subject": "door",
+        "tokens": [
+          {
+            "category": "determiner",
+            "index": 0,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "The"
+          },
+          {
+            "category": "noun",
+            "index": 1,
+            "lemma": "door",
+            "normalized": "door",
+            "surface": "door"
+          },
+          {
+            "category": "copula",
+            "index": 2,
+            "lemma": "be",
+            "normalized": "is",
+            "surface": "is"
+          },
+          {
+            "category": "negator",
+            "index": 3,
+            "lemma": "not",
+            "normalized": "not",
+            "surface": "not"
+          },
+          {
+            "category": "adjective",
+            "index": 4,
+            "lemma": "open",
+            "normalized": "open",
+            "surface": "open"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_7324744d1f149df092c28e12",
+        "relation_4b8ed29180790757616191ee",
+        "relation_cd7963d333cea4e221334045",
+        "relation_7a56cc3e6d688aed87f4bd57",
+        "relation_7a63357b16cd63d343f7de7b"
+      ],
+      "sentence": "The door is not open."
+    },
+    {
+      "concept_ids": [
+        "concept_48378ca7a7e254c7b49b9081",
+        "concept_21b7e6adb4528a404abac7ce",
+        "concept_ed93a2bc6ef49735df1a5fbd",
+        "concept_4d0573fee54d5a8de62577fb",
+        "concept_b8370e24a8f528063e4d4172"
+      ],
+      "event_key": "sound-before-light",
+      "frame": {
+        "confidence": 0.93,
+        "first_event": "sound",
+        "frame_type": "temporal",
+        "object": null,
+        "polarity": "affirmed",
+        "predicate": null,
+        "property": null,
+        "rule_id": "temporal_before",
+        "second_event": "light",
+        "sentence": "The sound occurred before the light.",
+        "subject": null,
+        "tokens": [
+          {
+            "category": "determiner",
+            "index": 0,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "The"
+          },
+          {
+            "category": "noun",
+            "index": 1,
+            "lemma": "sound",
+            "normalized": "sound",
+            "surface": "sound"
+          },
+          {
+            "category": "verb",
+            "index": 2,
+            "lemma": "occur",
+            "normalized": "occurred",
+            "surface": "occurred"
+          },
+          {
+            "category": "temporal_marker",
+            "index": 3,
+            "lemma": "before",
+            "normalized": "before",
+            "surface": "before"
+          },
+          {
+            "category": "determiner",
+            "index": 4,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "the"
+          },
+          {
+            "category": "noun",
+            "index": 5,
+            "lemma": "light",
+            "normalized": "light",
+            "surface": "light"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_378414e1401cf6f98ed8f88b",
+        "relation_7612cb7af83713816f6f5a5a",
+        "relation_14193aa7cec0281f2a3aa7da",
+        "relation_e583f10b087f0e445718da79",
+        "relation_f339f1db9f05dc8adc733a5f"
+      ],
+      "sentence": "The sound occurred before the light."
+    },
+    {
+      "concept_ids": [
+        "concept_48378ca7a7e254c7b49b9081",
+        "concept_21b7e6adb4528a404abac7ce",
+        "concept_ed93a2bc6ef49735df1a5fbd",
+        "concept_4d0573fee54d5a8de62577fb",
+        "concept_9eae8da82abc46081ac093e4"
+      ],
+      "event_key": "light-before-sound",
+      "frame": {
+        "confidence": 0.93,
+        "first_event": "light",
+        "frame_type": "temporal",
+        "object": null,
+        "polarity": "affirmed",
+        "predicate": null,
+        "property": null,
+        "rule_id": "temporal_before",
+        "second_event": "sound",
+        "sentence": "The light occurred before the sound.",
+        "subject": null,
+        "tokens": [
+          {
+            "category": "determiner",
+            "index": 0,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "The"
+          },
+          {
+            "category": "noun",
+            "index": 1,
+            "lemma": "light",
+            "normalized": "light",
+            "surface": "light"
+          },
+          {
+            "category": "verb",
+            "index": 2,
+            "lemma": "occur",
+            "normalized": "occurred",
+            "surface": "occurred"
+          },
+          {
+            "category": "temporal_marker",
+            "index": 3,
+            "lemma": "before",
+            "normalized": "before",
+            "surface": "before"
+          },
+          {
+            "category": "determiner",
+            "index": 4,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "the"
+          },
+          {
+            "category": "noun",
+            "index": 5,
+            "lemma": "sound",
+            "normalized": "sound",
+            "surface": "sound"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_ef2eddbbb49e44c03f3f08b6",
+        "relation_70be5e60230856bc43456141",
+        "relation_be2782a7dab4bde5fc4e3075",
+        "relation_efb5d789d5c30b9faebdd206",
+        "relation_4df515d87b3ef59ce95b1ab3"
+      ],
+      "sentence": "The light occurred before the sound."
+    },
+    {
+      "concept_ids": [
+        "concept_796a0fef712f4899c0d8799d",
+        "concept_c26676564d6f230a765c7551",
+        "concept_2c2aa0b0d542f2a8941a1919",
+        "concept_571628169e2953db5c88eff0",
+        "concept_4d0573fee54d5a8de62577fb",
+        "concept_a09fbf9ab9847ea31d1ff1be"
+      ],
+      "event_key": "dog-push-present",
+      "frame": {
+        "confidence": 0.92,
+        "first_event": null,
+        "frame_type": "transitive",
+        "object": "child",
+        "polarity": "affirmed",
+        "predicate": "push",
+        "property": null,
+        "rule_id": "transitive_svo",
+        "second_event": null,
+        "sentence": "The dog pushes the child.",
+        "subject": "dog",
+        "tokens": [
+          {
+            "category": "determiner",
+            "index": 0,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "The"
+          },
+          {
+            "category": "noun",
+            "index": 1,
+            "lemma": "dog",
+            "normalized": "dog",
+            "surface": "dog"
+          },
+          {
+            "category": "verb",
+            "index": 2,
+            "lemma": "push",
+            "normalized": "pushes",
+            "surface": "pushes"
+          },
+          {
+            "category": "determiner",
+            "index": 3,
+            "lemma": "the",
+            "normalized": "the",
+            "surface": "the"
+          },
+          {
+            "category": "noun",
+            "index": 4,
+            "lemma": "child",
+            "normalized": "child",
+            "surface": "child"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_7563c998d0065a6db775362f",
+        "relation_eddd82cc9e31353a5b0f723e",
+        "relation_1f5b817333fc4fddbf367fb9",
+        "relation_b73fab6418f5e898dd30aac8",
+        "relation_1596776f3e3812f0c11311fc",
+        "relation_37ed1d29360098001238d36d"
+      ],
+      "sentence": "The dog pushes the child."
+    },
+    {
+      "concept_ids": [
+        "concept_796a0fef712f4899c0d8799d",
+        "concept_c26676564d6f230a765c7551",
+        "concept_2c2aa0b0d542f2a8941a1919",
+        "concept_571628169e2953db5c88eff0",
+        "concept_4d0573fee54d5a8de62577fb",
+        "concept_1ebfa29fbc1cf313c59e38b7"
+      ],
+      "event_key": "dog-push-past",
+      "frame": {
+        "confidence": 0.92,
+        "first_event": null,
+        "frame_type": "transitive",
+        "object": "child",
+        "polarity": "affirmed",
+        "predicate": "push",
+        "property": null,
+        "rule_id": "transitive_svo",
+        "second_event": null,
+        "sentence": "Dog pushed child.",
+        "subject": "dog",
+        "tokens": [
+          {
+            "category": "noun",
+            "index": 0,
+            "lemma": "dog",
+            "normalized": "dog",
+            "surface": "Dog"
+          },
+          {
+            "category": "verb",
+            "index": 1,
+            "lemma": "push",
+            "normalized": "pushed",
+            "surface": "pushed"
+          },
+          {
+            "category": "noun",
+            "index": 2,
+            "lemma": "child",
+            "normalized": "child",
+            "surface": "child"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "relation_ids": [
+        "relation_ba724c6f653037731ba874ae",
+        "relation_61bc1ae5bf05973aab202642",
+        "relation_2f328fa8dc7254e22e8a040f",
+        "relation_70bd6c14ae75811902ea60f9",
+        "relation_4882fd1ee50c7a9ba784d05f",
+        "relation_37ed1d29360098001238d36d"
+      ],
+      "sentence": "Dog pushed child."
+    },
+    {
+      "concept_ids": [],
+      "event_key": "malformed-order",
+      "frame": null,
+      "parsed": false,
+      "rejection_reason": "no enabled rule matched the learned lexical categories and word order",
+      "relation_ids": [],
+      "sentence": "B A pushes."
+    }
+  ],
+  "checkpoint": "/mnt/data/verdant_rebuild/artifacts/milestone_2_language_demo.vdk",
+  "checkpoint_sha256": "a9472c3958abde8dda903c35106fddb9b561c78383d458dd84666a83e90b98d5",
+  "chunk_archive_count": 27,
+  "chunk_archives": [
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/rule_transitive_svo.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/rule_copular_property.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/rule_temporal_before.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_01.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_02.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_03.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_04.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_05.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_06.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_07.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_08.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_09.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_10.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_11.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_12.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_13.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_14.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/lexeme_15.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/push-ab.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/push-ba.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/door-open-positive.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/door-open-negative.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/sound-before-light.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/light-before-sound.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/dog-push-present.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/dog-push-past.ecchunk.zip",
+    "/mnt/data/verdant_rebuild/artifacts/milestone_2_chunks/malformed-order.ecchunk.zip"
+  ],
+  "claims_not_made": [
+    "autonomous grammar induction",
+    "unrestricted English understanding",
+    "grounding beyond handwritten text curriculum",
+    "consciousness"
+  ],
+  "description": "Handwritten grammar and lexicon curriculum through CognitiveChunk v2 into the canonical Verdant kernel.",
+  "enabled_rules": [
+    "copular_property",
+    "temporal_before",
+    "transitive_svo"
+  ],
+  "kernel_id": "kernel_a5ca229acd6dea621c693fbf",
+  "metrics": {
+    "active_shard_id": "root",
+    "attention_candidate_count": 0,
+    "average_neighbor_count": 2.5128205128205128,
+    "claim_count": 7,
+    "concept_count": 39,
+    "contradiction_count": 1,
+    "council_decision_count": 0,
+    "cycle": 27,
+    "directed_density": 0.03508771929824561,
+    "evidence_count": 81,
+    "field_address_count": 39,
+    "field_history_count": 27,
+    "field_norm": 0.9999999999999998,
+    "governance_outcome_count": 0,
+    "object_candidate_count": 0,
+    "object_observation_count": 0,
+    "object_observation_event_count": 0,
+    "object_promotion_event_count": 0,
+    "promoted_proto_object_count": 0,
+    "relation_count": 52,
+    "resonance_event_count": 0,
+    "resonance_profile_count": 39,
+    "revision_count": 0,
+    "routing_event_count": 0,
+    "sensory_archive_count": 0,
+    "sensory_sample_count": 0,
+    "shard_bridge_count": 0,
+    "shard_count": 1,
+    "shard_formation_event_count": 0,
+    "specialized_shard_count": 0,
+    "synchronization_group_count": 0,
+    "temporal_event_assembly_count": 0,
+    "temporal_event_count": 0,
+    "transition_count": 27,
+    "workspace_active_item_count": 0,
+    "workspace_allocated_resource": 0,
+    "workspace_cycle_event_count": 0,
+    "workspace_writeback_event_count": 0
+  },
+  "milestone": 2,
+  "selected_relations": [
+    {
+      "confidence": 0.92,
+      "evidence_count": 3,
+      "relation_type": "action:push",
+      "source": "lexeme:b",
+      "target": "lexeme:a"
+    },
+    {
+      "confidence": 0.92,
+      "evidence_count": 3,
+      "relation_type": "action:push",
+      "source": "lexeme:a",
+      "target": "lexeme:b"
+    },
+    {
+      "confidence": 0.92,
+      "evidence_count": 6,
+      "relation_type": "action:push",
+      "source": "lexeme:dog",
+      "target": "lexeme:child"
+    },
+    {
+      "confidence": 0.93,
+      "evidence_count": 3,
+      "relation_type": "before",
+      "source": "event:sound:occurrence",
+      "target": "event:light:occurrence"
+    },
+    {
+      "confidence": 0.93,
+      "evidence_count": 3,
+      "relation_type": "before",
+      "source": "event:light:occurrence",
+      "target": "event:sound:occurrence"
+    },
+    {
+      "confidence": 0.95,
+      "evidence_count": 3,
+      "relation_type": "does_not_have_property",
+      "source": "lexeme:door",
+      "target": "lexeme:open"
+    },
+    {
+      "confidence": 0.95,
+      "evidence_count": 3,
+      "relation_type": "has_property",
+      "source": "lexeme:door",
+      "target": "lexeme:open"
+    }
+  ]
+}

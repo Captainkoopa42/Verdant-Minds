@@ -1,0 +1,33 @@
+{
+  "active_workspace_items": 2,
+  "checkpoint": "artifacts/milestone_12_development_demo.vdk",
+  "claim_count": 0,
+  "concept_count": 3,
+  "cycles_committed": 7,
+  "field_history_count": 7,
+  "kernel_cycle": 21,
+  "kernel_fingerprint": "71a9a629a08e99e4693216f4eb88f4dcc2038ac646e702399d534c525e9a096f",
+  "kren_resonance_after_repetition": 0.8326608820053651,
+  "kren_resonance_before_repetition": 0.6730107228633803,
+  "kren_resonance_gain": 0.15965015914198488,
+  "latest_candidate_scope_count": 3,
+  "latest_workspace_sources": [
+    "current_evidence",
+    "resonance"
+  ],
+  "milestone": 12,
+  "name": "Unified Developmental Heartbeat",
+  "relation_count": 0,
+  "resonance_event_count": 7,
+  "semantic_firewall_held_every_cycle": true,
+  "sequence": [
+    "kren-1",
+    "tar-1",
+    "vel-1",
+    "kren-2",
+    "kren-3",
+    "kren-4",
+    "kren-5"
+  ],
+  "workspace_cycle_count": 7
+}

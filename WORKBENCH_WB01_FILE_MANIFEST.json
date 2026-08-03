@@ -1,0 +1,205 @@
+{
+  "files": [
+    {
+      "bytes": 4033,
+      "path": "workbench/artifacts/wb01_equivalence_proof.json",
+      "sha256": "d69d01083a6679ada04a73ece34e8b270b96c3d90abc61ae8be539c5ac002791"
+    },
+    {
+      "bytes": 37,
+      "path": "workbench/backend/.pytest_cache/.gitignore",
+      "sha256": "3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd"
+    },
+    {
+      "bytes": 191,
+      "path": "workbench/backend/.pytest_cache/CACHEDIR.TAG",
+      "sha256": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4"
+    },
+    {
+      "bytes": 302,
+      "path": "workbench/backend/.pytest_cache/README.md",
+      "sha256": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad"
+    },
+    {
+      "bytes": 464,
+      "path": "workbench/backend/.pytest_cache/v/cache/nodeids",
+      "sha256": "25ca8f42dcc5d4d1a52cce5efd80f5ea216b49bf65e3424ed5de9928a9daadfd"
+    },
+    {
+      "bytes": 854,
+      "path": "workbench/backend/README.md",
+      "sha256": "36e335c49876f1ca9a3585d65a1f21bba2f7e63a43e6cca9fe4d1d1247484c73"
+    },
+    {
+      "bytes": 98,
+      "path": "workbench/backend/WB01_TEST_OUTPUT.txt",
+      "sha256": "817395fc509ae7f6560f0001157986d29f978c417c60c179571ab7f774289312"
+    },
+    {
+      "bytes": 207,
+      "path": "workbench/backend/pyproject.toml",
+      "sha256": "e31dfc508b39e2dbc6fe9f25d5e82da5a018fc0d8db641c8437bfda1e516d31d"
+    },
+    {
+      "bytes": 167,
+      "path": "workbench/backend/run_workbench.py",
+      "sha256": "62d4ba1515bb534a4ae2fb002ef800ca99ed44d7feeed1af154e59d67591ec6c"
+    },
+    {
+      "bytes": 258,
+      "path": "workbench/backend/tests/conftest.py",
+      "sha256": "cd99b15d6b8646ce558bf59b50e88a00c44d42cfe43923be8cfee16afcd556a5"
+    },
+    {
+      "bytes": 4474,
+      "path": "workbench/backend/tests/test_adapter_equivalence.py",
+      "sha256": "83744c3be4f080d04eae84f9915944ab9d309601f721d308af8f753f65e6b937"
+    },
+    {
+      "bytes": 2467,
+      "path": "workbench/backend/tests/test_worker_and_api.py",
+      "sha256": "c1d4d74b29b71adf419d48fd920ec191951d03cba1007ced58be56a6197e9292"
+    },
+    {
+      "bytes": 730,
+      "path": "workbench/backend/verdant_workbench/__init__.py",
+      "sha256": "d3b2a292964590e445dcee215fe536d0b366f133b0692c0773a1105c11852bf1"
+    },
+    {
+      "bytes": 17964,
+      "path": "workbench/backend/verdant_workbench/adapter.py",
+      "sha256": "d3b3f64572fb5a2f103cb30946c62ee310fa390f53b7c55043a8cbdb135821ba"
+    },
+    {
+      "bytes": 4963,
+      "path": "workbench/backend/verdant_workbench/app.py",
+      "sha256": "2c66548a0e371468c0004f2a562dabe2abb02eb777ec79685b746b41c84b6f5a"
+    },
+    {
+      "bytes": 4147,
+      "path": "workbench/backend/verdant_workbench/events.py",
+      "sha256": "eff9c60a58d635766b788f7db28d0ee1b5341f329021bb6f96ba18054bf74420"
+    },
+    {
+      "bytes": 4070,
+      "path": "workbench/backend/verdant_workbench/models.py",
+      "sha256": "88b661cb7de948772b16bb9673377708c461631d0cb7cfdfacbb3371892e823b"
+    },
+    {
+      "bytes": 247,
+      "path": "workbench/backend/verdant_workbench/version.py",
+      "sha256": "ff80f0cc706cca58dd098f0c26a4e831fe65c6ca04dba3bdc17abbdae28021a4"
+    },
+    {
+      "bytes": 5876,
+      "path": "workbench/backend/verdant_workbench/worker.py",
+      "sha256": "906a443a8293cc7e65ff9cb550a589969056d733a423dabdcfa394e11f4346c6"
+    },
+    {
+      "bytes": 252,
+      "path": "workbench/frontend/index.html",
+      "sha256": "1a19328b0c3debbf89d8344e6d24e54be7d7ca52dbac2ff089324b77f08466df"
+    },
+    {
+      "bytes": 365,
+      "path": "workbench/frontend/package.json",
+      "sha256": "dab87fb11c37a5bb8302a2e0dd86d273fc53ec8944245b49c30b76a0c2ab94e5"
+    },
+    {
+      "bytes": 1324,
+      "path": "workbench/frontend/src/App.tsx",
+      "sha256": "64481e5513a12837e43c16b872c3a6f8e80a7864aad757bdbd3734df16a1ff9b"
+    },
+    {
+      "bytes": 225,
+      "path": "workbench/frontend/src/main.tsx",
+      "sha256": "47bbb595a850847154dcb069ad195c21151fa6393059c1a0b7c25d9e46fd8498"
+    },
+    {
+      "bytes": 1565,
+      "path": "workbench/frontend/src/style.css",
+      "sha256": "42bc9d81b14ee6bc87cef9ca58e887678bb499080cbdcf5435515f54a0b76329"
+    },
+    {
+      "bytes": 400,
+      "path": "workbench/frontend/tsconfig.json",
+      "sha256": "14fb0a98d3e57ae1364bca81a430f2c06d08c3260debdc00516e171f6f2dfb60"
+    },
+    {
+      "bytes": 885,
+      "path": "workbench/schemas/events/event-envelope-v1.json",
+      "sha256": "655c58301ea0cbfc2879a9406a472e2d3420de428e5cdea45a065714bef32d02"
+    },
+    {
+      "bytes": 45898,
+      "path": "docs/workbench/ENGINEERING_SPEC_v0.1.md",
+      "sha256": "636e9a09af5268ebd4be1141636b44a2098166f171f35b335a12ea7ebc7f02ee"
+    },
+    {
+      "bytes": 2380,
+      "path": "docs/workbench/WB_IMPLEMENTATION_STATUS.md",
+      "sha256": "241579b6b178e9e518972fc7da1d21886f77168aa095fdd9df304afd624ad74b"
+    },
+    {
+      "bytes": 379,
+      "path": "docs/workbench/adr/ADR-001.md",
+      "sha256": "e8f66e4682805309477fbcbb0b7c8f071b58a69059aee27b5f63736ffa8ee022"
+    },
+    {
+      "bytes": 339,
+      "path": "docs/workbench/adr/ADR-002.md",
+      "sha256": "9f787c5a8453456ac237b1e0432092146a2b7e522d8fa699fa1de5ec949533d7"
+    },
+    {
+      "bytes": 347,
+      "path": "docs/workbench/adr/ADR-003.md",
+      "sha256": "d19fc726a63e0a8ed980bf80f7b70c27ce484e21ab4b17caa876b212acb1f7af"
+    },
+    {
+      "bytes": 335,
+      "path": "docs/workbench/adr/ADR-004.md",
+      "sha256": "dd424daa6cfbbc6ff1cb6bae86b05fe6e6e6eb04f4560d83fb2240cd38ce4332"
+    },
+    {
+      "bytes": 329,
+      "path": "docs/workbench/adr/ADR-005.md",
+      "sha256": "4e1390cc0c4eb3d2900aee28497f7abf9e50f75d91efd1200601126a57a5c10f"
+    },
+    {
+      "bytes": 347,
+      "path": "docs/workbench/adr/ADR-006.md",
+      "sha256": "069a201715c7863db160da3560ab4819109769c146cd0ec4ec593e10fc617656"
+    },
+    {
+      "bytes": 342,
+      "path": "docs/workbench/adr/ADR-007.md",
+      "sha256": "26386f1ba309134094b0706e4bd6c6691123dc64f05b7149c01c455fdd11481b"
+    },
+    {
+      "bytes": 339,
+      "path": "docs/workbench/adr/ADR-008.md",
+      "sha256": "30c0f9bdb4efb67619ca250a1015f20f0dbbb4cb1e4513bbe2d5d6760a1a12fe"
+    },
+    {
+      "bytes": 341,
+      "path": "docs/workbench/adr/ADR-009.md",
+      "sha256": "b097fc07b7875b74fa58ae27d384ce0d25c5fe455515f39881d72952f9b2bf41"
+    },
+    {
+      "bytes": 360,
+      "path": "docs/workbench/adr/ADR-010.md",
+      "sha256": "d3a2de4170eaea3290753324d61a085a7331e9badca567804e2e837bb144fbba"
+    },
+    {
+      "bytes": 407,
+      "path": "run_verdant_workbench.py",
+      "sha256": "e712fc1448250cd5d8395bf3fefc552f971983101a417e360c0944916b51fba1"
+    },
+    {
+      "bytes": 5697,
+      "path": "WORKBENCH_WB01_REPORT.md",
+      "sha256": "55ebccb4a859d24597f0cbdf7ab6e32ba3dd936b6c3aff53846e3221d683a03a"
+    }
+  ],
+  "schema": "verdant.workbench.wb01-file-manifest.v1"
+}

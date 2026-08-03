@@ -1,0 +1,27 @@
+{
+  "all_exit_checks_passed": true,
+  "ancestry": [
+    "run_wb02_root",
+    "run_wb02_child"
+  ],
+  "checkpoint_bytes_preserved": true,
+  "child_canonical_fingerprint": "51de8bc699d3cdf8dde35aa46d48d8fa1a68867ed92ffe31a7c761d66c7303af",
+  "child_checkpoint_id": "ckpt_wb02_child",
+  "child_checkpoint_sha256": "a23e00e1e3a1e3cc119bd2760438a409eb8fd365e32a2e886153933ea6ff8b9c",
+  "child_diverged_after_new_experience": true,
+  "child_run_id": "run_wb02_child",
+  "child_started_from_exact_parent_state": true,
+  "event_ledger_preserved": true,
+  "parent_checkpoint_immutable_after_branch": true,
+  "project_id": "proj_wb02_proof",
+  "reopen_fingerprint_matches": true,
+  "root_canonical_fingerprint": "96c956ed045fb0abedfe15a6f7a89d732b653f8432fc56dae3438ad9e9e518aa",
+  "root_checkpoint_id": "ckpt_wb02_root",
+  "root_checkpoint_sha256": "3713d9ebc242bab0fde158986684f6db30a6fffaf42a1d710c1fcd802f360f1f",
+  "root_cycle": 17,
+  "root_event_count": 17,
+  "root_event_index_count_after_reopen": 17,
+  "root_run_id": "run_wb02_root",
+  "root_state_revision": 17,
+  "schema": "verdant.workbench.wb02-proof.v1"
+}

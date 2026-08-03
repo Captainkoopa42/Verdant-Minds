@@ -1,0 +1,107 @@
+{
+  "checks": {
+    "curriculum_all_items_completed": true,
+    "curriculum_queue_count_30": true,
+    "frozen_hash_matches_reviewed_hash": true,
+    "grammar_preview_parsed": true,
+    "grammar_preview_pure_fingerprint": true,
+    "grammar_preview_pure_revision": true,
+    "grammar_rule_enabled": true,
+    "grammar_sentence_committed": true,
+    "m19_compiled_hash_matches_reference": true,
+    "m19_concepts_20": true,
+    "m19_relations_15": true,
+    "m19_template_count_30": true,
+    "workbench_matches_direct_fingerprint": true
+  },
+  "curriculum": {
+    "artifact_sha256": "9e16c53af35c9a0e41ad2ceb564d630ad7fa399694b8377f594fc03da2676dac",
+    "compiled_sha256": "38ffb6c25056b7f0134e5f2dd923fe08b9cca05318a66f38e3c7582eb102ce4b",
+    "concept_count": 20,
+    "curriculum_id": "vcurr_664aa4d8ffcc480091c12afe28560401",
+    "direct_final_fingerprint": "d46c43ee0bc6d3b0e1bbe83b62486062b8225ccf74f9d94fccb2435b57d3300f",
+    "item_count": 30,
+    "reference_compiled_sha256": "38ffb6c25056b7f0134e5f2dd923fe08b9cca05318a66f38e3c7582eb102ce4b",
+    "relation_count": 15,
+    "workbench_final_fingerprint": "d46c43ee0bc6d3b0e1bbe83b62486062b8225ccf74f9d94fccb2435b57d3300f"
+  },
+  "grammar": {
+    "enabled_rules": [
+      "transitive_svo"
+    ],
+    "lexicon_forms": [
+      {
+        "category": "verb",
+        "form": "chase",
+        "lemma": "chase"
+      },
+      {
+        "category": "verb",
+        "form": "chased",
+        "lemma": "chase"
+      },
+      {
+        "category": "verb",
+        "form": "chases",
+        "lemma": "chase"
+      },
+      {
+        "category": "noun",
+        "form": "child",
+        "lemma": "child"
+      },
+      {
+        "category": "noun",
+        "form": "dog",
+        "lemma": "dog"
+      }
+    ],
+    "preview_analysis": {
+      "enabled_rules": [
+        "transitive_svo"
+      ],
+      "frame": {
+        "confidence": 0.92,
+        "first_event": null,
+        "frame_type": "transitive",
+        "object": "child",
+        "polarity": "affirmed",
+        "predicate": "chase",
+        "property": null,
+        "rule_id": "transitive_svo",
+        "second_event": null,
+        "sentence": "dog chases child.",
+        "subject": "dog",
+        "tokens": [
+          {
+            "category": "noun",
+            "index": 0,
+            "lemma": "dog",
+            "normalized": "dog",
+            "surface": "dog"
+          },
+          {
+            "category": "verb",
+            "index": 1,
+            "lemma": "chase",
+            "normalized": "chases",
+            "surface": "chases"
+          },
+          {
+            "category": "noun",
+            "index": 2,
+            "lemma": "child",
+            "normalized": "child",
+            "surface": "child"
+          }
+        ]
+      },
+      "parsed": true,
+      "rejection_reason": null,
+      "sentence": "dog chases child."
+    },
+    "preview_state_revision": 4
+  },
+  "passed": true,
+  "schema": "verdant.workbench.wb04-proof.v1"
+}

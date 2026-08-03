@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "bytes": 167,
+      "path": "verdant_interaction/__init__.py",
+      "sha256": "cf4764885897bb1b6ec4aa1298ee446e0ecb99d304d5d9c4cd5072179b5a5120"
+    },
+    {
+      "bytes": 14176,
+      "path": "verdant_interaction/pipeline.py",
+      "sha256": "116abd4c6e99b1231698cce967d1cc30335208b547e94a84e521747924852e86"
+    },
+    {
+      "bytes": 5050,
+      "path": "verdant_interaction/demo.py",
+      "sha256": "be856164b37cfb3670f30632f28792832996808e0be90c0b9f60b0600fea2294"
+    },
+    {
+      "bytes": 8746,
+      "path": "tests/test_structure_interaction_phase.py",
+      "sha256": "b47090620c96dfbd75de94c75f880c64cb25310fce3348f7cecd669571009d3c"
+    },
+    {
+      "bytes": 9919,
+      "path": "MILESTONE_16_REPORT.md",
+      "sha256": "eb5a01767c0756066e910414ff43d6aca4a6d3050bfb339871f6bd40f473f829"
+    },
+    {
+      "bytes": 109,
+      "path": "verdant_rebuild_test_output_milestone_16.txt",
+      "sha256": "957adb70c793f75551592acad4af6c3a85343d2823f6ca93ecbd63ec6c46adf7"
+    },
+    {
+      "bytes": 23086,
+      "path": "run_verdant_cultivation.py",
+      "sha256": "b41e6565eef57964f4ed417163ab86985561526fc900c7852b1a6bfe35f4f578"
+    },
+    {
+      "bytes": 114217,
+      "path": "verdant_kernel/models.py",
+      "sha256": "8668dd9bbc1854f51130cb789858ca2eadf89c5df1d544446aa29eaf4886467f"
+    },
+    {
+      "bytes": 219611,
+      "path": "verdant_kernel/kernel.py",
+      "sha256": "556e14cea33ee5246d49f904f552f0107cdb3be2374cbd5e88ac759bb9175f04"
+    },
+    {
+      "bytes": 7651,
+      "path": "verdant_kernel/__init__.py",
+      "sha256": "ba7c007c905cfbb0cba8856285b71e4246560ec3f65ea24efec3c5ef6c3d0085"
+    },
+    {
+      "bytes": 3018,
+      "path": "artifacts/milestone_16_interaction_summary.json",
+      "sha256": "0875ca7afa6c7160943f5cbc214232598a61903312a4109ea7b76bbccca8794c"
+    },
+    {
+      "bytes": 3019,
+      "path": "artifacts/milestone_16_demo_stdout.json",
+      "sha256": "da01776aa54efd36d2b8a829e2777601e444f4b6df919e067f147ce5a53201ee"
+    },
+    {
+      "bytes": 1204054,
+      "path": "artifacts/milestone_16_interaction_demo.vdk",
+      "sha256": "cab8439c5d48777755983e6ce1e16f3ebd4b3393bde89b228dafefb20fb5d4de"
+    }
+  ],
+  "milestone": 16
+}

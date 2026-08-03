@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verdant.curriculum.pack.v1",
+  "title": "Verdant Curriculum Pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "title", "sections"],
+  "properties": {
+    "schema": {"const": "verdant.curriculum.pack.v1"},
+    "title": {"type": "string", "minLength": 1},
+    "description": {"type": "string", "default": ""},
+    "state_dim": {"type": "integer", "minimum": 1, "default": 128},
+    "notes": {"type": "string", "default": ""},
+    "language_scaffold": {"$ref": "#/definitions/language_scaffold"},
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/section"}
+    }
+  },
+  "definitions": {
+    "language_scaffold": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grammar_rules": {"type": "array", "items": {"type": "string"}, "default": []},
+        "lexicon": {"type": "array", "items": {"type": "object"}, "default": []},
+        "notes": {"type": "string", "default": ""}
+      },
+      "default": {"grammar_rules": [], "lexicon": [], "notes": ""}
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test_id", "cue_labels"],
+      "properties": {
+        "test_id": {"type": "string", "minLength": 1},
+        "cue_labels": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "notes": {"type": "string", "default": ""}
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "title", "items"],
+      "properties": {
+        "section_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "default": ""},
+        "enabled": {"type": "boolean", "default": true},
+        "language_scaffold": {"$ref": "#/definitions/language_scaffold"},
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "description": "EditableTeachingItem records from verdant.teaching.bundle.v1.",
+          "items": {"type": "object"}
+        },
+        "tests": {"type": "array", "items": {"$ref": "#/definitions/probe"}, "default": []}
+      }
+    }
+  }
+}

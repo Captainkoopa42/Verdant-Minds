@@ -230,6 +230,7 @@ function MetricGrid({status}:{status:RunStatus|null}){
 
 function CurriculumPage({projectId,selectedRun,runStateDim,execute}:any){
   const a:any=api;
+  const [studioMode,setStudioMode]=useState<'manual'|'pack'>('manual');
   const [title,setTitle]=useState('New Curriculum');
   const [format,setFormat]=useState('primitive_lines');
   const [stateDim,setStateDim]=useState(runStateDim||128);
@@ -245,14 +246,33 @@ function CurriculumPage({projectId,selectedRun,runStateDim,execute}:any){
     lexicon:'[{"surface":"kren","role":"noun"},{"surface":"moves","lemma":"move","role":"verb"},{"surface":"toward","role":"relation"},{"surface":"tar","role":"noun"}]',
     provenance:'{"author":"human"}', scaffoldRules:'transitive_svo', scaffoldLexicon:'the | determiner | the\nmove | verb | move,moves,moved'
   });
+  const defaultPack=JSON.stringify({
+    schema:'verdant.curriculum.pack.v1',
+    title:'New Curriculum Pack',
+    description:'Organize many explicit teaching records into selectable, reusable sections.',
+    state_dim:Number(runStateDim||128),
+    language_scaffold:{grammar_rules:[],lexicon:[],notes:''},
+    sections:[
+      {section_id:'physics',title:'Physical World',description:'Example section. Replace or extend items in bulk.',enabled:true,language_scaffold:{grammar_rules:[],lexicon:[],notes:''},items:[
+        {item_id:'physics-001',context_id:'physics',source_text:'Gravity pulls objects with mass downward.',concepts:[{label:'gravity'},{label:'mass'},{label:'pulls'},{label:'downward'}],relations:[{source:'gravity',relation:'linked',target:'mass',directed:true,weight:0.8,confidence:1.0},{source:'gravity',relation:'linked',target:'pulls',directed:true,weight:0.9,confidence:1.0},{source:'pulls',relation:'linked',target:'downward',directed:true,weight:0.7,confidence:1.0}],claims:[],confidence:1.0,provenance:{author:'human',source:'curriculum-pack-template'},grammar_annotation:{},lexicon_annotation:[]}
+      ],tests:[{test_id:'physics-probe-001',cue_labels:['gravity','mass'],notes:'Recorded structure-use probe after cultivation.'}]}
+    ],
+    notes:'Curriculum packs are Workbench organization. Selected sections are flattened into verdant.teaching.bundle.v1 before compilation.'
+  },null,2);
+  const [packText,setPackText]=useState(defaultPack);
+  const [pack,setPack]=useState<any>(null);
+  const [selectedSections,setSelectedSections]=useState<string[]>([]);
+  const [packPreview,setPackPreview]=useState<any>(null);
+  const fileRef=useRef<HTMLInputElement>(null);
+
   const refresh=async()=>{ if(projectId) setCurricula(await a.curricula(projectId)); else setCurricula([]); };
   useEffect(()=>{refresh().catch(()=>{});},[projectId]);
   const body=()=>({project_id:projectId,title,source_format:format,source_text:source,state_dim:Number(stateDim),baseline_curriculum_id:baseline||null});
   const compile=async()=>setPreview(await execute(()=>a.compileCurriculum(body()),false));
   const freeze=async()=>{const out=await execute(()=>a.freezeCurriculum({...body(),expected_compiled_sha256:preview?.compiled_sha256||null}),false);setSelected(out.curriculum_id);await refresh();};
-  const loadTemplate=async()=>{const t=await execute(()=>a.curriculumTemplateM19(),false);setTitle(t.title);setFormat(t.source_format);setStateDim(t.state_dim);setSource(t.source_text);setPreview(null);};
-  const loadEditable=async()=>{const t=await execute(()=>a.curriculumTemplateEditable(),false);setTitle(t.title);setFormat(t.source_format);setStateDim(t.state_dim);setSource(t.source_text);setPreview(null);};
-  const loadFrozen=async()=>{if(!selected)return;const d=await execute(()=>a.curriculumDetail(selected),false);setTitle(d.record.title);setFormat(d.record.source_format);setStateDim(d.record.state_dim);setSource(d.source_text);setPreview(null);};
+  const loadTemplate=async()=>{const t=await execute(()=>a.curriculumTemplateM19(),false);setTitle(t.title);setFormat(t.source_format);setStateDim(t.state_dim);setSource(t.source_text);setPreview(null);setStudioMode('manual');};
+  const loadEditable=async()=>{const t=await execute(()=>a.curriculumTemplateEditable(),false);setTitle(t.title);setFormat(t.source_format);setStateDim(t.state_dim);setSource(t.source_text);setPreview(null);setStudioMode('manual');};
+  const loadFrozen=async()=>{if(!selected)return;const d=await execute(()=>a.curriculumDetail(selected),false);setTitle(d.record.title);setFormat(d.record.source_format);setStateDim(d.record.state_dim);setSource(d.source_text);setPreview(null);setStudioMode('manual');};
   const queue=async()=>{if(selectedRun&&selected)await execute(()=>a.queueCurriculum(selectedRun,selected));};
   const lines=(raw:string)=>raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   const buildBundle=()=>{
@@ -263,11 +283,54 @@ function CurriculumPage({projectId,selectedRun,runStateDim,execute}:any){
     const relations=lines(builder.relations).map(line=>{const [src,rel,tgt,directed='true',weight='0.8',confidence='1.0']=line.split('|').map(x=>x.trim());if(!src||!rel||!tgt)throw new Error('Relation lines use: source | relation | target | directed | weight | confidence');return {source:src,relation:rel,target:tgt,directed:directed.toLowerCase()!=='false',weight:Number(weight),confidence:Number(confidence)}});
     const claims=lines(builder.claims).map(line=>{const [subject,predicate,object,polarity='affirmed',source_class='human_testimony',confidence='1.0']=line.split('|').map(x=>x.trim());if(!subject||!predicate||!object)throw new Error('Claim lines use: subject | predicate | object | polarity | source_class | confidence');return {subject,predicate,object,polarity,source_class,confidence:Number(confidence),rationale:'',attributes:{}}});
     const bundle={schema:'verdant.teaching.bundle.v1',language_scaffold:{grammar_rules:grammarRules,lexicon,notes:'Explicit author-supplied language scaffold.'},items:[{item_id:builder.itemId,context_id:builder.contextId,source_text:builder.sentence,concepts,relations,claims,confidence:1.0,provenance:parseJson(builder.provenance,{}),grammar_annotation:parseJson(builder.grammar,{}),lexicon_annotation:parseJson(builder.lexicon,[])}],notes:'Source text and annotations are not interpreted automatically; concepts/relations/claims are the explicit teaching plan.'};
-    setFormat('teaching_bundle_json');setSource(JSON.stringify(bundle,null,2));setPreview(null);
+    setFormat('teaching_bundle_json');setSource(JSON.stringify(bundle,null,2));setPreview(null);setStudioMode('manual');
   };
+
+  const parsePack=(raw:string)=>{
+    let value:any;
+    try{value=JSON.parse(raw);}catch{throw new Error('Curriculum Pack JSON is invalid.');}
+    if(value?.schema!=='verdant.curriculum.pack.v1')throw new Error("Curriculum Pack must declare schema 'verdant.curriculum.pack.v1'.");
+    if(!Array.isArray(value.sections)||!value.sections.length)throw new Error('Curriculum Pack needs at least one section.');
+    const ids=value.sections.map((x:any)=>String(x.section_id||''));
+    if(ids.some((x:string)=>!x))throw new Error('Every pack section needs section_id.');
+    if(new Set(ids).size!==ids.length)throw new Error('Curriculum Pack section_id values must be unique.');
+    for(const section of value.sections){if(!Array.isArray(section.items)||!section.items.length)throw new Error(`Section ${section.section_id} needs at least one teaching item.`);}
+    return value;
+  };
+  const loadPack=(raw=packText)=>{const value=parsePack(raw);setPack(value);setPackText(JSON.stringify(value,null,2));setSelectedSections(value.sections.filter((x:any)=>x.enabled!==false).map((x:any)=>x.section_id));setPackPreview(null);};
+  const importPack=async(file:File)=>{const raw=await file.text();loadPack(raw);};
+  const exportPack=()=>{const value=parsePack(packText);const blob=new Blob([JSON.stringify(value,null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');const slug=String(value.title||'curriculum-pack').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'curriculum-pack';link.href=url;link.download=`${slug}.vcpack`;document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);};
+  const packRequest=(ids=selectedSections)=>({project_id:projectId,pack_text:packText,selected_section_ids:ids,baseline_curriculum_id:baseline||null});
+  const compilePack=async(ids=selectedSections)=>{
+    if(!projectId)throw new Error('Create or select a project first.');
+    if(!pack)loadPack(packText);
+    const out=await execute(()=>a.compileCurriculumPack(packRequest(ids)),false);
+    setPackPreview(out);setTitle(out.curriculum.title);setFormat('teaching_bundle_json');setStateDim(out.curriculum.state_dim);setSource(out.bundle_source_text);setPreview(out.curriculum);
+    return out;
+  };
+  const freezePack=async(ids=selectedSections)=>{
+    const out=await compilePack(ids);
+    const frozen=await execute(()=>a.freezeCurriculumPack({...packRequest(ids),expected_compiled_sha256:out.curriculum.compiled_sha256}),false);
+    setSelected(frozen.curriculum_id);await refresh();return {out,frozen};
+  };
+  const queuePack=async(ids=selectedSections,start=false,withTests=false)=>{
+    if(!selectedRun)throw new Error('Select an organism before queueing a curriculum pack.');
+    const {out,frozen}=await freezePack(ids);
+    await execute(()=>a.queueCurriculum(selectedRun,frozen.curriculum_id),false);
+    if(withTests){for(const test of (out.tests||[])){await execute(()=>a.queueProbe(selectedRun,test.cue_labels||[]),false);}}
+    if(start)await execute(()=>a.start(selectedRun),false);
+    return out;
+  };
+  const toggleSection=(id:string,checked:boolean)=>setSelectedSections(prev=>checked?[...prev.filter(x=>x!==id),id]:prev.filter(x=>x!==id));
+  const packSections=pack?.sections||[];
+  const selectedItemCount=packSections.filter((x:any)=>selectedSections.includes(x.section_id)).reduce((n:number,x:any)=>n+(x.items?.length||0),0);
+  const selectedTestCount=packSections.filter((x:any)=>selectedSections.includes(x.section_id)).reduce((n:number,x:any)=>n+(x.tests?.length||0),0);
+
   return <div className="page">
-    <section className="title compact"><div className="eyebrow">CURRICULUM STUDIO</div><h2>Author → inspect → compile → freeze → teach.</h2><p>Human, pasted LLM output, imported files and scripts all converge on the same editable teaching representation. Workbench validates structure and provenance; it does not decide whether the lesson is true.</p></section>
-    <section className="panel teaching-builder"><div className="panel-head"><h3>Editable Teaching Record Builder</h3><span>UI authoring · no hidden parser</span></div>
+    <section className="title compact"><div className="eyebrow">CURRICULUM STUDIO · WB-11</div><h2>Hand-author one record or cultivate from a whole curriculum pack.</h2><p>The manual builder stays available. Curriculum Packs add bulk organization, section selection, import/export and batch execution while still flattening through the same reviewed <code>verdant.teaching.bundle.v1</code> compiler path.</p></section>
+    <section className="panel"><div className="panel-head"><h3>Authoring mode</h3><span>same canonical compiler underneath</span></div><div className="row wrap"><button className={studioMode==='manual'?'primary':''} onClick={()=>setStudioMode('manual')}>Manual Builder</button><button className={studioMode==='pack'?'primary':''} onClick={()=>setStudioMode('pack')}>Curriculum Packs</button></div></section>
+
+    {studioMode==='manual'?<section className="panel teaching-builder"><div className="panel-head"><h3>Editable Teaching Record Builder</h3><span>precision tool · no hidden parser</span></div>
       <div className="builder-grid">
         <label>Source sentence<textarea rows={2} value={builder.sentence} onChange={e=>setBuilder({...builder,sentence:e.target.value})}/></label>
         <label>Item / context<div className="row"><input value={builder.itemId} onChange={e=>setBuilder({...builder,itemId:e.target.value})}/><input value={builder.contextId} onChange={e=>setBuilder({...builder,contextId:e.target.value})}/></div></label>
@@ -281,14 +344,27 @@ function CurriculumPage({projectId,selectedRun,runStateDim,execute}:any){
         <label>Executable scaffold lexicon <small>lemma | category | forms</small><textarea rows={4} value={builder.scaffoldLexicon} onChange={e=>setBuilder({...builder,scaffoldLexicon:e.target.value})}/></label>
       </div>
       <div className="row wrap"><button className="primary" onClick={buildBundle}>Build editable bundle source</button><button onClick={loadEditable}>Load full editable template</button><span className="muted inline-note">False, fictional or mutually contradictory teaching is allowed. The validator checks schema, not truth.</span></div>
-    </section>
+    </section>:
+    <section className="panel"><div className="panel-head"><h3>Curriculum Pack Builder / Loader</h3><span>verdant.curriculum.pack.v1</span></div>
+      <p className="muted">A pack is organization only. Selected sections are deterministically flattened into the existing editable teaching-bundle format before they can reach Verdant.</p>
+      <input ref={fileRef} type="file" accept=".vcpack,.json,application/json" style={{display:'none'}} onChange={e=>{const f=e.target.files?.[0];if(f)importPack(f).catch(err=>{throw err;});e.currentTarget.value='';}}/>
+      <div className="row wrap"><button onClick={()=>fileRef.current?.click()}>Import .vcpack / JSON</button><button onClick={()=>loadPack(packText)}>Load / validate pasted pack</button><button onClick={exportPack}>Export .vcpack</button><button onClick={()=>{setPackText(defaultPack);setPack(null);setSelectedSections([]);setPackPreview(null)}}>New pack template</button></div>
+      <label>Pack JSON<textarea className="codearea" rows={16} value={packText} onChange={e=>{setPackText(e.target.value);setPack(null);setPackPreview(null)}}/></label>
+      {pack&&<><div className="panel-head subhead"><h3>{pack.title}</h3><span>{packSections.length} sections · {selectedItemCount} selected items · {selectedTestCount} probes</span></div>
+        <div className="curr-list">{packSections.map((section:any)=><div className="curr-row" key={section.section_id}><div style={{flex:1}}><label className="row gap"><input type="checkbox" checked={selectedSections.includes(section.section_id)} onChange={e=>toggleSection(section.section_id,e.target.checked)}/><strong>{section.title}</strong></label><small>{section.section_id} · {section.items?.length||0} teaching items · {section.tests?.length||0} probes</small><small>{section.description||''}</small></div><div className="row wrap"><button onClick={()=>compilePack([section.section_id])}>Preview</button><button onClick={()=>freezePack([section.section_id])}>Freeze</button><button disabled={!selectedRun} onClick={()=>queuePack([section.section_id],false,false)}>Queue</button><button className="primary" disabled={!selectedRun} onClick={()=>queuePack([section.section_id],true,true)}>Run + probes</button></div></div>)}</div>
+        <div className="row wrap"><button onClick={()=>setSelectedSections(packSections.map((x:any)=>x.section_id))}>Select all</button><button onClick={()=>setSelectedSections([])}>Select none</button><button className="primary" disabled={!selectedSections.length} onClick={()=>compilePack()}>Compile selected</button><button disabled={!selectedSections.length} onClick={()=>freezePack()}>Freeze selected .vcurr</button><button disabled={!selectedRun||!selectedSections.length} onClick={()=>queuePack(selectedSections,false,false)}>Queue selected</button><button className="primary" disabled={!selectedRun||!selectedSections.length} onClick={()=>queuePack(selectedSections,true,true)}>Run selected + probes</button></div>
+        <div className="callout">Batch execution queues the frozen curriculum through the normal run queue. “Run + probes” appends each selected section's test cues as ordinary recorded probes; it does not manufacture a pass/fail score.</div>
+      </>}
+    </section>}
+
     <div className="studio-grid">
       <div className="stack">
-        <section className="panel"><div className="panel-head"><h3>Authoring source</h3><span>{format}</span></div>
+        <section className="panel"><div className="panel-head"><h3>Canonical authoring source</h3><span>{format}</span></div>
           <div className="row"><input value={title} onChange={e=>setTitle(e.target.value)}/><select value={format} onChange={e=>setFormat(e.target.value)}><option value="teaching_bundle_json">Editable teaching bundle JSON</option><option value="primitive_lines">Primitive lines</option><option value="experience_jsonl">ExperienceCommand JSONL</option></select><input type="number" value={stateDim} onChange={e=>setStateDim(Number(e.target.value))}/></div>
           <label>Source<textarea className="codearea" rows={18} value={source} onChange={e=>setSource(e.target.value)}/></label>
           <div className="row wrap"><button onClick={loadTemplate}>Load M19 reference</button><button className="primary" onClick={compile}>Compile preview</button><button disabled={!preview} onClick={freeze}>Freeze reviewed .vcurr</button></div>
           {preview&&<small className="muted">source {short(preview.source_sha256,20)} · compiled {short(preview.compiled_sha256,20)} · {preview.item_count} experiences · {preview.scaffold_item_count||0} scaffold items</small>}
+          {packPreview&&<pre className="inspector">{JSON.stringify({pack:packPreview.pack,selected_sections:packPreview.selected_sections,tests:packPreview.tests},null,2)}</pre>}
         </section>
         <section className="panel"><div className="panel-head"><h3>Frozen curricula</h3><span>immutable project artifacts</span></div>
           <div className="curr-list">{curricula.map(c=><button key={c.curriculum_id} className={`curr-row ${selected===c.curriculum_id?'selected':''}`} onClick={()=>setSelected(c.curriculum_id)}><div><strong>{c.title} @{c.version}</strong><small>{c.item_count} experiences · {c.source_format}</small></div><code>{short(c.compiled_sha256)}</code></button>)}{!curricula.length&&<div className="empty">No frozen curricula in this project.</div>}</div>

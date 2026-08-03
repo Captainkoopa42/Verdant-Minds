@@ -20,6 +20,10 @@ from .curriculum import (
     CurriculumCompileRequest,
     CurriculumCompiler,
     CurriculumFreezeRequest,
+    CurriculumPackCompileRequest,
+    CurriculumPackFreezeRequest,
+    curriculum_pack_bundle_source,
+    curriculum_pack_selection_title,
     build_curriculum_package,
     compiled_commands_jsonl,
     read_curriculum_package,
@@ -626,6 +630,66 @@ class DurableRunService:
         self.repository.get_project(request.project_id)
         baseline = self._baseline_curriculum_jsonl(request.baseline_curriculum_id)
         return self.curriculum_compiler.compile(request, baseline_jsonl=baseline).model_dump(mode="json", by_alias=True)
+
+    def compile_curriculum_pack(self, request: CurriculumPackCompileRequest) -> dict[str, Any]:
+        self.repository.get_project(request.project_id)
+        baseline = self._baseline_curriculum_jsonl(request.baseline_curriculum_id)
+        pack, _bundle, selected, probes, source = curriculum_pack_bundle_source(
+            request.pack_text, request.selected_section_ids
+        )
+        compile_request = CurriculumCompileRequest(
+            project_id=request.project_id,
+            title=curriculum_pack_selection_title(pack, selected),
+            source_format="teaching_bundle_json",
+            source_text=source,
+            state_dim=pack.state_dim,
+            baseline_curriculum_id=request.baseline_curriculum_id,
+        )
+        compiled = self.curriculum_compiler.compile(compile_request, baseline_jsonl=baseline)
+        return {
+            "schema": "verdant.curriculum.pack.compile.v1",
+            "pack": {
+                "schema": pack.schema_id,
+                "title": pack.title,
+                "description": pack.description,
+                "state_dim": pack.state_dim,
+                "section_count": len(pack.sections),
+            },
+            "selected_sections": [
+                {
+                    "section_id": section.section_id,
+                    "title": section.title,
+                    "description": section.description,
+                    "item_count": len(section.items),
+                    "test_count": len(section.tests),
+                }
+                for section in selected
+            ],
+            "tests": [test.model_dump(mode="json") for test in probes],
+            "bundle_source_text": source,
+            "curriculum": compiled.model_dump(mode="json", by_alias=True),
+        }
+
+    def freeze_curriculum_pack(self, request: CurriculumPackFreezeRequest) -> CurriculumRecord:
+        prepared = self.compile_curriculum_pack(
+            CurriculumPackCompileRequest(
+                project_id=request.project_id,
+                pack_text=request.pack_text,
+                selected_section_ids=request.selected_section_ids,
+                baseline_curriculum_id=request.baseline_curriculum_id,
+            )
+        )
+        compiled = prepared["curriculum"]
+        freeze_request = CurriculumFreezeRequest(
+            project_id=request.project_id,
+            title=compiled["title"],
+            source_format="teaching_bundle_json",
+            source_text=prepared["bundle_source_text"],
+            state_dim=int(compiled["state_dim"]),
+            baseline_curriculum_id=request.baseline_curriculum_id,
+            expected_compiled_sha256=request.expected_compiled_sha256,
+        )
+        return self.freeze_curriculum(freeze_request)
 
     def freeze_curriculum(self, request: CurriculumFreezeRequest) -> CurriculumRecord:
         self.repository.get_project(request.project_id)

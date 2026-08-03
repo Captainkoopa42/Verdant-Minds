@@ -94,6 +94,8 @@ Object.assign(api, {
   curriculumTemplateEditable: () => request<any>(`${API}/curricula/templates/editable-teaching-record`),
   compileCurriculum: (body:any) => request<CurriculumCompileResult>(`${API}/curricula/compile`, {method:'POST',body:JSON.stringify(body)}),
   freezeCurriculum: (body:any) => request<CurriculumRecord>(`${API}/curricula/freeze`, {method:'POST',body:JSON.stringify(body)}),
+  compileCurriculumPack: (body:any) => request<any>(`${API}/curricula/packs/compile`, {method:'POST',body:JSON.stringify(body)}),
+  freezeCurriculumPack: (body:any) => request<CurriculumRecord>(`${API}/curricula/packs/freeze`, {method:'POST',body:JSON.stringify(body)}),
   curriculumDetail: (id:string) => request<any>(`${API}/curricula/${id}`),
   queueCurriculum: (runId:string,id:string) => request<any>(`${API}/runs/${runId}/curricula/${id}/queue`, {method:'POST'}),
   grammar: (runId:string) => request<GrammarStatus>(`${API}/runs/${runId}/grammar`),

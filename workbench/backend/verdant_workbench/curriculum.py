@@ -27,6 +27,7 @@ from verdant_kernel import (
 CURRICULUM_SCHEMA_VERSION = "verdant.curriculum.v1"
 CURRICULUM_COMPILER_VERSION = "verdant.workbench.curriculum-compiler.v1.1"
 TEACHING_BUNDLE_SCHEMA_VERSION = "verdant.teaching.bundle.v1"
+CURRICULUM_PACK_SCHEMA_VERSION = "verdant.curriculum.pack.v1"
 CURRICULUM_PACKAGE_MEDIA_TYPE = "application/vnd.verdant.curriculum+zip"
 
 
@@ -141,6 +142,47 @@ class EditableTeachingBundle(BaseModel):
     language_scaffold: LanguageScaffoldSpec = Field(default_factory=LanguageScaffoldSpec)
     items: tuple[EditableTeachingItem, ...] = Field(min_length=1)
     notes: str = ""
+
+
+class CurriculumPackProbe(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    test_id: str = Field(min_length=1)
+    cue_labels: tuple[str, ...] = Field(min_length=1)
+    notes: str = ""
+
+
+class CurriculumPackSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    section_id: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    description: str = ""
+    enabled: bool = True
+    language_scaffold: LanguageScaffoldSpec = Field(default_factory=LanguageScaffoldSpec)
+    items: tuple[EditableTeachingItem, ...] = Field(min_length=1)
+    tests: tuple[CurriculumPackProbe, ...] = ()
+
+
+class CurriculumPack(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True, serialize_by_alias=True)
+    schema_id: str = Field(default=CURRICULUM_PACK_SCHEMA_VERSION, alias="schema", serialization_alias="schema")
+    title: str = Field(min_length=1)
+    description: str = ""
+    state_dim: int = Field(default=128, ge=1)
+    language_scaffold: LanguageScaffoldSpec = Field(default_factory=LanguageScaffoldSpec)
+    sections: tuple[CurriculumPackSection, ...] = Field(min_length=1)
+    notes: str = ""
+
+
+class CurriculumPackCompileRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    project_id: str
+    pack_text: str
+    selected_section_ids: tuple[str, ...] = ()
+    baseline_curriculum_id: str | None = None
+
+
+class CurriculumPackFreezeRequest(CurriculumPackCompileRequest):
+    expected_compiled_sha256: str | None = None
 
 
 class CurriculumCompileResult(BaseModel):
@@ -580,6 +622,112 @@ class CurriculumCompiler:
     def _slug(value: str) -> str:
         value = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
         return value or "curriculum"
+
+
+def parse_curriculum_pack(pack_text: str) -> CurriculumPack:
+    try:
+        raw = json.loads(normalize_source(pack_text))
+    except json.JSONDecodeError as exc:
+        raise CurriculumCompilerError(f"Curriculum pack JSON is invalid: {exc.msg}") from exc
+    if not isinstance(raw, dict) or raw.get("schema") != CURRICULUM_PACK_SCHEMA_VERSION:
+        raise CurriculumCompilerError(
+            f"Curriculum pack must declare schema '{CURRICULUM_PACK_SCHEMA_VERSION}'."
+        )
+    try:
+        pack = CurriculumPack.model_validate(raw)
+    except Exception as exc:
+        raise CurriculumCompilerError(f"Invalid curriculum pack: {exc}") from exc
+    section_ids = [section.section_id for section in pack.sections]
+    duplicate_sections = sorted({value for value in section_ids if section_ids.count(value) > 1})
+    if duplicate_sections:
+        raise CurriculumCompilerError("Duplicate curriculum-pack section_id values: " + ", ".join(duplicate_sections))
+    item_ids = [item.item_id for section in pack.sections for item in section.items]
+    duplicate_items = sorted({value for value in item_ids if item_ids.count(value) > 1})
+    if duplicate_items:
+        raise CurriculumCompilerError("Duplicate curriculum-pack item_id values: " + ", ".join(duplicate_items))
+    test_ids = [test.test_id for section in pack.sections for test in section.tests]
+    duplicate_tests = sorted({value for value in test_ids if test_ids.count(value) > 1})
+    if duplicate_tests:
+        raise CurriculumCompilerError("Duplicate curriculum-pack test_id values: " + ", ".join(duplicate_tests))
+    return pack
+
+
+def _merge_language_scaffolds(scaffolds: Iterable[LanguageScaffoldSpec]) -> LanguageScaffoldSpec:
+    rules: list[str] = []
+    lexicon: list[LanguageScaffoldLexeme] = []
+    seen_rules: set[str] = set()
+    seen_lexemes: set[bytes] = set()
+    notes: list[str] = []
+    for scaffold in scaffolds:
+        for rule in scaffold.grammar_rules:
+            if rule not in seen_rules:
+                seen_rules.add(rule)
+                rules.append(rule)
+        for lexeme in scaffold.lexicon:
+            key = _canonical_json_bytes(lexeme.model_dump(mode="json"))
+            if key not in seen_lexemes:
+                seen_lexemes.add(key)
+                lexicon.append(lexeme)
+        if scaffold.notes.strip():
+            notes.append(scaffold.notes.strip())
+    return LanguageScaffoldSpec(grammar_rules=tuple(rules), lexicon=tuple(lexicon), notes="\n".join(notes))
+
+
+def flatten_curriculum_pack(
+    pack: CurriculumPack,
+    selected_section_ids: Iterable[str] = (),
+) -> tuple[EditableTeachingBundle, tuple[CurriculumPackSection, ...], tuple[CurriculumPackProbe, ...]]:
+    requested = tuple(dict.fromkeys(str(value) for value in selected_section_ids if str(value).strip()))
+    by_id = {section.section_id: section for section in pack.sections}
+    unknown = sorted(set(requested) - set(by_id))
+    if unknown:
+        raise CurriculumCompilerError("Unknown curriculum-pack section_id values: " + ", ".join(unknown))
+    selected = tuple(by_id[value] for value in requested) if requested else tuple(section for section in pack.sections if section.enabled)
+    if not selected:
+        raise CurriculumCompilerError("Curriculum pack selection contains no enabled sections.")
+
+    items: list[EditableTeachingItem] = []
+    probes: list[CurriculumPackProbe] = []
+    for section in selected:
+        for item in section.items:
+            provenance = dict(item.provenance)
+            provenance["curriculum_pack"] = {
+                "schema": CURRICULUM_PACK_SCHEMA_VERSION,
+                "pack_title": pack.title,
+                "section_id": section.section_id,
+                "section_title": section.title,
+            }
+            items.append(item.model_copy(update={"provenance": provenance}))
+        probes.extend(section.tests)
+
+    scaffold = _merge_language_scaffolds((pack.language_scaffold, *(section.language_scaffold for section in selected)))
+    bundle = EditableTeachingBundle(
+        language_scaffold=scaffold,
+        items=tuple(items),
+        notes=(
+            f"Flattened from {CURRICULUM_PACK_SCHEMA_VERSION}: {pack.title}; "
+            f"sections={','.join(section.section_id for section in selected)}.\n{pack.notes}"
+        ).strip(),
+    )
+    return bundle, selected, tuple(probes)
+
+
+def curriculum_pack_bundle_source(
+    pack_text: str,
+    selected_section_ids: Iterable[str] = (),
+) -> tuple[CurriculumPack, EditableTeachingBundle, tuple[CurriculumPackSection, ...], tuple[CurriculumPackProbe, ...], str]:
+    pack = parse_curriculum_pack(pack_text)
+    bundle, selected, probes = flatten_curriculum_pack(pack, selected_section_ids)
+    source = json.dumps(bundle.model_dump(mode="json", by_alias=True), indent=2, ensure_ascii=False) + "\n"
+    return pack, bundle, selected, probes, source
+
+
+def curriculum_pack_selection_title(pack: CurriculumPack, selected: Iterable[CurriculumPackSection]) -> str:
+    sections = tuple(selected)
+    if len(sections) == len(pack.sections) and all(section.enabled for section in pack.sections):
+        return pack.title
+    labels = " + ".join(section.title for section in sections)
+    return f"{pack.title} — {labels}"
 
 
 def build_curriculum_package(result: CurriculumCompileResult) -> bytes:

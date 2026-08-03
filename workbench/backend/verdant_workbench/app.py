@@ -13,7 +13,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from .curriculum import CurriculumCompileRequest, CurriculumCompilerError, CurriculumFreezeRequest
+from .curriculum import (
+    CurriculumCompileRequest, CurriculumCompilerError, CurriculumFreezeRequest,
+    CurriculumPackCompileRequest, CurriculumPackFreezeRequest,
+)
 from .experiments import ExperimentAuthorRequest, ExperimentForkRequest
 from .models import (
     GrammarPreviewRequest,
@@ -523,6 +526,28 @@ def compile_curriculum(request: CurriculumCompileRequest):
 def freeze_curriculum(request: CurriculumFreezeRequest):
     try:
         return runtime.service.freeze_curriculum(request).__dict__
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Project or baseline curriculum not found")
+    except CurriculumCompilerError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    except RunServiceError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.post("/api/v1/curricula/packs/compile")
+def compile_curriculum_pack(request: CurriculumPackCompileRequest):
+    try:
+        return runtime.service.compile_curriculum_pack(request)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Project or baseline curriculum not found")
+    except CurriculumCompilerError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+
+@app.post("/api/v1/curricula/packs/freeze")
+def freeze_curriculum_pack(request: CurriculumPackFreezeRequest):
+    try:
+        return runtime.service.freeze_curriculum_pack(request).__dict__
     except KeyError:
         raise HTTPException(status_code=404, detail="Project or baseline curriculum not found")
     except CurriculumCompilerError as exc:

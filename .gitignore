@@ -138,3 +138,9 @@ validation_*/
 *.zip
 verdant_phase7_bundle/
 results/v2/verdant_phase7_bundle/
+
+# Verdant Workbench ships a dependency-free canonical browser build.
+!workbench/frontend/dist/
+!workbench/frontend/dist/**
+
+.verdant-workbench/

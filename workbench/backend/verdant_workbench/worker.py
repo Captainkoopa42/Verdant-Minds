@@ -24,6 +24,7 @@ from verdant_kernel import ExperienceCommand
 
 
 DEFAULT_REQUEST_TIMEOUT = 20.0
+PENDING_RESPONSE_RECOVERY_TIMEOUT = 300.0
 EXPLORER_REQUEST_TIMEOUTS = {
     "living_explorer_frame": 30.0,
     "living_explorer_timeline": 60.0,
@@ -167,6 +168,7 @@ class EngineWorkerSupervisor:
         self._process = process
         self._connection = connection
         self._lock = Lock()
+        self._pending_response: tuple[str, str] | None = None
         self.run_id = run_id
         self.organism_id = organism_id
 
@@ -197,21 +199,47 @@ class EngineWorkerSupervisor:
     def alive(self) -> bool:
         return self._process.is_alive()
 
+    def _receive_response(self, expected_request_id: str) -> WorkerResponse:
+        response = WorkerResponse.model_validate(self._connection.recv())
+        if response.request_id != expected_request_id:
+            raise RuntimeError(
+                "Engine worker protocol response mismatch: "
+                f"expected request {expected_request_id}, received {response.request_id}. "
+                "No response payload was applied."
+            )
+        return response
+
+    def _recover_pending_response(self) -> None:
+        pending = self._pending_response
+        if pending is None:
+            return
+        request_id, action = pending
+        if not self._connection.poll(PENDING_RESPONSE_RECOVERY_TIMEOUT):
+            raise RuntimeError(
+                f"Engine worker is still completing the prior timed-out {action} request after "
+                f"{PENDING_RESPONSE_RECOVERY_TIMEOUT:.0f}s. No new request was sent."
+            )
+        self._receive_response(request_id)
+        self._pending_response = None
+
     def request(self, action: str, payload: dict[str, Any] | None = None, *, timeout: float | None = None) -> dict[str, Any]:
         request = WorkerRequest(action=action, payload=payload or {})
         effective_timeout = EXPLORER_REQUEST_TIMEOUTS.get(action, DEFAULT_REQUEST_TIMEOUT) if timeout is None else timeout
         with self._lock:
             if not self.alive:
                 raise RuntimeError("Verdant engine worker is not alive.")
+            self._recover_pending_response()
             self._connection.send(request.model_dump(mode="json"))
             if not self._connection.poll(effective_timeout):
+                self._pending_response = (request.request_id, action)
                 if action in EXPLORER_REQUEST_TIMEOUTS:
                     raise RuntimeError(
                         f"Living Explorer is temporarily busy: engine worker did not answer {action} "
-                        f"within {effective_timeout:.0f}s. Verdant may still be running; retry the Explorer after the current work finishes."
+                        f"within {effective_timeout:.0f}s. Verdant may still be running; the late Explorer response "
+                        "will be drained before any later worker request is sent."
                     )
                 raise TimeoutError(f"Engine worker timed out handling {action} after {effective_timeout:.0f}s.")
-            response = WorkerResponse.model_validate(self._connection.recv())
+            response = self._receive_response(request.request_id)
         if not response.ok:
             raise RuntimeError(f"Worker {response.error_type}: {response.error_message}\n{response.payload.get('traceback','')}")
         return response.payload

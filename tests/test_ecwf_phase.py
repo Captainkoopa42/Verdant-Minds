@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 from pathlib import Path
 
 import pytest
@@ -63,6 +64,61 @@ def test_addresses_are_deterministic_unique_dense_and_complete() -> None:
         assert len(address.imag) == left.state.field.state_dim
         assert sum(abs(value) > 0.0 for value in address.real) > 1
         assert sum(abs(value) > 0.0 for value in address.imag) > 1
+
+
+def test_checkpoint_accepts_a_portable_one_ulp_field_address_difference() -> None:
+    kernel = populated_kernel()
+    state = kernel.snapshot()
+    concept_id = next(iter(state.field_addresses))
+    address = state.field_addresses[concept_id]
+    real = list(address.real)
+    real[0] = math.nextafter(real[0], math.inf)
+
+    checksum_kernel = object.__new__(VerdantKernel)
+    checksum_kernel.state = state
+    checksum = checksum_kernel._field_address_checksum(
+        concept_id,
+        address.derivation_nonce,
+        real=tuple(real),
+        imag=address.imag,
+    )
+    addresses = dict(state.field_addresses)
+    addresses[concept_id] = address.model_copy(
+        update={"real": tuple(real), "address_sha256": checksum}
+    )
+
+    loaded = VerdantKernel.from_state(
+        state.model_copy(update={"field_addresses": addresses})
+    )
+    assert loaded.state.field_addresses[concept_id].real[0] == real[0]
+
+
+def test_checkpoint_rejects_field_address_tampering_and_material_drift() -> None:
+    kernel = populated_kernel()
+    state = kernel.snapshot()
+    concept_id = next(iter(state.field_addresses))
+    address = state.field_addresses[concept_id]
+    real = list(address.real)
+    real[0] += 1e-6
+    addresses = dict(state.field_addresses)
+    addresses[concept_id] = address.model_copy(update={"real": tuple(real)})
+
+    with pytest.raises(KernelInvariantError, match="checksum drift"):
+        VerdantKernel.from_state(state.model_copy(update={"field_addresses": addresses}))
+
+    checksum_kernel = object.__new__(VerdantKernel)
+    checksum_kernel.state = state
+    checksum = checksum_kernel._field_address_checksum(
+        concept_id,
+        address.derivation_nonce,
+        real=tuple(real),
+        imag=address.imag,
+    )
+    addresses[concept_id] = addresses[concept_id].model_copy(
+        update={"address_sha256": checksum}
+    )
+    with pytest.raises(KernelInvariantError, match="vector drift"):
+        VerdantKernel.from_state(state.model_copy(update={"field_addresses": addresses}))
 
 
 def test_resonance_inspection_is_pure_and_exposes_exact_contributions() -> None:

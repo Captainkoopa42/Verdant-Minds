@@ -1220,6 +1220,22 @@ class DurableRunService:
         checkpoint = self.verify_checkpoint(target_id)
         if checkpoint.run_id != run_id:
             raise RunServiceError("Checkpoint does not belong to the requested run.")
+        checkpoint_is_older_than_head = (
+            checkpoint.state_revision < run.latest_state_revision
+            or checkpoint.cycle < run.latest_cycle
+            or (
+                bool(run.latest_fingerprint)
+                and checkpoint.canonical_fingerprint != run.latest_fingerprint
+            )
+        )
+        if checkpoint_is_older_than_head:
+            descriptor = self.branch_from_checkpoint(target_id)
+            return {
+                **descriptor,
+                "auto_forked": True,
+                "auto_forked_from_run_id": run_id,
+                "resumed_from_checkpoint_id": target_id,
+            }
         path = self.artifacts.resolve(checkpoint.artifact_sha256, verify=True)
         worker = EngineWorkerSupervisor.load(path, run_id=run_id, organism_id=run.organism_id)
         descriptor = worker.request("descriptor")
@@ -1238,7 +1254,11 @@ class DurableRunService:
             status="active",
             head_checkpoint_id=target_id,
         )
-        return descriptor
+        return {
+            **descriptor,
+            "auto_forked": False,
+            "resumed_from_checkpoint_id": target_id,
+        }
 
     def branch_from_checkpoint(self, checkpoint_id: str, *, new_run_id: str | None = None) -> dict[str, Any]:
         checkpoint = self.verify_checkpoint(checkpoint_id)

@@ -141,6 +141,12 @@ from .models import (
 )
 
 
+# NumPy's complex exponential may differ by a handful of float64 ULPs across
+# operating-system math libraries. Persistent addresses remain self-checking,
+# while this tolerance permits the same seeded address to load cross-platform.
+FIELD_ADDRESS_PORTABILITY_ATOL = 8.0 * np.finfo(np.float64).eps
+
+
 class KernelInvariantError(RuntimeError):
     pass
 
@@ -4645,7 +4651,25 @@ class VerdantKernel:
         vector = np.exp(1j * phase) / math.sqrt(self.state.field.state_dim)
         real = tuple(float(value) for value in vector.real)
         imag = tuple(float(value) for value in vector.imag)
-        digest = hashlib.sha256(
+        digest = self._field_address_checksum(concept_id, nonce, real, imag)
+        return ConceptFieldAddress(
+            concept_id=concept_id,
+            address_sha256=digest,
+            created_cycle=self.state.cycle,
+            state_dim=self.state.field.state_dim,
+            derivation_nonce=nonce,
+            real=real,
+            imag=imag,
+        )
+
+    def _field_address_checksum(
+        self,
+        concept_id: str,
+        nonce: int,
+        real: tuple[float, ...],
+        imag: tuple[float, ...],
+    ) -> str:
+        return hashlib.sha256(
             canonical_json_bytes(
                 {
                     "concept_id": concept_id,
@@ -4657,15 +4681,6 @@ class VerdantKernel:
                 }
             )
         ).hexdigest()
-        return ConceptFieldAddress(
-            concept_id=concept_id,
-            address_sha256=digest,
-            created_cycle=self.state.cycle,
-            state_dim=self.state.field.state_dim,
-            derivation_nonce=nonce,
-            real=real,
-            imag=imag,
-        )
 
     def _ensure_field_address(self, concept_id: str) -> ConceptFieldAddress:
         existing = self.state.field_addresses.get(concept_id)
@@ -5028,9 +5043,28 @@ class VerdantKernel:
                 concept_id,
                 address.derivation_nonce,
             )
-            if expected.address_sha256 != address.address_sha256:
+            stored_checksum = self._field_address_checksum(
+                concept_id,
+                address.derivation_nonce,
+                address.real,
+                address.imag,
+            )
+            if stored_checksum != address.address_sha256:
                 raise KernelInvariantError("Field address checksum drift detected.")
-            if expected.real != address.real or expected.imag != address.imag:
+            if not (
+                np.allclose(
+                    np.asarray(expected.real, dtype=np.float64),
+                    np.asarray(address.real, dtype=np.float64),
+                    rtol=0.0,
+                    atol=FIELD_ADDRESS_PORTABILITY_ATOL,
+                )
+                and np.allclose(
+                    np.asarray(expected.imag, dtype=np.float64),
+                    np.asarray(address.imag, dtype=np.float64),
+                    rtol=0.0,
+                    atol=FIELD_ADDRESS_PORTABILITY_ATOL,
+                )
+            ):
                 raise KernelInvariantError("Field address vector drift detected.")
         orphan_addresses = set(self.state.field_addresses) - set(self.state.concepts)
         if orphan_addresses:

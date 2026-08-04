@@ -321,6 +321,51 @@ class DurableRunService:
     def promote_hierarchy(self, run_id: str, candidate_id: str, *, expected_state_revision: int | None = None) -> dict[str, Any]:
         return self._structure_command(run_id, "promote_hierarchy", "PROMOTE_HIERARCHY", {"candidate_id": candidate_id}, expected_state_revision=expected_state_revision)
 
+    def probe_hierarchy(
+        self,
+        run_id: str,
+        query_structure_id: str,
+        *,
+        expected_state_revision: int | None = None,
+    ) -> dict[str, Any]:
+        return self._structure_command(
+            run_id,
+            "probe_hierarchy",
+            "PROBE_HIERARCHY",
+            {"query_structure_id": query_structure_id},
+            expected_state_revision=expected_state_revision,
+        )
+
+    def ablate_hierarchy(
+        self,
+        run_id: str,
+        layered_structure_id: str,
+        *,
+        expected_state_revision: int | None = None,
+    ) -> dict[str, Any]:
+        return self._structure_command(
+            run_id,
+            "ablate_hierarchy",
+            "ABLATE_HIERARCHY",
+            {"layered_structure_id": layered_structure_id},
+            expected_state_revision=expected_state_revision,
+        )
+
+    def restore_hierarchy(
+        self,
+        run_id: str,
+        layered_structure_id: str,
+        *,
+        expected_state_revision: int | None = None,
+    ) -> dict[str, Any]:
+        return self._structure_command(
+            run_id,
+            "restore_hierarchy",
+            "RESTORE_HIERARCHY",
+            {"layered_structure_id": layered_structure_id},
+            expected_state_revision=expected_state_revision,
+        )
+
     def challenge_structure(self, run_id: str, structure_id: str, concept_ids: tuple[str, str], evidence_ref: str, confidence: float, *, expected_state_revision: int | None = None) -> dict[str, Any]:
         return self._structure_command(
             run_id, "challenge_structure", "CHALLENGE_STRUCTURE",
@@ -370,6 +415,119 @@ class DurableRunService:
             "ablated": view(ablated),
             "restored": view(restored),
             "available_after": self.forensic_structure_detail(run_id, structure_id).get("available"),
+        }
+
+    def causal_compare_hierarchy(
+        self,
+        run_id: str,
+        layered_structure_id: str,
+        query_structure_id: str,
+        *,
+        expected_outcome: str = "family_match",
+    ) -> dict[str, Any]:
+        if expected_outcome not in {"family_match", "negative_control"}:
+            raise RunServiceError(
+                "Q comparison expectation must be 'family_match' or 'negative_control'."
+            )
+        q_detail = self.forensic_structure_detail(run_id, layered_structure_id)
+        if q_detail.get("kind") != "Q":
+            raise RunServiceError("Q causal comparison requires a layered Q structure.")
+        if not q_detail.get("available"):
+            raise RunServiceError("Q must be available before causal comparison.")
+        query_detail = self.forensic_structure_detail(run_id, query_structure_id)
+        if query_detail.get("kind") != "P":
+            raise RunServiceError("Q causal comparison requires a base P query structure.")
+        if not query_detail.get("available"):
+            raise RunServiceError("The query P structure must be available.")
+
+        enabled = self.probe_hierarchy(run_id, query_structure_id)
+        self.ablate_hierarchy(run_id, layered_structure_id)
+        try:
+            ablated = self.probe_hierarchy(run_id, query_structure_id)
+        finally:
+            self.restore_hierarchy(run_id, layered_structure_id)
+        restored = self.probe_hierarchy(run_id, query_structure_id)
+
+        def view(receipt: dict[str, Any]) -> dict[str, Any]:
+            report = receipt.get("result", {})
+            cost = dict(report.get("cost", {}))
+            baseline_cost = dict(report.get("baseline_cost", {}))
+            cost["comparison_work"] = sum(
+                int(cost.get(key, 0))
+                for key in (
+                    "layered_prototypes_compared",
+                    "base_structures_compared",
+                    "symbolic_verifications",
+                )
+            )
+            baseline_cost["comparison_work"] = sum(
+                int(baseline_cost.get(key, 0))
+                for key in (
+                    "layered_prototypes_compared",
+                    "base_structures_compared",
+                    "symbolic_verifications",
+                )
+            )
+            return {
+                "disposition": report.get("disposition"),
+                "layered_structure_id": report.get("layered_structure_id"),
+                "matched_structure_ids": report.get("matched_structure_ids", []),
+                "compression_gain": report.get("compression_gain"),
+                "cost": cost,
+                "baseline_cost": baseline_cost,
+                "command_id": receipt.get("command_id"),
+                "state_revision_after": receipt.get("state_revision_after"),
+            }
+
+        with_q = view(enabled)
+        without_q = view(ablated)
+        restored_q = view(restored)
+        q_member_ids = {
+            item["structure_id"] for item in q_detail.get("member_structures", [])
+        }
+        if expected_outcome == "family_match":
+            checks = {
+                "q_used_when_available": with_q["layered_structure_id"]
+                == layered_structure_id,
+                "q_removed_by_ablation": without_q["layered_structure_id"]
+                != layered_structure_id,
+                "q_returns_after_restore": restored_q["layered_structure_id"]
+                == layered_structure_id,
+                "comparison_work_reduced": with_q["cost"]["comparison_work"]
+                < without_q["cost"]["comparison_work"],
+                "restored_work_reproduces": restored_q["cost"]["comparison_work"]
+                == with_q["cost"]["comparison_work"],
+                "matched_family_stable": with_q["matched_structure_ids"]
+                == without_q["matched_structure_ids"]
+                == restored_q["matched_structure_ids"],
+            }
+        else:
+            checks = {
+                "q_not_used_when_available": with_q["layered_structure_id"]
+                != layered_structure_id,
+                "q_not_used_when_ablated": without_q["layered_structure_id"]
+                != layered_structure_id,
+                "q_not_used_after_restore": restored_q["layered_structure_id"]
+                != layered_structure_id,
+                "no_family_members_matched": not with_q["matched_structure_ids"]
+                and not without_q["matched_structure_ids"]
+                and not restored_q["matched_structure_ids"],
+            }
+        return {
+            "layered_structure_id": layered_structure_id,
+            "query_structure_id": query_structure_id,
+            "query_scope": (
+                "member" if query_structure_id in q_member_ids else "held_out"
+            ),
+            "expected_outcome": expected_outcome,
+            "with_q": with_q,
+            "q_ablated": without_q,
+            "q_restored": restored_q,
+            "checks": checks,
+            "passed": all(checks.values()),
+            "available_after": self.forensic_structure_detail(
+                run_id, layered_structure_id
+            ).get("available"),
         }
 
     def status(self, run_id: str) -> dict[str, Any]:

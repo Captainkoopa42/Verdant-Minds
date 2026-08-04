@@ -5,7 +5,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from threading import Lock
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -116,6 +116,16 @@ class StructureChallengeApiRequest(ApiModel):
 
 class CausalCompareApiRequest(ApiModel):
     cue_label: str | None = None
+
+
+class HierarchyProbeApiRequest(ApiModel):
+    query_structure_id: str
+    expected_state_revision: int | None = None
+
+
+class HierarchyCausalCompareApiRequest(ApiModel):
+    query_structure_id: str
+    expected_outcome: Literal["family_match", "negative_control"] = "family_match"
 
 
 class ExperimentFreezeApiRequest(ApiModel):
@@ -820,6 +830,86 @@ def promote_hierarchy_candidate(run_id: str, candidate_id: str, request: Structu
         return runtime.service.promote_hierarchy(run_id, candidate_id, expected_state_revision=None if request is None else request.expected_state_revision)
     except KeyError:
         raise HTTPException(status_code=404, detail="Run not found")
+    except (RunNotActiveError, RunServiceError, RuntimeError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.post("/api/v1/runs/{run_id}/layered-structures/{structure_id}/probe")
+def probe_hierarchy(
+    run_id: str, structure_id: str, request: HierarchyProbeApiRequest
+):
+    try:
+        detail = runtime.service.forensic_structure_detail(run_id, structure_id)
+        if detail.get("kind") != "Q":
+            raise RunServiceError("Layered probe target must be a Q structure.")
+        return runtime.service.probe_hierarchy(
+            run_id,
+            request.query_structure_id,
+            expected_state_revision=request.expected_state_revision,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Run or structure not found")
+    except (RunNotActiveError, RunServiceError, RuntimeError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.post("/api/v1/runs/{run_id}/layered-structures/{structure_id}/ablate")
+def ablate_hierarchy(
+    run_id: str,
+    structure_id: str,
+    request: StructureMutationApiRequest | None = None,
+):
+    try:
+        return runtime.service.ablate_hierarchy(
+            run_id,
+            structure_id,
+            expected_state_revision=(
+                None if request is None else request.expected_state_revision
+            ),
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Run or structure not found")
+    except (RunNotActiveError, RunServiceError, RuntimeError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.post("/api/v1/runs/{run_id}/layered-structures/{structure_id}/restore")
+def restore_hierarchy(
+    run_id: str,
+    structure_id: str,
+    request: StructureMutationApiRequest | None = None,
+):
+    try:
+        return runtime.service.restore_hierarchy(
+            run_id,
+            structure_id,
+            expected_state_revision=(
+                None if request is None else request.expected_state_revision
+            ),
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Run or structure not found")
+    except (RunNotActiveError, RunServiceError, RuntimeError) as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+@app.post(
+    "/api/v1/runs/{run_id}/layered-structures/{structure_id}/causal-compare"
+)
+def causal_compare_hierarchy(
+    run_id: str,
+    structure_id: str,
+    request: HierarchyCausalCompareApiRequest,
+):
+    try:
+        return runtime.service.causal_compare_hierarchy(
+            run_id,
+            structure_id,
+            request.query_structure_id,
+            expected_outcome=request.expected_outcome,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Run or structure not found")
     except (RunNotActiveError, RunServiceError, RuntimeError) as exc:
         raise HTTPException(status_code=409, detail=str(exc))
 

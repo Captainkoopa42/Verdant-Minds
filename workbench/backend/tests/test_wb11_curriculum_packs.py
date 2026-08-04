@@ -131,6 +131,12 @@ def test_wb11_pack_api_and_browser_surface(tmp_path):
         assert "verdant.curriculum.pack.v1" in js.text
         assert "Curriculum Packs" in js.text
         assert "Run selected + probes" in js.text
+        assert "Observe Q candidates" in js.text
+        assert "/hierarchy/observe" in js.text
+        assert "data-action=\"observe-hierarchy\"" in js.text
+        assert "structureSelectionRequest" in js.text
+        assert "state.structureDetail=null" in js.text
+        assert "Loading selected structure" in js.text
         assert "function editorHasFocus()" in js.text
         assert "function patchLiveDOM()" in js.text
         assert "function backgroundRender(force=false)" in js.text

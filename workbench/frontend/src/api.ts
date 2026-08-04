@@ -114,6 +114,8 @@ Object.assign(api, {
   ablateStructure: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/structures/${id}/ablate`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
   restoreStructure: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/structures/${id}/restore`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
   interactStructure: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/structures/${id}/interact`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
+  observeHierarchy: (runId:string,expected?:number) => request<any>(`${API}/runs/${runId}/hierarchy/observe`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
+  promoteHierarchy: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/hierarchy-candidates/${id}/promote`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
   causalCompareStructure: (runId:string,id:string,cueLabel?:string) => request<any>(`${API}/runs/${runId}/structures/${id}/causal-compare`, {method:'POST',body:JSON.stringify({cue_label:cueLabel||null})}),
 });
 

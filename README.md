@@ -270,3 +270,11 @@ python run_ethomorphism_benchmark.py
 ```
 
 The harness gives the same primitive curriculum to graph-only, graph+ECWF, plastic-no-fold, and full earned-fold arms; then performs held-out reconstruction, P/Q ablation-restoration, family selectivity, refolding, and anti-saturation assays. Hidden family labels exist only in the external evaluator. See `MILESTONE_19_REPORT.md`.
+
+For a repeated, machine-readable Q evaluation campaign with held-out weighted paths,
+unrelated-shape controls, causal ablation/restoration, threshold sensitivity, and
+distractor scaling, run:
+
+```bash
+python run_q_evaluation.py --output-dir artifacts/q_evaluation
+```

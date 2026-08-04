@@ -428,17 +428,32 @@ function ForensicPage({selectedRun,status,execute,mode}:any){
     if(sid){ setSelected(sid); setDetail(await a.structureDetail(selectedRun,sid)); setGraph(await a.structureGraph(selectedRun,sid)); }
   };
   useEffect(()=>{load().catch(()=>{});},[selectedRun]);
-  useEffect(()=>{if(selectedRun&&selected){Promise.all([a.structureDetail(selectedRun,selected),a.structureGraph(selectedRun,selected)]).then(([d,g]:any)=>{setDetail(d);setGraph(g);}).catch(()=>{});}},[selected]);
+  useEffect(()=>{
+    let cancelled=false;
+    if(selectedRun&&selected){
+      setDetail(null);setGraph(null);
+      Promise.all([a.structureDetail(selectedRun,selected),a.structureGraph(selectedRun,selected)])
+        .then(([d,g]:any)=>{if(!cancelled){setDetail(d);setGraph(g);}})
+        .catch(()=>{});
+    }
+    return()=>{cancelled=true;};
+  },[selectedRun,selected]);
   if(!selectedRun)return <div className="page"><section className="title"><h2>Select an active organism first.</h2></section></div>;
   const objects=[...(index?.p_structures||[]),...(index?.q_structures||[])];
+  const pCandidates=(index?.p_candidates||[]).filter((x:any)=>!x.promoted_structure_id);
+  const qCandidates=(index?.q_candidates||[]).filter((x:any)=>!x.promoted_layered_structure_id);
   const runReplay=async()=>setReplay(await a.structureReplay(selectedRun,selected));
   const ablate=async()=>{await execute(()=>a.ablateStructure(selectedRun,selected,status?.descriptor?.state_revision));await load();};
   const restore=async()=>{await execute(()=>a.restoreStructure(selectedRun,selected,status?.descriptor?.state_revision));await load();};
+  const interact=async()=>{await execute(()=>a.interactStructure(selectedRun,selected,status?.descriptor?.state_revision));await load();};
+  const observeHierarchy=async()=>{await execute(()=>a.observeHierarchy(selectedRun,status?.descriptor?.state_revision));await load();};
+  const promoteP=async(id:string)=>{await execute(()=>a.promoteStructure(selectedRun,id,status?.descriptor?.state_revision));await load();};
+  const promoteQ=async(id:string)=>{await execute(()=>a.promoteHierarchy(selectedRun,id,status?.descriptor?.state_revision));await load();};
   const compare=async()=>setCausal(await execute(()=>a.causalCompareStructure(selectedRun,selected,detail?.member_concepts?.[0]?.display_label),false));
   return <div className="page">
     <section className="title compact"><div className="eyebrow">{mode==='explorer'?'EXPLORER / LIVING VIEW · WORKBENCH 1.0.1':'STRUCTURES / FORENSIC INSPECTOR'}</div><h2>{mode==='explorer'?'Recorded cognition, moving under the glass.':'Trace a manufactured object back to its evidence.'}</h2><p>WB-06 keeps the forensic inspector and adds a record-backed Living Explorer. The dependency-free browser build is the runnable reference UI in this environment.</p></section>
-    <div className="forensic-grid"><section className="panel"><div className="panel-head"><h3>P / Q structures</h3><span>{objects.length}</span></div><div className="structure-list">{objects.map((x:any)=><button key={x.id} className={`structure-row ${selected===x.id?'selected':''}`} onClick={()=>setSelected(x.id)}><div><strong>{x.kind} · {x.opaque_name}</strong><small>cycle {x.created_cycle} · {x.member_count} members</small></div><code>{short(x.id,16)}</code></button>)}</div></section>
-      <div className="stack">{detail&&<><section className="panel"><div className="panel-head"><h3>{detail.record?.opaque_name}</h3><span>{detail.available?'AVAILABLE':'DORMANT'}</span></div><code className="blockcode">{detail.id}</code><div className="row wrap">{detail.kind==='P'&&<button onClick={detail.available?ablate:restore}>{detail.available?'Ablate P':'Restore P'}</button>}{detail.kind==='P'&&<button onClick={compare}>Causal compare</button>}<button onClick={runReplay}>Replay formation</button></div></section>
+    <div className="forensic-grid"><section className="panel"><div className="panel-head"><h3>P / Q structures</h3><span>{objects.length}</span></div><div className="structure-list">{objects.map((x:any)=><button key={x.id} className={`structure-row ${selected===x.id?'selected':''}`} onClick={()=>setSelected(x.id)}><div><strong>{x.kind} · {x.opaque_name}</strong><small>cycle {x.created_cycle} · {x.member_count} members</small></div><code>{short(x.id,16)}</code></button>)}</div><div className="row wrap"><button className="primary" disabled={(index?.p_structures||[]).length<3} onClick={observeHierarchy}>Observe Q candidates</button><small className="muted">Interact with at least three available P structures, then inspect their verified relationships for a higher-order candidate.</small></div><div className="panel-head subhead"><h3>Promotion candidates</h3><span>explicit operator action</span></div><div className="candidate-list">{pCandidates.map((x:any)=><div className="candidate-row" key={x.id}><div><strong>{x.status}</strong><small>{x.member_labels?.join(', ')}</small></div><button onClick={()=>promoteP(x.id)}>Promote P</button></div>)}{qCandidates.map((x:any)=><div className="candidate-row" key={x.id}><div><strong>Q {x.status}</strong><small>{x.member_count} P members</small></div><button onClick={()=>promoteQ(x.id)}>Promote Q</button></div>)}</div></section>
+      <div className="stack">{!detail?<section className="panel"><div className="empty">Loading selected structure…</div></section>:<><section className="panel"><div className="panel-head"><h3>{detail.record?.opaque_name}</h3><span>{detail.available?'AVAILABLE':'DORMANT'}</span></div><code className="blockcode">{detail.id}</code><div className="row wrap">{detail.kind==='P'&&<button onClick={detail.available?ablate:restore}>{detail.available?'Ablate P':'Restore P'}</button>}{detail.kind==='P'&&<button onClick={interact}>Interact</button>}{detail.kind==='P'&&<button onClick={compare}>Causal compare</button>}<button onClick={runReplay}>Replay formation</button></div></section>
       {mode==='explorer'?<section className="panel"><div className="panel-head"><h3>Graph payload</h3><span>renderer source</span></div><pre className="inspector tall">{JSON.stringify(graph,null,2)}</pre></section>:<><section className="panel"><div className="panel-head"><h3>Evidence / formation</h3><span>{detail.evidence?.length||0} evidence records</span></div><pre className="inspector tall">{JSON.stringify({quality:detail.record?.quality_at_promotion,lineage:detail.lineage,evidence:detail.evidence,candidate_history:detail.candidate_history},null,2)}</pre></section>{causal&&<section className="panel"><div className="panel-head"><h3>Causal ablation result</h3><span>with / ablate / restore</span></div><pre className="inspector">{JSON.stringify(causal,null,2)}</pre></section>}</>}
       {replay&&<section className="panel"><div className="panel-head"><h3>Replay Formation</h3><span>{replay.mutated?'MUTATION ERROR':'pure inspection'}</span></div><pre className="inspector tall">{JSON.stringify(replay,null,2)}</pre></section>}</>}</div></div>
   </div>;

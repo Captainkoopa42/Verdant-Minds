@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -129,5 +131,100 @@ def test_wb02_checkpoint_integrity_blocks_reopen(tmp_path):
         path.write_bytes(path.read_bytes() + b"tamper")
         with pytest.raises(ArtifactIntegrityError):
             service.reopen_run("run_integrity")
+    finally:
+        service.close()
+
+
+def test_wb02_event_ledger_paths_survive_moving_the_workbench_home(tmp_path):
+    original_home = tmp_path / "original-lab"
+    service = DurableRunService(original_home)
+    try:
+        project = service.create_project("Portable Lab", project_id="proj_portable")
+        service.create_run(
+            project.project_id,
+            OrganismConfig(seed=91, state_dim=8, run_label="portable"),
+            organism_id="org_portable",
+            run_id="run_portable",
+        )
+        expected_ids = [
+            item.event_id for item in service.events.read_run("run_portable")
+        ]
+        ledger_path = service.repository.list_event_index("run_portable")[0]["ledger_path"]
+        assert ledger_path == "runs/run_portable/events.jsonl"
+        assert not Path(ledger_path).is_absolute()
+    finally:
+        service.close()
+
+    moved_home = tmp_path / "moved-lab"
+    shutil.copytree(original_home, moved_home)
+    database = moved_home / "workbench.db"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "UPDATE events SET ledger_path = ? WHERE run_id = ?",
+            (
+                r"C:\\old-machine\\verdant\\runs\\run_portable\\events.jsonl",
+                "run_portable",
+            ),
+        )
+
+    reopened = DurableRunService(moved_home)
+    try:
+        assert [
+            item.event_id for item in reopened.events.read_run("run_portable")
+        ] == expected_ids
+    finally:
+        reopened.close()
+
+
+def test_wb02_reopening_older_history_auto_forks_without_rewriting_parent(tmp_path):
+    service = DurableRunService(tmp_path / "auto-fork-lab")
+    try:
+        project = service.create_project("Auto Fork Lab", project_id="proj_auto_fork")
+        descriptor = service.create_run(
+            project.project_id,
+            OrganismConfig(seed=93, state_dim=8, run_label="auto-fork"),
+            organism_id="org_auto_fork",
+            run_id="run_auto_fork",
+        )
+        first = service.teach(
+            "run_auto_fork",
+            TeachingRequest(context_id="root", labels=("a",), event_key="auto-fork-001"),
+            expected_state_revision=descriptor["state_revision"],
+            command_id="cmd_auto_fork_001",
+        )
+        checkpoint = service.save_checkpoint(
+            "run_auto_fork", label="branch-point", checkpoint_id="ckpt_auto_fork"
+        )
+        service.teach(
+            "run_auto_fork",
+            TeachingRequest(context_id="root", labels=("b",), event_key="auto-fork-002"),
+            expected_state_revision=first["state_revision_after"],
+            command_id="cmd_auto_fork_002",
+        )
+        parent_before = service.repository.get_run("run_auto_fork")
+        parent_event_ids = [
+            item.event_id for item in service.events.read_run("run_auto_fork")
+        ]
+        service.close_run("run_auto_fork")
+
+        resumed = service.reopen_run("run_auto_fork")
+
+        assert resumed["auto_forked"] is True
+        assert resumed["auto_forked_from_run_id"] == "run_auto_fork"
+        assert resumed["resumed_from_checkpoint_id"] == checkpoint.checkpoint_id
+        assert resumed["run_id"] != "run_auto_fork"
+        assert resumed["cycle"] == checkpoint.cycle
+        assert resumed["fingerprint"] == checkpoint.canonical_fingerprint
+        parent_after = service.repository.get_run("run_auto_fork")
+        assert parent_after.latest_cycle == parent_before.latest_cycle
+        assert parent_after.latest_state_revision == parent_before.latest_state_revision
+        assert parent_after.latest_fingerprint == parent_before.latest_fingerprint
+        assert [
+            item.event_id for item in service.events.read_run("run_auto_fork")
+        ] == parent_event_ids
+        assert [item["run_id"] for item in service.ancestry(resumed["run_id"])] == [
+            "run_auto_fork",
+            resumed["run_id"],
+        ]
     finally:
         service.close()

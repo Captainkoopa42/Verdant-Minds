@@ -665,7 +665,7 @@ class AppendOnlyEventLedger:
                     handle.flush()
                     self.repository.add_event_index(
                         event,
-                        ledger_path=str(path),
+                        ledger_path=(path.relative_to(self.root.parent)).as_posix(),
                         byte_offset=offset,
                         byte_length=len(raw),
                     )
@@ -676,7 +676,10 @@ class AppendOnlyEventLedger:
             return int(cursor), []
         result: list[EventEnvelope] = []
         for row in rows:
-            path = Path(row["ledger_path"])
+            # The database records a portable forensic path, but the active
+            # Workbench root is authoritative after moving/exporting a lab.
+            # This also rebases legacy rows that stored absolute host paths.
+            path = self.path_for_run(str(row["run_id"]))
             with path.open("rb") as handle:
                 handle.seek(int(row["byte_offset"]))
                 raw = handle.read(int(row["byte_length"]))

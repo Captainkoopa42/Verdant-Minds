@@ -85,7 +85,14 @@ export function App(){
     if(!projectId){setError('Create or select a project first.');return;}
     const d=await execute(()=>api.createRun(projectId,runSeed,runDim,runLabel)); setSelectedRun(d.run_id); setPage('Cultivate');
   };
-  const reopen=async()=>{ if(selectedRun) await execute(()=>api.reopen(selectedRun)); };
+  const reopen=async()=>{
+    if(!selectedRun)return;
+    const descriptor=await execute(()=>api.reopen(selectedRun));
+    if(descriptor?.run_id && descriptor.run_id!==selectedRun){
+      setSelectedRun(descriptor.run_id);
+      setPage('Cultivate');
+    }
+  };
   const queueLesson=async()=>{ if(!selectedRun)return; await execute(()=>api.queueTeach(selectedRun,context,words(lesson))); };
   const teachNow=async()=>{ if(!selectedRun)return; await execute(()=>api.teachNow(selectedRun,context,words(lesson),status?.descriptor?.state_revision)); };
   const probeNow=async()=>{ if(!selectedRun)return; await execute(()=>api.probeNow(selectedRun,words(probe),status?.descriptor?.state_revision)); };

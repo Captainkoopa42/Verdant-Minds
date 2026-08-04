@@ -427,6 +427,74 @@ class VerdantEngineAdapter:
         return self._receipt(envelope=envelope, before_revision=before[0], before_cycle=before[1], before_fingerprint=before[2],
                              events=(event,), result={"layered_structure_id": result.event.layered_structure_id})
 
+    def probe_hierarchy(self, envelope: CommandEnvelope, query_structure_id: str) -> CommandReceipt:
+        self._check_envelope(envelope)
+        before = (self.state_revision, self.kernel.state.cycle, self.kernel.fingerprint())
+        result = self.hierarchy.probe(self.kernel, query_structure_id)
+        event = model_event(
+            run_id=self.run_id,
+            organism_id=self.organism_id,
+            kernel=self.kernel,
+            command_id=envelope.command_id,
+            event_type="LAYERED_PROBE_COMMITTED",
+            model=result.event,
+        )
+        return self._receipt(
+            envelope=envelope,
+            before_revision=before[0],
+            before_cycle=before[1],
+            before_fingerprint=before[2],
+            events=(event,),
+            result=result.report.model_dump(mode="json"),
+        )
+
+    def ablate_hierarchy(self, envelope: CommandEnvelope, layered_structure_id: str) -> CommandReceipt:
+        return self._set_hierarchy_availability(
+            envelope, layered_structure_id, available=False
+        )
+
+    def restore_hierarchy(self, envelope: CommandEnvelope, layered_structure_id: str) -> CommandReceipt:
+        return self._set_hierarchy_availability(
+            envelope, layered_structure_id, available=True
+        )
+
+    def _set_hierarchy_availability(
+        self,
+        envelope: CommandEnvelope,
+        layered_structure_id: str,
+        *,
+        available: bool,
+    ) -> CommandReceipt:
+        self._check_envelope(envelope)
+        before = (self.state_revision, self.kernel.state.cycle, self.kernel.fingerprint())
+        if available:
+            native = self.hierarchy.restore(
+                self.kernel, layered_structure_id, "Workbench Q restoration"
+            )
+        else:
+            native = self.hierarchy.ablate(
+                self.kernel, layered_structure_id, "Workbench Q ablation"
+            )
+        event = model_event(
+            run_id=self.run_id,
+            organism_id=self.organism_id,
+            kernel=self.kernel,
+            command_id=envelope.command_id,
+            event_type="LAYERED_STRUCTURE_AVAILABILITY_CHANGED",
+            model=native,
+        )
+        return self._receipt(
+            envelope=envelope,
+            before_revision=before[0],
+            before_cycle=before[1],
+            before_fingerprint=before[2],
+            events=(event,),
+            result={
+                "layered_structure_id": layered_structure_id,
+                "available": available,
+            },
+        )
+
     def challenge(self, envelope: CommandEnvelope, *, structure_id: str, concept_ids: tuple[str, str], confidence: float, evidence_ref: str) -> CommandReceipt:
         self._check_envelope(envelope)
         before = (self.state_revision, self.kernel.state.cycle, self.kernel.fingerprint())

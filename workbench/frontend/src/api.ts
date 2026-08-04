@@ -116,6 +116,10 @@ Object.assign(api, {
   interactStructure: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/structures/${id}/interact`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
   observeHierarchy: (runId:string,expected?:number) => request<any>(`${API}/runs/${runId}/hierarchy/observe`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
   promoteHierarchy: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/hierarchy-candidates/${id}/promote`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
+  probeHierarchy: (runId:string,id:string,queryId:string,expected?:number) => request<any>(`${API}/runs/${runId}/layered-structures/${id}/probe`, {method:'POST',body:JSON.stringify({query_structure_id:queryId,expected_state_revision:expected??null})}),
+  ablateHierarchy: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/layered-structures/${id}/ablate`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
+  restoreHierarchy: (runId:string,id:string,expected?:number) => request<any>(`${API}/runs/${runId}/layered-structures/${id}/restore`, {method:'POST',body:JSON.stringify({expected_state_revision:expected??null})}),
+  causalCompareHierarchy: (runId:string,id:string,queryId:string,expectedOutcome:'family_match'|'negative_control') => request<any>(`${API}/runs/${runId}/layered-structures/${id}/causal-compare`, {method:'POST',body:JSON.stringify({query_structure_id:queryId,expected_outcome:expectedOutcome})}),
   causalCompareStructure: (runId:string,id:string,cueLabel?:string) => request<any>(`${API}/runs/${runId}/structures/${id}/causal-compare`, {method:'POST',body:JSON.stringify({cue_label:cueLabel||null})}),
 });
 

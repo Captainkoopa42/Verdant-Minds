@@ -146,6 +146,21 @@ def _dispatch(adapter: VerdantEngineAdapter, request: WorkerRequest) -> dict[str
     if action == "promote_hierarchy":
         envelope = CommandEnvelope.model_validate(payload["envelope"])
         return adapter.promote_hierarchy(envelope, str(payload["candidate_id"])).model_dump(mode="json")
+    if action == "probe_hierarchy":
+        envelope = CommandEnvelope.model_validate(payload["envelope"])
+        return adapter.probe_hierarchy(
+            envelope, str(payload["query_structure_id"])
+        ).model_dump(mode="json")
+    if action == "ablate_hierarchy":
+        envelope = CommandEnvelope.model_validate(payload["envelope"])
+        return adapter.ablate_hierarchy(
+            envelope, str(payload["layered_structure_id"])
+        ).model_dump(mode="json")
+    if action == "restore_hierarchy":
+        envelope = CommandEnvelope.model_validate(payload["envelope"])
+        return adapter.restore_hierarchy(
+            envelope, str(payload["layered_structure_id"])
+        ).model_dump(mode="json")
     if action == "challenge_structure":
         envelope = CommandEnvelope.model_validate(payload["envelope"])
         concept_ids = tuple(sorted((str(payload["concept_ids"][0]), str(payload["concept_ids"][1]))))

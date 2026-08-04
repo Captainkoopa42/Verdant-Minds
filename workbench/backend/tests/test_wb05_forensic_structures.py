@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi.testclient import TestClient
 
 from verdant_hierarchy.demo import run as run_hierarchy_demo
-from verdant_workbench import DurableRunService, OrganismConfig
+from verdant_workbench import CheckpointRecord, DurableRunService, OrganismConfig
 from verdant_workbench.adapter import VerdantEngineAdapter
 from verdant_workbench.app import app, runtime
 from verdant_workbench.models import TeachingRequest
@@ -139,6 +141,89 @@ def test_wb05_q_inspector_and_replay_use_actual_hierarchy_records(tmp_path):
     assert len(graph["edges"]) == 3
 
 
+def test_wb05_q_causal_lab_records_held_out_and_negative_controls(tmp_path):
+    output = tmp_path / "hierarchy-causal-demo"
+    summary = run_hierarchy_demo(output)
+    checkpoint_path = output / "milestone_17_hierarchy_demo.vdk"
+    loaded = VerdantEngineAdapter.load(
+        checkpoint_path,
+        run_id="run_q_causal",
+        organism_id="org_q_causal",
+    )
+    descriptor = loaded.descriptor()
+
+    service = DurableRunService(tmp_path / "q-causal-lab")
+    try:
+        project = service.create_project("Q Causal Lab", project_id="proj_q_causal")
+        service.create_run(
+            project.project_id,
+            OrganismConfig(seed=1901, state_dim=16, run_label="q-import"),
+            organism_id="org_q_causal",
+            run_id="run_q_causal",
+        )
+        service.close_run("run_q_causal")
+        artifact = service.artifacts.ingest_file(checkpoint_path)
+        checkpoint = CheckpointRecord(
+            checkpoint_id="ckpt_q_causal",
+            run_id="run_q_causal",
+            organism_id="org_q_causal",
+            artifact_sha256=artifact.sha256,
+            artifact_size_bytes=artifact.size_bytes,
+            canonical_fingerprint=descriptor.fingerprint,
+            state_revision=descriptor.state_revision,
+            cycle=descriptor.cycle,
+            created_at=datetime.now(timezone.utc).isoformat(),
+            parent_checkpoint_id=None,
+            label="controlled Q fixture",
+        )
+        service.repository.add_checkpoint(checkpoint)
+        service.repository.update_run_head(
+            "run_q_causal",
+            state_revision=descriptor.state_revision,
+            cycle=descriptor.cycle,
+            fingerprint=descriptor.fingerprint,
+            status="closed",
+            head_checkpoint_id=checkpoint.checkpoint_id,
+        )
+        service.reopen_run("run_q_causal")
+
+        qid = summary["layered_structure_id"]
+        held_out = service.causal_compare_hierarchy(
+            "run_q_causal",
+            qid,
+            summary["novel_query_structure_id"],
+            expected_outcome="family_match",
+        )
+        assert held_out["query_scope"] == "held_out"
+        assert held_out["passed"] is True
+        assert held_out["with_q"]["layered_structure_id"] == qid
+        assert held_out["q_ablated"]["layered_structure_id"] is None
+        assert held_out["q_restored"]["layered_structure_id"] == qid
+        assert held_out["with_q"]["cost"]["comparison_work"] < held_out[
+            "q_ablated"
+        ]["cost"]["comparison_work"]
+
+        negative = service.causal_compare_hierarchy(
+            "run_q_causal",
+            qid,
+            summary["unrelated_star_structure_id"],
+            expected_outcome="negative_control",
+        )
+        assert negative["query_scope"] == "held_out"
+        assert negative["passed"] is True
+        assert negative["with_q"]["layered_structure_id"] is None
+        assert negative["q_restored"]["layered_structure_id"] is None
+        assert negative["available_after"] is True
+
+        event_types = [
+            event.event_type for event in service.events.read_run("run_q_causal")
+        ]
+        assert event_types.count("LAYERED_PROBE_COMMITTED") == 6
+        assert event_types.count("LAYERED_STRUCTURE_AVAILABILITY_CHANGED") == 4
+    finally:
+        service.close()
+
+
 def test_wb05_api_exposes_structure_inspection_graph_replay_and_interventions(tmp_path):
     runtime.reset(tmp_path / "api-wb05")
     client = TestClient(app)
@@ -194,6 +279,7 @@ def test_wb05_serves_structures_and_explorer_surfaces(tmp_path):
         assert "EXPLORER / FORENSIC TOPOLOGY" in js.text
         assert "Replay formation" in js.text
         assert "Causal ablation laboratory" in js.text
+        assert "Q causal laboratory" in js.text
         assert "WB-05" in js.text
     finally:
         runtime.close()

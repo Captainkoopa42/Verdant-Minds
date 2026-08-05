@@ -1,0 +1,23 @@
+{
+  "schema": "verdant.publication.candidate.v1",
+  "candidate_id": "VPC-1",
+  "candidate_ref": "verdant-publication-candidate-v1",
+  "architecture_baseline_commit": "b0f73a113519ac0e8801e756503fdbe38420ee7a",
+  "q_evaluation_commit": "d3c147e",
+  "frozen_primary_q_threshold": 0.985,
+  "release_identity": "verdant-minds-v5-workbench-1.0.1",
+  "engine_source_sha256": "07d0eb38c9a6ba52e3eb32e3a1c4cd0720f3b1d3e6f8f9184309b51de1737727",
+  "workbench_source_sha256": "7a8d1dbafd85cef943bdad96042903fc8116dcd2125c353cdd52f89b3c5af2af",
+  "dependency_lock_sha256": "bb0dd24142ccb66437fac60a38d07f9a95004a85a029c3f870da7d226e598b64",
+  "verification_boundary": {
+    "engine_and_evaluator_tests": 192,
+    "workbench_tests": 75,
+    "total_tests": 267,
+    "startup_and_artifact_diagnostic": true
+  },
+  "protocol_status": "draft",
+  "confirmatory_manifest_status": "not_created",
+  "local_preflight": "pass",
+  "external_sync": "pending",
+  "created_at_utc": "2026-08-05T00:44:54Z"
+}

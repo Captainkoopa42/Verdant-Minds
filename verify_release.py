@@ -19,6 +19,7 @@ ENGINE_GROUPS = [
     ["tests/test_structure_interaction_phase.py","tests/test_hierarchy_phase.py"],
     ["tests/test_refolding_phase.py"],
     ["tests/test_benchmark_phase.py"],
+    ["tests/test_q_evaluation.py"],
 ]
 WORKBENCH_FILES = [
     "tests/test_adapter_equivalence.py",
@@ -32,6 +33,9 @@ WORKBENCH_FILES = [
     "tests/test_wb08_providers.py",
     "tests/test_wb09_plugins_hardening.py",
     "tests/test_wb10_release_polish.py",
+    "tests/test_explorer_worker_timeout_policy.py",
+    "tests/test_runtime_stability_guard.py",
+    "tests/test_wb11_curriculum_packs.py",
 ]
 
 

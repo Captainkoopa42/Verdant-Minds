@@ -1,0 +1,367 @@
+
+=== Engine partition 1/6 ===
+........................................................................ [ 57%]
+......................................................                   [100%]
+126 passed in 11.80s
+
+=== Engine partition 2/6 ===
+................................                                         [100%]
+32 passed in 14.15s
+
+=== Engine partition 3/6 ===
+................                                                         [100%]
+16 passed in 15.49s
+
+=== Engine partition 4/6 ===
+.........                                                                [100%]
+9 passed in 21.36s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_benchmark_curriculum_is_deterministic_and_target_family_is_not_taught ===
+.                                                                        [100%]
+1 passed in 0.30s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_c_and_d_share_plastic_substrate_but_only_d_promotes_folds ===
+.                                                                        [100%]
+1 passed in 9.58s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_all_arms_solve_heldout_local_reconstruction_but_d_compiles_it ===
+.                                                                        [100%]
+1 passed in 9.86s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_full_arm_transfer_is_selective_and_q_reduces_family_comparison_work ===
+.                                                                        [100%]
+1 passed in 6.26s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_p_and_q_ablation_restoration_controls_follow_exact_objects ===
+.                                                                        [100%]
+1 passed in 5.96s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_refolding_control_preserves_parent_lineage_and_semantic_counts ===
+.                                                                        [100%]
+1 passed in 14.63s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_long_run_plastic_health_stays_inside_explicit_caps ===
+.                                                                        [100%]
+1 passed in 5.48s
+
+=== Engine benchmark tests/test_benchmark_phase.py::test_full_arm_training_is_deterministic ===
+.                                                                        [100%]
+1 passed in 11.66s
+
+=== Engine partition 6/6 ===
+.                                                                        [100%]
+1 passed in 18.64s
+
+=== Workbench tests/test_adapter_equivalence.py::test_workbench_adapter_matches_direct_engine_for_same_commands ===
+.                                                                        [100%]
+1 passed in 0.50s
+
+=== Workbench tests/test_adapter_equivalence.py::test_event_envelopes_are_traceable_and_payload_hashed ===
+.                                                                        [100%]
+1 passed in 0.36s
+
+=== Workbench tests/test_adapter_equivalence.py::test_stale_workbench_command_is_rejected_before_mutation ===
+.                                                                        [100%]
+1 passed in 0.33s
+
+=== Workbench tests/test_worker_and_api.py::test_isolated_worker_create_teach_snapshot_and_save ===
+.                                                                        [100%]
+1 passed in 1.09s
+
+=== Workbench tests/test_worker_and_api.py::test_fastapi_health_and_minimal_run_lifecycle ===
+.                                                                        [100%]
+1 passed in 1.11s
+
+=== Workbench tests/test_worker_and_api.py::test_fastapi_project_checkpoint_close_reopen_and_branch ===
+.                                                                        [100%]
+1 passed in 2.59s
+
+=== Workbench tests/test_wb02_persistence.py::test_content_addressed_artifact_store_deduplicates_and_detects_tampering ===
+.                                                                        [100%]
+1 passed in 0.33s
+
+=== Workbench tests/test_wb02_persistence.py::test_wb02_create_save_close_reopen_preserves_checkpoint_and_events ===
+.                                                                        [100%]
+1 passed in 1.22s
+
+=== Workbench tests/test_wb02_persistence.py::test_wb02_branch_preserves_ancestry_and_parent_checkpoint ===
+.                                                                        [100%]
+1 passed in 1.39s
+
+=== Workbench tests/test_wb02_persistence.py::test_wb02_checkpoint_integrity_blocks_reopen ===
+.                                                                        [100%]
+1 passed in 0.81s
+
+=== Workbench tests/test_wb02_persistence.py::test_wb02_event_ledger_paths_survive_moving_the_workbench_home ===
+.                                                                        [100%]
+1 passed in 0.76s
+
+=== Workbench tests/test_wb02_persistence.py::test_wb02_reopening_older_history_auto_forks_without_rewriting_parent ===
+.                                                                        [100%]
+1 passed in 1.23s
+
+=== Workbench tests/test_wb03_live_console.py::test_wb03_queue_step_run_dirty_checkpoint_and_cursor_events ===
+.                                                                        [100%]
+1 passed in 1.08s
+
+=== Workbench tests/test_wb03_live_console.py::test_wb03_fastapi_queue_controls_and_websocket_event_stream ===
+.                                                                        [100%]
+1 passed in 1.03s
+
+=== Workbench tests/test_wb03_live_console.py::test_wb03_serves_zero_dependency_console_build ===
+.                                                                        [100%]
+1 passed in 0.50s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb04_m19_template_compiles_freezes_and_matches_reference_hash ===
+.                                                                        [100%]
+1 passed in 0.55s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb04_m19_curriculum_workbench_run_matches_direct_engine ===
+.                                                                        [100%]
+1 passed in 9.18s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb04_primitive_line_compiler_and_diff ===
+.                                                                        [100%]
+1 passed in 0.53s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb04_grammar_lab_preview_is_pure_and_teaching_uses_engine_language_path ===
+.                                                                        [100%]
+1 passed in 1.01s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb04_api_curriculum_and_grammar_routes ===
+.                                                                        [100%]
+1 passed in 1.03s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb04_serves_curriculum_and_grammar_workbench_surfaces ===
+.                                                                        [100%]
+1 passed in 0.53s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb041_editable_teaching_record_is_explicit_not_prose_inferred ===
+.                                                                        [100%]
+1 passed in 0.58s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb041_bundle_can_queue_language_scaffold_and_world_teaching ===
+.                                                                        [100%]
+1 passed in 1.13s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb041_curriculum_allows_deliberately_contradictory_claims ===
+.                                                                        [100%]
+1 passed in 1.05s
+
+=== Workbench tests/test_wb04_curriculum_grammar.py::test_wb041_editable_template_api_and_ui ===
+.                                                                        [100%]
+1 passed in 0.55s
+
+=== Workbench tests/test_wb05_forensic_structures.py::test_wb05_p_inspector_traces_structure_to_candidate_evidence_governance_and_frozen_topology ===
+.                                                                        [100%]
+1 passed in 1.58s
+
+=== Workbench tests/test_wb05_forensic_structures.py::test_wb05_replay_formation_is_pure_canonical_history ===
+.                                                                        [100%]
+1 passed in 1.47s
+
+=== Workbench tests/test_wb05_forensic_structures.py::test_wb05_causal_compare_reproduces_p_ablation_and_restoration ===
+.                                                                        [100%]
+1 passed in 1.52s
+
+=== Workbench tests/test_wb05_forensic_structures.py::test_wb05_q_inspector_and_replay_use_actual_hierarchy_records ===
+.                                                                        [100%]
+1 passed in 6.47s
+
+=== Workbench tests/test_wb05_forensic_structures.py::test_wb05_q_causal_lab_records_held_out_and_negative_controls ===
+.                                                                        [100%]
+1 passed in 7.91s
+
+=== Workbench tests/test_wb05_forensic_structures.py::test_wb05_api_exposes_structure_inspection_graph_replay_and_interventions ===
+.                                                                        [100%]
+1 passed in 1.70s
+
+=== Workbench tests/test_wb05_forensic_structures.py::test_wb05_serves_structures_and_explorer_surfaces ===
+.                                                                        [100%]
+1 passed in 0.56s
+
+=== Workbench tests/test_wb06_living_explorer.py::test_wb06_timeline_is_non_mutating_and_head_matches_live_projection ===
+.                                                                        [100%]
+1 passed in 1.77s
+
+=== Workbench tests/test_wb06_living_explorer.py::test_wb06_frames_expose_real_workspace_plasticity_candidate_promotion_and_use ===
+.                                                                        [100%]
+1 passed in 1.69s
+
+=== Workbench tests/test_wb06_living_explorer.py::test_wb06_level_of_detail_reports_omissions_instead_of_hiding_them ===
+.                                                                        [100%]
+1 passed in 1.12s
+
+=== Workbench tests/test_wb06_living_explorer.py::test_wb06_q_promotion_is_visible_from_actual_engine_records ===
+.                                                                        [100%]
+1 passed in 10.97s
+
+=== Workbench tests/test_wb06_living_explorer.py::test_wb06_refold_is_visible_from_actual_engine_records ===
+.                                                                        [100%]
+1 passed in 24.10s
+
+=== Workbench tests/test_wb06_living_explorer.py::test_wb06_api_exposes_frame_and_timeline ===
+.                                                                        [100%]
+1 passed in 1.14s
+
+=== Workbench tests/test_wb06_living_explorer.py::test_wb06_served_ui_is_living_record_backed_canvas ===
+.                                                                        [100%]
+1 passed in 0.57s
+
+=== Workbench tests/test_wb07_experiments.py::test_wb07_freezes_self_contained_m19_experiment_package ===
+.                                                                        [100%]
+1 passed in 0.58s
+
+=== Workbench tests/test_wb07_experiments.py::test_wb07_fork_preserves_parent_lineage_and_creates_new_immutable_artifact ===
+.                                                                        [100%]
+1 passed in 0.61s
+
+=== Workbench tests/test_wb07_experiments.py::test_wb07_assertions_are_explicit_and_machine_checkable ===
+.                                                                        [100%]
+1 passed in 0.54s
+
+=== Workbench tests/test_wb07_experiments.py::test_wb07_run_and_reproduction_verification_use_frozen_result_artifacts ===
+.                                                                        [100%]
+1 passed in 0.60s
+
+=== Workbench tests/test_wb07_experiments.py::test_wb07_protocol_runner_reports_explicit_process_and_arm_isolation ===
+.                                                                        [100%]
+1 passed in 0.56s
+
+=== Workbench tests/test_wb07_experiments.py::test_wb07_api_exposes_template_freeze_fork_and_download ===
+.                                                                        [100%]
+1 passed in 0.66s
+
+=== Workbench tests/test_wb07_experiments.py::test_wb07_served_ui_exposes_experiment_manager_and_verification_controls ===
+.                                                                        [100%]
+1 passed in 0.53s
+
+=== Workbench tests/test_wb08_providers.py::test_wb08_manual_external_llm_capture_is_immutable_replayable_and_compilable ===
+.                                                                        [100%]
+1 passed in 0.58s
+
+=== Workbench tests/test_wb08_providers.py::test_wb08_secrets_are_referenced_by_name_and_never_persisted ===
+.                                                                        [100%]
+1 passed in 0.59s
+
+=== Workbench tests/test_wb08_providers.py::test_wb08_invalid_provider_output_is_preserved_but_not_promoted_to_curriculum ===
+.                                                                        [100%]
+1 passed in 0.53s
+
+=== Workbench tests/test_wb08_providers.py::test_wb08_api_supports_paste_capture_and_replay_source ===
+.                                                                        [100%]
+1 passed in 0.55s
+
+=== Workbench tests/test_wb08_providers.py::test_wb08_http_json_provider_calls_local_adapter_and_captures_without_secret ===
+.                                                                        [100%]
+1 passed in 1.05s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_bundled_metric_plugin_is_hash_verified_and_out_of_process ===
+.                                                                        [100%]
+1 passed in 0.63s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_plugin_code_hash_tamper_is_rejected ===
+.                                                                        [100%]
+1 passed in 0.51s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_plugin_path_escape_and_unsupported_permissions_are_rejected ===
+.                                                                        [100%]
+1 passed in 0.51s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_integrity_scan_detects_artifact_corruption ===
+.                                                                        [100%]
+1 passed in 1.07s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_api_exposes_plugins_diagnostics_and_integrity ===
+.                                                                        [100%]
+1 passed in 0.59s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_startup_recovers_stale_active_run_metadata ===
+.                                                                        [100%]
+1 passed in 0.99s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_served_ui_exposes_connections_and_engineering_surfaces ===
+.                                                                        [100%]
+1 passed in 0.52s
+
+=== Workbench tests/test_wb09_plugins_hardening.py::test_wb09_metric_plugin_api_operates_on_live_run_without_kernel_access ===
+.                                                                        [100%]
+1 passed in 1.05s
+
+=== Workbench tests/test_wb10_release_polish.py::test_release_identity_is_exact_and_content_hashed ===
+.                                                                        [100%]
+1 passed in 0.57s
+
+=== Workbench tests/test_wb10_release_polish.py::test_new_experiment_manifest_locks_exact_source_build ===
+.                                                                        [100%]
+1 passed in 0.61s
+
+=== Workbench tests/test_wb10_release_polish.py::test_release_ui_has_first_class_evidence_and_timeline_surfaces ===
+.                                                                        [100%]
+1 passed in 0.51s
+
+=== Workbench tests/test_wb10_release_polish.py::test_diagnostics_exposes_release_build_identity ===
+.                                                                        [100%]
+1 passed in 0.58s
+
+=== Workbench tests/test_wb10_release_polish.py::test_build_locked_experiment_rejects_mismatched_runtime ===
+.                                                                        [100%]
+1 passed in 0.59s
+
+=== Workbench tests/test_explorer_worker_timeout_policy.py::test_living_explorer_timeline_gets_long_timeout_and_controlled_error ===
+.                                                                        [100%]
+1 passed in 0.38s
+
+=== Workbench tests/test_explorer_worker_timeout_policy.py::test_living_explorer_frame_gets_intermediate_timeout ===
+.                                                                        [100%]
+1 passed in 0.37s
+
+=== Workbench tests/test_explorer_worker_timeout_policy.py::test_non_explorer_worker_requests_keep_normal_timeout_behavior ===
+.                                                                        [100%]
+1 passed in 0.37s
+
+=== Workbench tests/test_explorer_worker_timeout_policy.py::test_late_explorer_response_is_drained_before_next_request_is_sent ===
+.                                                                        [100%]
+1 passed in 0.42s
+
+=== Workbench tests/test_explorer_worker_timeout_policy.py::test_response_request_id_mismatch_is_rejected ===
+.                                                                        [100%]
+1 passed in 0.38s
+
+=== Workbench tests/test_runtime_stability_guard.py::test_running_queue_defers_historical_explorer_timeline ===
+.                                                                        [100%]
+1 passed in 0.38s
+
+=== Workbench tests/test_runtime_stability_guard.py::test_live_queue_thread_defers_timeline_even_during_state_transition ===
+.                                                                        [100%]
+1 passed in 0.39s
+
+=== Workbench tests/test_runtime_stability_guard.py::test_idle_run_allows_historical_explorer_timeline ===
+.                                                                        [100%]
+1 passed in 0.39s
+
+=== Workbench tests/test_wb11_curriculum_packs.py::test_wb11_pack_compiles_selected_sections_through_teaching_bundle ===
+.                                                                        [100%]
+1 passed in 0.53s
+
+=== Workbench tests/test_wb11_curriculum_packs.py::test_wb11_pack_freeze_is_normal_vcurr_and_section_selection_changes_hash ===
+.                                                                        [100%]
+1 passed in 0.54s
+
+=== Workbench tests/test_wb11_curriculum_packs.py::test_wb11_pack_api_and_browser_surface ===
+.                                                                        [100%]
+1 passed in 0.58s
+
+=== Startup + artifact diagnostic ===
+Verdant Workbench 1.0.1 / V5 diagnostic
+home: /tmp/verdant-release-check-3nprrq5x
+recovered stale runs: 0
+providers: 1
+plugins: 1
+release: verdant-minds-v5-workbench-1.0.1
+engine source: 07d0eb38c9a6ba52e3eb32e3a1c4cd0720f3b1d3e6f8f9184309b51de1737727
+workbench source: 7a8d1dbafd85cef943bdad96042903fc8116dcd2125c353cdd52f89b3c5af2af
+dependency lock: bb0dd24142ccb66437fac60a38d07f9a95004a85a029c3f870da7d226e598b64
+artifacts: 0 verified=True
+
+VERDANT MINDS V5 / WORKBENCH 1.0.1 RELEASE: PASS

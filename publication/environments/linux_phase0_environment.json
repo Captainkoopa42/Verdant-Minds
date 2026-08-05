@@ -1,0 +1,37 @@
+{
+  "schema": "verdant.publication.environment.v1",
+  "record_id": "vpc1_linux_phase0_20260805",
+  "candidate_ref": "verdant-publication-candidate-v1",
+  "architecture_baseline_commit": "b0f73a113519ac0e8801e756503fdbe38420ee7a",
+  "platform": {
+    "system": "Linux",
+    "kernel": "6.18.35",
+    "architecture": "x86_64",
+    "python": "3.12.13"
+  },
+  "environment": {
+    "type": "isolated virtual environment",
+    "relative_path": ".venv",
+    "dependency_source": "requirements-lock.txt",
+    "dependency_lock_sha256": "bb0dd24142ccb66437fac60a38d07f9a95004a85a029c3f870da7d226e598b64",
+    "installed_packages_file": "linux_phase0_pip_freeze.txt",
+    "installed_packages_sha256": "660a3e2f62f936812164ce1b60d2e4fb035b456d204e3d0053904c2447020fa6"
+  },
+  "build_identity": {
+    "release_id": "verdant-minds-v5-workbench-1.0.1",
+    "engine_source_sha256": "07d0eb38c9a6ba52e3eb32e3a1c4cd0720f3b1d3e6f8f9184309b51de1737727",
+    "workbench_source_sha256": "7a8d1dbafd85cef943bdad96042903fc8116dcd2125c353cdd52f89b3c5af2af"
+  },
+  "verification": {
+    "command": ".venv/bin/python verify_release.py",
+    "engine_and_evaluator_tests": 192,
+    "workbench_tests": 75,
+    "total_tests": 267,
+    "startup_and_artifact_diagnostic": "pass",
+    "result": "pass",
+    "preflight_log_file": "linux_phase0_preflight.txt",
+    "preflight_log_sha256": "1eba03a8a510ce343e99a50d8930e10c76615292b884d403db011e39a10654d7"
+  },
+  "completed_at_utc": "2026-08-05T00:44:54Z",
+  "notes": "The annotated candidate tag is the canonical resolver for the final commit. The environment record avoids a self-referential commit hash inside the commit it identifies."
+}

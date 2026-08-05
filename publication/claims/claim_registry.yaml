@@ -1,0 +1,51 @@
+schema: verdant.publication.claim_registry.v1
+candidate: VPC-1
+status: proposed
+claims:
+  - claim_id: C1
+    title: Earned reusable structure hierarchy
+    research_questions: [RQ1, RQ2]
+    statement: >-
+      Under controlled relational curricula, Verdant can earn opaque reusable P
+      structures and higher-order Q structures through its normal evidence,
+      promotion, and governance paths without receiving evaluator family labels.
+    required_experiments: [single_q_formation, held_out_transfer]
+    evidence_status: exploratory_only
+    limitations: []
+  - claim_id: C2
+    title: Selective multi-Q routing
+    research_questions: [RQ3, RQ4]
+    statement: >-
+      Earned Q structures selectively reject structurally different controls and
+      can coexist while routing a later structure to the appropriate earned family.
+    required_experiments: [single_q_negatives, multi_q_routing]
+    evidence_status: partial_exploratory
+    limitations: [Only one Q family has been evaluated in the current exploratory bundle.]
+  - claim_id: C3
+    title: Causal utility of an exact earned Q
+    research_questions: [RQ5]
+    statement: >-
+      Exact-object Q ablation removes the measured comparison-work gain while
+      preserving underlying P records, and restoration reproduces the gain.
+    required_experiments: [q_present_ablate_restore, unrelated_q_ablation]
+    evidence_status: exploratory_only
+    limitations: []
+  - claim_id: C4
+    title: Bounded comparison-work scaling
+    research_questions: [RQ6]
+    statement: >-
+      Over the tested operating range, Q-based comparison work grows more slowly
+      than Verdant's exhaustive available-P fallback as unrelated structures grow.
+    required_experiments: [p_population_scaling, q_population_scaling]
+    evidence_status: pilot_only
+    limitations: [The current scaling record contains one seed and three P-population levels.]
+  - claim_id: C5
+    title: Reproducible persistence and lineage
+    research_questions: [RQ8, RQ9]
+    statement: >-
+      Checkpoint, reopen, fork, replay, and governed refolding preserve discrete
+      outcomes and append-only lineage across supported environments.
+    required_experiments: [persistence_replay, cross_platform_subset, refolding_lineage]
+    evidence_status: component_tests_only
+    limitations: [Publication-level cross-platform reproduction remains pending.]
+

@@ -1,0 +1,40 @@
+{
+  "schema": "verdant.publication.protocol.v1",
+  "protocol_id": "vpc1_protocol_v1",
+  "candidate": "VPC-1",
+  "status": "draft",
+  "created_at_utc": "2026-08-05T00:34:10Z",
+  "frozen_primary_q_threshold": 0.985,
+  "partitions": {
+    "development": "Existing visible cases used for harness debugging; never reported as locked confirmation.",
+    "validation": "New cases used to choose feasible ranges and reporting formats before sealing.",
+    "locked": "Pre-generated and hashed confirmatory cases; does not exist until Phase 3."
+  },
+  "planned_families": [
+    "paths",
+    "cycles",
+    "stars",
+    "balanced_trees",
+    "forked_trees",
+    "diamonds",
+    "ladders",
+    "hub_with_tail"
+  ],
+  "planned_primary_endpoints": [
+    "held_out_correct_q_selection_rate",
+    "multi_q_top1_routing_accuracy",
+    "negative_control_false_q_activation_rate",
+    "paired_comparison_work_reduction"
+  ],
+  "leakage_controls": [
+    "Q is promoted before any held-out or negative query exists.",
+    "Every isolated query starts from the same post-Q checkpoint.",
+    "Family labels and expected outcomes remain evaluator-side only.",
+    "Raw records are append-only.",
+    "Analysis logic is frozen before locked outcomes are opened."
+  ],
+  "sealed": false,
+  "sealed_manifest_sha256": null,
+  "notes": "Draft control document. Phase 1 and Phase 2 may refine this protocol. Any locked campaign requires a new committed sealed revision."
+}
+

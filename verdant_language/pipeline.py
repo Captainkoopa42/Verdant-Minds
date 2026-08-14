@@ -25,6 +25,22 @@ from .models import (
 
 
 @dataclass(frozen=True)
+class PlannedLanguageExperience:
+    """Pure language-front-end result for one ordinary world statement.
+
+    Planning may inspect already-taught grammar and lexicon state, but it does
+    not mutate the kernel.  The returned :class:`ExperienceCommand` can be
+    submitted either directly (legacy/exact semantic tests) or through
+    ``VerdantDevelopmentPipeline.advance`` (normal developmental cognition).
+    """
+
+    command: ExperienceCommand
+    analysis: LanguageAnalysis
+    chunk: CognitiveChunkV2
+    store: ResourceStore
+
+
+@dataclass(frozen=True)
 class LanguageLearningResult:
     kernel_result: ExperienceResult
     analysis: LanguageAnalysis
@@ -212,6 +228,76 @@ class VerdantLanguagePipeline:
         )
         return tuple(self.teach_lexeme(kernel, entry) for entry in entries)
 
+    def plan_sentence(
+        self,
+        kernel: VerdantKernel,
+        sentence: str,
+        *,
+        event_key: str,
+        source_ref: str = "handwritten_language_curriculum",
+    ) -> PlannedLanguageExperience:
+        """Translate and parse a sentence without mutating canonical state.
+
+        Teacher-supplied grammar/lexicon scaffolds remain explicit operations.
+        This method is for ordinary world statements after those scaffolds have
+        been installed.
+        """
+
+        before = kernel.fingerprint()
+        chunk, store, payload, translation, source = self._text_chunk(
+            sentence,
+            source_ref=source_ref,
+            source_name=f"{event_key}.txt",
+        )
+        semantic_plan: SemanticPlan = self.analyzer.plan(sentence, event_key, kernel)
+        command = ExperienceCommand(
+            event_key=event_key,
+            source_ref=source,
+            modality="text",
+            payload_sha256=payload.source_sha256,
+            feature_vector=tuple(
+                float(value)
+                for value in store.get_array(translation.feature_ref).reshape(-1)
+            ),
+            concept_proposals=semantic_plan.concept_proposals,
+            relation_proposals=semantic_plan.relation_proposals,
+            claim_proposals=semantic_plan.claim_proposals,
+            confidence=(
+                semantic_plan.analysis.frame.confidence
+                if semantic_plan.analysis.frame
+                else 1.0
+            ),
+            semantic_evidence_kind=EvidenceKind.TESTIMONY,
+            semantic_evidence_details={
+                "source_type": "handwritten_teacher_statement",
+                "parsed": semantic_plan.analysis.parsed,
+            },
+            metadata={
+                "event_type": "handwritten_language_experience",
+                "sentence": sentence,
+                "parsed": semantic_plan.analysis.parsed,
+                "rule_id": (
+                    semantic_plan.analysis.frame.rule_id.value
+                    if semantic_plan.analysis.frame is not None
+                    else None
+                ),
+                "rejection_reason": semantic_plan.analysis.rejection_reason,
+                "translator_id": translation.translator_id,
+                "translator_version": translation.translator_version,
+                "source_name": payload.source_name,
+                "media_type": payload.media_type,
+                "semantic_promotion_policy": "grammar_rule_and_lexicon_evidence_required",
+            },
+        )
+        if kernel.fingerprint() != before:
+            raise RuntimeError("Language planning mutated canonical Verdant state.")
+        return PlannedLanguageExperience(
+            command=command,
+            analysis=semantic_plan.analysis,
+            chunk=chunk,
+            store=store,
+        )
+
     def learn_sentence(
         self,
         kernel: VerdantKernel,
@@ -220,46 +306,27 @@ class VerdantLanguagePipeline:
         event_key: str,
         source_ref: str = "handwritten_language_curriculum",
     ) -> LanguageLearningResult:
-        chunk, store, payload, translation, source = self._text_chunk(
+        """Legacy/direct semantic application for compatibility and exact tests.
+
+        Normal cultivation and Workbench ordinary-language teaching should plan
+        the sentence and submit ``planned.command`` through
+        ``VerdantDevelopmentPipeline.advance`` so the same experience also
+        reaches resonance, workspace, plasticity, and structure observation.
+        """
+
+        planned = self.plan_sentence(
+            kernel,
             sentence,
-            source_ref=source_ref,
-            source_name=f"{event_key}.txt",
-        )
-        plan: SemanticPlan = self.analyzer.plan(sentence, event_key, kernel)
-        command = ExperienceCommand(
             event_key=event_key,
-            source_ref=source,
-            modality="text",
-            payload_sha256=payload.source_sha256,
-            feature_vector=tuple(float(value) for value in store.get_array(translation.feature_ref).reshape(-1)),
-            concept_proposals=plan.concept_proposals,
-            relation_proposals=plan.relation_proposals,
-            claim_proposals=plan.claim_proposals,
-            confidence=(plan.analysis.frame.confidence if plan.analysis.frame else 1.0),
-            semantic_evidence_kind=EvidenceKind.TESTIMONY,
-            semantic_evidence_details={
-                "source_type": "handwritten_teacher_statement",
-                "parsed": plan.analysis.parsed,
-            },
-            metadata={
-                "event_type": "handwritten_language_experience",
-                "sentence": sentence,
-                "parsed": plan.analysis.parsed,
-                "rule_id": (
-                    plan.analysis.frame.rule_id.value
-                    if plan.analysis.frame is not None
-                    else None
-                ),
-                "rejection_reason": plan.analysis.rejection_reason,
-                "translator_id": translation.translator_id,
-                "translator_version": translation.translator_version,
-                "source_name": payload.source_name,
-                "media_type": payload.media_type,
-                "semantic_promotion_policy": "grammar_rule_and_lexicon_evidence_required",
-            },
+            source_ref=source_ref,
         )
-        result = kernel.apply_experience(command)
-        return LanguageLearningResult(result, plan.analysis, chunk, store)
+        result = kernel.apply_experience(planned.command)
+        return LanguageLearningResult(
+            result,
+            planned.analysis,
+            planned.chunk,
+            planned.store,
+        )
 
     def _text_chunk(
         self,

@@ -6,7 +6,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from .adapter import VerdantEngineAdapter
+from .v5x_adapter import V5XEngineAdapter as VerdantEngineAdapter
 from .models import (
     CommandEnvelope,
     GrammarPreviewRequest,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from verdant_development.v5x import V5XDevelopmentPipeline
 from verdant_kernel import VerdantKernel, load_checkpoint, save_checkpoint
 from verdant_language import (
     GrammarRuleId,
@@ -210,3 +211,86 @@ def test_full_language_sequence_is_deterministic_across_fresh_chunk_ids() -> Non
     right = build()
     assert left.snapshot() == right.snapshot()
     assert left.fingerprint() == right.fingerprint()
+
+
+def _semantic_projection(kernel: VerdantKernel) -> dict:
+    state = kernel.state
+    return {
+        "evidence": {key: value.model_dump(mode="json") for key, value in sorted(state.evidence.items())},
+        "concepts": {key: value.model_dump(mode="json") for key, value in sorted(state.concepts.items())},
+        "relations": {key: value.model_dump(mode="json") for key, value in sorted(state.relations.items())},
+        "claims": {key: value.model_dump(mode="json") for key, value in sorted(state.claims.items())},
+        "contradictions": {key: value.model_dump(mode="json") for key, value in sorted(state.contradictions.items())},
+        "revisions": [value.model_dump(mode="json") for value in state.revisions],
+    }
+
+
+def test_sentence_planning_is_pure_and_command_is_stable() -> None:
+    kernel = VerdantKernel(seed=210, state_dim=40, run_label="language-plan-pure")
+    pipeline = teach_minimal_language(kernel)
+    before = kernel.fingerprint()
+
+    first = pipeline.plan_sentence(kernel, "The dog pushes the child.", event_key="planned-1")
+    middle = kernel.fingerprint()
+    second = pipeline.plan_sentence(kernel, "The dog pushes the child.", event_key="planned-1")
+
+    assert before == middle == kernel.fingerprint()
+    assert first.command == second.command
+    assert first.analysis == second.analysis
+    assert first.analysis.parsed
+
+
+def test_planned_sentence_direct_and_developmental_submission_are_semantically_equivalent() -> None:
+    direct = VerdantKernel(seed=211, state_dim=48, run_label="language-equivalence")
+    developmental = VerdantKernel(seed=211, state_dim=48, run_label="language-equivalence")
+    direct_language = teach_minimal_language(direct)
+    developmental_language = teach_minimal_language(developmental)
+
+    direct_plan = direct_language.plan_sentence(
+        direct,
+        "The dog pushes the child.",
+        event_key="equivalence-1",
+    )
+    developmental_plan = developmental_language.plan_sentence(
+        developmental,
+        "The dog pushes the child.",
+        event_key="equivalence-1",
+    )
+    assert direct_plan.command == developmental_plan.command
+
+    direct_result = direct.apply_experience(direct_plan.command)
+    cycle = V5XDevelopmentPipeline().advance(developmental, developmental_plan.command)
+
+    assert cycle.experience == direct_result
+    assert cycle.semantic_firewall_held
+    assert _semantic_projection(developmental) == _semantic_projection(direct)
+    assert len(developmental.state.resonance_events) > len(direct.state.resonance_events)
+    assert len(developmental.state.workspace_cycle_events) > len(direct.state.workspace_cycle_events)
+    assert len(developmental.state.plasticity_events) > len(direct.state.plasticity_events)
+
+
+def test_developmental_sentence_replay_is_a_noop_after_planning() -> None:
+    kernel = VerdantKernel(seed=212, state_dim=48, run_label="language-development-replay")
+    language = teach_minimal_language(kernel)
+    development = V5XDevelopmentPipeline()
+    planned = language.plan_sentence(kernel, "A pushes B.", event_key="dev-language-replay")
+
+    first = development.advance(kernel, planned.command)
+    after_first = kernel.fingerprint()
+    event_counts = (
+        len(kernel.state.resonance_events),
+        len(kernel.state.workspace_cycle_events),
+        len(kernel.state.plasticity_events),
+        len(kernel.state.structure_observation_events),
+    )
+    replay = development.advance(kernel, planned.command)
+
+    assert not first.replayed
+    assert replay.replayed
+    assert kernel.fingerprint() == after_first
+    assert event_counts == (
+        len(kernel.state.resonance_events),
+        len(kernel.state.workspace_cycle_events),
+        len(kernel.state.plasticity_events),
+        len(kernel.state.structure_observation_events),
+    )

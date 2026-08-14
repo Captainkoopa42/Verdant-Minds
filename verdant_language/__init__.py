@@ -11,7 +11,7 @@ from .models import (
     Polarity,
     TokenRecord,
 )
-from .pipeline import LanguageLearningResult, VerdantLanguagePipeline
+from .pipeline import LanguageLearningResult, PlannedLanguageExperience, VerdantLanguagePipeline
 
 __all__ = [
     "ClauseFrame",
@@ -22,6 +22,7 @@ __all__ = [
     "GrammarRuleSpec",
     "LanguageAnalysis",
     "LanguageLearningResult",
+    "PlannedLanguageExperience",
     "LexemeSpec",
     "LexicalCategory",
     "Polarity",

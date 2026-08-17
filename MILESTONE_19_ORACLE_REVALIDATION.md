@@ -59,6 +59,24 @@ Regression coverage now requires:
 2. The scoring pass leaves the kernel fingerprint unchanged.
 3. The controlled M19 population contains exactly five expected P structures and one expected Q, with no missing structures and no extra promoted P/Q false positives.
 
+## Full post-fix suite
+
+GitHub Actions run `31990246687` completed successfully against branch `V5` after the oracle repair.
+
+To avoid the repository's known long-process pytest slowdown, every discovered pytest node was executed in its own fresh process. The run covered:
+
+```text
+engine test files              20
+Workbench test files           13
+total pytest test nodes        258
+pytest failures                0
+Workbench startup diagnostic   PASS
+WB08 machine proof             PASS (all_gates_pass=true)
+WB09 machine proof             PASS (all_gates_pass=true)
+```
+
+This is the broad post-fix validation record for the tested V5 branch state. The full-suite workflow remains checked into the branch so future Python/test changes can be revalidated the same way.
+
 ## Historical boundary
 
 `verdant_benchmarks/ethomorphism.py` remains in the repository as the historical oracle-assisted implementation and is exported as:
@@ -75,4 +93,4 @@ EthomorphismBenchmarkHarness
 
 resolves to the oracle-free implementation.
 
-The original pre-fix run should still be treated as invalid evidence for autonomous/evaluator-independent promotion. The successful post-fix run is the current validation evidence for Milestone 19.
+The original pre-fix run should still be treated as invalid evidence for autonomous/evaluator-independent promotion. The successful post-fix oracle-free run and full post-fix suite are the current validation evidence for Milestone 19.

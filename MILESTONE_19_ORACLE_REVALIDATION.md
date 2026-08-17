@@ -29,7 +29,18 @@ primitive curriculum
 
 The scoring index is built after formation and checks the kernel fingerprint before and after indexing. Any scoring operation that mutates kernel state raises an error.
 
-A regression test now requires P and Q to exist in an unscored D-arm runtime while `structure_by_world` is still empty and `layered_structure_id` is unset. Only afterward may the evaluator construct those mappings.
+Regression coverage now requires both of the following:
+
+1. P and Q must already exist in an unscored D-arm runtime while `structure_by_world` is still empty and `layered_structure_id` is unset.
+2. After scoring, the controlled population must contain exactly the five expected P structures and one expected Q, with no missing world structure and no extra promoted P/Q false positives.
+
+The repaired benchmark summary uses schema:
+
+```text
+verdant.ethomorphism_benchmark.v2_oracle_free
+```
+
+and adds headline gates for oracle-free P and Q promotion selectivity.
 
 ## Historical boundary
 

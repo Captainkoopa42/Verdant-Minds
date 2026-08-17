@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from verdant_benchmarks.ethomorphism import ArmName, BenchmarkConfig, EthomorphismBenchmarkHarness
+from verdant_benchmarks.ethomorphism import ArmName, BenchmarkConfig
+from verdant_benchmarks.ethomorphism_oracle_free import EthomorphismBenchmarkHarness
 from verdant_benchmarks.interventions import (
     InterventionTier,
     fork_destructive_p_lesion,

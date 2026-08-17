@@ -2,18 +2,13 @@
 
 ## Status
 
-The original Milestone 19 A/B/C/D benchmark is **scientifically invalid for the claim of evaluator-independent P/Q promotion**.
+The original Milestone 19 A/B/C/D benchmark was **scientifically invalid for the claim of evaluator-independent P/Q promotion** because evaluator ground truth was used to choose which P and Q candidates were promoted.
 
-The primitive curriculum correctly withheld the semantic family label (`path`) from Verdant state, but the original harness still used evaluator ground truth during promotion:
-
-- P selection matched candidate member labels against the evaluator-known benchmark world before calling native promotion.
-- Q selection matched hierarchy-candidate member IDs against the evaluator-known training family before calling native promotion.
-
-The downstream P/Q use, ablation/restoration, and structural machinery remain implemented, but the original M19 reference run cannot establish that Verdant itself selected which candidate structures deserved promotion.
+That formation flaw has now been repaired and the repaired benchmark has been rerun successfully on branch `V5`.
 
 ## Repair
 
-The canonical benchmark export now uses `verdant_benchmarks/ethomorphism_oracle_free.py`.
+The canonical benchmark export uses `verdant_benchmarks/ethomorphism_oracle_free.py`.
 
 The repaired formation boundary is:
 
@@ -27,41 +22,57 @@ primitive curriculum
 → evaluator builds world/family mappings only for scoring
 ```
 
-The scoring index is built after formation and checks the kernel fingerprint before and after indexing. Any scoring operation that mutates kernel state raises an error.
+The evaluator no longer supplies world membership, family membership, expected member sets, or target candidate IDs during formation. Scoring happens only after formation and is fingerprint-checked to ensure it does not mutate the kernel.
 
-Regression coverage now requires both of the following:
+## Revalidation result
 
-1. P and Q must already exist in an unscored D-arm runtime while `structure_by_world` is still empty and `layered_structure_id` is unset.
-2. After scoring, the controlled population must contain exactly the five expected P structures and one expected Q, with no missing world structure and no extra promoted P/Q false positives.
+GitHub Actions run `31989621761` completed successfully on 2026-08-16/17 UTC using Python 3.11 and the locked V5 dependency set.
 
-The repaired benchmark summary uses schema:
+The repaired benchmark reported:
 
 ```text
-verdant.ethomorphism_benchmark.v2_oracle_free
+schema                         verdant.ethomorphism_benchmark.v2_oracle_free
+all headline checks            PASS
+expected P structures          5
+promoted P structures          5
+missing P structures           0
+extra promoted P structures    0
+expected Q structures          1
+promoted Q structures          1
+extra promoted Q structures    0
 ```
 
-and adds headline gates for oracle-free P and Q promotion selectivity.
+The original causal measurements were reproduced on the oracle-free formation path:
+
+```text
+P: WITH 1 → ABLATE 7 → RESTORE 1
+Q: WITH 3 → ABLATE 8 → RESTORE 3
+```
+
+The held-out path family was recovered, the star control was rejected, and the P/Q causal gains followed the exact objects under ablation/restoration.
+
+## Regression boundary
+
+Regression coverage now requires:
+
+1. P and Q already exist before any evaluator scoring index is constructed.
+2. The scoring pass leaves the kernel fingerprint unchanged.
+3. The controlled M19 population contains exactly five expected P structures and one expected Q, with no missing structures and no extra promoted P/Q false positives.
 
 ## Historical boundary
 
-`verdant_benchmarks/ethomorphism.py` is retained as the historical oracle-assisted implementation so the failure is inspectable rather than erased. It is exported under the explicit name:
+`verdant_benchmarks/ethomorphism.py` remains in the repository as the historical oracle-assisted implementation and is exported as:
 
 ```text
 LegacyOracleAssistedEthomorphismBenchmarkHarness
 ```
 
-The normal package export:
+The normal export:
 
 ```text
 EthomorphismBenchmarkHarness
 ```
 
-now resolves to the oracle-free implementation.
+resolves to the oracle-free implementation.
 
-## Revalidation requirement
-
-The numerical results recorded in the original `MILESTONE_19_REPORT.md` are **pre-fix historical reference values** until the repaired harness is rerun.
-
-Do not cite the old M19 run as evidence of autonomous/evaluator-independent P or Q selection.
-
-The repaired benchmark must be rerun before Milestone 19 can be considered validated again.
+The original pre-fix run should still be treated as invalid evidence for autonomous/evaluator-independent promotion. The successful post-fix run is the current validation evidence for Milestone 19.

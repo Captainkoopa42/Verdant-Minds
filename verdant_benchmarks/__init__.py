@@ -2,7 +2,11 @@ from .ethomorphism import (
     ArmName,
     BenchmarkConfig,
     BenchmarkSummary,
+    EthomorphismBenchmarkHarness as LegacyOracleAssistedEthomorphismBenchmarkHarness,
+)
+from .ethomorphism_oracle_free import (
     EthomorphismBenchmarkHarness,
+    OracleFreeEthomorphismBenchmarkHarness,
 )
 from .interventions import (
     ForkedLesion,
@@ -25,6 +29,8 @@ __all__ = [
     "BenchmarkConfig",
     "BenchmarkSummary",
     "EthomorphismBenchmarkHarness",
+    "OracleFreeEthomorphismBenchmarkHarness",
+    "LegacyOracleAssistedEthomorphismBenchmarkHarness",
     "ForkedLesion",
     "InterventionTier",
     "LesionManifest",

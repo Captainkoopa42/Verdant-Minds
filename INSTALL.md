@@ -1,280 +1,113 @@
-# Verdant-Minds Installation Guide
+# Installing Verdant-V0
 
-This guide provides detailed instructions for installing the Verdant-Minds (Unified Synthetic Mind) cognitive architecture.
+The reliable installation model for this branch is a checked-out source tree plus an editable install. Do not rely on the current wheel as a standalone package: it omits the `Verdant Source Codes` directory used by `usm`.
 
-## Table of Contents
+## Supported baseline
 
-- [Prerequisites](#prerequisites)
-- [Installation Methods](#installation-methods)
-  - [Development Installation (Recommended)](#development-installation-recommended)
-  - [Standard Installation](#standard-installation)
-  - [From Source](#from-source)
-- [GPU Support](#gpu-support)
-- [Verifying Installation](#verifying-installation)
-- [Troubleshooting](#troubleshooting)
+- Linux, macOS, or Windows
+- a current Python 3 environment; the audit was performed with Python 3.12
+- a virtual environment is strongly recommended
+- no GPU is required for the canonical V0 runtime or tests
 
----
-
-## Prerequisites
-
-### System Requirements
-
-- **Operating System**: Linux, macOS, or Windows
-- **Python**: Version 3.8 or higher
-- **Memory**: At least 8GB RAM (16GB+ recommended for large-scale operations)
-- **Storage**: At least 5GB free disk space
-- **Optional**: GPU with CUDA support for accelerated deep learning
-
-### Python Environment
-
-We strongly recommend using a virtual environment to avoid dependency conflicts:
+## Exact branch setup
 
 ```bash
-# Using venv (built-in)
-python -m venv verdant-env
-source verdant-env/bin/activate  # On Windows: verdant-env\Scripts\activate
-
-# Or using conda
-conda create -n verdant python=3.11
-conda activate verdant
-```
-
----
-
-## Installation Methods
-
-### Development Installation (Recommended)
-
-For development or if you want to modify the code:
-
-```bash
-# Clone the repository
-git clone https://github.com/captainkoopa42/Verdant-Minds.git
+git clone --branch Verdant-V0 --single-branch \
+  https://github.com/captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
 
-# Install in editable mode with development dependencies
-pip install -e ".[dev]"
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -e . --no-deps
 ```
 
-This allows you to:
-- Make changes to the code without reinstalling
-- Run tests and use development tools
-- Contribute to the project
+On Windows PowerShell, activate with:
 
-### Standard Installation
-
-For regular use without development tools:
-
-```bash
-# Clone the repository
-git clone https://github.com/captainkoopa42/Verdant-Minds.git
-cd Verdant-Minds
-
-# Install the package
-pip install .
+```powershell
+.venv\Scripts\Activate.ps1
 ```
 
-### From Source (PyPI - Coming Soon)
+Why both steps? `requirements.txt` describes the branch runtime, while `-e . --no-deps` registers the `usm` entry point without forcing the inconsistent dependency list declared by the packaging metadata.
 
-Once published to PyPI, you'll be able to install directly:
-
-```bash
-pip install verdant-minds
-```
-
----
-
-## GPU Support
-
-### TensorFlow GPU Support
-
-For GPU acceleration with TensorFlow:
+## Verify the installation
 
 ```bash
-# Install with GPU support (requires CUDA)
-pip install tensorflow[and-cuda]>=2.13.0
-```
-
-### PyTorch GPU Support
-
-For GPU acceleration with PyTorch, visit [pytorch.org](https://pytorch.org) and follow platform-specific instructions.
-
-Example for CUDA 11.8:
-```bash
-pip install torch --index-url https://download.pytorch.org/whl/cu118
-```
-
----
-
-## Verifying Installation
-
-### Test the Installation
-
-After installation, verify that everything works:
-
-```bash
-# Check version
-python -c "import usm; print('Verdant-Minds installed successfully!')"
-
-# Run the interactive CLI
-verdant-minds
-# or
-usm
-
-# Run with Python module
+python -c "from usm import UnifiedSyntheticMind; print(UnifiedSyntheticMind)"
 python -m usm
 ```
 
-### Expected Output
+The second command should initialize the system and display a `>` prompt. Type `exit` to leave.
 
-When you run `verdant-minds` or `usm`, you should see:
-
-```
-Unified Synthetic Mind initialized. Type 'exit' to quit.
->
-```
-
-### Run Tests (Development Installation Only)
-
-If you installed with `[dev]` extras:
+Run the full verification suite:
 
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=usm --cov-report=html
-
-# Run specific test file
-pytest tests/test_memory.py
+python -m pytest -q
 ```
 
----
+The documentation audit observed 121 passing tests. See [TESTING.md](TESTING.md) for scope and warnings.
+
+## Lighter local setup
+
+If the full requirements file is too heavy, the core architecture and tests can be brought up with the packages exercised by the branch, then installed editable:
+
+```bash
+python -m pip install numpy scipy networkx python-louvain pyyaml psutil \
+  matplotlib pytest groq
+python -m pip install -e . --no-deps
+```
+
+Some paths may require additional provider-specific packages. `sentence-transformers` and scikit-learn improve semantic concept mapping but are optional at runtime; without them the bridge uses its fallback mapping.
+
+## Provider-backed cultivation
+
+The cultivation runner can use external model providers. Install the adapter you plan to use and provide keys through environment variables, not source files.
+
+```bash
+python scripts/verdant_llm_cultivator.py --help
+```
+
+Common keys include `GROQ_API_KEY`, `MISTRAL_API_KEY`, `ANTHROPIC_API_KEY`, and `OPENAI_API_KEY`. Provider selection is controlled by `VERDANT_PROVIDER_CHAIN` and runner configuration. A local fallback path also exists.
+
+## Packaging warning
+
+The branch currently has three metadata sources with inconsistent version/dependency declarations:
+
+- `pyproject.toml`
+- `setup.cfg`
+- `setup.py`
+
+A wheel built during the audit contained `usm` and package metadata, but not the canonical core under `Verdant Source Codes`. Editable installation works because it refers back to the checkout. This is a packaging defect, not a failure of the checked-out runtime.
 
 ## Troubleshooting
 
-### Common Issues
+### `No module named src`
 
-#### 1. Import Errors
-
-**Problem**: `ModuleNotFoundError: No module named 'numpy'` or similar
-
-**Solution**:
-```bash
-pip install -r requirements.txt
-```
-
-#### 2. GPU Not Detected
-
-**Problem**: TensorFlow or PyTorch not using GPU
-
-**Solution**:
-```bash
-# Check CUDA availability
-python -c "import tensorflow as tf; print('GPU Available:', tf.test.is_gpu_available())"
-python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
-```
-
-#### 3. Memory Errors
-
-**Problem**: Out of memory errors during initialization
-
-**Solution**:
-- Close other applications
-- Reduce batch sizes in configuration
-- Use a machine with more RAM
-
-#### 4. Installation Conflicts
-
-**Problem**: Dependency version conflicts
-
-**Solution**:
-```bash
-# Create a fresh virtual environment
-python -m venv fresh-env
-source fresh-env/bin/activate
-pip install --upgrade pip
-pip install -e .
-```
-
-### Getting Help
-
-If you encounter issues:
-
-1. **Check the Issues**: Visit [GitHub Issues](https://github.com/captainkoopa42/Verdant-Minds/issues)
-2. **Read the Documentation**: See [README.md](README.md)
-3. **Contact**: Email adamswilliam905@gmail.com
-
----
-
-## What's Installed
-
-After installation, you'll have:
-
-### Console Commands
-
-- `verdant-minds` - Main CLI entry point
-- `usm` - Alias for verdant-minds
-
-### Python Package
-
-```python
-from usm import UnifiedSyntheticMind
-
-# Initialize the cognitive system
-mind = UnifiedSyntheticMind()
-
-# Process input
-response = mind.get_response("Tell me about ethical AI")
-print(response)
-```
-
-### Package Structure
-
-```
-verdant-minds/
-├── usm/                      # Main package
-│   ├── __init__.py
-│   └── __main__.py          # CLI entry point
-├── Verdant Source Codes/    # Core cognitive architecture
-│   └── src/
-│       ├── core/            # Core system components
-│       ├── memory/          # Memory Web & ECWF
-│       ├── blocks/          # 9-Block cognitive system
-│       ├── kings/           # Three Kings governance
-│       ├── integration/     # Testing & integration tools
-│       └── utils/           # Utility functions
-└── tests/                   # Test suite (dev only)
-```
-
----
-
-## Next Steps
-
-After installation:
-
-1. **Read the README**: Understand the architecture and features
-2. **Try Examples**: Run the interactive CLI and experiment
-3. **Configure**: Customize settings in your code
-4. **Explore**: Check out the source code and examples
-5. **Contribute**: See CONTRIBUTING.md (if available)
-
----
-
-## Uninstalling
-
-To remove Verdant-Minds:
+Confirm you are using the checkout and that `usm/__init__.py` is present. Re-run:
 
 ```bash
-pip uninstall verdant-minds
+python -m pip install -e . --no-deps
 ```
 
-To also remove dependencies (be careful if you use them elsewhere):
+### Semantic mapper warning
+
+Install the optional stack if you need embedding/PCA mapping:
 
 ```bash
-pip uninstall verdant-minds numpy tensorflow torch networkx matplotlib PyJWT Werkzeug python-louvain
+python -m pip install sentence-transformers scikit-learn
 ```
 
----
+Otherwise the warning is expected and the fallback mapper remains usable.
 
-**Happy Exploring with Verdant-Minds!** 🧠✨
+### Provider import or authentication failure
+
+Install the matching provider SDK, confirm its environment variable is set in the current shell, and use `--help` to verify the runner’s available flags. Never commit an API key.
+
+### Graph community detection import error
+
+The import name is `community`, but the package installed from PyPI is `python-louvain`:
+
+```bash
+python -m pip install python-louvain
+```

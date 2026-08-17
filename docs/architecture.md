@@ -1,358 +1,161 @@
-# Verdant-Minds Architecture Documentation
+# Verdant-V0 Architecture
 
-This document provides a code-grounded architecture map for the current repository state.
+This is a code-grounded map of the canonical runtime exposed as `usm.UnifiedSyntheticMind`.
 
----
-
-## Table of Contents
-
-- [1. System overview](#1-system-overview)
-- [2. Runtime component map](#2-runtime-component-map)
-- [3. End-to-end processing flow](#3-end-to-end-processing-flow)
-- [4. CognitiveChunk section map](#4-cognitivechunk-section-map)
-- [5. Nine-block subsystem details](#5-nine-block-subsystem-details)
-- [6. Three Kings governance details](#6-three-kings-governance-details)
-- [7. Memory ↔ ECWF bridge data movement](#7-memory--ecwf-bridge-data-movement)
-- [8. Runner and artifact architecture](#8-runner-and-artifact-architecture)
-- [9. Emergent scaffolding analysis pipeline](#9-emergent-scaffolding-analysis-pipeline)
-- [10. Implementation notes and design patterns](#10-implementation-notes-and-design-patterns)
-- [11. Reproducibility checklist](#11-reproducibility-checklist)
-
----
-
-## 1. System overview
-
-The canonical runtime is `UnifiedSystem` in `Verdant Source Codes/src/core/system.py`, exposed to scripts via `usm.UnifiedSyntheticMind`.
-
-Core subsystems:
-
-1. **Nine-block processing pipeline** (fixed order in `self.processing_order`).
-2. **MemoryWeb** graph memory.
-3. **ECWFCore** wave-state representation.
-4. **MemoryECWFBridge** coupling between symbolic graph and wave-state dynamics.
-5. **ThreeKingsLayer** governance (`DataKing`, `EthicsKing`, `ForefrontKing`) plus coordination.
-6. **CognitiveChunk** shared per-input container that accumulates sections as processing advances.
-
----
-
-## 2. Runtime component map
+## 1. Runtime boundary
 
 ```mermaid
-graph TB
-    U[UnifiedSystem / UnifiedSyntheticMind]
-
-    subgraph Pipeline[Nine-Block Pipeline]
-      B1[SensoryInputBlock]
-      B2[PatternRecognitionBlock]
-      B3[MemoryStorageBlock]
-      B4[InternalCommunicationBlock]
-      B5[ReasoningPlanningBlock]
-      B6[EthicsValuesBlock]
-      B7[ActionSelectionBlock]
-      B8[LanguageProcessingBlock]
-      B9[ContinualLearningBlock]
-      B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7 --> B8 --> B9
-    end
-
-    subgraph Memory[Memory + Wave]
-      MW[MemoryWeb]
-      ECWF[ECWFCore]
-      BR[MemoryECWFBridge]
-      MW <--> BR
-      ECWF <--> BR
-    end
-
-    subgraph Kings[Governance]
-      DK[DataKing]
-      EK[EthicsKing]
-      FK[ForefrontKing]
-      TKL[ThreeKingsLayer coordination]
-      DK --> TKL
-      EK --> TKL
-      FK --> TKL
-    end
-
-    U --> Pipeline
-    U --> Memory
-    U --> Kings
+flowchart TB
+    Public["usm package"] --> System["src.core.system.UnifiedSystem"]
+    System --> Blocks["Nine processing blocks"]
+    System --> Memory["MemoryWeb + ECWF + bridge"]
+    System --> Kings["ThreeKingsLayer"]
+    System --> Learning["SystemWideLearning"]
 ```
 
-### Key source files
+`usm/__init__.py` adds `Verdant Source Codes` to the import path and aliases `UnifiedSystem` as `UnifiedSyntheticMind`. The lower-case Python modules imported by `system.py` are canonical.
 
-| Component | File |
+The separate top-level `verdant/` package is outside this boundary. It requires a missing `ethomorphic` package and is not initialized by `usm`.
+
+## 2. Core ownership
+
+| Component | Responsibility | Canonical location |
+|---|---|---|
+| `UnifiedSystem` | composition, processing order, governance hooks, metrics, persistence | `Verdant Source Codes/src/core/system.py` |
+| `CognitiveChunk` | shared per-cycle data container | `Verdant Source Codes/src/core/cognitive_chunk.py` |
+| Nine blocks | stage-specific transformation | `Verdant Source Codes/src/blocks/*_block.py` |
+| `MemoryWeb` | concepts, weighted edges, activation, communities | `Verdant Source Codes/src/memory/memory_web.py` |
+| `ECWFCore` | cognitive/ethical wave-state representation | `Verdant Source Codes/src/memory/ecwf_core.py` |
+| `MemoryECWFBridge` | graph-to-wave and wave-to-graph influence | `Verdant Source Codes/src/memory/memory_ecwf_bridge.py` |
+| `ThreeKingsLayer` | Data, Ethics, and Forefront coordination | `Verdant Source Codes/src/kings/three_kings_layer.py` |
+| `SystemWideLearning` | learning coordination used by final block | `Verdant Source Codes/src/core/system_learning.py` |
+
+## 3. One-cycle processing graph
+
+```mermaid
+flowchart TB
+    Input["Input text + metadata"] --> S["1 Sensory Input"]
+    S --> P["2 Pattern Recognition"]
+    P --> M["3 Memory Storage"]
+    M --> I["4 Internal Communication"]
+    I --> D["Data King"]
+    D --> R["5 Reasoning and Planning"]
+    R --> E["6 Ethics and Values"]
+    E --> EK["Ethics King"]
+    EK --> A["7 Action Selection"]
+    A --> F["Forefront + coordination"]
+    F --> L["8 Language Processing"]
+    L --> C["9 Continual Learning"]
+    C --> Metrics["Metrics + coherence invariants"]
+```
+
+The orchestrator records per-stage timing. `get_response()` runs this complete path, then turns the selected action into a template-based response.
+
+## 4. CognitiveChunk as the integration contract
+
+Blocks communicate by adding or updating named sections on one `CognitiveChunk`. Important sections include:
+
+| Section | Main producer | Purpose |
+|---|---|---|
+| `sensory_input_section` | Sensory Input | original text, tokens, input features |
+| `pattern_recognition_section` | Pattern Recognition | patterns, concepts, tensions, classification |
+| `memory_section` | Memory Storage | retrieval, activation, novelty, graph effects |
+| `wave_function_section` | Memory Storage/bridge | ECWF magnitude, phase, entropy, state data |
+| `internal_communication_section` | Internal Communication | routed internal messages |
+| `reasoning_section` | Reasoning and Planning | reasoning and plan candidates |
+| `ethical_consideration_section` | Ethics and Values | principle/distance-oriented analysis |
+| `action_selection_section` | Action Selection and governance | selected action, confidence, parameters |
+| `language_processing_section` | Language Processing | response-oriented language data |
+| `continual_learning_section` | Continual Learning | learning and resonance telemetry |
+| `data_king_section` | Data King | information-quality oversight |
+| `ethics_king_section` | Ethics King | ethical evaluation and concerns |
+| `forefront_king_section` | Forefront King | executive oversight |
+| `three_kings_layer_section` | coordinator | combined governance decision |
+| `coherence_invariants_section` | `UnifiedSystem` | triangle checks and HCI |
+| `processing_metrics_section` | `UnifiedSystem` | stage timings, `T_g`, entropy, invariants |
+
+Consumers should tolerate absent sections because early stages and error paths may not have populated every section yet.
+
+## 5. Memory and wave coupling
+
+```mermaid
+flowchart LR
+    Concepts["MemoryWeb concepts"] --> Bridge["MemoryECWFBridge"]
+    Bridge --> Wave["ECWFCore state"]
+    Wave --> Bridge
+    Bridge --> Graph["Activation, reinforcement, edges"]
+    Graph --> Concepts
+```
+
+The bridge provides two-way influence:
+
+- symbolic concept activations influence cognitive and ethical wave parameters;
+- wave state influences concept activation, reinforcement, and connection formation;
+- the memory edge policy is `pconnect` by default;
+- semantic mapping uses sentence embeddings plus PCA when optional dependencies are available;
+- otherwise the branch uses a fallback concept-dimension mapping and logs a warning.
+
+Because those mapping modes differ, experiment records should state which one was active.
+
+## 6. Governance timing
+
+| Boundary | Governance action |
 |---|---|
-| Unified runtime orchestrator | `Verdant Source Codes/src/core/system.py` |
-| Chunk data structure | `Verdant Source Codes/src/core/cognitive_chunk.py` |
-| Nine blocks | `Verdant Source Codes/src/blocks/*.py` |
-| Three Kings + coordination | `Verdant Source Codes/src/kings/*.py` |
-| Memory and bridge | `Verdant Source Codes/src/memory/*.py` |
+| after Internal Communication | Data King reviews information quality/flow |
+| after Ethics and Values | Ethics King evaluates principles and concerns |
+| after Action Selection | Forefront King reviews execution; all Kings coordinate |
 
----
+Governance can modify chunk sections, including the action decision. This is not a detached reporting layer; it participates in the processing path.
 
-## 3. End-to-end processing flow
+## 7. Coherence feedback
 
-`UnifiedSystem.process_input()` behavior (current implementation):
-
-1. Create initial `CognitiveChunk` from sensory block.
-2. Seed previous-cycle coherence invariants if available.
-3. Update glass transition temperature.
-4. Iterate through fixed nine-block order.
-5. Inject governance oversight at strategic block boundaries:
-   - after Internal Communication: Data King
-   - after Ethics Values: Ethics King
-   - after Action Selection: Forefront King + full Three Kings coordination
-6. Compute coherence invariants from end-of-cycle signals.
-7. Write `processing_metrics_section` and `coherence_invariants_section`.
-8. Return enriched chunk.
+At the end of a cycle, `UnifiedSystem` samples normalized wave, ethical, novelty, and memory-activation values. It evaluates triangle validity over an alpha grid and computes a housed contradiction index (HCI). The result is stored in the chunk and copied to `_last_coherence_invariants`.
 
 ```mermaid
-sequenceDiagram
-    participant User
-    participant U as UnifiedSystem
-    participant C as CognitiveChunk
-    participant B as Nine Blocks
-    participant K as Three Kings
-
-    User->>U: process_input(text, metadata)
-    U->>C: create initial chunk (sensory)
-    U->>B: run 9-block order
-    B-->>U: per-block section updates
-    U->>K: oversight at InternalCommunication/EthicsValues/ActionSelection
-    K-->>U: governance section updates + action modulation
-    U->>C: write coherence_invariants_section
-    U->>C: write processing_metrics_section
-    U-->>User: populated CognitiveChunk
+flowchart LR
+    End["End-of-cycle signals"] --> Coherence["Triangle checks + HCI"]
+    Coherence --> Saved["Last invariants"]
+    Saved --> Next["Next cycle chunk"]
+    Next --> Governance["Governance feedback"]
 ```
 
----
+This is one-cycle-delayed feedback. The current cycle’s final invariants cannot govern stages that already ran.
 
-## 4. CognitiveChunk section map
+## 8. `T_g` timing
 
-### Section writers in current code
+Glass transition temperature is updated immediately after sensory chunk creation and before the nine-block loop. At that moment, the new chunk does not yet contain current-cycle memory or wave sections. The calculation therefore primarily reflects current sensory complexity plus existing/default entropy context. Documentation and analysis should not describe it as a summary calculated from every signal generated later in the same cycle.
 
-| Section key | Primary writer(s) | Where in repo |
+## 9. State and artifacts
+
+The runtime exposes two persistence families:
+
+| Family | Interface | Intended use |
 |---|---|---|
-| `sensory_input_section` | `SensoryInputBlock` | `src/blocks/SensoryInputBlock.py` |
-| `pattern_recognition_section` | `PatternRecognitionBlock` (+ possible DataKing adjustments) | `src/blocks/PatternRecognitionBlock.py`, `src/kings/DataKing.py` |
-| `memory_section` | `MemoryStorageBlock` (+ possible DataKing adjustments) | `src/blocks/MemoryStorageBlock.py`, `src/kings/DataKing.py` |
-| `wave_function_section` | `MemoryStorageBlock` | `src/blocks/MemoryStorageBlock.py` |
-| `internal_communication_section` | `InternalCommunicationBlock` (+ possible DataKing adjustments) | `src/blocks/InternalCommunicationBlock.py`, `src/kings/DataKing.py` |
-| `reasoning_section` | `ReasoningPlanningBlock` | `src/blocks/ReasoningPlanningBlock.py` |
-| `ethical_consideration_section` | `EthicsValuesBlock` | `src/blocks/EthicsValuesBlock.py` |
-| `ethics_king_section` | `EthicsKing` oversight | `src/kings/EthicsKing.py` |
-| `action_selection_section` | `ActionSelectionBlock` (+ Forefront/ThreeKings/Ethics modulation) | `src/blocks/ActionSelectionBlock.py`, `src/kings/*.py` |
-| `language_processing_section` | `LanguageProcessingBlock` (+ Ethics King modulation) | `src/blocks/LanguageProcessingBlock.py`, `src/kings/EthicsKing.py` |
-| `continual_learning_section` | `ContinualLearningBlock` | `src/blocks/ContinualLearningBlock.py` |
-| `data_king_section` | `DataKing` | `src/kings/DataKing.py` |
-| `forefront_king_section` | `ForefrontKing` (+ ThreeKings updates) | `src/kings/ForefrontKing.py`, `src/kings/ThreeKingsLayer.py` |
-| `three_kings_layer_section` | `ThreeKingsLayer` | `src/kings/ThreeKingsLayer.py` |
-| `coherence_invariants_section` | `UnifiedSystem` | `src/core/system.py` |
-| `processing_metrics_section` | `UnifiedSystem` | `src/core/system.py` |
+| pickle system state | `save_system_state`, `load_system_state` | Python object snapshot |
+| JSON state | `to_state_dict`, `from_state_dict`, `save_state`, `load_state` | cultivation, interchange, analysis |
 
-### Chunk growth flow
+Cultivation writes timestamped session JSON, cycle JSONL, state JSON, and significant-events JSON. The scaffolding analyzer consumes a JSON state and writes two PNG figures.
+
+## 10. Execution layers
 
 ```mermaid
-graph LR
-    S[sensory_input_section] --> P[pattern_recognition_section]
-    P --> M[memory_section + wave_function_section]
-    M --> I[internal_communication_section]
-    I --> R[reasoning_section]
-    R --> E[ethical_consideration_section + ethics_king_section]
-    E --> A[action_selection_section + forefront_king_section]
-    A --> L[language_processing_section]
-    L --> CL[continual_learning_section]
-    CL --> PM[processing_metrics_section + coherence_invariants_section]
+flowchart TB
+    Human["Human or script"] --> Entry["REPL / telemetry / kernel / cultivator"]
+    Provider["Optional language provider"] --> Cultivator["Cultivator"]
+    Cultivator --> Entry
+    Entry --> Runtime["UnifiedSyntheticMind"]
+    Runtime --> State["State + telemetry artifacts"]
+    State --> Analysis["Scaffolding analysis"]
 ```
 
----
+The external language provider is a cultivation input, not a component of the core cognitive architecture. The built-in response path remains template based.
 
-## 5. Nine-block subsystem details
+## 11. Structural liabilities
 
-### Implemented processing order
+- Parallel lower-case and upper-case source files increase the chance of editing the wrong copy.
+- `Verdant Source Codes` contains spaces and is injected into `sys.path` by `usm`.
+- the top-level `verdant/` tree looks authoritative but is incomplete on this branch;
+- packaging metadata disagrees and the wheel omits the canonical runtime;
+- some historical documentation refers to later branches.
 
-1. `SensoryInput`
-2. `PatternRecognition`
-3. `MemoryStorage`
-4. `InternalCommunication`
-5. `ReasoningPlanning`
-6. `EthicsValues`
-7. `ActionSelection`
-8. `LanguageProcessing`
-9. `ContinualLearning`
-
-### Block responsibilities and outputs
-
-| Block | File | Primary responsibility | Main section outputs |
-|---|---|---|---|
-| Sensory Input | `src/blocks/SensoryInputBlock.py` | normalize raw input + metadata into chunk start state | `sensory_input_section` |
-| Pattern Recognition | `src/blocks/PatternRecognitionBlock.py` | extract token/pattern/entity-style features | `pattern_recognition_section` |
-| Memory Storage | `src/blocks/MemoryStorageBlock.py` | memory retrieval/update via bridge and memory policy | `memory_section`, `wave_function_section` |
-| Internal Communication | `src/blocks/InternalCommunicationBlock.py` | aggregate cross-section context and internal messages | `internal_communication_section` |
-| Reasoning & Planning | `src/blocks/ReasoningPlanningBlock.py` | infer/organize reasoning candidates and planning signals | `reasoning_section` |
-| Ethics & Values | `src/blocks/EthicsValuesBlock.py` | produce ethical consideration layer before king oversight | `ethical_consideration_section` |
-| Action Selection | `src/blocks/ActionSelectionBlock.py` | choose next action candidate and confidence | `action_selection_section` |
-| Language Processing | `src/blocks/LanguageProcessingBlock.py` | generate language output with wave/ethics/action context | `language_processing_section` |
-| Continual Learning | `src/blocks/ContinualLearningBlock.py` | apply learning updates, resonance/emergence bookkeeping | `continual_learning_section` |
-
----
-
-## 6. Three Kings governance details
-
-### Where oversight is called
-
-In `UnifiedSystem.process_input()`:
-
-- Data King oversight after `InternalCommunication`.
-- Ethics King oversight after `EthicsValues`.
-- Forefront King oversight after `ActionSelection`.
-- Full `ThreeKingsLayer.oversee_processing()` invoked after Forefront oversight for coordinated decision handling.
-
-### Oversight sequence
-
-```mermaid
-sequenceDiagram
-    participant U as UnifiedSystem
-    participant IC as InternalCommunication
-    participant DK as DataKing
-    participant EV as EthicsValues
-    participant EK as EthicsKing
-    participant AS as ActionSelection
-    participant FK as ForefrontKing
-    participant TK as ThreeKingsLayer
-
-    U->>IC: process_chunk
-    U->>DK: oversee_processing(chunk)
-    DK-->>U: data_king_section + possible section corrections
-
-    U->>EV: process_chunk
-    U->>EK: oversee_processing(chunk)
-    EK-->>U: ethics_king_section + possible action/language modulation
-
-    U->>AS: process_chunk
-    U->>FK: oversee_processing(chunk)
-    FK-->>U: forefront_king_section + possible action threshold updates
-
-    U->>TK: oversee_processing(chunk)
-    TK-->>U: three_kings_layer_section + coordinated output updates
-```
-
----
-
-## 7. Memory ↔ ECWF bridge data movement
-
-The memory-wave coupling is implemented through `MemoryECWFBridge` and used heavily by Memory Storage and related components.
-
-### Conceptual transfer directions
-
-```mermaid
-graph LR
-    MW[MemoryWeb concepts + connections] -->|activation/mappings| BR[MemoryECWFBridge]
-    BR -->|parameter influence| ECWF[ECWFCore state]
-    ECWF -->|wave-derived signals| BR
-    BR -->|reinforcement/decay/emergent concept hooks| MW
-```
-
-### Operational notes
-
-- Memory retrieval and active concept context are transformed into wave-relevant influences.
-- Wave-state outputs feed back into memory updates and emergent concept logic.
-- Edge policy can run in `pconnect` mode (configured in `UnifiedSystem` setup and `MemoryStorageBlock`).
-
----
-
-## 8. Runner and artifact architecture
-
-### Cultivation runner (`scripts/verdant_llm_cultivator.py`)
-
-**Purpose:** multi-cycle run with provider fallback, telemetry capture, resume/fresh handling, and artifact persistence. Initialization is gated so knowledge init is applied only when `--initialize-knowledge` is set and no `--load-state` is provided.
-
-#### Artifacts
-
-For each run (default `outputs/` unless `--output-dir`):
-
-If `--resume` is provided and `--fresh` is not set, prior cycle JSONL history is loaded before new cycles are appended.
-
-- `cultivation_session_<timestamp>.json`
-- `cultivation_cycles_<timestamp>.jsonl`
-- `cultivation_state_<timestamp>.json`
-- `significant_events_<timestamp>.json`
-
-Optional additional save target:
-
-- `--save-state <path>` writes explicit state copy there.
-
-### Kernel demo runner (`scripts/kernel_loop.py --demo`)
-
-Writes:
-
-- `outputs/demo_trajectory.json`
-- `outputs/demo_summary.txt`
-
-The FCE value in this flow is explicitly a **demo-only estimate heuristic**.
-
----
-
-## 9. Emergent scaffolding analysis pipeline
-
-Script: `scripts/analysis/scaffolding_from_state.py`
-
-### What the script does
-
-1. Loads a persisted state JSON (`memory_web.memory_store`).
-2. Identifies emergent nodes where `metadata.origin == wave_emergence`.
-3. Uses creation time from `metadata.creation_time`; if missing, fallback parses timestamp-like suffix from label.
-4. Builds weighted undirected graph from memory connections.
-5. Builds top-k-per-node weighted backbone and keeps largest connected component.
-6. Restricts to emergent↔emergent backbone edges, orients newer → older.
-7. Computes `earlier-share`, shuffle baseline (`--trials`), and z-score.
-8. Saves plots:
-   - `emergent_scaffolding.png`
-   - `link_age_gaps.png`
-
-### Command example
-
-```bash
-python scripts/analysis/scaffolding_from_state.py \
-  --state outputs/cultivation_state_YYYYMMDD_HHMMSS.json \
-  --topk 6 \
-  --trials 500
-```
-
----
-
-## 10. Implementation notes and design patterns
-
-| Pattern | Where used | Notes |
-|---|---|---|
-| Section-based blackboard | `CognitiveChunk` + all blocks | Components communicate by read/write section contracts |
-| Staged orchestration | `UnifiedSystem.process_input()` | Fixed order with timed block metrics |
-| Governance interception | `ThreeKingsLayer` and King classes | Strategic oversight after selected stages |
-| Persistent state snapshots | cultivator + REPL save/load paths | JSON-based state portability |
-| Analysis-on-snapshot | scaffolding script | decouples runtime from post-run structural analysis |
-
-Performance/operational considerations:
-
-- Long cultivation runs increase JSON artifact size; prefer dedicated `--output-dir` per run family.
-- Resume behavior affects trajectory statistics; compare fresh vs resumed runs separately.
-- Provider-level nondeterminism can dominate run-to-run behavioral variance.
-
----
-
-## 11. Reproducibility checklist
-
-Minimum reproducibility bundle for any reported experiment:
-
-1. Git commit SHA.
-2. Full command line (including all non-default flags).
-3. Provider details (`VERDANT_PROVIDER_CHAIN`, selected model values).
-4. State mode:
-   - fresh (`--fresh`),
-   - cycle-log resume (`--resume`),
-   - state load (`--load-state`).
-5. Output artifact paths (session/cycles/state/events files).
-6. For scaffolding analysis:
-   - state file used,
-   - `--topk`, `--trials`,
-   - generated plot files.
-
-Use multi-run summaries where possible; treat single-run outputs as examples.
+These are orientation and packaging problems. They do not erase the tested canonical path, but they should be resolved in a future code-focused pass.

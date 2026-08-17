@@ -1,126 +1,134 @@
-# Reproducibility Guide
+# Verdant-V0 Reproducibility Guide
 
-This guide defines a minimum reporting standard for experiments run from this repository.
+The branch itself is the browsable research state. Experiment records should identify that state and the inputs that materially change a run; they do not need to turn save-state identifiers into the conceptual centerpiece.
 
----
+## Minimum experiment record
 
-## Table of Contents
+Record:
 
-- [1. Why this is needed](#1-why-this-is-needed)
-- [2. Minimum reproducibility pack](#2-minimum-reproducibility-pack)
-- [3. Fresh vs resume reporting standard](#3-fresh-vs-resume-reporting-standard)
-- [4. Cultivator run template](#4-cultivator-run-template)
-- [5. Scaffolding analysis template](#5-scaffolding-analysis-template)
-- [6. Multi-run reporting recommendations](#6-multi-run-reporting-recommendations)
+1. branch: `Verdant-V0`;
+2. whether the branch files had local modifications;
+3. Python version and operating system;
+4. dependency environment or exported package list;
+5. exact command and all flags;
+6. seed and `UnifiedSystem` configuration;
+7. semantic mapping mode: embedding/PCA or fallback;
+8. provider chain, provider models, temperature, and token cap;
+9. fresh/resume mode and every loaded state/history path;
+10. input topics/prompts and perturbation settings;
+11. output artifact paths;
+12. analysis parameters and result summaries.
 
----
+Never record API-key values.
 
-## 1. Why this is needed
+## Run-state vocabulary
 
-Cultivation and provider-backed runs can vary due to:
+| Label | Meaning |
+|---|---|
+| fresh | no prior cycle history and no architecture state loaded |
+| resumed-state | `--load-state` supplied |
+| resumed-cycles | `--resume` supplied without `--fresh` |
+| resumed-state+cycles | both state and cycle history supplied |
 
-- provider nondeterminism,
-- resume-state trajectory dependence,
-- configuration differences across runs.
+Twenty resumed cycles are twenty additional cycles over an existing trajectory, not a fresh twenty-cycle experiment.
 
-For this reason, single-run results should be labeled as example outputs unless replicated.
+## Environment capture
 
----
+```bash
+python --version
+python -m pip freeze > outputs/run_A/environment.txt
+git branch --show-current
+git status --short
+```
 
-## 2. Minimum reproducibility pack
+The branch name tells a reader which research generation to inspect. The status output records whether the tested files differed from the branch as presented.
 
-Include the following in every report:
-
-1. **Code version**
-   - `git rev-parse HEAD`
-2. **Exact commands**
-   - full CLI command with all flags
-3. **Provider context**
-   - `VERDANT_PROVIDER_CHAIN`
-   - provider model names (`GROQ_MODEL`, `MISTRAL_MODEL`, etc.)
-4. **Run mode**
-   - whether `--fresh`, `--resume`, and/or `--load-state` were used
-5. **Cycle configuration**
-   - cycle count, perturbation settings, budget mode
-6. **Artifacts**
-   - session JSON, cycle JSONL, state JSON, significant events JSON paths
-7. **Analysis configuration**
-   - scaffolding `--topk` and `--trials`
-
----
-
-## 3. Fresh vs resume reporting standard
-
-Use these exact labels:
-
-- **fresh**: no prior cycle history/state loaded for this run segment.
-- **resumed-state**: `--load-state` used.
-- **resumed-cycles**: `--resume` used (with `--fresh` unset).
-- **resumed-state+cycles**: both used; state load and cycle-history resume are both active inputs.
-
-Interpretation requirement:
-
-- “N resumed cycles” means continuation over prior trajectory, not a fresh N-cycle experiment.
-
----
-
-## 4. Cultivator run template
-
-Example command template:
+## Fresh cultivation template
 
 ```bash
 python scripts/verdant_llm_cultivator.py \
   --cycles 40 \
   --seed-topic contradiction \
-  --perturbation-interval 10 \
+  --temperature 0.8 \
+  --max-tokens 128 \
   --budget-mode light \
+  --perturbation-interval 10 \
+  --initialize-knowledge \
+  --fresh \
   --output-dir outputs/run_A \
   --save-state outputs/run_A/persistent_state.json
 ```
 
-Report these fields with the command:
+## Resume template
 
-| Field | Example |
-|---|---|
-| commit | `330a868...` |
-| provider chain | `mistral,groq,local_fallback` |
-| model flag | `--model claude-3-5-sonnet-latest` |
-| run mode | `fresh` / `resumed-state` / etc. |
-| artifacts dir | `outputs/run_A` |
+```bash
+python scripts/verdant_llm_cultivator.py \
+  --cycles 20 \
+  --resume outputs/run_A/cultivation_cycles_TIMESTAMP.jsonl \
+  --load-state outputs/run_A/persistent_state.json \
+  --output-dir outputs/run_A_resume \
+  --save-state outputs/run_A_resume/persistent_state.json
+```
 
----
+Report both input paths. They represent different kinds of continuity.
 
-## 5. Scaffolding analysis template
+## Artifact set
 
-Example command template:
+Cultivation normally writes:
+
+- `cultivation_session_<timestamp>.json`
+- `cultivation_cycles_<timestamp>.jsonl`
+- `cultivation_state_<timestamp>.json`
+- `significant_events_<timestamp>.json`
+- any explicit `--save-state` file
+
+Keep stdout/stderr when diagnosing warnings or provider fallback behavior.
+
+## Structural analysis
 
 ```bash
 python scripts/analysis/scaffolding_from_state.py \
-  --state outputs/run_A/cultivation_state_YYYYMMDD_HHMMSS.json \
+  --state outputs/run_A/cultivation_state_TIMESTAMP.json \
   --topk 6 \
   --trials 500 \
   --outdir outputs/run_A/analysis
 ```
 
-Expected generated files:
+Record the state path, `topk`, trial count, earlier-share, shuffle mean and standard deviation, and z-score. The analyzer uses `metadata.creation_time` first, falls back to a timestamp-like label suffix, builds a union of top-k weighted incident edges, takes the largest connected component, and analyzes emergent-to-emergent edges.
 
-- `emergent_scaffolding.png`
-- `link_age_gaps.png`
+## Claims and comparisons
 
-Record at least:
+- Label a single run as representative, exploratory, or anecdotal.
+- Use several fresh runs for distributional claims.
+- Do not pool embedding/PCA and fallback-mapper runs without identifying the mode.
+- Separate providers and model configurations.
+- Compare fresh runs with fresh runs and resumed segments with equivalent histories.
+- Distinguish runtime-generated data from `demos/interactive_demo.py` simulation and visualization sample data.
+- Treat the whitepaper’s numeric result as reported until independently rerun with its original state and conditions.
 
-- state path,
-- top-k value,
-- trials count,
-- printed `earlier-share`, shuffle mean/std, and z-score.
+## Report template
 
----
+```markdown
+### Identity
+- Branch: Verdant-V0
+- Local modifications: <none or a list of changed files>
+- Python/platform: <value>
+- Mapping mode: <embedding-PCA or fallback>
 
-## 6. Multi-run reporting recommendations
+### Run
+- Mode: <fresh/resumed-state/resumed-cycles/both>
+- Exact command: `<command>`
+- Seed/config: <values>
+- Provider/model: <names only; no secrets>
+- Input history: <path or description>
 
-Recommended minimum for claims:
+### Outputs
+- Artifacts: <paths>
+- Warnings/fallbacks: <values>
+- Analysis command: `<command>`
+- Results: <summary and distribution>
 
-1. Run at least 3 independent fresh runs per provider setting.
-2. Run at least 3 resumed segments if resume effects are part of the study.
-3. Report distribution summaries (mean ± std) for key metrics.
-4. Keep single-run narratives explicitly labeled as representative examples.
+### Interpretation
+- What the result directly shows:
+- What it does not establish:
+```

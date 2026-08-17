@@ -1,314 +1,57 @@
-# Verdant-Minds Test Suite
+# Verdant-V0 Test Suite
 
-This directory contains unit tests and integration tests for the Unified Synthetic Mind cognitive architecture.
+The tests in this directory exercise the canonical runtime imported through `usm`. During the documentation audit, the complete suite passed: **121 passed, 38 warnings**.
 
----
-
-## Running Tests
-
-### Install Test Dependencies
+Run everything:
 
 ```bash
-pip install pytest pytest-cov
+python -m pytest -q
 ```
 
-Or install all development dependencies:
+List the current collected cases:
 
 ```bash
-pip install -r requirements-dev.txt
+python -m pytest --collect-only -q
 ```
 
-### Run All Tests
+## File map
+
+| File | Primary concern |
+|---|---|
+| `test_cognitive_chunk.py` | chunk identity, sections, updates, serialization behavior |
+| `test_system_integration.py` | initialization and end-to-end system integration |
+| `test_memoryweb_pconnect.py` | graph edge acceptance/pconnect mechanics |
+| `test_ethics_pconnect.py` | ethical distance and pconnect interaction |
+| `test_memory_storage_bridge_wave_properties.py` | Memory Storage and ECWF bridge output |
+| `test_continual_learning_bridge_integration.py` | learning/bridge integration |
+| `test_coherence_invariants_integration.py` | invariant calculation in full processing |
+| `test_coherence_feedback_loop.py` | previous-cycle coherence feedback |
+| `test_hci_current_cycle_calculation.py` | HCI inputs and current-cycle calculation |
+| `test_ethics_coherence_modulation.py` | coherence effects on ethics oversight |
+| `test_language_wave_response_modulation.py` | wave effects on language processing |
+| `test_semantic_entropy_tg.py` | entropy proxies and `T_g` behavior |
+| `test_phase_memory_management.py` | ECWF phase-history management |
+| `test_persistence_smoke.py` | saved-state round trip |
+| `test_kernel_loop_demo_mode.py` | real kernel demo structure/artifacts |
+| `test_verdant_llm_cultivator.py` | cultivation helpers, configuration, artifacts |
+| `test_verdant_telemetry_script.py` | telemetry script behavior |
+
+## Targeted runs
 
 ```bash
-# From project root
-pytest tests/
-
-# With verbose output
-pytest tests/ -v
-
-# With coverage report
-pytest tests/ --cov=core --cov-report=term-missing
+python -m pytest tests/test_system_integration.py -vv
+python -m pytest tests/test_persistence_smoke.py -vv
+python -m pytest tests/test_verdant_llm_cultivator.py -vv
 ```
 
-### Run Specific Test File
+Use `-s` when terminal/log output is needed. Use `-x` to stop at the first failure.
 
-```bash
-# Run CognitiveChunk tests
-pytest tests/test_cognitive_chunk.py -v
+## Warnings
 
-# With coverage for specific module
-pytest tests/test_cognitive_chunk.py --cov=core.CognitiveChunk --cov-report=term-missing
-```
+The audited 38 warnings are deprecation warnings caused by `datetime.utcnow()` in cultivation code. They should be fixed in a later code change, but they do not indicate failed assertions in this branch state.
 
-### Run Specific Test Class or Function
+## Interpretation
 
-```bash
-# Run all initialization tests
-pytest tests/test_cognitive_chunk.py::TestInitialization -v
+This suite is implementation evidence. It verifies asserted behaviors and integration paths; it is not scientific validation of consciousness, intelligence, ethical correctness, or the generality of experimental findings.
 
-# Run single test function
-pytest tests/test_cognitive_chunk.py::TestInitialization::test_init_with_auto_id -v
-```
-
----
-
-## Test Files
-
-### `test_cognitive_chunk.py`
-
-**Coverage: 100%** ✓
-
-Comprehensive unit tests for the CognitiveChunk class, the core data structure for cognitive processing.
-
-**Test Coverage:**
-- ✓ Initialization and ID generation (6 tests)
-- ✓ Section management: add, update, retrieve (8 tests)
-- ✓ Processing log management (6 tests)
-- ✓ Chunk merging operations (7 tests)
-- ✓ Edge cases and validation (6 tests)
-- ✓ Integration tests (3 tests)
-- ✓ Performance tests (2 tests)
-
-**Total: 38 tests** | **Status: All Passing** ✓
-
-### `test_system_integration.py`
-
-**Status: Ready for implementation completion**
-
-Comprehensive integration tests for the entire Unified Synthetic Mind system, testing component interactions and data flow.
-
-**Test Coverage:**
-- System initialization with various configurations (9 tests)
-- Complete data flow through all nine blocks (6 tests)
-- Memory storage, retrieval, and ECWF bridge operations (7 tests)
-- Ethical evaluation and Three Kings governance (7 tests)
-- Block coordination and information flow (6 tests)
-- Integration with existing IntegrationTestSuite (3 tests)
-- Error handling and edge cases (5 tests)
-- Performance and stress tests (3 tests)
-- Integration workflows (5 tests)
-
-**Total: 53 tests** | **Status: Awaiting source code completion**
-
-**Note:** These tests are fully implemented and will pass once the source code blocks are completed. Currently failing due to missing method implementations in PatternRecognitionBlock and other blocks (expected behavior for incomplete codebase).
-
----
-
-## Test Organization
-
-Tests are organized by functionality using pytest classes:
-
-```python
-class TestInitialization:
-    """Tests for basic initialization and properties"""
-
-class TestSectionManagement:
-    """Tests for section operations"""
-
-class TestProcessingLog:
-    """Tests for processing history"""
-
-class TestMergeOperations:
-    """Tests for chunk merging"""
-
-class TestEdgeCases:
-    """Tests for boundary conditions"""
-
-class TestIntegration:
-    """Integration tests simulating real usage"""
-
-class TestPerformance:
-    """Performance and stress tests"""
-```
-
----
-
-## Writing New Tests
-
-### Test File Structure
-
-```python
-#!/usr/bin/env python3
-"""
-Unit Tests for YourComponent
-
-Brief description of what's being tested.
-"""
-
-import pytest
-import sys
-from pathlib import Path
-
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root / "Verdant Source Codes" / "src"))
-
-from your.module import YourClass
-
-# Fixtures
-@pytest.fixture
-def your_fixture():
-    """Fixture description."""
-    return YourClass()
-
-# Test classes
-class TestYourFeature:
-    """Tests for specific feature."""
-
-    def test_something(self, your_fixture):
-        """
-        Test description.
-
-        Explain what this test validates and why.
-        """
-        assert your_fixture.method() == expected_value
-```
-
-### Test Naming Conventions
-
-- **Test files**: `test_<module_name>.py`
-- **Test classes**: `Test<FeatureName>`
-- **Test functions**: `test_<what_is_tested>`
-
-### Documentation Requirements
-
-Each test should include:
-
-1. **Docstring** explaining what is being tested
-2. **Clear assertion messages** when appropriate
-3. **Comments** for non-obvious test logic
-4. **Fixtures** for common setup
-
----
-
-## Code Coverage Goals
-
-- **Target**: >80% coverage for all modules
-- **Critical modules**: Aim for 90-100% coverage
-  - CognitiveChunk ✓ (100%)
-  - UnifiedSyntheticMind
-  - MemoryWeb
-  - ECWFCore
-  - Three Kings components
-
----
-
-## Continuous Integration
-
-Tests should pass before commits are merged. Run the full test suite before pushing:
-
-```bash
-# Run all tests with coverage
-pytest tests/ -v --cov=core --cov=memory --cov=kings --cov-report=term-missing
-
-# Generate HTML coverage report
-pytest tests/ --cov=core --cov-report=html
-
-# View HTML report
-open htmlcov/index.html  # macOS
-xdg-open htmlcov/index.html  # Linux
-```
-
----
-
-## Test Categories
-
-### Unit Tests
-
-Test individual components in isolation:
-- CognitiveChunk operations
-- Memory Web graph operations
-- ECWF wave function calculations
-- Individual cognitive blocks
-
-### Integration Tests
-
-Test component interactions:
-- Full pipeline processing
-- Memory-ECWF Bridge operations
-- Three Kings coordination
-- End-to-end workflows
-
-### Performance Tests
-
-Test scalability and efficiency:
-- Large graph operations
-- Many concurrent chunks
-- Memory usage patterns
-- Processing speed benchmarks
-
----
-
-## Troubleshooting
-
-### Import Errors
-
-**Problem**: `ModuleNotFoundError: No module named 'core'`
-
-**Solution**:
-```bash
-# Install package in development mode
-pip install -e .
-
-# Or set PYTHONPATH
-export PYTHONPATH="${PYTHONPATH}:/path/to/Verdant-Minds/Verdant Source Codes/src"
-```
-
-### Test Discovery Issues
-
-**Problem**: `pytest` doesn't find your tests
-
-**Solution**:
-- Ensure test files start with `test_`
-- Ensure test functions start with `test_`
-- Ensure test classes start with `Test`
-- Run `pytest --collect-only` to see what pytest finds
-
-### Slow Tests
-
-Some tests may be slow due to:
-- Graph operations on large networks
-- Wave function calculations
-- Integration tests with full pipeline
-
-Use pytest markers to skip slow tests during development:
-
-```python
-@pytest.mark.slow
-def test_large_graph_operations():
-    # ...
-```
-
-Run without slow tests:
-```bash
-pytest -m "not slow"
-```
-
----
-
-## Contributing Tests
-
-When adding new functionality:
-
-1. **Write tests first** (TDD approach recommended)
-2. **Ensure tests pass** before committing
-3. **Maintain >80% coverage** for new code
-4. **Document edge cases** in test docstrings
-5. **Add fixtures** for reusable test setup
-6. **Update this README** if adding new test categories
-
----
-
-## Additional Resources
-
-- **pytest Documentation**: https://docs.pytest.org/
-- **Coverage.py**: https://coverage.readthedocs.io/
-- **Testing Best Practices**: See main README.md
-- **CI/CD Integration**: Coming soon
-
----
-
-## License
-
-These tests are part of the Verdant-Minds project and are licensed under the MIT License.
+See [../TESTING.md](../TESTING.md) for smoke checks and failure triage.

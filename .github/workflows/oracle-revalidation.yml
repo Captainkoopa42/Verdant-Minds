@@ -1,0 +1,37 @@
+name: Oracle Revalidation
+
+on:
+  push:
+    branches:
+      - V5
+  workflow_dispatch:
+
+jobs:
+  revalidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-lock.txt
+
+      - name: Oracle-free benchmark tests
+        run: python -m pytest -q tests/test_benchmark_phase.py
+
+      - name: Run M19 benchmark
+        run: python run_ethomorphism_benchmark.py --output artifacts/oracle_revalidation_m19.json --seed 1901 --state-dim 16 --noise-concepts 16
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-revalidation-results
+          path: artifacts/oracle_revalidation_m19.json
+          if-no-files-found: warn

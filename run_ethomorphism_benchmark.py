@@ -4,11 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
-from verdant_benchmarks import BenchmarkConfig, EthomorphismBenchmarkHarness
+from verdant_benchmarks.ethomorphism import BenchmarkConfig
+from verdant_benchmarks.ethomorphism_oracle_free import EthomorphismBenchmarkHarness
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the Verdant Milestone 19 Ethomorphism benchmark.")
+    parser = argparse.ArgumentParser(description="Run the oracle-free Verdant Milestone 19 Ethomorphism benchmark.")
     parser.add_argument("--output", default="artifacts/milestone_19_benchmark_summary.json")
     parser.add_argument("--seed", type=int, default=1901)
     parser.add_argument("--state-dim", type=int, default=16)

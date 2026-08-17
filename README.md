@@ -4,6 +4,12 @@
 
 This branch is a research state, not a product release. Its value is that the code, experiments, paper materials, and limitations can be inspected together in one place.
 
+## Older model, later additions
+
+`Verdant-V0` names the lowest preserved architecture generation; it is not an untouched snapshot from a single date. Later tests, coherence and persistence work, cultivation/analysis tooling, whitepaper materials, and pieces of a later development direction were added to the older branch.
+
+The documentation therefore distinguishes the canonical V0 runtime from later additions that now work with V0 and from incomplete later-generation remnants. See [docs/branch-history.md](docs/branch-history.md) for the evidence and classification.
+
 ## What actually runs in this branch
 
 The public import is:
@@ -100,12 +106,13 @@ Read these in order:
 
 1. [docs/README.md](docs/README.md) — documentation index and evidence labels
 2. [docs/architecture.md](docs/architecture.md) — component and data-flow maps
-3. [docs/walkthrough.md](docs/walkthrough.md) — one input, end to end
-4. [docs/api.md](docs/api.md) — Python and command entry points
-5. [INSTALL.md](INSTALL.md) — branch-specific setup
-6. [TESTING.md](TESTING.md) — verified tests and smoke checks
-7. [docs/reproducibility.md](docs/reproducibility.md) — how to record experiments
-8. [docs/colab.md](docs/colab.md) — Colab/Drive workflow and branch caveat
+3. [docs/branch-history.md](docs/branch-history.md) — older architecture generation and later additions
+4. [docs/walkthrough.md](docs/walkthrough.md) — one input, end to end
+5. [docs/api.md](docs/api.md) — Python and command entry points
+6. [INSTALL.md](INSTALL.md) — branch-specific setup
+7. [TESTING.md](TESTING.md) — verified tests and smoke checks
+8. [docs/reproducibility.md](docs/reproducibility.md) — how to record experiments
+9. [docs/colab.md](docs/colab.md) — Colab/Drive workflow and branch caveat
 
 Additional area guides live in `tests/`, `examples/`, `demos/`, `visualization/`, and `paper/`.
 

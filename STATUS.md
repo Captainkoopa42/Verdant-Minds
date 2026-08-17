@@ -8,6 +8,12 @@ Verdant-V0 is a runnable research prototype with a coherent central execution pa
 
 It is not a finished application or a self-contained distributable package. The repository also preserves duplicated source files and an incomplete later `verdant/` tree, which makes orientation harder unless the reader follows the documented entry point.
 
+## Chronology and scope
+
+This is an older model with newer material added to it. The canonical architecture is V0, while parts of its present test coverage, coherence feedback, persistence, cultivation workflow, structural analysis, and paper record were developed or documented later. The incomplete `verdant/` tree is a later-generation remnant rather than part of the V0 execution path.
+
+Accordingly, this status answers “what is present and working on the branch now.” It does not claim that every included feature originated in the first V0 development period. See [docs/branch-history.md](docs/branch-history.md).
+
 ## Evidence summary
 
 | Area | Status | Direct evidence on this branch |
@@ -47,6 +53,10 @@ It is not a finished application or a self-contained distributable package. The 
 ### Source layout
 
 The canonical modules exist in lower-case files, while several parallel upper-case files are also preserved. The runtime imports the lower-case modules. The top-level `verdant/` tree is a different, incomplete direction and must not be confused with the V0 entry point.
+
+### Partially integrated support systems
+
+The YAML ConfigManager, configuration profiles, enhanced logger, and isolated benchmark suite exist and can be run independently. `UnifiedSystem` does not automatically consume those YAML profiles or enhanced logger, and the benchmark's configuration-comparison labels do not currently load different profiles. See `Verdant Source Codes/CONFIGURATION_AND_MONITORING.md`.
 
 ### Semantics and response generation
 

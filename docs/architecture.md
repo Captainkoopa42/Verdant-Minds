@@ -2,6 +2,8 @@
 
 This is a code-grounded map of the canonical runtime exposed as `usm.UnifiedSyntheticMind`.
 
+The architecture generation is V0, but the branch also contains later-added tests, feedback, persistence, cultivation, analysis, and publication material. Architecture membership and file chronology are therefore documented separately; see [branch-history.md](branch-history.md).
+
 ## 1. Runtime boundary
 
 ```mermaid

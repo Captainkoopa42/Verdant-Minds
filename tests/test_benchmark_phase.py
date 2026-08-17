@@ -37,6 +37,21 @@ def test_c_and_d_share_plastic_substrate_but_only_d_promotes_folds() -> None:
     assert len(d.kernel.state.layered_structures) >= 1
 
 
+def test_d_forms_p_and_q_before_evaluator_scoring_index_exists() -> None:
+    harness = small_harness()
+    d = harness.train_arm_unscored(ArmName.D_FULL)
+    assert d.structure_by_world == {}
+    assert d.layered_structure_id is None
+    assert len(d.kernel.state.structures) >= 5
+    assert len(d.kernel.state.layered_structures) >= 1
+
+    before = d.kernel.fingerprint()
+    harness.index_runtime_for_scoring(d)
+    assert d.kernel.fingerprint() == before
+    assert all(world.name in d.structure_by_world for world in (*harness.family_worlds, harness.star_world, harness.novel_world))
+    assert d.layered_structure_id is not None
+
+
 def test_all_arms_solve_heldout_local_reconstruction_but_d_compiles_it() -> None:
     harness = small_harness()
     metrics = {

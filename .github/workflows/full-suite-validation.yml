@@ -1,0 +1,119 @@
+name: Full Suite Validation
+
+on:
+  push:
+    branches:
+      - V5
+      - V5-X
+    paths:
+      - "**/*.py"
+      - "requirements-lock.txt"
+      - "pytest.ini"
+      - ".github/workflows/full-suite-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  full-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-lock.txt
+
+      - name: Run every pytest test in isolated processes
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          root = Path.cwd()
+          backend = root / "workbench" / "backend"
+          env = os.environ.copy()
+          env["PYTHONPATH"] = os.pathsep.join([str(root), str(backend), env.get("PYTHONPATH", "")]).rstrip(os.pathsep)
+
+          suites = [
+              (root / "tests", root, "engine"),
+              (backend / "tests", backend, "workbench"),
+          ]
+
+          total = 0
+          failures: list[str] = []
+          for test_dir, cwd, label in suites:
+              files = sorted(test_dir.glob("test_*.py"))
+              print(f"\nDISCOVER {label}: {len(files)} test files", flush=True)
+              for file_path in files:
+                  rel = file_path.relative_to(cwd)
+                  collect = subprocess.run(
+                      [sys.executable, "-m", "pytest", "--collect-only", "-q", str(rel)],
+                      cwd=cwd,
+                      env=env,
+                      capture_output=True,
+                      text=True,
+                  )
+                  if collect.returncode != 0:
+                      print(collect.stdout)
+                      print(collect.stderr, file=sys.stderr)
+                      failures.append(f"collect:{label}:{rel}")
+                      continue
+                  nodes = [line.strip() for line in collect.stdout.splitlines() if "::" in line]
+                  if not nodes:
+                      failures.append(f"empty:{label}:{rel}")
+                      continue
+                  for node in nodes:
+                      total += 1
+                      print(f"\n[{total}] {label}: {node}", flush=True)
+                      proc = subprocess.run(
+                          [sys.executable, "-m", "pytest", "-q", node],
+                          cwd=cwd,
+                          env=env,
+                      )
+                      if proc.returncode != 0:
+                          failures.append(f"{label}:{node}")
+
+          print(f"\nTOTAL TEST NODES EXECUTED: {total}", flush=True)
+          if failures:
+              print("FAILURES:", flush=True)
+              for item in failures:
+                  print(f" - {item}", flush=True)
+              raise SystemExit(1)
+          print("ALL PYTEST TESTS PASSED", flush=True)
+          PY
+
+      - name: Workbench startup diagnostic
+        env:
+          PYTHONPATH: ".:workbench/backend"
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: |
+          python run_verdant_workbench.py --home "$RUNNER_TEMP/verdant-full-suite-home" --check
+
+      - name: Machine proofs
+        env:
+          PYTHONPATH: ".:workbench/backend"
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: |
+          python workbench/backend/wb08_proof.py
+          python workbench/backend/wb09_proof.py

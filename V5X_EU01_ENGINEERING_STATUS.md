@@ -4,7 +4,7 @@
 **Historical baseline:** `V5`  
 **Purpose:** pre-merge engineering integration and validation of the V5 EU01 plan.
 
-> **ORACLE-FREE M19 REVALIDATION PASSED (2026-08-16):** the original V5 M19 harness used evaluator ground truth to choose which P and Q candidates were promoted. V5-X inherited that formation path. Both branches now route the canonical M19 benchmark through an oracle-free promotion harness. GitHub Actions run `31989515573` successfully completed the repaired M19 benchmark, targeted regression tests, and the full V5-X headless validation at seed 1901. See `MILESTONE_19_ORACLE_REVALIDATION.md`.
+> **ORACLE-FREE M19 REVALIDATION + FULL SUITE PASSED (2026-08-16):** the original V5 M19 harness used evaluator ground truth to choose which P and Q candidates were promoted. V5-X inherited that formation path. Both branches now route the canonical M19 benchmark through an oracle-free promotion harness. GitHub Actions run `31989515573` successfully completed the repaired M19 benchmark, targeted regression tests, and the full V5-X headless validation at seed 1901. GitHub Actions run `31990234897` then passed the complete discovered pytest surface, Workbench startup diagnostic, and WB08/WB09 machine proofs. See `MILESTONE_19_ORACLE_REVALIDATION.md`.
 
 ## Implemented
 
@@ -149,17 +149,23 @@ V5-X headless validation --experiment all  PASS
 
 `validation_qualifies = true` for that run.
 
-### Historical broad suite
+### Full post-fix suite
 
-Before discovery of the M19 evaluator-assisted promotion flaw, the broader repository had recorded:
+GitHub Actions run `31990234897` completed successfully after the oracle repair.
+
+Every discovered pytest node was executed in its own fresh process to avoid the repository's known long-process slowdown. The run covered:
 
 ```text
-205 / 205 core tests passed
-67 / 67 Workbench backend tests passed
-272 / 272 total tests passed in partitions
+engine test files              22
+Workbench test files           13
+total pytest test nodes        274
+pytest failures                0
+Workbench startup diagnostic   PASS
+WB08 machine proof             PASS (all_gates_pass=true)
+WB09 machine proof             PASS (all_gates_pass=true)
 ```
 
-Those counts remain useful engineering history, but they were not rerun in full as part of the targeted oracle-fix validation. A complete post-fix broad-suite rerun is still desirable before declaring V5-X ready to merge.
+This replaces the earlier pre-fix broad-suite caveat for the tested V5-X branch state. The full-suite workflow remains checked into the branch so future Python/test changes can be revalidated the same way.
 
 ## Explicitly not enabled / not claimed
 
@@ -176,4 +182,4 @@ EU01 does **not** currently claim or enable:
 
 ## Pre-merge gate
 
-The original M19 oracle flaw is repaired for the tested seed and the V5-X headless validation qualifies. `V5-X` should remain experimental until the broader post-fix suite and planned multi-seed validation are rerun and reviewed. The thermodynamic controller should remain disabled until measurement-only data establishes that the recovered variables are informative rather than trivial proxies. Only then should a paired control experiment test whether phase-dependent policy modulation improves any objective outcome.
+The original M19 oracle flaw is repaired for the tested seed, the V5-X headless validation qualifies, and the full post-fix test/proof surface passes. `V5-X` should remain experimental until the planned multi-seed validation is collected and reviewed. The thermodynamic controller should remain disabled until measurement-only data establishes that the recovered variables are informative rather than trivial proxies. Only then should a paired control experiment test whether phase-dependent policy modulation improves any objective outcome.

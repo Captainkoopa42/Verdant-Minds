@@ -4,7 +4,7 @@
 **Historical baseline:** `V5`  
 **Purpose:** pre-merge engineering integration and validation of the V5 EU01 plan.
 
-> **REVALIDATION REQUIRED (2026-08-16):** the original V5 M19 harness used evaluator ground truth to choose which P and Q candidates were promoted. V5-X inherited that formation path. Both branches now route the canonical M19 benchmark through an oracle-free promotion harness, but the post-fix suite and numerical benchmark results have not yet been rerun. The verification counts and M19-derived numbers below are therefore historical pre-fix results, not current validation evidence. See `MILESTONE_19_ORACLE_REVALIDATION.md`.
+> **ORACLE-FREE M19 REVALIDATION PASSED (2026-08-16):** the original V5 M19 harness used evaluator ground truth to choose which P and Q candidates were promoted. V5-X inherited that formation path. Both branches now route the canonical M19 benchmark through an oracle-free promotion harness. GitHub Actions run `31989515573` successfully completed the repaired M19 benchmark, targeted regression tests, and the full V5-X headless validation at seed 1901. See `MILESTONE_19_ORACLE_REVALIDATION.md`.
 
 ## Implemented
 
@@ -55,7 +55,7 @@ Canonical `run_verdant_cultivation.py` remains unchanged. V5-X adds `run_v5x_cul
 
 ### 4. Destructive experimental lesion forks
 
-The V5-X benchmark package now distinguishes ordinary availability ablation from destructive experimental lesions.
+The V5-X benchmark package distinguishes ordinary availability ablation from destructive experimental lesions.
 
 A destructive lesion:
 
@@ -68,20 +68,18 @@ A destructive lesion:
 
 ### 5. Native governed re-derivation assay
 
-After destructive lesion, the experimental recovery driver can use only the normal V5 eligibility/governance/promotion path.
+After destructive lesion, the experimental recovery driver uses the normal V5 eligibility/governance/promotion path.
 
-Historical pre-fix M19 seed 1901 behavior:
+The repaired oracle-free seed-1901 validation reproduced:
 
 ```text
 P:  work 1 -> 7 -> 1
 Q:  work 3 -> 8 -> 3
 ```
 
-Those values remain useful as historical lesion behavior, but the source P/Q population was produced by the old oracle-assisted M19 formation path and therefore must be reproduced from the repaired harness before being treated as current V5-X evidence.
+The source P/Q population in that run was produced by the repaired evaluator-independent formation path. Re-derivation reproduced the same stable P/Q IDs from the surviving evidence/candidate state without using the restore operation.
 
-The final step is **native governed re-derivation**, not availability restoration. In the deterministic historical M19 case, re-derivation reproduced the same stable P/Q IDs from the same surviving evidence/candidate state.
-
-This is **not yet autonomous self-repair** because P/Q promotion is still explicitly invoked by the external experimental driver.
+This is **not autonomous self-repair** because P/Q re-promotion after lesion is still explicitly invoked by the external experimental driver.
 
 ### 6. V5-X headless validation runner
 
@@ -110,45 +108,58 @@ Every validation JSON includes SHA-256 hashes of the relevant source files and a
 
 `run_v5x_validation_batch.ps1` provides isolated sequential multi-seed execution and accepts the initial validation seeds by default.
 
-The V5-X validation harness now imports the oracle-free M19 formation path. Its source identity also includes `verdant_benchmarks/ethomorphism_oracle_free.py`.
+The V5-X validation harness imports the oracle-free M19 formation path. Its source identity also includes `verdant_benchmarks/ethomorphism_oracle_free.py`.
 
-## T0 observations from local validation
+## Oracle-free M19 result
+
+GitHub Actions run `31989515573` passed the repaired formation test with:
+
+```text
+expected P structures          5
+promoted P structures          5
+missing P structures           0
+extra promoted P structures    0
+expected Q structures          1
+promoted Q structures          1
+extra promoted Q structures    0
+```
+
+The held-out path family was recovered, the star control was rejected, P/Q ablation-restoration remained causal, and all M19 headline checks passed.
+
+## T0 observations
 
 The recovered V4 formula grid spans all three mathematical phase regions.
 
 Current real V5 runtime scenarios reached Flexible and Chaotic states in the initial T0 assay. Controlled contradiction increased the V5-native environmental uncertainty signal and lowered candidate `T_g` under the recovered formula.
 
-Most importantly, the V5-X observed wrapper and the canonical V5 developmental path produced identical kernel snapshots for the controlled null sequence in the historical T0 assay. Governance `t_g` also remained unchanged. Therefore the EU01 observer was external telemetry rather than a hidden controller in that assay.
+The V5-X observed wrapper and canonical V5 developmental path produce identical kernel snapshots for the controlled null sequence, and governance `t_g` remains unchanged. The GitHub Actions revalidation again passed the thermodynamic observer null-equivalence and unchanged-governance gates.
 
 ## Verification
 
-The following counts are the **last pre-fix verification record**. They do not certify the new oracle-free M19 path.
+### Post-fix targeted revalidation
 
-The repository's normal single very-long pytest process retains its known slowdown, so verification was performed in bounded partitions.
-
-### Core repository — historical pre-fix
+GitHub Actions run `31989515573` passed:
 
 ```text
-205 / 205 tests passed
+oracle-free benchmark regression tests     PASS
+V5-X destructive lesion/recovery tests     PASS
+oracle-free M19 benchmark                   PASS
+V5-X headless validation --experiment all  PASS
 ```
 
-This included every original V5 core test plus the new language-bridge, thermodynamic, telemetry, destructive-lesion, and re-derivation tests.
+`validation_qualifies = true` for that run.
 
-### Workbench backend — historical pre-fix
+### Historical broad suite
 
-Workbench tests live outside the root `pytest.ini` test path and were verified separately:
+Before discovery of the M19 evaluator-assisted promotion flaw, the broader repository had recorded:
 
 ```text
-67 / 67 tests passed
+205 / 205 core tests passed
+67 / 67 Workbench backend tests passed
+272 / 272 total tests passed in partitions
 ```
 
-### Total historical verified surface
-
-```text
-272 / 272 tests passed in partitions
-```
-
-This count was re-run after moving EU01 behind the V5-X wrapper/subclass boundary, **before** discovery and repair of the M19 evaluator-assisted promotion flaw. Post-fix verification is pending.
+Those counts remain useful engineering history, but they were not rerun in full as part of the targeted oracle-fix validation. A complete post-fix broad-suite rerun is still desirable before declaring V5-X ready to merge.
 
 ## Explicitly not enabled / not claimed
 
@@ -163,8 +174,6 @@ EU01 does **not** currently claim or enable:
 - real-world energy/compute superiority;
 - unrestricted natural-language parsing.
 
-Additionally, no current result should be cited as evidence of evaluator-independent P/Q selection until the repaired M19 harness has passed the new oracle-boundary and false-promotion checks.
-
 ## Pre-merge gate
 
-`V5-X` should remain experimental until the repaired M19 path, lesion source formation, thermodynamic controls, and multi-seed validation are rerun and reviewed. The thermodynamic controller should remain disabled until the measurement-only T0 data establishes that the recovered variables are informative rather than trivial proxies. Only then should a paired control experiment test whether phase-dependent policy modulation improves any objective outcome.
+The original M19 oracle flaw is repaired for the tested seed and the V5-X headless validation qualifies. `V5-X` should remain experimental until the broader post-fix suite and planned multi-seed validation are rerun and reviewed. The thermodynamic controller should remain disabled until measurement-only data establishes that the recovered variables are informative rather than trivial proxies. Only then should a paired control experiment test whether phase-dependent policy modulation improves any objective outcome.

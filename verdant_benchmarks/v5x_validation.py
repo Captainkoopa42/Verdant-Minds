@@ -11,7 +11,8 @@ import sys
 from verdant_compilation import VerdantCompilationPipeline
 from verdant_hierarchy import VerdantHierarchyPipeline
 
-from .ethomorphism import ArmName, BenchmarkConfig, EthomorphismBenchmarkHarness
+from .ethomorphism import ArmName, BenchmarkConfig
+from .ethomorphism_oracle_free import EthomorphismBenchmarkHarness
 from .interventions import fork_destructive_p_lesion, fork_destructive_q_lesion
 from .recovery import governed_rederive_p, governed_rederive_q
 from .thermodynamic_sweep import ThermodynamicSweepHarness
@@ -43,6 +44,7 @@ class V5XValidationHarness:
             "verdant_development/v5x.py",
             "verdant_language/pipeline.py",
             "verdant_benchmarks/ethomorphism.py",
+            "verdant_benchmarks/ethomorphism_oracle_free.py",
             "verdant_benchmarks/interventions.py",
             "verdant_benchmarks/recovery.py",
             "verdant_benchmarks/thermodynamic_sweep.py",

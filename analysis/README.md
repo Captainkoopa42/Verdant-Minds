@@ -1,53 +1,43 @@
-# Analysis Scripts for Temporal Scaffolding
+# V2 analysis pipeline
 
-These scripts operate on persisted Verdant state JSON files (example: `verdant_persistent_state.json`).
+This directory analyzes a persisted Verdant V2 state. It does not execute the cognitive pipeline or create a state itself.
 
-## Expected output files
-- `metrics.json`
-- `null_models.json`
-- `two_timescale_mixture.json`
-- `basins.json`
-- `backbone_edges.csv`
-- `emergent_edges.csv`
-- Figure PNGs/PDFs:
-  - `fig_scaffold_directed`
-  - `fig_null_distributions`
-  - `fig_age_gap_mixture`
-  - `fig_access_concentration`
-  - `fig_basin_size_distribution`
-  - `fig_basin_density_vs_emergent`
+## Entry point
 
-## One-command pipeline
+From the repository root, after applying the import workaround in [../INSTALL.md](../INSTALL.md):
+
 ```bash
-python analysis/run_all.py --state path/to/state.json --orientation older_to_newer
+python analysis/run_all.py \
+  --state path/to/state.json \
+  --results-root results \
+  --n-nulls 1000 \
+  --k 6 \
+  --orientation older_to_newer
 ```
 
-## Manual run
-```bash
-python analysis/extract_scaffolding_metrics.py --state path/to/state.json --outdir results/run1/ --orientation older_to_newer
-python analysis/compute_null_models.py --state path/to/state.json --outdir results/run1/ --n 1000 --orientation older_to_newer
-python analysis/fit_two_timescale_mixture.py --state path/to/state.json --outdir results/run1/
-python analysis/export_backbone_graph.py --state path/to/state.json --outdir results/run1/ --k 6
-python analysis/make_figures.py --state path/to/state.json --metrics results/run1/metrics.json --nulls results/run1/null_models.json --mixture results/run1/two_timescale_mixture.json --basins results/run1/basins.json --outdir results/run1/
-```
+`run_all.py` creates a timestamped directory and invokes the scripts below.
 
-## State schema assumptions
-The scripts try multiple field aliases:
-- nodes: `nodes`, `concepts`
-- edges: `edges`, `relations`, `links`
-- node id: `id`, `name`, `key`
-- timestamp: `timestamp`, `created_at`, `time`
-- edge endpoints: `source/src/from`, `target/dst/to`
-- edge weight: `weight`, `w`, default `1.0`
-- access counts (optional): `access_count`, `access` (fallback is weighted in-degree)
+| Script | Output or role |
+| --- | --- |
+| `extract_scaffolding_metrics.py` | Graph counts, emergent-edge table, endpoint-orientation shares, basin summary |
+| `compute_null_models.py` | Timestamp-shuffle and degree-preserving null distributions |
+| `fit_two_timescale_mixture.py` | One- versus two-component age-gap fit |
+| `export_backbone_graph.py` | Top-k emergent-neighbor edge export |
+| `make_figures.py` | PNG and PDF figures from state and derived JSON/CSV files |
+| `compare_intervention_runs.py` | Comparison of cultivation output directories |
 
+## Critical interpretation limit
 
-## Orientation modes
-Use `--orientation older_to_newer` (default, Verdant v2 serialization) when edges encode parent→child.
-Use `--orientation newer_to_older` only for reverse-orientation comparisons (e.g., legacy v1 analyses).
+`verdant_v2.memory.MemoryWeb` stores its primary memory as a NetworkX `Graph`, which is undirected. The state serializer nevertheless writes each edge using the positional field names `source` and `target`. The analysis scripts interpret those positions as a direction.
 
+That makes the reported `older_to_newer_share` and `newer_to_older_share` dependent on undirected endpoint serialization order. Reversing the two endpoint labels changes the shares without changing the graph. These fields are therefore not valid evidence of causal or directed temporal lineage in the current V2 representation.
 
-## Metrics orientation fields
-`metrics.json` always includes `older_to_newer_share`, `newer_to_older_share`, `scaffolding_share` (v2 default: older→newer), and backward-compatible `earlier_share` (equal to `scaffolding_share`).
+Use `parent_concepts` metadata for recorded emergence parents, or add a separate directed lineage-event representation before testing directional lineage claims. See [../docs/reproducibility.md](../docs/reproducibility.md).
 
-`null_models.json` always includes `observed_older_to_newer_share`, `observed_newer_to_older_share`, and `observed` (equal to `scaffolding_share`).
+## Randomness limit
+
+`compute_null_models.py` currently uses Python's global `random` module without a CLI seed. Repeated runs on the same state can produce different z-scores. Archive the state, raw null samples, software environment, parameters, and an explicit RNG seed for any result intended for comparison or publication.
+
+## Tracked outputs
+
+The repository includes derived outputs under [../results](../results), but the source state is not tracked with those result sets. They are historical evidence, not fully self-contained reproductions.

@@ -1,280 +1,103 @@
-# Verdant-Minds Installation Guide
+# Install and inspect V2
 
-This guide provides detailed instructions for installing the Verdant-Minds (Unified Synthetic Mind) cognitive architecture.
+## Current branch limitation
 
-## Table of Contents
+The tracked code directory is named `verdant/`, but its modules and tests import `verdant_v2`. The `verdant/pyproject.toml` also searches for a child package named `verdant_v2`, which does not exist. `ethomorphic/pyproject.toml` has the same nested-package discovery problem. The root `pyproject.toml` instead packages a nonexistent `usm` directory.
 
-- [Prerequisites](#prerequisites)
-- [Installation Methods](#installation-methods)
-  - [Development Installation (Recommended)](#development-installation-recommended)
-  - [Standard Installation](#standard-installation)
-  - [From Source](#from-source)
-- [GPU Support](#gpu-support)
-- [Verifying Installation](#verifying-installation)
-- [Troubleshooting](#troubleshooting)
+Consequences in a clean checkout:
 
----
+- `pip install -e .` fails with `package directory 'usm' does not exist`;
+- `pip install -e ./verdant` and `pip install -e ./ethomorphic` produce distributions without importable packages;
+- `pytest tests_v2` stops during collection because `verdant_v2` is missing;
+- the Colab instructions reference a nonexistent `./verdant_v2` path.
 
-## Prerequisites
+The following workaround exposes the current source under the name its imports expect without renaming tracked files.
 
-### System Requirements
+## Requirements
 
-- **Operating System**: Linux, macOS, or Windows
-- **Python**: Version 3.8 or higher
-- **Memory**: At least 8GB RAM (16GB+ recommended for large-scale operations)
-- **Storage**: At least 5GB free disk space
-- **Optional**: GPU with CUDA support for accelerated deep learning
+- Python 3.10 or newer
+- `numpy`
+- `networkx`
+- `pydantic` 2.x
+- `pytest` for tests
+- `matplotlib` for comparison/analysis figures
+- `scipy` and `scikit-learn` for the complete analysis environment
 
-### Python Environment
+TensorFlow, PyTorch, CUDA, PyJWT, and Werkzeug are not required by the V2 core.
 
-We strongly recommend using a virtual environment to avoid dependency conflicts:
+## Linux and macOS workaround
 
 ```bash
-# Using venv (built-in)
-python -m venv verdant-env
-source verdant-env/bin/activate  # On Windows: verdant-env\Scripts\activate
-
-# Or using conda
-conda create -n verdant python=3.11
-conda activate verdant
-```
-
----
-
-## Installation Methods
-
-### Development Installation (Recommended)
-
-For development or if you want to modify the code:
-
-```bash
-# Clone the repository
-git clone https://github.com/captainkoopa42/Verdant-Minds.git
+git clone --branch V2 --single-branch https://github.com/Captainkoopa42/Verdant-Minds.git
 cd Verdant-Minds
-
-# Install in editable mode with development dependencies
-pip install -e ".[dev]"
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install "numpy>=1.24" "networkx>=3" "pydantic>=2,<3" pytest matplotlib scipy scikit-learn
+mkdir -p .local_import
+ln -s "$PWD/verdant" .local_import/verdant_v2
+export PYTHONPATH="$PWD/.local_import:$PWD"
 ```
 
-This allows you to:
-- Make changes to the code without reinstalling
-- Run tests and use development tools
-- Contribute to the project
+If `.local_import/verdant_v2` already exists, reuse it instead of creating another link.
 
-### Standard Installation
+## Windows PowerShell workaround
 
-For regular use without development tools:
+```powershell
+git clone --branch V2 --single-branch https://github.com/Captainkoopa42/Verdant-Minds.git
+Set-Location Verdant-Minds
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install "numpy>=1.24" "networkx>=3" "pydantic>=2,<3" pytest matplotlib scipy scikit-learn
+New-Item -ItemType Directory -Force .local_import
+New-Item -ItemType Junction -Path .local_import\verdant_v2 -Target "$PWD\verdant"
+$env:PYTHONPATH = "$PWD\.local_import;$PWD"
+```
+
+## Verify the core
 
 ```bash
-# Clone the repository
-git clone https://github.com/captainkoopa42/Verdant-Minds.git
-cd Verdant-Minds
-
-# Install the package
-pip install .
+python -c "from verdant_v2.system import VerdantSystem; print(VerdantSystem().get_metrics())"
+python -m pytest tests_v2 -q
 ```
 
-### From Source (PyPI - Coming Soon)
-
-Once published to PyPI, you'll be able to install directly:
+## Run an offline cultivation experiment
 
 ```bash
-pip install verdant-minds
+python -m cultivation.cli run \
+  --cycles 20 \
+  --provider local \
+  --seeds 0-4 \
+  --basin-routing \
+  --outdir outputs_v2
 ```
 
----
+The deterministic local provider requires no API key. Hosted adapters are optional and require their SDK plus the provider's environment variable:
 
-## GPU Support
+| Provider | Extra package | Environment variable |
+| --- | --- | --- |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` |
+| Groq | `groq` | `GROQ_API_KEY` |
+| Mistral | `mistralai` | `MISTRAL_API_KEY` |
 
-### TensorFlow GPU Support
-
-For GPU acceleration with TensorFlow:
+## Run analysis
 
 ```bash
-# Install with GPU support (requires CUDA)
-pip install tensorflow[and-cuda]>=2.13.0
+python analysis/run_all.py \
+  --state outputs_v2/run_<timestamp>/seed_0/state.json \
+  --results-root analysis_output \
+  --n-nulls 200 \
+  --k 6
 ```
 
-### PyTorch GPU Support
+This command executes, but the current directionality calculation must not be interpreted as directed lineage. Null-model runs also lack a random-seed option and can vary between repetitions. See [docs/reproducibility.md](docs/reproducibility.md).
 
-For GPU acceleration with PyTorch, visit [pytorch.org](https://pytorch.org) and follow platform-specific instructions.
+## What not to use on V2
 
-Example for CUDA 11.8:
-```bash
-pip install torch --index-url https://download.pytorch.org/whl/cu118
-```
+- Do not use `from usm import UnifiedSyntheticMind`; `usm` is absent.
+- Do not run the root console commands declared in `pyproject.toml`; their target is absent.
+- Do not install the root heavyweight dependency list merely to inspect V2. It includes unused TensorFlow and PyTorch requirements.
+- Do not expect `analysis.depth_age_analysis`; that module is described in a prompt and notebook but is not present.
 
----
-
-## Verifying Installation
-
-### Test the Installation
-
-After installation, verify that everything works:
-
-```bash
-# Check version
-python -c "import usm; print('Verdant-Minds installed successfully!')"
-
-# Run the interactive CLI
-verdant-minds
-# or
-usm
-
-# Run with Python module
-python -m usm
-```
-
-### Expected Output
-
-When you run `verdant-minds` or `usm`, you should see:
-
-```
-Unified Synthetic Mind initialized. Type 'exit' to quit.
->
-```
-
-### Run Tests (Development Installation Only)
-
-If you installed with `[dev]` extras:
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=usm --cov-report=html
-
-# Run specific test file
-pytest tests/test_memory.py
-```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### 1. Import Errors
-
-**Problem**: `ModuleNotFoundError: No module named 'numpy'` or similar
-
-**Solution**:
-```bash
-pip install -r requirements.txt
-```
-
-#### 2. GPU Not Detected
-
-**Problem**: TensorFlow or PyTorch not using GPU
-
-**Solution**:
-```bash
-# Check CUDA availability
-python -c "import tensorflow as tf; print('GPU Available:', tf.test.is_gpu_available())"
-python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
-```
-
-#### 3. Memory Errors
-
-**Problem**: Out of memory errors during initialization
-
-**Solution**:
-- Close other applications
-- Reduce batch sizes in configuration
-- Use a machine with more RAM
-
-#### 4. Installation Conflicts
-
-**Problem**: Dependency version conflicts
-
-**Solution**:
-```bash
-# Create a fresh virtual environment
-python -m venv fresh-env
-source fresh-env/bin/activate
-pip install --upgrade pip
-pip install -e .
-```
-
-### Getting Help
-
-If you encounter issues:
-
-1. **Check the Issues**: Visit [GitHub Issues](https://github.com/captainkoopa42/Verdant-Minds/issues)
-2. **Read the Documentation**: See [README.md](README.md)
-3. **Contact**: Email adamswilliam905@gmail.com
-
----
-
-## What's Installed
-
-After installation, you'll have:
-
-### Console Commands
-
-- `verdant-minds` - Main CLI entry point
-- `usm` - Alias for verdant-minds
-
-### Python Package
-
-```python
-from usm import UnifiedSyntheticMind
-
-# Initialize the cognitive system
-mind = UnifiedSyntheticMind()
-
-# Process input
-response = mind.get_response("Tell me about ethical AI")
-print(response)
-```
-
-### Package Structure
-
-```
-verdant-minds/
-├── usm/                      # Main package
-│   ├── __init__.py
-│   └── __main__.py          # CLI entry point
-├── Verdant Source Codes/    # Core cognitive architecture
-│   └── src/
-│       ├── core/            # Core system components
-│       ├── memory/          # Memory Web & ECWF
-│       ├── blocks/          # 9-Block cognitive system
-│       ├── kings/           # Three Kings governance
-│       ├── integration/     # Testing & integration tools
-│       └── utils/           # Utility functions
-└── tests/                   # Test suite (dev only)
-```
-
----
-
-## Next Steps
-
-After installation:
-
-1. **Read the README**: Understand the architecture and features
-2. **Try Examples**: Run the interactive CLI and experiment
-3. **Configure**: Customize settings in your code
-4. **Explore**: Check out the source code and examples
-5. **Contribute**: See CONTRIBUTING.md (if available)
-
----
-
-## Uninstalling
-
-To remove Verdant-Minds:
-
-```bash
-pip uninstall verdant-minds
-```
-
-To also remove dependencies (be careful if you use them elsewhere):
-
-```bash
-pip uninstall verdant-minds numpy tensorflow torch networkx matplotlib PyJWT Werkzeug python-louvain
-```
-
----
-
-**Happy Exploring with Verdant-Minds!** 🧠✨
+The correct API is `from verdant_v2.system import VerdantSystem, VerdantConfig` after the import-name workaround.

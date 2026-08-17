@@ -1,40 +1,30 @@
-# Verdant-Minds V2 — Colab Experiment Cells
+# V2 Colab assets
 
-Reproducible experiment cells for running Verdant V2 cultivation,
-analysis, and intervention experiments in Google Colab.
+This directory contains two notebooks and a set of notebook-cell fragments.
 
-## Quick Start
+| Asset | Intended role | Current status |
+| --- | --- | --- |
+| `Verdant_V2_Replication.ipynb` | Multi-seed cultivation and intervention workflow | Valid notebook JSON; installation cell references absent `./verdant_v2` and package metadata that does not install correctly |
+| `verdant_v2_quickstart.ipynb` | Short demonstration | Valid notebook JSON; root editable install fails and it calls absent `analysis.depth_age_analysis` |
+| `cells/01_...py` through `cells/10_...py` | Source fragments for notebook assembly | Contain IPython and shell magics; they are not standalone Python modules |
 
-Open `Verdant_V2_Replication.ipynb` in Colab for the integrated notebook.
+## Why the install cells fail
 
-Alternatively, paste individual cells from `cells/` in order.
+The tracked source directory is named `verdant`, while imports throughout the active implementation require `verdant_v2`. Its `pyproject.toml` also searches for a child package named `verdant_v2`, which is not present. The root package metadata instead points to an absent `usm` package.
 
-## Cell Order
+The local workaround is documented in [../INSTALL.md](../INSTALL.md), but the notebooks themselves have been preserved unchanged as V2 research artifacts. Until their installation cells and absent analysis call are corrected, they should not be described as one-click reproduction notebooks.
 
-| Cell | Purpose | ~Time |
-|------|---------|-------|
-| 01 | Clone repo, checkout V2 | 10s |
-| 02 | Create workspace symlink | 1s |
-| 03 | Install ethomorphic + verdant_v2 + cultivation + deps | 30s |
-| 04 | Run V2 test suite | 30s |
-| 05 | Run baseline + ablation + scramble (80 cycles × 20 seeds × 3) | 10min |
-| 06 | Compare intervention runs | 30s |
-| 07 | Print comparison summary | 1s |
-| 08 | Bundle and download all outputs | 10s |
-| 09 | Full scaffold analysis + visualization on a state file | 30s |
-| 10 | Extract a previously downloaded data bundle | 5s |
+## Expected runnable surface
 
-## Minimum Viable Replication
+Once `verdant_v2` is importable, the active experiment command is:
 
-1. Run cells 01–04 (setup + tests)
-2. Modify cell 05: `--cycles 20 --seeds 0-4` for a fast 5-seed run
-3. Run cell 09 on any produced state.json
-
-## Output Structure
-
+```bash
+python -m cultivation.cli run \
+  --cycles 80 \
+  --seeds 0-19 \
+  --provider local \
+  --basin-routing \
+  --outdir outputs_baseline
 ```
-outputs_baseline/run_<timestamp>/
-  seed_N/state.json      # Persisted V2 system state
-  seed_N/cycles.jsonl    # Per-cycle telemetry
-  seed_N/summary.json    # Run summary metrics
-```
+
+See [../cultivation/README.md](../cultivation/README.md) for outputs and intervention options.

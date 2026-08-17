@@ -1,0 +1,116 @@
+name: Sensory Integration Validation
+
+on:
+  push:
+    branches:
+      - V5
+      - V5-X
+    paths:
+      - "verdant_sensory/**"
+      - "verdant_media/**"
+      - "verdant_perception/**"
+      - "verdant_objects/**"
+      - "tests/test_sensory_phase.py"
+      - "tests/test_media_gateway_phase.py"
+      - "tests/test_perception_phase.py"
+      - "tests/test_objects_phase.py"
+      - ".github/workflows/sensory-integration-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  sensory-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-lock.txt
+
+      - name: Run sensory, media, perception, and object tests
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: |
+          python -m pytest -q \
+            tests/test_sensory_phase.py \
+            tests/test_media_gateway_phase.py \
+            tests/test_perception_phase.py \
+            tests/test_objects_phase.py
+
+      - name: Run synchronized vision-audio demo
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: |
+          python -m verdant_sensory.demo
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('artifacts/milestone_10_sensory_summary.json')
+          d = json.loads(p.read_text())
+          assert d['archive']['native_payloads_preserved'] is True
+          assert d['sensory']['modality_counts']['vision'] > 0
+          assert d['sensory']['modality_counts']['audio'] > 0
+          assert d['sensory']['complete_group_count'] > 0
+          assert d['workspace']['temporal_event_admitted'] is True
+          assert d['semantic_boundary']['concept_count'] == 0
+          assert d['semantic_boundary']['relation_count'] == 0
+          assert d['semantic_boundary']['claim_count'] == 0
+          assert d['exact_checkpoint_reload'] is True
+          print('SYNCHRONIZED VISION+AUDIO DEMO PASS')
+          print(json.dumps({
+              'samples': d['sensory']['sample_count'],
+              'modalities': d['sensory']['modality_counts'],
+              'sync_groups': d['sensory']['synchronization_group_count'],
+              'complete_groups': d['sensory']['complete_group_count'],
+              'temporal_events': d['sensory']['temporal_event_count'],
+              'event_boundaries': d['sensory']['event_boundaries'],
+          }, indent=2))
+          PY
+
+      - name: Run media-to-perception-to-object demo
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: |
+          python -m verdant_perception.demo
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('artifacts/milestone_11_media_perception_summary.json')
+          d = json.loads(p.read_text())
+          assert d['llm_in_loop'] is False
+          assert d['pretrained_detector_in_loop'] is False
+          assert d['native_media']['vision_sample_count'] > 0
+          assert d['native_media']['audio_sample_count'] > 0
+          assert d['perception']['binding_event_count'] > 0
+          assert d['perception']['object_candidate_count'] >= 1
+          assert d['promotion']['semantic_category_preinstalled'] is False
+          assert d['persistence']['exact_checkpoint_reload'] is True
+          assert d['persistence']['run_package_inspection_matches'] is True
+          print('MEDIA->PERCEPTION->OBJECT DEMO PASS')
+          print(json.dumps({
+              'vision_samples': d['native_media']['vision_sample_count'],
+              'audio_samples': d['native_media']['audio_sample_count'],
+              'temporal_events': d['native_media']['temporal_event_count'],
+              'binding_events': d['perception']['binding_event_count'],
+              'object_candidates': d['perception']['object_candidate_count'],
+              'developed_candidate': d['perception']['developed_candidate'],
+              'promotion': d['promotion'],
+          }, indent=2))
+          PY

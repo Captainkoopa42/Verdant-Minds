@@ -1,8 +1,10 @@
 # Verdant-Minds V5-X — EU01 Engineering Status
 
 **Branch:** `V5-X`  
-**Stable baseline:** `V5` (not modified)  
+**Historical baseline:** `V5`  
 **Purpose:** pre-merge engineering integration and validation of the V5 EU01 plan.
+
+> **REVALIDATION REQUIRED (2026-08-16):** the original V5 M19 harness used evaluator ground truth to choose which P and Q candidates were promoted. V5-X inherited that formation path. Both branches now route the canonical M19 benchmark through an oracle-free promotion harness, but the post-fix suite and numerical benchmark results have not yet been rerun. The verification counts and M19-derived numbers below are therefore historical pre-fix results, not current validation evidence. See `MILESTONE_19_ORACLE_REVALIDATION.md`.
 
 ## Implemented
 
@@ -68,14 +70,16 @@ A destructive lesion:
 
 After destructive lesion, the experimental recovery driver can use only the normal V5 eligibility/governance/promotion path.
 
-Reference M19 seed 1901 behavior:
+Historical pre-fix M19 seed 1901 behavior:
 
 ```text
 P:  work 1 -> 7 -> 1
 Q:  work 3 -> 8 -> 3
 ```
 
-The final step is **native governed re-derivation**, not availability restoration. In the deterministic M19 case, re-derivation reproduces the same stable P/Q IDs from the same surviving evidence/candidate state.
+Those values remain useful as historical lesion behavior, but the source P/Q population was produced by the old oracle-assisted M19 formation path and therefore must be reproduced from the repaired harness before being treated as current V5-X evidence.
+
+The final step is **native governed re-derivation**, not availability restoration. In the deterministic historical M19 case, re-derivation reproduced the same stable P/Q IDs from the same surviving evidence/candidate state.
 
 This is **not yet autonomous self-repair** because P/Q promotion is still explicitly invoked by the external experimental driver.
 
@@ -106,27 +110,31 @@ Every validation JSON includes SHA-256 hashes of the relevant source files and a
 
 `run_v5x_validation_batch.ps1` provides isolated sequential multi-seed execution and accepts the initial validation seeds by default.
 
+The V5-X validation harness now imports the oracle-free M19 formation path. Its source identity also includes `verdant_benchmarks/ethomorphism_oracle_free.py`.
+
 ## T0 observations from local validation
 
 The recovered V4 formula grid spans all three mathematical phase regions.
 
 Current real V5 runtime scenarios reached Flexible and Chaotic states in the initial T0 assay. Controlled contradiction increased the V5-native environmental uncertainty signal and lowered candidate `T_g` under the recovered formula.
 
-Most importantly, the V5-X observed wrapper and the canonical V5 developmental path produce identical kernel snapshots for the controlled null sequence. Governance `t_g` also remains unchanged. Therefore the EU01 observer is external telemetry rather than a hidden controller.
+Most importantly, the V5-X observed wrapper and the canonical V5 developmental path produced identical kernel snapshots for the controlled null sequence in the historical T0 assay. Governance `t_g` also remained unchanged. Therefore the EU01 observer was external telemetry rather than a hidden controller in that assay.
 
 ## Verification
 
+The following counts are the **last pre-fix verification record**. They do not certify the new oracle-free M19 path.
+
 The repository's normal single very-long pytest process retains its known slowdown, so verification was performed in bounded partitions.
 
-### Core repository
+### Core repository — historical pre-fix
 
 ```text
 205 / 205 tests passed
 ```
 
-This includes every original V5 core test plus the new language-bridge, thermodynamic, telemetry, destructive-lesion, and re-derivation tests.
+This included every original V5 core test plus the new language-bridge, thermodynamic, telemetry, destructive-lesion, and re-derivation tests.
 
-### Workbench backend
+### Workbench backend — historical pre-fix
 
 Workbench tests live outside the root `pytest.ini` test path and were verified separately:
 
@@ -134,13 +142,13 @@ Workbench tests live outside the root `pytest.ini` test path and were verified s
 67 / 67 tests passed
 ```
 
-### Total verified surface
+### Total historical verified surface
 
 ```text
 272 / 272 tests passed in partitions
 ```
 
-This count was re-run after moving EU01 behind the V5-X wrapper/subclass boundary. No failing partition was observed. Canonical `verdant_development/pipeline.py`, `workbench/backend/verdant_workbench/adapter.py`, and `run_verdant_cultivation.py` remain unchanged from V5.
+This count was re-run after moving EU01 behind the V5-X wrapper/subclass boundary, **before** discovery and repair of the M19 evaluator-assisted promotion flaw. Post-fix verification is pending.
 
 ## Explicitly not enabled / not claimed
 
@@ -155,6 +163,8 @@ EU01 does **not** currently claim or enable:
 - real-world energy/compute superiority;
 - unrestricted natural-language parsing.
 
+Additionally, no current result should be cited as evidence of evaluator-independent P/Q selection until the repaired M19 harness has passed the new oracle-boundary and false-promotion checks.
+
 ## Pre-merge gate
 
-`V5-X` should remain experimental until multi-seed validation is collected and reviewed. The thermodynamic controller should remain disabled until the measurement-only T0 data establishes that the recovered variables are informative rather than trivial proxies. Only then should a paired control experiment test whether phase-dependent policy modulation improves any objective outcome.
+`V5-X` should remain experimental until the repaired M19 path, lesion source formation, thermodynamic controls, and multi-seed validation are rerun and reviewed. The thermodynamic controller should remain disabled until the measurement-only T0 data establishes that the recovered variables are informative rather than trivial proxies. Only then should a paired control experiment test whether phase-dependent policy modulation improves any objective outcome.

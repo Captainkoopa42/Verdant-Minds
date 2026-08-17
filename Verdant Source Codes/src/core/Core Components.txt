@@ -1,8 +1,0 @@
- Core Components
-
-/src/core/
-
-UnifiedSystem.ts - Main system integration
-CognitiveChunk.py - Core data structure
-SystemLearning.py - System-wide learning mechanisms
-system.py - Core backend system

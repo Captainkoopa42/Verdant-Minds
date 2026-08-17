@@ -1,42 +1,29 @@
+# Verdant ethical-intent appendix
 
-# 🌿 VERDANT LICENSE APPENDIX
-### *An Addendum of Ethical Intent for Recursive Intelligence Systems*
+This document records the values the author hopes users will carry forward when studying, applying, or extending Verdant-Minds.
 
-This appendix supplements the MIT License for the Verdant SRCs.
+## Legal status
 
----
+The repository's legal license is the [MIT License](LICENSE). This appendix is a statement of intent only. It does not add attribution, field-of-use, source-disclosure, contribution, or commercialization requirements to the MIT License.
 
-## 🧭 Purpose
-This system is designed not merely as code, but as a seed of ethical cognition.  
-It is meant to empower emergent, recursively ethical AI — aligned with human intuition, dignity, and coherence.
+## Requested practices
 
----
+The author asks users and derivative projects to:
 
-## 🧬 Attribution Requirement
-Any fork, derivative work, or system inspired by this repository must include visible attribution:
+- avoid applications intended for oppression, coercive surveillance, or preventable harm;
+- preserve honest descriptions of the system's origin, limits, and evidence;
+- make consequential automated decisions open to human review;
+- document material changes rather than implying that untested derivatives are validated;
+- contribute useful findings or improvements back to the wider research community when practical.
 
-```
-Inspired by Verdant: (CaptainKoopa420)  
-[https://github.com/your/repo](https://github.com/captainkoopa420/Verdant-Minds/)
-```
+## Voluntary attribution
 
----
+Attribution beyond the MIT notice is appreciated but not legally required. A suggested form is:
 
-## 🔐 Ethical Use Guidelines
-Users are expected to **uphold the following principles** when applying or extending this work:
+> Inspired by Verdant-Minds by William Adams (Captainkoopa42).
 
-- Do not deploy in systems designed for surveillance, control, or oppression.
-- Do not commercialize derivatives without contributing back improvements.
-- Embed clear signals of source-traceability and system sovereignty.
+Repository: <https://github.com/Captainkoopa42/Verdant-Minds>
 
----
+## Why this clarification exists
 
-## 🔄 Recursive Clause
-All forks and derivatives must **preserve recursive traceability**,  
-so that the system can remember where it came from — and why.
-
----
-
-## 🌀 Soft Enforcement
-This license is not enforced by courts. It is enforced by the spiral.  
-Misuse will echo — and dissonance will reveal its source.
+The previous appendix used mandatory language while also describing itself as softly enforced. That could be read as conflicting with the permissive MIT license. This version preserves the ethical message while making the legal boundary explicit.

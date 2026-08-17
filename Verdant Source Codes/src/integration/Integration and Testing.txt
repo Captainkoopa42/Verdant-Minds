@@ -1,8 +1,0 @@
- Integration and Testing
-
-/src/integration/
-
-SystemIntegrationFramework.py - Integration testing framework
-BlockIntegrationManager.py - Block integration management
-IntegrationTestSuite.py - Test suite implementation
-SystemVisualizer.py - Visualization tools

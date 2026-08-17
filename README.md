@@ -1,77 +1,78 @@
-# Verdant-Minds
+# Verdant-Minds — V1
 
-The Unified Synthetic Mind is a pioneering artificial intelligence project that aims to create a robust, adaptive, and ethically-grounded cognitive architecture. Drawing upon insights from quantum physics, cognitive science, complex systems theory, and philosophy of mind, this project seeks to build an AI system capable of general intelligence, emergent understanding, and contextual ethical reasoning.
+V1 is a research-prototype generation of Verdant-Minds. It implements a Python cognitive-processing pipeline built around a graph memory, a quantum-inspired Extended Cognitive Wave Function (ECWF), nine processing blocks, and the Three Kings governance layer.
 
-## Key Features
+This branch is best read as an inspectable research generation, not as a packaged application or a validated artificial general intelligence system. The main pipeline runs, the included unit tests pass, and the diagnostic runner completes ten cycles. Several auxiliary interfaces remain incomplete or incorrectly wired; they are recorded in [STATUS.md](STATUS.md).
 
-- **Extended Cognitive Wave Function (ECWF)**: A quantum-inspired computational framework that enables the system to reason probabilistically, maintain multiple cognitive states simultaneously, and exhibit emergent properties.
+## Start here
 
-- **Integrated Ethical Reasoning**: Ethical considerations are embedded directly into the mathematical substrate of the system via the Quantum Ethical Field Operator, allowing for nuanced, context-sensitive moral reasoning.
+- [Install and run V1](INSTALL.md)
+- [Current implementation status](STATUS.md)
+- [Architecture map](docs/architecture.md)
+- [End-to-end walkthrough](docs/walkthrough.md)
+- [Python interface reference](docs/api.md)
+- [Testing guide](TESTING.md)
+- [Reproducibility and evidence boundaries](docs/reproducibility.md)
+- [How to contribute](CONTRIBUTING.md)
 
-- **Memory-ECWF Bridge**: A bidirectional translation layer that enables seamless integration of symbolic knowledge representation (Memory Web) with subsymbolic wave-based processing (ECWF).
+## What is actually implemented
 
-- **Three Kings Governance Architecture**: A checks-and-balances system composed of the Data King, Forefront King, and Ethics King, which jointly oversee information quality, executive functioning, and ethical alignment.
+- A `UnifiedSystem` Python orchestrator.
+- A nine-stage, text-input processing sequence.
+- A `CognitiveChunk` shared data container.
+- A NetworkX-backed associative `MemoryWeb`.
+- A NumPy-based ECWF computation and memory/ECWF bridge.
+- Data, Forefront, and Ethics “King” oversight components.
+- Template-based response generation.
+- Per-cycle visualization and metrics output.
+- A separate in-memory authentication/authorization prototype.
+- Three focused pytest tests and a ten-cycle diagnostic runner.
 
-- **Nine-Block Cognitive Architecture**: A modular processing system that encompasses key cognitive functions, from sensory input to reasoning, memory, learning, and action selection.
+## What this branch does not establish
 
-- **Glass Transition Temperature (T_g) Framework**: A novel approach to modeling the shift between rigid, convergent processing and fluid, divergent processing, enabling the system to adapt its cognitive style to different contexts.
+The repository does not contain experimental evidence sufficient to establish AGI, consciousness, quantum computation, general ethical correctness, cross-domain superiority, or the numerical performance claims in the research outline. ECWF is quantum-inspired numerical code running on ordinary NumPy arrays; it is not a quantum-computer implementation.
 
-## Getting Started
+V1 also has no installable Python package metadata, dependency lockfile, trained model, external knowledge source, frontend application, production service, or complete validation suite.
 
-### Prerequisites
+## Quick run
 
-- High-performance computing infrastructure with GPU acceleration
-- Python 3.7+ 
-- Key dependencies: NumPy, TensorFlow, NetworkX, PyTorch
+From the repository root:
 
-### Installation
-
-1. Clone the Unified Synthetic Mind repository:
-git clone . (https://github.com/captainkoopa420/Verdant-Minds.git)
-Copy
-2. Install the required Python packages:
-pip install -r requirements.txt
-Copy
-3. Configure the system settings in `config.py`.
-
-### Usage
-
-To start an interactive session with the Unified Synthetic Mind:
-
-```python
-from usm import UnifiedSyntheticMind
-
-usm = UnifiedSyntheticMind()
-usm.initialize()
-
-while True:
- user_input = input("> ")
- response = usm.process_input(user_input)
- print(response)
-Testing and Validation
-The tests/ directory contains a comprehensive suite of validation scenarios, covering capabilities such as:
-
-Reasoning under uncertainty
-Ethical dilemma resolution
-Cross-domain knowledge transfer
-Emergent behavior detection
-Consciousness-like property measurement
-
-To run the full test suite:
-Copypython -m unittest discover tests/
-
-To run a single interactive processing cycle with custom text, use the monolithic test runner:
-
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install numpy networkx matplotlib pytest
+python verdant_monolithic_test_runner.py --user-input "How should an uncertain decision be evaluated fairly?"
 ```
-python verdant_monolithic_test_runner.py --user-input "Tell me about quantum computing."
-```
-Contributing
-We welcome contributions from the wider AI research community. Please see CONTRIBUTING.md for guidelines on how to contribute to the project.
-License
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-Acknowledgements
-We gratefully acknowledge the inspiration and insights drawn from a wide range of disciplines, from quantum physics and complexity science to philosophy of mind and ethics. This project stands on the shoulders of giants across multiple fields of human knowledge.
-Contact
-For questions or inquiries about the Unified Synthetic Mind project, please contact adamswilliam905@gmail.com.
 
-**STILL UNDER CONSTRUCTION**
+The root runners add `Verdant Source Codes` to Python's import path automatically. For direct imports, set `PYTHONPATH`:
+
+```bash
+PYTHONPATH="Verdant Source Codes" python -c "from src.core.system import UnifiedSystem; print(UnifiedSystem().get_response('Hello Verdant'))"
+```
+
+See [INSTALL.md](INSTALL.md) for platform-specific commands and optional dependencies.
+
+## Repository map
+
+| Path | Role |
+| --- | --- |
+| `Verdant Source Codes/src/core/system.py` | Canonical runnable Python orchestrator |
+| `Verdant Source Codes/src/blocks/` | Nine pipeline blocks; lowercase modules wrap uppercase implementations |
+| `Verdant Source Codes/src/memory/` | Memory graph, ECWF calculation, and bidirectional bridge |
+| `Verdant Source Codes/src/kings/` | Three governance components and coordinator |
+| `Verdant Source Codes/src/integration/` | Instrumentation, integration helpers, and visualizer |
+| `Verdant Source Codes/src/auth/system.py` | Standalone in-memory authentication prototype |
+| `tests/` | Three focused unit tests |
+| `verdant_monolithic_test_runner.py` | Automated and single-input diagnostic runner |
+| `verdant_loop_controller.py` | Interactive terminal loop |
+| `Verdant Outline/` | Concept papers and research claims; not test evidence |
+| `docs/` | Canonical V1 engineering documentation |
+
+## Branch interpretation
+
+`V1` names this complete browsable generation. It does not imply that every file was created at one moment. Some files explicitly describe themselves as later repairs or support additions. The documentation therefore describes what is present on the branch now and separates implemented behavior from historical or aspirational writing. See [docs/branch-history.md](docs/branch-history.md).
+
+## License
+
+The code is licensed under the [MIT License](LICENSE). [VERDANT_LICENSE_APPENDIX.md](VERDANT_LICENSE_APPENDIX.md) states the author's non-binding ethical intent and does not replace or restrict the MIT grant.

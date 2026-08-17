@@ -1,0 +1,14 @@
+# Python environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local Verdant runner output
+verdant_metrics.log
+verdant_test_output/
+
+# Common local editor and operating-system files
+.DS_Store
+.idea/
+.vscode/

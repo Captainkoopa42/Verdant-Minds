@@ -21,7 +21,7 @@ The benchmark asks a narrower and harder question than the developmental demos:
 
 ## Four experimental arms
 
-All arms receive the same ordered 30-event primitive curriculum, the same kernel seed (`1901`), the same field dimension (`16`), the same primitive relation type (`linked`), and the same event order.
+All arms receive the same ordered 30-event primitive curriculum, the same field dimension (`16`), the same primitive relation type (`linked`), and the same event order.
 
 The curriculum SHA-256 for the reference run is:
 

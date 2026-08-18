@@ -107,7 +107,6 @@ Until the engine defines an explicit idle-cycle primitive, WB-03 `STEP` will mea
 
 A direct engine run and a Workbench-adapter run were created with the same:
 
-- seed (`1901`);
 - state dimension (`16`);
 - run label;
 - ordered primitive teaching commands;

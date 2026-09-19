@@ -23,6 +23,7 @@ from .recovery import (
 )
 from .thermodynamic_sweep import ThermodynamicSweepHarness, ThermodynamicSweepSummary
 from .v5x_validation import V5XValidationHarness
+from .adversarial_provenance import run as run_adversarial_provenance
 
 __all__ = [
     "ArmName",
@@ -39,6 +40,7 @@ __all__ = [
     "ThermodynamicSweepHarness",
     "ThermodynamicSweepSummary",
     "V5XValidationHarness",
+    "run_adversarial_provenance",
     "fork_destructive_p_lesion",
     "fork_destructive_q_lesion",
     "governed_rederive_p",

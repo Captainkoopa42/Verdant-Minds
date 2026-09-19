@@ -819,7 +819,7 @@ def run(
         )
 
     required_checks_passed = all(checks.values())
-    report = {
+    report = _jsonable({
         "schema_id": REPORT_SCHEMA,
         "benchmark": "V5-X Adversarial Provenance",
         "seed": seed,
@@ -913,7 +913,7 @@ def run(
                 "confounded by the current exact-float resonance replay boundary."
             ),
         },
-    }
+    })
     if write_artifacts:
         (output_dir / DEFAULT_REPORT_NAME).write_text(
             json.dumps(report, indent=2, sort_keys=True),

@@ -182,13 +182,15 @@ def test_soft_homeostasis_rigid_policy_favors_current_evidence_without_memory_de
     assert proposal.behavioral_authority_enabled
     assert effective.current_evidence_resource > base.current_evidence_resource
     assert effective.resonance_resource < base.resonance_resource
+    assert effective.resonance_recall_threshold > base.resonance_recall_threshold
     assert effective.association_resource < base.association_resource
     assert effective.structure_resource < base.structure_resource
     assert effective.association_recall_threshold > base.association_recall_threshold
     assert effective.structure_trigger_members == base.structure_trigger_members + 1
-    # Rigid access control no longer broadens resonance. The first checkpoint
-    # probe showed that extra breadth could replace P intrusion with unrelated
-    # resonant candidates rather than improving contextual discrimination.
+    assert effective.structure_trigger_fraction == pytest.approx(0.50)
+    # Rigid access control does not broaden resonance. The checkpoint probe
+    # showed that freeing slots can otherwise replace P intrusion with weak,
+    # unrelated resonant candidates.
     assert effective.resonance_top_k == base.resonance_top_k
     assert effective.resonance_commit_limit == base.resonance_commit_limit
 
@@ -254,6 +256,8 @@ def test_soft_homeostasis_applies_previous_cycle_only_and_does_not_rewrite_kerne
     assert second.thermodynamic_control.control_phase == ThermodynamicPhase.RIGID
     assert second.thermodynamic_control.source_t_g == pytest.approx(0.35)
     assert second.thermodynamic_control.effective_config["structure_trigger_members"] == 2
+    assert second.thermodynamic_control.effective_config["structure_trigger_fraction"] == pytest.approx(0.50)
+    assert second.thermodynamic_control.effective_config["resonance_recall_threshold"] == pytest.approx(0.32)
     assert second.thermodynamic_control.effective_config["association_recall_threshold"] > 0.24
 
     assert kernel.state.workspace_policy == workspace_policy_before

@@ -1,4 +1,4 @@
-from .controller import PhasePolicyController
+from .controller import PhaseHysteresis, PhasePolicyController
 from .metrics import (
     environmental_uncertainty,
     field_entropy,
@@ -27,6 +27,7 @@ __all__ = [
     "FieldEntropyMeasurement",
     "InputComplexityMeasurement",
     "MemoryComplexityMeasurement",
+    "PhaseHysteresis",
     "PhasePolicyController",
     "PhasePolicyDelta",
     "ThermodynamicPhase",

@@ -83,6 +83,31 @@ def development_events(*, run_id: str, organism_id: str, kernel, command_id: str
             event_type="STRUCTURE_CANDIDATE_OBSERVED", payload=native.model_dump(mode="json"),
             native_id=getattr(native, "event_id", None),
         ))
+    thermodynamics = getattr(result, "thermodynamics", None)
+    if thermodynamics is not None and not result.replayed:
+        events.append(make_event(
+            run_id=run_id, organism_id=organism_id, kernel=kernel,
+            command_id=command_id, event_type="THERMODYNAMIC_OBSERVED",
+            payload=thermodynamics.model_dump(mode="json"),
+            native_id=f"{thermodynamics.cycle}:{thermodynamics.event_key}",
+        ))
+    control = getattr(result, "thermodynamic_control", None)
+    if control is not None and not result.replayed:
+        events.append(make_event(
+            run_id=run_id, organism_id=organism_id, kernel=kernel,
+            command_id=command_id, event_type="THERMODYNAMIC_CONTROL_APPLIED",
+            payload={
+                "source_cycle": control.source_cycle,
+                "source_t_g": control.source_t_g,
+                "raw_source_phase": control.source_phase.value,
+                "control_phase": control.control_phase.value,
+                "policy": control.policy.model_dump(mode="json"),
+                "effective_config": control.effective_config,
+                "applied_to_cycle": kernel.state.cycle,
+                "canonical_memory_deletion_by_control": False,
+            },
+            native_id=f"{control.source_cycle}:{kernel.state.cycle}",
+        ))
     return tuple(events)
 
 

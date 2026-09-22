@@ -95,7 +95,7 @@ class PhasePolicyDelta(FrozenThermodynamicModel):
     and reduce historical recruitment without deleting memory.
     """
 
-    controller_revision: str = "phase_policy_homeostasis_1"
+    controller_revision: str = "phase_policy_homeostasis_2"
     phase: ThermodynamicPhase
     workspace_resource_multiplier: float = Field(gt=0.0)
     workspace_persistence_delta: int

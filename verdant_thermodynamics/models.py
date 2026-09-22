@@ -88,9 +88,14 @@ class ThermodynamicState(FrozenThermodynamicModel):
 
 
 class PhasePolicyDelta(FrozenThermodynamicModel):
-    """A proposed nonsemantic policy delta; applying it is experiment-only."""
+    """A proposed nonsemantic policy delta; applying it is experiment-only.
 
-    controller_revision: str = "phase_policy_1"
+    The original six fields remain for compatibility. Soft-homeostasis v1 adds
+    explicit access-control knobs so the experiment can favor current evidence
+    and reduce historical recruitment without deleting memory.
+    """
+
+    controller_revision: str = "phase_policy_homeostasis_1"
     phase: ThermodynamicPhase
     workspace_resource_multiplier: float = Field(gt=0.0)
     workspace_persistence_delta: int
@@ -98,4 +103,8 @@ class PhasePolicyDelta(FrozenThermodynamicModel):
     plasticity_decay_multiplier: float = Field(gt=0.0)
     resonance_top_k_delta: int
     resonance_commit_delta: int
+    current_evidence_resource_multiplier: float = Field(default=1.0, gt=0.0)
+    historical_resource_multiplier: float = Field(default=1.0, gt=0.0)
+    association_recall_threshold_delta: float = Field(default=0.0, ge=-1.0, le=1.0)
+    structure_trigger_members_delta: int = 0
     behavioral_authority_enabled: bool = False

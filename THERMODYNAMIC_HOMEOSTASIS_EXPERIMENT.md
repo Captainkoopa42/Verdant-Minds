@@ -472,3 +472,31 @@ state, not a surrogate semantic correctness label.
 
 Full experimental control in the Workbench remains gated on a detector with
 demonstrated specificity and on durable save/reopen of its phase history.
+
+
+### Prepared pre-admission shadow measurement (not yet run)
+
+The fork now also implements
+`verdant_thermodynamics.inspect_access_pressure(kernel, cue_concept_ids)`.
+This is a deterministic, observer-only snapshot of available learned P
+structures with overlap to the incoming cue **before** the current
+experience is admitted. It distinguishes zero-overlap structures, weak
+positive-overlap structures below 0.50 member coverage, and strong
+member-overlap structures at or above 0.50. These are membership
+descriptors, not truth judgements, nor predictions of which workspace
+candidates will be admitted.
+
+`run_v5x_thermodynamic_lag_stress.py` now includes these pre-policy
+measurements on **both** checkpoint forks, as well as the original
+post-policy Tg and access observations. The report schema advances to
+`verdant.v5x.homeostasis_lag_stress.v2`. This lets us distinguish:
+candidate P pressure at cue arrival, downstream observed P admission,
+previous-cycle Tg and intervention effects. It does not yet activate an
+access-pressure controller.
+
+When a cue contains concepts absent from the pre-cycle checkpoint
+(for example a newly taught concept), the pre-pressure measurement is
+`null` rather than silently treating partial cue membership as a
+complete measurement. This distinction matters for new curriculum data.
+The shadow measurement's behavior and test suite still require local
+execution before use as a validated signal.

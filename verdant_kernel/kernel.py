@@ -1743,9 +1743,22 @@ class VerdantKernel:
             top_k=max(1, len(report.candidates)),
             candidate_concept_ids=report.candidate_scope_ids,
         )
-        if recomputed != report:
+        # Resonance integrity is defined by the canonical JSON payload, not by
+        # Pydantic's in-memory object equality. A report is already checksum-
+        # validated above, and inspect_resonance derives the same deterministic
+        # payload from the current state. Comparing canonical bytes avoids false
+        # negatives caused by representation-only differences after staged
+        # snapshot/model round-trips while preserving exact content integrity.
+        report_payload = canonical_json_bytes(report.model_dump(mode="json"))
+        recomputed_payload = canonical_json_bytes(
+            recomputed.model_dump(mode="json")
+        )
+        if recomputed_payload != report_payload:
+            report_sha = hashlib.sha256(report_payload).hexdigest()
+            recomputed_sha = hashlib.sha256(recomputed_payload).hexdigest()
             raise ResonanceIntegrityError(
-                "Resonance report does not reproduce from the current field and cue."
+                "Resonance report does not reproduce from the current field and cue "
+                f"(report_sha256={report_sha}, recomputed_sha256={recomputed_sha})."
             )
         evidence = self._validated_evidence_refs(evidence_refs)
         limit = max_candidates if max_candidates is not None else len(report.candidates)

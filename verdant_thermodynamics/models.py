@@ -105,6 +105,8 @@ class PhasePolicyDelta(FrozenThermodynamicModel):
     resonance_commit_delta: int
     current_evidence_resource_multiplier: float = Field(default=1.0, gt=0.0)
     historical_resource_multiplier: float = Field(default=1.0, gt=0.0)
+    resonance_recall_threshold_floor: float = Field(default=0.0, ge=0.0, le=1.0)
     association_recall_threshold_delta: float = Field(default=0.0, ge=-1.0, le=1.0)
     structure_trigger_members_delta: int = 0
+    structure_trigger_fraction_floor: float = Field(default=0.0, ge=0.0, le=1.0)
     behavioral_authority_enabled: bool = False

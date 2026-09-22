@@ -183,6 +183,7 @@ def test_soft_homeostasis_rigid_policy_favors_current_evidence_without_memory_de
     assert effective.current_evidence_resource > base.current_evidence_resource
     assert effective.resonance_resource < base.resonance_resource
     assert effective.resonance_recall_threshold > base.resonance_recall_threshold
+    assert effective.resonance_local_support_floor > base.resonance_local_support_floor
     assert effective.association_resource < base.association_resource
     assert effective.structure_resource < base.structure_resource
     assert effective.association_recall_threshold > base.association_recall_threshold
@@ -258,6 +259,7 @@ def test_soft_homeostasis_applies_previous_cycle_only_and_does_not_rewrite_kerne
     assert second.thermodynamic_control.effective_config["structure_trigger_members"] == 2
     assert second.thermodynamic_control.effective_config["structure_trigger_fraction"] == pytest.approx(0.50)
     assert second.thermodynamic_control.effective_config["resonance_recall_threshold"] == pytest.approx(0.32)
+    assert second.thermodynamic_control.effective_config["resonance_local_support_floor"] == pytest.approx(0.32)
     assert second.thermodynamic_control.effective_config["association_recall_threshold"] > 0.24
 
     assert kernel.state.workspace_policy == workspace_policy_before

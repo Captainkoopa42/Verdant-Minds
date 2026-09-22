@@ -24,6 +24,13 @@ def test_lag_stress_source_is_previous_controlled_cycle_and_checkpoint_is_read_o
     assert third["control_applied_this_cycle"]["source_t_g"] == second["controlled_t_g"]
     assert first["tokens"] == 60
     assert second["tokens"] == third["tokens"] == 1
+    # New concepts cannot be inspected as though their P membership had
+    # existed in the starting checkpoint.
+    assert first["observer_pre_access_pressure"] is None
+    assert first["controlled_pre_access_pressure"] is None
+    assert second["observer_pre_access_pressure"] is not None
+    assert second["controlled_pre_access_pressure"] is not None
+    assert second["observer_pre_access_pressure"]["behavioral_authority_enabled"] is False
     assert hashlib.sha256(path.read_bytes()).hexdigest() == unchanged
 
 

@@ -2143,7 +2143,28 @@ class VerdantKernel:
         *,
         evidence_refs: Iterable[str],
     ) -> tuple[ClaimRecord, ContradictionRecord | None, RevisionRecord | None]:
+        mode = proposal.attributes.get(
+            "experimental_dependency_aggregation", "independent"
+        )
+        if mode not in {"independent", "max_within_group"}:
+            raise ValueError("Unknown experimental dependency aggregation mode.")
         evidence = self._validated_evidence_refs(evidence_refs)
+        # Reject mixed-mode keys BEFORE ensuring concepts could attach evidence.
+        prospective_key = stable_id(
+            "claimkey",
+            stable_id("concept", normalize_label(proposal.subject_label)),
+            normalize_label(proposal.predicate),
+            stable_id("concept", normalize_label(proposal.object_label)),
+        )
+        for prior in self._claims_for_key(prospective_key):
+            prior_mode = prior.attributes.get(
+                "experimental_dependency_aggregation", "independent"
+            )
+            if prior_mode != mode:
+                raise ValueError(
+                    "Cannot mix dependency scoring modes within one claim key; "
+                    "use a fresh disposable fork."
+                )
         subject = self.ensure_concept(proposal.subject_label, evidence_refs=evidence)
         object_concept = self.ensure_concept(proposal.object_label, evidence_refs=evidence)
         predicate = normalize_label(proposal.predicate)
@@ -2284,11 +2305,40 @@ class VerdantKernel:
             key=lambda item: item.polarity.value,
         ))
 
-    @staticmethod
-    def _saturating_score(entries: Iterable[ClaimEvidenceEntry]) -> float:
+    def _saturating_score(
+        self,
+        entries: Iterable[ClaimEvidenceEntry],
+        *,
+        mode: str = "independent",
+    ) -> float:
+        """Saturate independent reports, or cap declared shared-origin groups.
+
+        Only an explicitly opted-in claim uses max_within_group. Group labels
+        are unauthenticated source declarations; this is an experimental
+        scoring rule, not verification of a physical or cryptographic origin.
+        An ungrouped evidence ID remains an independent report. Individual
+        entries and contradiction evidence references remain untouched.
+        """
+        if mode not in {"independent", "max_within_group"}:
+            raise ValueError("Unknown experimental dependency aggregation mode.")
         remaining = 1.0
-        for entry in entries:
-            remaining *= 1.0 - entry.effective_weight
+        if mode == "independent":
+            for entry in entries:
+                remaining *= 1.0 - entry.effective_weight
+        else:
+            weights: dict[str, float] = {}
+            for entry in entries:
+                evidence = self.state.evidence[entry.evidence_id]
+                declared = evidence.details.get("dependency_group")
+                group = declared.strip() if isinstance(declared, str) else ""
+                key = (
+                    "group:" + group
+                    if group
+                    else "evidence:" + entry.evidence_id
+                )
+                weights[key] = max(weights.get(key, 0.0), entry.effective_weight)
+            for key in sorted(weights):
+                remaining *= 1.0 - weights[key]
         return max(0.0, min(1.0, 1.0 - remaining))
 
     def _refresh_claim_pair(self, claim_key: str) -> ContradictionRecord | None:
@@ -2306,8 +2356,20 @@ class VerdantKernel:
                     entry.model_copy(update={"stance": EvidenceStance.REFUTE})
                     for entry in opposing.support_ledger
                 )
-            support_score = self._saturating_score(claim.support_ledger)
-            refutation_score = self._saturating_score(refutations)
+            support_mode = claim.attributes.get(
+                "experimental_dependency_aggregation", "independent"
+            )
+            refutation_mode = (
+                opposing.attributes.get(
+                    "experimental_dependency_aggregation", "independent"
+                ) if opposing is not None else "independent"
+            )
+            support_score = self._saturating_score(
+                claim.support_ledger, mode=support_mode
+            )
+            refutation_score = self._saturating_score(
+                refutations, mode=refutation_mode
+            )
             net_score = support_score - refutation_score
             status = (
                 ClaimStatus.CONFIRMED

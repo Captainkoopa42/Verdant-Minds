@@ -176,3 +176,82 @@ The access governor and the Tg detector are judged separately:
 - only after access regulation and detector validity are characterized should plasticity-coupled thermodynamic control be tested.
 
 Thermodynamics should regulate how hard memory must compete for access to the present before it is ever allowed to regulate storage.
+
+## Cycle-903 homeostasis v4 observed results (2026-09-22)
+
+The v4 paired report was produced from checkpoint SHA-256
+`06414a5b3d5c9783746d843889ea8780a57a33023eac3c9dd58447b707e55676`.
+Seven forced-Rigid paired probes completed without failure.
+
+| Probe | Baseline admitted Ps | Forced-Rigid admitted Ps | Observed contextual distinction |
+| --- | ---: | ---: | --- |
+| load | 2 | 0 | Single ambiguous concept does not recruit either 3-member P. |
+| switch + load | 2 | 1 | Electrical 3-member P remains; unrelated foundation P drops. |
+| controller | 3 | 0 | Local actuator/sensor associations survive; no resonant target_point/forward_axis admission. |
+| pressure_sensor + controller | 3 | 1 | 3-member pressure P remains; 5-member cross-domain P drops. |
+| actuator | 4 | 0 | Local controller/sensor associations survive without P over-recruitment. |
+| actuator + sensor | 4 | 1 | 3-member actuator/controller/sensor P remains; broad 5-member P drops. |
+| foundation + frame | 1 | 1 | Foundation P remains. |
+
+All seven forced-Rigid probes have zero admitted P structures with trigger
+fraction below 0.50; the automatic observer-only sequence still has 15 such
+admissions across the seven probes. This is an **access-support proxy**, not a
+semantic correctness label or a large-sample generalization claim.
+
+The automatic observer-only and experimental-control sequences ended with
+identical fingerprints
+(`cf1831a52812cfac7663586804464385350a4432b5e7172e8b1ad0e7246a2f94`).
+All seven measured Tg values remained Flexible, approximately 0.4526 to 0.5456.
+Thus enabling the controller did not itself change the organism when no phase
+requested intervention, but the Tg detector has not yet demonstrated a useful
+invocation of the governor.
+
+In the isolated `actuator` probe, baseline Tg was approximately 0.5437 with
+four admitted Ps and `c_memory=0.9`; forced-Rigid Tg was approximately 0.4481
+with zero admitted Ps and `c_memory=0.3`. The high-overlap baseline therefore
+moves Tg **upward**, not toward the Rigid entry boundary. The same directional
+pattern appears in the `actuator + sensor` probe.
+
+The v4 report supports treating the access governor as **provisionally useful
+for this checkpoint and this probe set**, not treating its detector as validated.
+The v4 probe cannot attribute the `controller` resonance result independently
+to the resonance score floor or the new learned-local-support floor because
+both were active. A small ablation is needed before assigning that mechanism.
+
+## Next validation gate: detector, not more access tuning
+
+Freeze homeostasis v4 as the first candidate access-governor policy. Preserve
+observer-only as the default; do not revise the V4-compatible Tg formula,
+change phase thresholds to force a desired answer, or enable plasticity control.
+
+The detector study should predeclare the hypothesized failure metric: number
+and resource allocation of admitted Ps whose current-input overlap is below
+0.50, reported alongside support of contextually matched 3-member Ps and the
+raw workspace competition. This metric is a proxy for contextual pressure and
+must not be used as an independent ground-truth semantic label.
+
+1. Separate **pre-control state** and **post-control response**. Record raw Tg,
+   Tg components, phase, admitted P counts/fractions, resource use, current
+   evidence, and local/resonant recalls for both arms. Do not use post-control
+   improvements as evidence that the pre-control detector was correct.
+2. Test whether the previous cycle's Tg calls for control at the next cycle
+   when the same failure pattern persists. One-cycle lag must be evaluated,
+   not silently treated as same-cycle detection.
+3. Include matched negative controls: legitimate broad structure activation,
+   supported partial recall, small or empty memory, and extra input-text tokens
+   that do not change the declared concept labels/feature vector. Text-token
+   complexity currently scales as tokens/100, so phase sensitivity to verbosity
+   must be distinguished from contextual access pressure.
+4. Compare raw Tg and its components against the predeclared pressure proxy
+   across more than seven deliberately selected cases, including held-out
+   curriculum checkpoints. Do not infer classifier accuracy from the handpicked
+   cycle-903 probes alone.
+5. Independently ablate the resonance score floor and the local-support floor
+   under otherwise identical forced-Rigid policy to identify which suppresses
+   unsupported resonant recall and whether either rejects useful recall.
+6. Only after the detector/lag study and preservation tests should the governor
+   be integrated into the Workbench. Workbench requirements include explicit
+   observer-only vs experimental-control authority, both raw/control phase,
+   prior-cycle policy provenance, side-by-side checkpoint forks, lineage, and
+   control-state continuity across save/reopen without modifying the original
+   organism.

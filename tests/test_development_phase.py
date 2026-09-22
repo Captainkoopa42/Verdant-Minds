@@ -14,6 +14,7 @@ from verdant_kernel import (
     WorkspaceSourceKind,
     VerdantKernel,
 )
+from verdant_structures import VerdantStructurePipeline
 
 
 def digest(text: str) -> str:
@@ -201,4 +202,84 @@ def test_new_contradiction_is_eligible_for_the_same_shared_present() -> None:
     assert any(
         assessment.candidate.source_kind == WorkspaceSourceKind.CONTRADICTION
         for assessment in result.workspace.report.assessments
+    )
+
+
+
+def test_context_fraction_gate_requires_proportional_structure_support() -> None:
+    kernel = VerdantKernel(seed=1210, state_dim=48, run_label="development-context-gate")
+    cultivation = VerdantDevelopmentPipeline()
+
+    def multi(event_key: str, labels: tuple[str, ...], context: str) -> ExperienceCommand:
+        return ExperienceCommand(
+            event_key=event_key,
+            source_ref=f"controlled:{event_key}",
+            modality="text",
+            payload_sha256=digest(event_key + ":" + ":".join(labels)),
+            feature_vector=(1.0, 0.0, 0.0),
+            concept_labels=labels,
+            confidence=1.0,
+            semantic_evidence_kind=EvidenceKind.TESTIMONY,
+            semantic_evidence_details={"controlled_development_test": True},
+            metadata={"context_id": context, "sentence": " ".join(labels)},
+        )
+
+    for index in range(6):
+        cultivation.advance(
+            kernel,
+            multi(
+                f"triad-{index}",
+                ("alpha", "beta", "gamma"),
+                f"context-{index % 2}",
+            ),
+        )
+
+    candidate = next(iter(kernel.state.structure_candidates.values()))
+    VerdantStructurePipeline().promote(kernel, candidate.candidate_id)
+    starting = kernel.snapshot()
+
+    config = DevelopmentalCycleConfig(
+        structure_trigger_members=1,
+        structure_trigger_fraction=0.50,
+    )
+    single_kernel = VerdantKernel.from_state(starting)
+    pair_kernel = VerdantKernel.from_state(starting)
+
+    single = VerdantDevelopmentPipeline(config=config).advance(
+        single_kernel,
+        multi("single-alpha", ("alpha",), "probe-single"),
+    )
+    pair = VerdantDevelopmentPipeline(config=config).advance(
+        pair_kernel,
+        multi("pair-alpha-beta", ("alpha", "beta"), "probe-pair"),
+    )
+
+    assert single.workspace is not None
+    assert pair.workspace is not None
+    assert not any(
+        item.candidate.source_kind == WorkspaceSourceKind.EARNED_STRUCTURE
+        for item in single.workspace.report.assessments
+    )
+    admitted_pair = [
+        item
+        for item in pair.workspace.report.assessments
+        if item.candidate.source_kind == WorkspaceSourceKind.EARNED_STRUCTURE
+        and item.disposition.value == "admit"
+    ]
+    assert len(admitted_pair) == 1
+    assert admitted_pair[0].candidate.metadata["trigger_fraction"] == pytest.approx(2 / 3)
+
+
+def test_resonance_recall_threshold_can_gate_weak_workspace_recruitment() -> None:
+    kernel = VerdantKernel(seed=1211, state_dim=48, run_label="development-resonance-gate")
+    pipeline = VerdantDevelopmentPipeline(
+        config=DevelopmentalCycleConfig(resonance_recall_threshold=1.0)
+    )
+    pipeline.advance(kernel, command("alpha-1", "alpha", (1.0, 0.0, 0.0)))
+    result = pipeline.advance(kernel, command("beta-1", "beta", (0.0, 1.0, 0.0)))
+
+    assert result.workspace is not None
+    assert not any(
+        item.candidate.source_kind == WorkspaceSourceKind.RESONANCE
+        for item in result.workspace.report.assessments
     )

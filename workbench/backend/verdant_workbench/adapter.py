@@ -221,6 +221,23 @@ class VerdantEngineAdapter:
                 "experience_event_key": result.experience.event_key,
                 "semantic_firewall_held": result.semantic_firewall_held,
                 "candidate_scope_ids": list(result.candidate_scope_ids),
+                "thermodynamic_observation": (
+                    result.thermodynamics.model_dump(mode="json")
+                    if getattr(result, "thermodynamics", None) is not None
+                    else None
+                ),
+                "thermodynamic_control": (
+                    {
+                        "source_cycle": result.thermodynamic_control.source_cycle,
+                        "source_t_g": result.thermodynamic_control.source_t_g,
+                        "raw_source_phase": result.thermodynamic_control.source_phase.value,
+                        "control_phase": result.thermodynamic_control.control_phase.value,
+                        "policy": result.thermodynamic_control.policy.model_dump(mode="json"),
+                        "effective_config": result.thermodynamic_control.effective_config,
+                    }
+                    if getattr(result, "thermodynamic_control", None) is not None
+                    else None
+                ),
             },
         )
 

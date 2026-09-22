@@ -18,6 +18,7 @@ from verdant_kernel import (
 )
 from verdant_thermodynamics import (
     AppendOnlyTelemetryWriter,
+    PhaseHysteresis,
     PhasePolicyController,
     ThermodynamicPhase,
     VerdantThermodynamicObserver,
@@ -185,8 +186,30 @@ def test_soft_homeostasis_rigid_policy_favors_current_evidence_without_memory_de
     assert effective.structure_resource < base.structure_resource
     assert effective.association_recall_threshold > base.association_recall_threshold
     assert effective.structure_trigger_members == base.structure_trigger_members + 1
-    assert effective.resonance_top_k == base.resonance_top_k + 1
+    # Rigid access control no longer broadens resonance. The first checkpoint
+    # probe showed that extra breadth could replace P intrusion with unrelated
+    # resonant candidates rather than improving contextual discrimination.
+    assert effective.resonance_top_k == base.resonance_top_k
     assert effective.resonance_commit_limit == base.resonance_commit_limit
+
+
+def test_soft_homeostasis_hysteresis_prevents_boundary_flapping() -> None:
+    hysteresis = PhaseHysteresis()
+
+    # Flexible does not enter Rigid on a tiny dip below the raw 0.4 boundary.
+    assert hysteresis.select(0.399, ThermodynamicPhase.FLEXIBLE) == ThermodynamicPhase.FLEXIBLE
+    assert hysteresis.select(0.379, ThermodynamicPhase.FLEXIBLE) == ThermodynamicPhase.RIGID
+
+    # Once Rigid, it stays Rigid until the wider exit boundary is crossed.
+    assert hysteresis.select(0.401, ThermodynamicPhase.RIGID) == ThermodynamicPhase.RIGID
+    assert hysteresis.select(0.419, ThermodynamicPhase.RIGID) == ThermodynamicPhase.RIGID
+    assert hysteresis.select(0.420, ThermodynamicPhase.RIGID) == ThermodynamicPhase.FLEXIBLE
+
+    # The same rule applies on the chaotic side.
+    assert hysteresis.select(0.601, ThermodynamicPhase.FLEXIBLE) == ThermodynamicPhase.FLEXIBLE
+    assert hysteresis.select(0.621, ThermodynamicPhase.FLEXIBLE) == ThermodynamicPhase.CHAOTIC
+    assert hysteresis.select(0.599, ThermodynamicPhase.CHAOTIC) == ThermodynamicPhase.CHAOTIC
+    assert hysteresis.select(0.580, ThermodynamicPhase.CHAOTIC) == ThermodynamicPhase.FLEXIBLE
 
 
 def test_soft_homeostasis_flexible_policy_is_identity() -> None:
@@ -228,6 +251,7 @@ def test_soft_homeostasis_applies_previous_cycle_only_and_does_not_rewrite_kerne
 
     assert second.thermodynamic_control is not None
     assert second.thermodynamic_control.source_phase == ThermodynamicPhase.RIGID
+    assert second.thermodynamic_control.control_phase == ThermodynamicPhase.RIGID
     assert second.thermodynamic_control.source_t_g == pytest.approx(0.35)
     assert second.thermodynamic_control.effective_config["structure_trigger_members"] == 2
     assert second.thermodynamic_control.effective_config["association_recall_threshold"] > 0.24

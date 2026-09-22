@@ -38,10 +38,12 @@ class DevelopmentalCycleConfig:
     scope_to_active_shard: bool = True
     current_evidence_resource: float = 0.30
     resonance_resource: float = 0.10
+    resonance_recall_threshold: float = 0.0
     association_resource: float = 0.08
     association_recall_threshold: float = 0.24
     structure_resource: float = 0.06
     structure_trigger_members: int = 1
+    structure_trigger_fraction: float = 0.0
     current_evidence_persistence: int = 1
     resonance_persistence: int = 1
 
@@ -62,10 +64,14 @@ class DevelopmentalCycleConfig:
         ):
             if value <= 0.0:
                 raise ValueError(f"{name} must be positive.")
+        if not 0.0 <= self.resonance_recall_threshold <= 1.0:
+            raise ValueError("resonance_recall_threshold must be between 0 and 1.")
         if not 0.0 <= self.association_recall_threshold <= 1.0:
             raise ValueError("association_recall_threshold must be between 0 and 1.")
         if self.structure_trigger_members < 1:
             raise ValueError("structure_trigger_members must be at least 1.")
+        if not 0.0 <= self.structure_trigger_fraction <= 1.0:
+            raise ValueError("structure_trigger_fraction must be between 0 and 1.")
         for name, value in (
             ("current_evidence_persistence", self.current_evidence_persistence),
             ("resonance_persistence", self.resonance_persistence),
@@ -227,6 +233,11 @@ class VerdantDevelopmentPipeline:
             overlap = current.intersection(structure.member_concept_ids)
             if len(overlap) < self.config.structure_trigger_members:
                 continue
+            trigger_fraction = len(overlap) / max(
+                1, len(structure.member_concept_ids)
+            )
+            if trigger_fraction < self.config.structure_trigger_fraction:
+                continue
             relevance = max(
                 kernel.state.compilation_policy.structure_relevance_floor,
                 structure.quality_at_promotion.reconstructability,
@@ -258,6 +269,7 @@ class VerdantDevelopmentPipeline:
                     metadata={
                         "developmental_stage": "compiled_structure_operand",
                         "trigger_concept_ids": tuple(sorted(overlap)),
+                        "trigger_fraction": trigger_fraction,
                         "source_candidate_id": structure.source_candidate_id,
                         "semantic_label_preinstalled": False,
                     },
@@ -302,6 +314,8 @@ class VerdantDevelopmentPipeline:
             concept = kernel.state.concepts.get(attention.source_ref)
             label = concept.label if concept is not None else attention.source_ref
             score = max(0.0, min(1.0, attention.priority))
+            if score < self.config.resonance_recall_threshold:
+                continue
             resonance_inputs.append(
                 WorkspaceCandidateInput(
                     source_kind=WorkspaceSourceKind.RESONANCE,

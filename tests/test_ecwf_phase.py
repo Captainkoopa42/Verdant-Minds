@@ -205,6 +205,13 @@ def test_tampered_report_is_rejected() -> None:
             evidence_refs=(latest.observation_evidence_id,),
         )
 
+def test_feature_normalization_is_idempotent_for_multi_axis_vector() -> None:
+    first = VerdantKernel._validated_feature_array((1.0, 1.0, 0.0, 0.0))
+    second = VerdantKernel._validated_feature_array(tuple(first))
+
+    assert first.tobytes() == second.tobytes()
+
+
 def test_staged_multi_concept_development_preserves_resonance_integrity() -> None:
     kernel = populated_kernel()
     command = ExperienceCommand(

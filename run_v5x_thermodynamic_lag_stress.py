@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 
 from verdant_development.v5x import V5XDevelopmentPipeline
-from verdant_thermodynamics import ThermodynamicPhase
+from verdant_thermodynamics import ThermodynamicPhase, inspect_access_pressure
 from run_v5x_thermodynamic_detector_study import _probe_command
 from run_v5x_thermodynamic_homeostasis import (
     _access_metrics, _known_labels, _load, _thermodynamic_summary,
@@ -95,6 +95,24 @@ def _run_sequence(checkpoint: Path, name: str, sequence) -> dict:
         command = _probe_command(
             labels, baseline_kernel.state.field.state_dim, key, tokens
         )
+        # Access pressure is inspected on each fork BEFORE the current
+        # experience is admitted and BEFORE the previous-cycle policy acts.
+        # This avoids using the governor's own successful suppression as
+        # supposed evidence that the original contextual pressure was low.
+        pre_pressure = []
+        for source in (baseline_kernel, controlled_kernel):
+            id_by_label = {
+                concept.label: concept_id
+                for concept_id, concept in source.state.concepts.items()
+            }
+            if all(label in id_by_label for label in labels):
+                pre_pressure.append(inspect_access_pressure(
+                    source, (id_by_label[label] for label in labels)
+                ))
+            else:
+                # A new-concept cue cannot be compared as if it already had
+                # established structural membership in the checkpoint.
+                pre_pressure.append(None)
         observer = baseline_pipeline.advance(baseline_kernel, command)
         experimental = controlled_pipeline.advance(controlled_kernel, command)
         control = _control_record(experimental)
@@ -123,6 +141,8 @@ def _run_sequence(checkpoint: Path, name: str, sequence) -> dict:
             "labels": list(labels),
             "tokens": tokens,
             "previous_observer_t_g": previous_observer_t_g,
+            "observer_pre_access_pressure": pre_pressure[0],
+            "controlled_pre_access_pressure": pre_pressure[1],
             "control_applied_this_cycle": control,
             "observer_t_g": observer_thermo["t_g"],
             "controlled_t_g": controlled_thermo["t_g"],
@@ -191,7 +211,7 @@ def main() -> int:
         if hashlib.sha256(checkpoint.read_bytes()).hexdigest() != checksum:
             raise RuntimeError("Input checkpoint changed during the study.")
     report = {
-        "schema_id": "verdant.v5x.homeostasis_lag_stress.v1",
+        "schema_id": "verdant.v5x.homeostasis_lag_stress.v2",
         "method": (
             "Preselected DEVELOPMENT stress sequences derived from the "
             "one-checkpoint detector study. Previous-cycle controlled Tg "

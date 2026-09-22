@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from verdant_development import VerdantDevelopmentPipeline
 from verdant_kernel import (
     EvidenceKind,
     ExperienceCommand,
@@ -203,6 +204,28 @@ def test_tampered_report_is_rejected() -> None:
             tampered,
             evidence_refs=(latest.observation_evidence_id,),
         )
+
+def test_staged_multi_concept_development_preserves_resonance_integrity() -> None:
+    kernel = populated_kernel()
+    command = ExperienceCommand(
+        event_key="alpha-beta-staged",
+        source_ref="controlled:alpha-beta-staged",
+        modality="text",
+        payload_sha256=digest("alpha-beta-staged"),
+        feature_vector=(1.0, 1.0, 0.0, 0.0),
+        concept_labels=("alpha", "beta"),
+        confidence=1.0,
+        semantic_evidence_kind=EvidenceKind.TESTIMONY,
+        semantic_evidence_details={"controlled_ecwf_test": True},
+    )
+
+    result = VerdantDevelopmentPipeline().advance(kernel, command)
+
+    assert not result.replayed
+    assert result.resonance_report is not None
+    assert result.resonance_event is not None
+    assert len(result.resonance_report.candidates) > 0
+
 
 def test_checkpoint_round_trip_preserves_ecwf_exactly(tmp_path: Path) -> None:
     kernel = populated_kernel()

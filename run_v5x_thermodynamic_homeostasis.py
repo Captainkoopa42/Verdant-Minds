@@ -130,6 +130,104 @@ def _control_summary(result) -> dict[str, object] | None:
     }
 
 
+def _report_digest(report) -> str:
+    payload = json.dumps(
+        report.model_dump(mode="json"),
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _candidate_deltas(kernel: VerdantKernel, first, second) -> list[dict[str, object]]:
+    rows = []
+    for left, right in zip(first.candidates, second.candidates):
+        concept = kernel.state.concepts.get(left.concept_id)
+        rows.append(
+            {
+                "concept": concept.label if concept is not None else left.concept_id,
+                "same_concept": left.concept_id == right.concept_id,
+                "score_1": left.score,
+                "score_2": right.score,
+                "score_delta": right.score - left.score,
+                "profile_delta": (
+                    right.contribution.profile_alignment
+                    - left.contribution.profile_alignment
+                ),
+                "current_delta": (
+                    right.contribution.current_field_alignment
+                    - left.contribution.current_field_alignment
+                ),
+                "history_delta": (
+                    right.contribution.history_alignment
+                    - left.contribution.history_alignment
+                ),
+            }
+        )
+    return rows
+
+
+def _resonance_repro_diagnostic(
+    checkpoint: Path,
+    labels: tuple[str, ...],
+    config: DevelopmentalCycleConfig,
+    *,
+    event_key: str,
+) -> dict[str, object]:
+    """Diagnose inspect -> validate -> re-inspect reproducibility without commit."""
+
+    kernel = _load(checkpoint)
+    command = _command(
+        labels,
+        state_dim=kernel.state.field.state_dim,
+        event_key=event_key,
+    )
+    experience = kernel.apply_experience(command)
+    shard = kernel.state.shards[kernel.state.active_shard_id]
+    scope = tuple(sorted(shard.concept_ids))
+
+    first = kernel.inspect_resonance(
+        command.feature_vector,
+        command.modality,
+        top_k=config.resonance_top_k,
+        candidate_concept_ids=scope,
+    )
+    validated = type(first).model_validate(first.model_dump(mode="json"))
+    second = kernel.inspect_resonance(
+        command.feature_vector,
+        command.modality,
+        top_k=max(1, len(first.candidates)),
+        candidate_concept_ids=first.candidate_scope_ids,
+    )
+    evidence_refs = tuple(
+        sorted(
+            {
+                experience.observation_evidence_id,
+                experience.translation_evidence_id,
+                *experience.additional_evidence_ids,
+            }
+        )
+    )
+
+    return {
+        "cycle_after_experience": kernel.state.cycle,
+        "candidate_count": len(first.candidates),
+        "first_equals_second": first == second,
+        "validated_equals_second": validated == second,
+        "first_digest": _report_digest(first),
+        "validated_digest": _report_digest(validated),
+        "second_digest": _report_digest(second),
+        "query_id_first": first.query_id,
+        "query_id_second": second.query_id,
+        "state_fingerprint_first": first.state_fingerprint,
+        "state_fingerprint_second": second.state_fingerprint,
+        "field_fingerprint_first": first.field_fingerprint,
+        "field_fingerprint_second": second.field_fingerprint,
+        "evidence_refs": list(evidence_refs),
+        "candidate_deltas": _candidate_deltas(kernel, first, second),
+    }
+
+
 def forced_rigid_pairs(checkpoint: Path) -> dict[str, object]:
     base_config = DevelopmentalCycleConfig()
     rigid = PhasePolicyController(
@@ -139,11 +237,13 @@ def forced_rigid_pairs(checkpoint: Path) -> dict[str, object]:
 
     results = []
     for index, labels in enumerate(DEFAULT_PROBES, start=1):
+        print(f"[forced {index}/{len(DEFAULT_PROBES)}] {' + '.join(labels)}")
         baseline_kernel = _load(checkpoint)
         controlled_kernel = _load(checkpoint)
         known = _known_labels(baseline_kernel)
         missing = [label for label in labels if label not in known]
         if missing:
+            print(f"  skipped; missing labels: {missing}")
             results.append(
                 {
                     "labels": list(labels),
@@ -158,17 +258,60 @@ def forced_rigid_pairs(checkpoint: Path) -> dict[str, object]:
         if baseline_start != controlled_start:
             raise RuntimeError("Paired kernels did not start from the same fingerprint.")
 
+        event_key = f"forced-rigid-{index:02d}"
         command = _command(
             labels,
             state_dim=baseline_kernel.state.field.state_dim,
-            event_key=f"forced-rigid-{index:02d}",
+            event_key=event_key,
         )
-        baseline = VerdantDevelopmentPipeline(config=base_config).advance(
-            baseline_kernel, command
-        )
-        controlled = VerdantDevelopmentPipeline(config=controlled_config).advance(
-            controlled_kernel, command
-        )
+        try:
+            baseline = VerdantDevelopmentPipeline(config=base_config).advance(
+                baseline_kernel, command
+            )
+        except Exception as exc:
+            print(f"  baseline FAILED: {type(exc).__name__}: {exc}")
+            results.append(
+                {
+                    "labels": list(labels),
+                    "skipped": False,
+                    "failed_stage": "baseline_advance",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                    "resonance_repro": _resonance_repro_diagnostic(
+                        checkpoint,
+                        labels,
+                        base_config,
+                        event_key=f"diagnose-baseline-{index:02d}",
+                    ),
+                }
+            )
+            continue
+
+        try:
+            controlled = VerdantDevelopmentPipeline(
+                config=controlled_config
+            ).advance(controlled_kernel, command)
+        except Exception as exc:
+            print(f"  forced-Rigid FAILED: {type(exc).__name__}: {exc}")
+            results.append(
+                {
+                    "labels": list(labels),
+                    "skipped": False,
+                    "failed_stage": "forced_rigid_advance",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                    "baseline": _workspace_summary(baseline_kernel, baseline),
+                    "resonance_repro": _resonance_repro_diagnostic(
+                        checkpoint,
+                        labels,
+                        controlled_config,
+                        event_key=f"diagnose-controlled-{index:02d}",
+                    ),
+                }
+            )
+            continue
+
+        print("  paired advance succeeded")
         results.append(
             {
                 "labels": list(labels),
@@ -211,8 +354,10 @@ def automatic_sequence(checkpoint: Path) -> dict[str, object]:
     known = _known_labels(baseline_kernel)
     rows = []
     for index, labels in enumerate(DEFAULT_PROBES, start=1):
+        print(f"[auto {index}/{len(DEFAULT_PROBES)}] {' + '.join(labels)}")
         missing = [label for label in labels if label not in known]
         if missing:
+            print(f"  skipped; missing labels: {missing}")
             rows.append(
                 {
                     "labels": list(labels),
@@ -227,8 +372,21 @@ def automatic_sequence(checkpoint: Path) -> dict[str, object]:
             state_dim=baseline_kernel.state.field.state_dim,
             event_key=f"auto-homeostasis-{index:02d}",
         )
-        baseline = baseline_pipeline.advance(baseline_kernel, command)
-        controlled = controlled_pipeline.advance(controlled_kernel, command)
+        try:
+            baseline = baseline_pipeline.advance(baseline_kernel, command)
+            controlled = controlled_pipeline.advance(controlled_kernel, command)
+        except Exception as exc:
+            print(f"  automatic sequence FAILED: {type(exc).__name__}: {exc}")
+            rows.append(
+                {
+                    "labels": list(labels),
+                    "skipped": False,
+                    "failed_stage": "automatic_advance",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                }
+            )
+            break
         rows.append(
             {
                 "labels": list(labels),

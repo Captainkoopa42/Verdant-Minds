@@ -1,3 +1,4 @@
+from .access_pressure import inspect_access_pressure
 from .controller import PhaseHysteresis, PhasePolicyController
 from .metrics import (
     environmental_uncertainty,
@@ -39,6 +40,7 @@ __all__ = [
     "environmental_uncertainty",
     "field_entropy",
     "input_complexity",
+    "inspect_access_pressure",
     "memory_complexity",
     "normalized_shannon_from_nonnegative",
     "record_from_development",

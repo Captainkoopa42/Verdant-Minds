@@ -95,7 +95,7 @@ class PhasePolicyDelta(FrozenThermodynamicModel):
     and reduce historical recruitment without deleting memory.
     """
 
-    controller_revision: str = "phase_policy_homeostasis_3"
+    controller_revision: str = "phase_policy_homeostasis_4"
     phase: ThermodynamicPhase
     workspace_resource_multiplier: float = Field(gt=0.0)
     workspace_persistence_delta: int
@@ -106,6 +106,7 @@ class PhasePolicyDelta(FrozenThermodynamicModel):
     current_evidence_resource_multiplier: float = Field(default=1.0, gt=0.0)
     historical_resource_multiplier: float = Field(default=1.0, gt=0.0)
     resonance_recall_threshold_floor: float = Field(default=0.0, ge=0.0, le=1.0)
+    resonance_local_support_floor: float = Field(default=0.0, ge=0.0, le=1.0)
     association_recall_threshold_delta: float = Field(default=0.0, ge=-1.0, le=1.0)
     structure_trigger_members_delta: int = 0
     structure_trigger_fraction_floor: float = Field(default=0.0, ge=0.0, le=1.0)

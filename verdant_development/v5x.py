@@ -51,6 +51,10 @@ def controlled_development_config(
             base.resonance_recall_threshold,
             policy.resonance_recall_threshold_floor,
         ),
+        resonance_local_support_floor=max(
+            base.resonance_local_support_floor,
+            policy.resonance_local_support_floor,
+        ),
         current_evidence_resource=max(
             1e-9,
             base.current_evidence_resource

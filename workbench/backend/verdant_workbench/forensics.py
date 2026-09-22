@@ -159,6 +159,14 @@ def list_structures(kernel) -> dict[str, Any]:
         "p_structures": p,
         "q_structures": q,
         "p_candidates": candidates,
+        "p_promotion_policy": {
+            "minimum_recurrence_events": kernel.state.structure_policy.minimum_recurrence_events,
+            "minimum_reconstructability": kernel.state.structure_policy.minimum_reconstructability,
+            "minimum_boundary_selectivity": kernel.state.structure_policy.minimum_boundary_selectivity,
+            "minimum_internal_cohesion": kernel.state.structure_policy.minimum_internal_cohesion,
+            "minimum_evidence_events": kernel.state.structure_policy.minimum_evidence_events,
+            "minimum_contexts": kernel.state.structure_policy.minimum_contexts,
+        },
         "q_candidates": hierarchy_candidates,
     }
 

@@ -19,3 +19,15 @@
 .evidence-record{border:1px solid var(--line,#29323b);border-radius:8px;padding:.45rem .6rem;margin:.35rem 0;background:rgba(255,255,255,.015)}
 .evidence-record summary{cursor:pointer;display:flex;justify-content:space-between;gap:1rem;align-items:center}.evidence-record summary small{opacity:.65}
 .evidence-grid{align-items:start}.timeline-list{max-height:62vh;overflow:auto}
+
+/* Structure candidate eligibility gates */
+.candidate-card{border:1px solid var(--line);border-radius:9px;background:var(--panel-2);overflow:hidden}
+.candidate-card .candidate-row{border:0;border-radius:0;background:transparent}
+.candidate-card .candidate-row button:disabled{opacity:.56;cursor:not-allowed}
+.candidate-gates{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;padding:0 10px 9px}
+.candidate-gate{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px dashed var(--line);font-size:9px}
+.candidate-gate span{color:var(--muted)}
+.candidate-gate strong{font-family:ui-monospace,monospace;font-size:9px}
+.candidate-gate.pass strong{color:#8fc79e}
+.candidate-gate.wait strong{color:#d2b66d}
+@media(max-width:1100px){.candidate-gates{grid-template-columns:1fr}}

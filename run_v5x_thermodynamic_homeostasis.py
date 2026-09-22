@@ -8,7 +8,11 @@ from pathlib import Path
 from verdant_development.pipeline import DevelopmentalCycleConfig, VerdantDevelopmentPipeline
 from verdant_development.v5x import V5XDevelopmentPipeline, controlled_development_config
 from verdant_kernel import EvidenceKind, ExperienceCommand, VerdantKernel, load_checkpoint
-from verdant_thermodynamics import PhasePolicyController, ThermodynamicPhase
+from verdant_thermodynamics import (
+    PhasePolicyController,
+    ThermodynamicPhase,
+    VerdantThermodynamicObserver,
+)
 
 
 DEFAULT_PROBES = (
@@ -88,6 +92,9 @@ def _workspace_summary(kernel: VerdantKernel, result) -> dict[str, object]:
             concept = kernel.state.concepts.get(ref)
             trigger_bindings.append(concept.label if concept is not None else ref)
         trigger_fraction = candidate.metadata.get("trigger_fraction")
+        resonance_score = candidate.metadata.get("resonance_score")
+        local_support_strength = candidate.metadata.get("local_support_strength")
+        association_strength = candidate.metadata.get("association_strength")
         rows.append(
             {
                 "rank": item.rank,
@@ -96,6 +103,9 @@ def _workspace_summary(kernel: VerdantKernel, result) -> dict[str, object]:
                 "bindings": bindings,
                 "trigger_bindings": trigger_bindings,
                 "trigger_fraction": trigger_fraction,
+                "resonance_score": resonance_score,
+                "local_support_strength": local_support_strength,
+                "association_strength": association_strength,
                 "disposition": item.disposition.value,
                 "raw_score": item.raw_score,
                 "effective_score": item.effective_score,
@@ -124,6 +134,37 @@ def _workspace_summary(kernel: VerdantKernel, result) -> dict[str, object]:
             if row["source_kind"] == "resonance"
             and row["disposition"] == "admit"
         ],
+    }
+
+
+def _access_metrics(summary: dict[str, object]) -> dict[str, object]:
+    if not summary.get("available"):
+        return {
+            "admitted_structure_count": 0,
+            "low_context_structure_count": 0,
+            "admitted_local_count": 0,
+            "admitted_resonance_count": 0,
+            "admitted_historical_resource": 0.0,
+        }
+
+    structures = summary["admitted_earned_structures"]
+    local = summary["admitted_local_associations"]
+    resonance = summary["admitted_resonance"]
+    low_context = [
+        row
+        for row in structures
+        if row.get("trigger_fraction") is not None
+        and float(row["trigger_fraction"]) < 0.50
+    ]
+    historical = [*structures, *local, *resonance]
+    return {
+        "admitted_structure_count": len(structures),
+        "low_context_structure_count": len(low_context),
+        "admitted_local_count": len(local),
+        "admitted_resonance_count": len(resonance),
+        "admitted_historical_resource": sum(
+            float(row["allocated_resource"]) for row in historical
+        ),
     }
 
 
@@ -349,13 +390,40 @@ def forced_rigid_pairs(checkpoint: Path) -> dict[str, object]:
             continue
 
         print("  paired advance succeeded")
+        baseline_summary = _workspace_summary(baseline_kernel, baseline)
+        controlled_summary = _workspace_summary(controlled_kernel, controlled)
+        observer = VerdantThermodynamicObserver()
+        baseline_thermodynamics = observer.inspect(
+            baseline_kernel,
+            command,
+            candidate_scope_count=len(baseline.candidate_scope_ids),
+            workspace_report=(
+                baseline.workspace.report if baseline.workspace is not None else None
+            ),
+        )
+        controlled_thermodynamics = observer.inspect(
+            controlled_kernel,
+            command,
+            candidate_scope_count=len(controlled.candidate_scope_ids),
+            workspace_report=(
+                controlled.workspace.report if controlled.workspace is not None else None
+            ),
+        )
         results.append(
             {
                 "labels": list(labels),
                 "skipped": False,
                 "starting_fingerprint": baseline_start,
-                "baseline": _workspace_summary(baseline_kernel, baseline),
-                "forced_rigid": _workspace_summary(controlled_kernel, controlled),
+                "baseline": baseline_summary,
+                "forced_rigid": controlled_summary,
+                "baseline_access_metrics": _access_metrics(baseline_summary),
+                "forced_rigid_access_metrics": _access_metrics(controlled_summary),
+                "baseline_thermodynamics": _thermodynamic_summary(
+                    baseline_thermodynamics
+                ),
+                "forced_rigid_thermodynamics": _thermodynamic_summary(
+                    controlled_thermodynamics
+                ),
                 "baseline_ending_fingerprint": baseline_kernel.fingerprint(),
                 "forced_rigid_ending_fingerprint": controlled_kernel.fingerprint(),
             }

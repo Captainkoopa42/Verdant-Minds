@@ -1,8 +1,8 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {api, EventEnvelope, eventSocket, Project, QueueItem, RunRecord, RunStatus} from './api';
 
-const nav = ['Organism','Cultivate','Curriculum','Grammar','Explorer','Structures','Evidence','Experiments','Timeline','Connections','Engineering'];
-const implemented = new Set(['Organism','Cultivate','Curriculum','Grammar','Explorer','Structures','Evidence','Experiments','Timeline','Connections','Engineering']);
+const nav = ['Organism','Cultivate','Curriculum','Grammar','Explorer','Structures','Evidence','Experiments','Timeline','Thermodynamics','Connections','Engineering'];
+const implemented = new Set(['Organism','Cultivate','Curriculum','Grammar','Explorer','Structures','Evidence','Experiments','Timeline','Thermodynamics','Connections','Engineering']);
 
 function short(value?:string|null, n=12){ return value ? (value.length>n ? value.slice(0,n)+'…' : value) : '—'; }
 function words(raw:string){ return raw.split(/[\s,]+/).map(x=>x.trim()).filter(Boolean); }
@@ -116,6 +116,7 @@ export function App(){
       :page==='Evidence'?<EvidencePage selectedRun={selectedRun}/>
       :page==='Experiments'?<ExperimentsPage projectId={projectId} execute={execute}/>
       :page==='Timeline'?<TimelinePage selectedRun={selectedRun}/>
+      :page==='Thermodynamics'?<ThermodynamicsPage selectedRun={selectedRun}/>
       :page==='Connections'?<ConnectionsPage execute={execute}/>
       :page==='Engineering'?<EngineeringPage selectedRun={selectedRun} execute={execute}/>
       :null}
@@ -137,6 +138,94 @@ function TimelinePage({selectedRun}:any){
   useEffect(()=>{if(selectedRun)Promise.all([a.checkpoints(selectedRun),a.ancestry(selectedRun),a.events(selectedRun,0,1000)]).then(([checkpoints,ancestry,ev]:any)=>setData({checkpoints,ancestry,events:ev.events||[]})).catch(()=>setData({checkpoints:[],ancestry:[],events:[]}));},[selectedRun]);
   if(!selectedRun)return <div className="page"><section className="title"><h2>Select a run to inspect its timeline.</h2></section></div>;
   return <div className="page"><section className="title compact"><div className="eyebrow">TIMELINE / BRANCH HISTORY · 1.0.1</div><h2>Recorded development and immutable ancestry.</h2></section><div className="studio-grid"><section className="panel"><h3>Run ancestry</h3><pre className="inspector">{JSON.stringify(data.ancestry,null,2)}</pre></section><section className="panel"><h3>Checkpoints</h3><pre className="inspector">{JSON.stringify(data.checkpoints,null,2)}</pre></section></div><section className="panel"><h3>Committed events</h3><pre className="inspector tall">{JSON.stringify(data.events.slice(-300),null,2)}</pre></section></div>;
+}
+
+function ThermodynamicsPage({selectedRun}:any){
+  const [records,setRecords]=useState<EventEnvelope[]>([]);
+  const [nextCursor,setNextCursor]=useState(0);
+  const [more,setMore]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const [failure,setFailure]=useState('');
+
+  const load=async(cursor:number,append:boolean)=>{
+    if(!selectedRun)return;
+    setLoading(true); setFailure('');
+    try{
+      const batch=await api.events(selectedRun,cursor,1000);
+      const received:EventEnvelope[]=batch.events||[];
+      const thermodynamic=received.filter(item=>
+        item.event_type==='THERMODYNAMIC_OBSERVED' ||
+        item.event_type==='THERMODYNAMIC_CONTROL_APPLIED'
+      );
+      setRecords(previous=>append?[...previous,...thermodynamic]:thermodynamic);
+      setNextCursor(batch.cursor||cursor);
+      setMore(received.length===1000);
+    }catch(e:any){setFailure(e.message||String(e));}
+    finally{setLoading(false);}
+  };
+  useEffect(()=>{
+    setRecords([]);setNextCursor(0);setMore(false);
+    if(selectedRun)load(0,false);
+  },[selectedRun]);
+
+  if(!selectedRun)return <div className="page"><section className="title"><h2>Select an organism to inspect thermodynamics.</h2></section></div>;
+
+  const observations=records.filter(item=>item.event_type==='THERMODYNAMIC_OBSERVED');
+  const controls=records.filter(item=>item.event_type==='THERMODYNAMIC_CONTROL_APPLIED');
+  const latest=observations[observations.length-1];
+  const lastControl=controls[controls.length-1];
+
+  return <div className="page">
+    <section className="title compact"><div className="eyebrow">THERMODYNAMICS · EXPERIMENTAL OBSERVATION</div>
+      <h2>Measured state versus behavioral authority</h2>
+      <p>Observer-only is the default. The Tg measurement does not change memory or activate homeostasis. Control decisions are displayed separately with their previous-cycle provenance.</p>
+    </section>
+    <section className="panel">
+      <h3>Most recent measured state</h3>
+      <pre className="inspector">{JSON.stringify(latest?{
+        cycle:latest.engine_cycle,
+        t_g:latest.payload?.t_g,
+        raw_phase:latest.payload?.phase,
+        h_sys:latest.payload?.h_sys,
+        h_env:latest.payload?.h_env,
+        c_input:latest.payload?.c_input,
+        c_memory:latest.payload?.c_memory,
+        formula_revision:latest.payload?.formula_revision,
+        observation_only:latest.payload?.metadata?.behavioral_authority===false,
+      }:{"status":"No thermodynamic events in the loaded history."},null,2)}</pre>
+    </section>
+    <section className="panel"><h3>Latest previous-cycle control decision</h3>
+      <pre className="inspector">{JSON.stringify(lastControl?{
+        applied_to_cycle:lastControl.payload?.applied_to_cycle,
+        source_cycle:lastControl.payload?.source_cycle,
+        source_t_g:lastControl.payload?.source_t_g,
+        raw_source_phase:lastControl.payload?.raw_source_phase,
+        control_phase:lastControl.payload?.control_phase,
+        policy:lastControl.payload?.policy,
+        temporary_effective_config:lastControl.payload?.effective_config,
+      }:{"status":"No experimental control applied in loaded history."},null,2)}</pre>
+    </section>
+    <section className="panel"><h3>Measured phase history · {observations.length} events</h3>
+      <pre className="inspector tall">{JSON.stringify(observations.map(event=>({
+        cycle:event.engine_cycle,
+        t_g:event.payload?.t_g,
+        raw_phase:event.payload?.phase,
+        phase_transition:event.payload?.phase_transition,
+      })),null,2)}</pre>
+      <h3>Control applications · {controls.length} events</h3>
+      <pre className="inspector tall">{JSON.stringify(controls.map(event=>({
+        applied_to_cycle:event.payload?.applied_to_cycle,
+        source_cycle:event.payload?.source_cycle,
+        source_t_g:event.payload?.source_t_g,
+        control_phase:event.payload?.control_phase,
+        policy_revision:event.payload?.policy?.controller_revision,
+      })),null,2)}</pre>
+      {failure&&<p>{failure}</p>}
+      {more&&<button disabled={loading} onClick={()=>load(nextCursor,true)}>{loading?'Loading…':'Load more events'}</button>}
+      <button disabled={loading} onClick={()=>load(0,false)}>{loading?'Loading…':'Refresh from start'}</button>
+      <p>History shown here comes from durable Workbench events. Earlier events may require “Load more events”; live changes appear after refresh.</p>
+    </section>
+  </div>;
 }
 
 function ConnectionsPage({execute}:any){

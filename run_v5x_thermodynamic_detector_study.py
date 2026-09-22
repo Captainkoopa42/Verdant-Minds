@@ -44,36 +44,28 @@ ABLATION_PROBES = {
     ("actuator", "sensor"),
     ("foundation", "frame"),
 }
-TOKEN_COUNTS = (0, 60)
+TOKEN_COUNTS = (1, 60)
 
 
 def _probe_command(labels: tuple[str, ...], state_dim: int, key: str, tokens: int):
-    """Hold labels, feature vector, event identity and payload SHA constant.
+    """Hold cue labels, feature vector, event identity and payload SHA constant.
 
-    Only the optional sentence metadata differs between verbosity forks.
-    Tokens=0 removes the sentence adapter and uses feature-distribution
-    complexity; it is intentionally NOT compared directly to the 60-token
-    condition as a pure verbosity intervention. See the 1 vs 60 pair below.
+    Both verbosity variants use the *same* text-token adapter. The neutral
+    sentence differs only in token count; it is not used to add concept labels.
+    This is an engineered detector sensitivity control, NOT language teaching.
     """
     command = _command(labels, state_dim=state_dim, event_key=key)
-    if tokens == 0:
-        return command.model_copy(update={
-            "metadata": {
-                **command.metadata,
-                "sentence": None,
-                "detector_study_tokens": 0,
-            }
-        })
-    if tokens == 60:
-        sentence = " ".join([*labels, *("context" for _ in range(60 - len(labels)))])
-        return command.model_copy(update={
-            "metadata": {
-                **command.metadata,
-                "sentence": sentence,
-                "detector_study_tokens": 60,
-            }
-        })
-    raise ValueError("tokens must be 0 or 60")
+    if tokens not in TOKEN_COUNTS:
+        raise ValueError("unknown token count")
+    sentence = " ".join("context" for _ in range(tokens))
+    return command.model_copy(update={
+        "metadata": {
+            **command.metadata,
+            "sentence": sentence,
+            "detector_study_tokens": tokens,
+            "detector_study_null_text": True,
+        }
+    })
 
 
 def _run_arm(checkpoint: Path, command, config: DevelopmentalCycleConfig) -> dict:
@@ -255,10 +247,10 @@ def main() -> int:
             "post_cycle_tg_is_not_a_pre_cycle_detector_measurement": True,
             "token_conditions": list(TOKEN_COUNTS),
             "token_interpretation": (
-                "0 tokens selects feature-distribution adapter; 60 tokens "
-                "selects 60-token text adapter. These are not directly a "
-                "pure length-only comparison. Compare within the same adapter "
-                "using separate token-count cases before interpreting Tg."
+                "1 vs 60 neutral context tokens. The cue labels, feature "
+                "vector, event identity and payload SHA are held fixed in "
+                "fresh checkpoint forks. Both use the same text adapter. "
+                "Metadata and resulting evidence IDs may still differ."
             ),
             "pressure_proxy": (
                 "Count and historical-resource allocation of admitted P "

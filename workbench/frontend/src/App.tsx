@@ -174,6 +174,8 @@ function ThermodynamicsPage({selectedRun}:any){
   const controls=records.filter(item=>item.event_type==='THERMODYNAMIC_CONTROL_APPLIED');
   const latest=observations[observations.length-1];
   const lastControl=controls[controls.length-1];
+  const latestPayload:any=latest?.payload;
+  const controlPayload:any=lastControl?.payload;
 
   return <div className="page">
     <section className="title compact"><div className="eyebrow">THERMODYNAMICS · EXPERIMENTAL OBSERVATION</div>
@@ -184,7 +186,7 @@ function ThermodynamicsPage({selectedRun}:any){
       <h3>Most recent measured state</h3>
       <pre className="inspector">{JSON.stringify(latest?{
         cycle:latest.engine_cycle,
-        t_g:latest.payload?.t_g,
+        t_g:latestPayload?.t_g,
         raw_phase:latest.payload?.phase,
         h_sys:latest.payload?.h_sys,
         h_env:latest.payload?.h_env,
@@ -196,7 +198,7 @@ function ThermodynamicsPage({selectedRun}:any){
     </section>
     <section className="panel"><h3>Latest previous-cycle control decision</h3>
       <pre className="inspector">{JSON.stringify(lastControl?{
-        applied_to_cycle:lastControl.payload?.applied_to_cycle,
+        applied_to_cycle:controlPayload?.applied_to_cycle,
         source_cycle:lastControl.payload?.source_cycle,
         source_t_g:lastControl.payload?.source_t_g,
         raw_source_phase:lastControl.payload?.raw_source_phase,
@@ -218,7 +220,7 @@ function ThermodynamicsPage({selectedRun}:any){
         source_cycle:event.payload?.source_cycle,
         source_t_g:event.payload?.source_t_g,
         control_phase:event.payload?.control_phase,
-        policy_revision:event.payload?.policy?.controller_revision,
+        policy_revision:(event.payload as any)?.policy?.controller_revision,
       })),null,2)}</pre>
       {failure&&<p>{failure}</p>}
       {more&&<button disabled={loading} onClick={()=>load(nextCursor,true)}>{loading?'Loading…':'Load more events'}</button>}

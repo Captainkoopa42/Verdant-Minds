@@ -168,6 +168,50 @@ def _lag_stream(checkpoint: Path, labels: tuple[str, ...]) -> dict:
     return {"labels": list(labels), "steps": rows}
 
 
+
+def _descriptive_summary(cases: list[dict]) -> dict:
+    """Aggregate predeclared access proxies without learning a Tg threshold."""
+    results: dict[str, dict] = {}
+    for case in cases:
+        if case.get("skipped"):
+            continue
+        key = case["checkpoint_sha256"] + ":tokens=" + str(case["tokens"])
+        section = results.setdefault(key, {
+            "checkpoint_sha256": case["checkpoint_sha256"],
+            "token_count": case["tokens"],
+            "case_count": 0,
+            "raw_phase_counts": {},
+            "cases_with_low_context_p": 0,
+            "baseline_low_context_p_total": 0,
+            "governed_low_context_p_total": 0,
+            "baseline_t_g_when_pressure": [],
+            "baseline_t_g_without_pressure": [],
+        })
+        baseline = case["arms"]["observer_baseline"]
+        controlled = case["arms"]["v4_both_resonance_gates"]
+        phase = baseline["thermodynamics_post_cycle"]["phase"]
+        t_g = baseline["thermodynamics_post_cycle"]["t_g"]
+        pressure = int(baseline["access_post_cycle"]["low_context_structure_count"])
+        governed = int(controlled["access_post_cycle"]["low_context_structure_count"])
+        section["case_count"] += 1
+        section["raw_phase_counts"][phase] = section["raw_phase_counts"].get(phase, 0) + 1
+        section["baseline_low_context_p_total"] += pressure
+        section["governed_low_context_p_total"] += governed
+        if pressure:
+            section["cases_with_low_context_p"] += 1
+            section["baseline_t_g_when_pressure"].append(t_g)
+        else:
+            section["baseline_t_g_without_pressure"].append(t_g)
+    return {
+        "method": (
+            "Descriptive counts and raw post-cycle Tg only. "
+            "Low-context P admission is a structural pressure proxy, "
+            "not truth or a trained detector target."
+        ),
+        "groups": results,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -270,6 +314,7 @@ def main() -> int:
         },
         "paired_cases": all_cases,
         "lag_streams": all_lag,
+        "descriptive_summary": _descriptive_summary(all_cases),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(

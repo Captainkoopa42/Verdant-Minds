@@ -85,6 +85,7 @@ class ThermodynamicControlApplication:
     source_cycle: int
     source_t_g: float
     source_phase: ThermodynamicPhase
+    control_phase: ThermodynamicPhase
     policy: PhasePolicyDelta
     effective_config: dict[str, object]
 
@@ -144,6 +145,7 @@ class V5XDevelopmentPipeline:
                 "no experimental behavioral authority."
             )
         self._last_thermodynamics: dict[str, ThermodynamicState] = {}
+        self._control_phases: dict[str, ThermodynamicPhase] = {}
 
     def _controlled_development(
         self,
@@ -155,12 +157,18 @@ class V5XDevelopmentPipeline:
         if previous is None:
             return self.development, None
 
-        proposal = self.phase_policy_controller.propose(previous)
+        prior_control_phase = self._control_phases.get(kernel_id)
+        control_phase = self.phase_policy_controller.control_phase(
+            previous,
+            prior_control_phase,
+        )
+        proposal = self.phase_policy_controller.propose_for_phase(control_phase)
         effective = controlled_development_config(self.development.config, proposal)
         application = ThermodynamicControlApplication(
             source_cycle=previous.cycle,
             source_t_g=previous.t_g,
             source_phase=previous.phase,
+            control_phase=control_phase,
             policy=proposal,
             effective_config=asdict(effective),
         )
@@ -201,6 +209,14 @@ class V5XDevelopmentPipeline:
                 previous=previous,
             )
             self._last_thermodynamics[kernel_id] = thermodynamics
+            if self.enable_thermodynamic_control:
+                previous_control = self._control_phases.get(kernel_id)
+                self._control_phases[kernel_id] = (
+                    self.phase_policy_controller.control_phase(
+                        thermodynamics,
+                        previous_control,
+                    )
+                )
 
         # A replay is a developmental no-op, so do not report a control action
         # as though it had altered a committed cycle.

@@ -80,12 +80,22 @@ def _workspace_summary(kernel: VerdantKernel, result) -> dict[str, object]:
         for ref in candidate.binding_refs:
             concept = kernel.state.concepts.get(ref)
             bindings.append(concept.label if concept is not None else ref)
+        trigger_refs = candidate.metadata.get("trigger_concept_ids", ())
+        if not isinstance(trigger_refs, (list, tuple)):
+            trigger_refs = ()
+        trigger_bindings = []
+        for ref in trigger_refs:
+            concept = kernel.state.concepts.get(ref)
+            trigger_bindings.append(concept.label if concept is not None else ref)
+        trigger_fraction = candidate.metadata.get("trigger_fraction")
         rows.append(
             {
                 "rank": item.rank,
                 "source_kind": candidate.source_kind.value,
                 "label": candidate.label,
                 "bindings": bindings,
+                "trigger_bindings": trigger_bindings,
+                "trigger_fraction": trigger_fraction,
                 "disposition": item.disposition.value,
                 "raw_score": item.raw_score,
                 "effective_score": item.effective_score,
@@ -114,6 +124,32 @@ def _workspace_summary(kernel: VerdantKernel, result) -> dict[str, object]:
             if row["source_kind"] == "resonance"
             and row["disposition"] == "admit"
         ],
+    }
+
+
+def _thermodynamic_summary(state) -> dict[str, object] | None:
+    if state is None:
+        return None
+    return {
+        "cycle": state.cycle,
+        "t_g": state.t_g,
+        "phase": state.phase.value,
+        "h_sys": state.h_sys,
+        "c_input": state.c_input,
+        "c_memory": state.c_memory,
+        "h_env": state.h_env,
+        "computational_complexity": state.computational_complexity,
+        "base_term": state.base_term,
+        "entropy_feedback": state.entropy_feedback,
+        "t_cog": state.t_cog,
+        "previous_phase": (
+            state.previous_phase.value if state.previous_phase is not None else None
+        ),
+        "phase_transition": state.phase_transition,
+        "environment": state.environment.model_dump(mode="json"),
+        "memory": state.memory.model_dump(mode="json"),
+        "input": state.input.model_dump(mode="json"),
+        "field": state.field.model_dump(mode="json"),
     }
 
 
@@ -411,6 +447,12 @@ def automatic_sequence(checkpoint: Path) -> dict[str, object]:
                     controlled.thermodynamics.t_g
                     if controlled.thermodynamics is not None
                     else None
+                ),
+                "baseline_thermodynamics": _thermodynamic_summary(
+                    baseline.thermodynamics
+                ),
+                "controlled_thermodynamics": _thermodynamic_summary(
+                    controlled.thermodynamics
                 ),
                 "control_applied": _control_summary(controlled),
                 "baseline_workspace": _workspace_summary(

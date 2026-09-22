@@ -6,7 +6,8 @@ import math
 
 import pytest
 
-from verdant_development.v5x import V5XDevelopmentPipeline
+from verdant_development.pipeline import DevelopmentalCycleConfig
+from verdant_development.v5x import V5XDevelopmentPipeline, controlled_development_config
 from verdant_kernel import (
     ClaimPolarity,
     ClaimProposal,
@@ -167,6 +168,74 @@ def test_phase_controller_only_proposes_and_never_mutates_kernel() -> None:
 
     assert not proposal.behavioral_authority_enabled
     assert kernel.fingerprint() == before
+
+
+def test_soft_homeostasis_rigid_policy_favors_current_evidence_without_memory_deletion() -> None:
+    base = DevelopmentalCycleConfig()
+    proposal = PhasePolicyController(
+        experimental_control_enabled=True
+    ).propose_for_phase(ThermodynamicPhase.RIGID)
+
+    effective = controlled_development_config(base, proposal)
+
+    assert proposal.behavioral_authority_enabled
+    assert effective.current_evidence_resource > base.current_evidence_resource
+    assert effective.resonance_resource < base.resonance_resource
+    assert effective.association_resource < base.association_resource
+    assert effective.structure_resource < base.structure_resource
+    assert effective.association_recall_threshold > base.association_recall_threshold
+    assert effective.structure_trigger_members == base.structure_trigger_members + 1
+    assert effective.resonance_top_k == base.resonance_top_k + 1
+    assert effective.resonance_commit_limit == base.resonance_commit_limit
+
+
+def test_soft_homeostasis_flexible_policy_is_identity() -> None:
+    base = DevelopmentalCycleConfig()
+    proposal = PhasePolicyController(
+        experimental_control_enabled=True
+    ).propose_for_phase(ThermodynamicPhase.FLEXIBLE)
+
+    assert controlled_development_config(base, proposal) == base
+
+
+def test_soft_homeostasis_requires_observer_when_control_is_enabled() -> None:
+    with pytest.raises(ValueError, match="requires thermodynamic observation"):
+        V5XDevelopmentPipeline(
+            enable_thermodynamic_observation=False,
+            enable_thermodynamic_control=True,
+        )
+
+
+def test_soft_homeostasis_applies_previous_cycle_only_and_does_not_rewrite_kernel_policies() -> None:
+    kernel = VerdantKernel(seed=2310, state_dim=24, run_label="thermo-homeostasis")
+    pipeline = V5XDevelopmentPipeline(enable_thermodynamic_control=True)
+
+    first = pipeline.advance(kernel, _command("alpha-1", sentence="alpha arrives"))
+    assert first.thermodynamic_control is None
+    assert first.thermodynamics is not None
+
+    kernel_id = kernel.state.identity.kernel_id
+    pipeline._last_thermodynamics[kernel_id] = first.thermodynamics.model_copy(
+        update={"phase": ThermodynamicPhase.RIGID, "t_g": 0.35}
+    )
+
+    workspace_policy_before = kernel.state.workspace_policy.model_copy(deep=True)
+    ecwf_policy_before = kernel.state.ecwf_policy.model_copy(deep=True)
+    compilation_policy_before = kernel.state.compilation_policy.model_copy(deep=True)
+    plasticity_policy_before = kernel.state.plasticity_policy.model_copy(deep=True)
+
+    second = pipeline.advance(kernel, _command("beta-2", sentence="beta arrives"))
+
+    assert second.thermodynamic_control is not None
+    assert second.thermodynamic_control.source_phase == ThermodynamicPhase.RIGID
+    assert second.thermodynamic_control.source_t_g == pytest.approx(0.35)
+    assert second.thermodynamic_control.effective_config["structure_trigger_members"] == 2
+    assert second.thermodynamic_control.effective_config["association_recall_threshold"] > 0.24
+
+    assert kernel.state.workspace_policy == workspace_policy_before
+    assert kernel.state.ecwf_policy == ecwf_policy_before
+    assert kernel.state.compilation_policy == compilation_policy_before
+    assert kernel.state.plasticity_policy == plasticity_policy_before
 
 
 def test_append_only_telemetry_serializes_development_cycle(tmp_path) -> None:

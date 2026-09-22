@@ -255,3 +255,67 @@ must not be used as an independent ground-truth semantic label.
    prior-cycle policy provenance, side-by-side checkpoint forks, lineage, and
    control-state continuity across save/reopen without modifying the original
    organism.
+
+## Prepared detector and Workbench infrastructure (not yet validated)
+
+A new `run_v5x_thermodynamic_detector_study.py` runner accepts **one or more**
+VDK checkpoints. The existing cycle-903 file is a development calibration
+checkpoint; further checkpoints are held-out material only if they are selected
+before inspecting the new detector results. Missing concepts are skipped.
+
+Its case matrix contains the seven original probes plus additional single,
+multi-member, and broad-structure negative controls. Each isolated probe is
+run from the same checkpoint, with:
+- ordinary observer baseline;
+- unchanged soft homeostasis v4;
+- score-only, support-only, and neither-gate resonance ablations for four
+  declared probes;
+- text-metadata sensitivity controls with **1 versus 60 neutral tokens**,
+  holding explicit concept labels, feature vector, event identity and payload
+  hash constant across fresh forked runs.
+
+Both token conditions use the same V4-compatible text adapter. The intervention
+changes command metadata and may change downstream evidence identities: inspect
+actual effects rather than assuming field dynamics are identical.
+
+A separate three-step stream for `actuator` and `foundation + frame` tests
+actual previous-cycle lag using two V5X pipelines, with the Tg formula and
+phase boundaries untouched. The report separates post-cycle Tg and post-cycle
+access observations from the previous Tg actually available at decision time.
+
+The runner records its checkpoint hashes, chosen cases, ablation configurations,
+outcomes, skipped labels, raw phase/components and actual A/B fingerprints.
+It does **not** compute semantic accuracy, estimate election-style probabilities,
+infer truth labels from P count, or claim generalization from the seven probes.
+
+### Launch from repository root (PowerShell)
+
+Use the interpreter in the user's already-created original V5X virtual
+environment with the isolated thermo worktree as the current directory.
+Write results **outside** the Git worktree.
+
+```powershell
+$Repo = "$env:USERPROFILE\Verdant-Minds-V5X-Test"
+$Lab = "$env:USERPROFILE\Verdant-Minds-Thermo-Test"
+$Results = "$env:USERPROFILE\Verdant-Thermo-Results"
+Set-Location $Lab
+New-Item -ItemType Directory -Force -Path $Results | Out-Null
+& "$Repo\.venv\Scripts\python.exe" -m pytest -q tests/test_thermodynamics_phase.py tests/test_ecwf_phase.py tests/test_development_phase.py tests/test_thermodynamic_detector_study.py
+if ($LASTEXITCODE -ne 0) { throw "Focused tests failed" }
+& "$Repo\.venv\Scripts\python.exe" .\run_v5x_thermodynamic_detector_study.py "$env:USERPROFILE\Desktop\Test Test Test.vdk" --output "$Results\thermodynamic_detector_study_v1.json"
+```
+
+To add held-out checkpoint(s), append each additional path BEFORE `--output`.
+No checkpoints are rewritten by the study runner.
+
+### Workbench groundwork
+
+The fork also adds durable `THERMODYNAMIC_OBSERVED` and
+`THERMODYNAMIC_CONTROL_APPLIED` Workbench events and a read-only
+**Thermodynamics** page separating raw measurement from policy authority.
+The Workbench worker retains observer-only behavior by default. This page
+does not enable a governor or turn a VDK into a thermodynamic-state store.
+
+Full Workbench governance controls and control-state continuity on save/reopen
+remain blocked on detector validation, tests, and a durable policy state
+contract. Do not present the page as a finished homeostasis switch.

@@ -409,3 +409,66 @@ New-Item -ItemType Directory -Force -Path $Results | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Lag tests failed" }
 & "$Repo\.venv\Scripts\python.exe" .\run_v5x_thermodynamic_lag_stress.py "$env:USERPROFILE\Desktop\Test Test Test.vdk" --output "$Results\thermodynamic_lag_stress_v1.json"
 ```
+
+
+## Lag stress v1: observed N-to-N+1 results
+
+Source: `thermodynamic_lag_stress_v1.json`, cycle-903 checkpoint SHA-256
+`06414a5b3d5c9783746d843889ea8780a57a33023eac3c9dd58447b707e55676`.
+These are four deliberately selected three-cycle developmental sequences, not
+held-out validation.
+
+| Sequence | First-cycle Tg | Second-cycle action | Second-cycle outcome | Third-cycle behavior |
+| --- | ---: | --- | --- | --- |
+| Long actuator -> short actuator -> foundation/frame | 0.632193, Chaotic | Chaotic from previous Tg | 4 low-overlap Ps in observer; 0 Ps in controlled | Flexible identity policy; supported foundation P survives in both |
+| Long actuator/controller/sensor -> foundation/frame -> actuator/sensor | 0.633384, Chaotic | Chaotic from previous Tg | Supported foundation P survives in both, with resource 0.06 observer vs 0.039 controlled | Flexible identity policy; broad low-context P intrusion returns on actuator/sensor |
+| Long supported foundation/frame -> actuator -> foundation/frame | 0.539024, Flexible | Identity policy | Four low-overlap Ps in both arms | Arms remain fingerprint-identical |
+| Short actuator -> short actuator -> foundation/frame | 0.543693, Flexible | Identity policy | Four low-overlap Ps in both arms | Arms remain fingerprint-identical |
+
+No previous-cycle controller action occurs on first-cycle exposure; the second
+cycle records the **previous controlled fork's** Tg exactly. The Chaotic
+pulse returns to Flexible on the following short cycle; effective config
+returns to identity but fork fingerprints **remain different** once a previous
+controlled developmental cycle has changed canonical state. Thus policy reset
+is not rollback and must not be described as restoring organism equality.
+
+**Causal lesson:** a 60-token neutral sentence with actuator-related
+content can induce a Chaotic Tg and therefore apply reduced historical
+access to a **different next cue**. That control can suppress four weakly
+supported Ps if the next cue is actuator, but it also attenuates the
+legitimate foundation/frame P's allocated resource from 0.06 to 0.039
+when the next cue is foundation/frame. In this tested case the supported P
+remains admitted, so the data do **not** establish catastrophic forgetting or
+loss of supported recall. They establish an unnecessary intervention whose
+trigger is confounded by preceding input verbosity.
+
+Meanwhile a repeated short actuator cue retains four low-context Ps and
+never triggers the governor: the existing Tg detector **misses** the same
+structural pressure without the 60-token pulse.
+
+**Decision:** keep V4 access policy frozen and Workbench behavioral authority
+OFF. Tg can remain useful as an observation of the V4-compatible
+complexity/entropy formula, but the evidence does not justify treating its
+Rigid/Chaotic phase as a validated detector for contextual memory intrusion.
+
+### Next architectural experiment: independent contextual-access-pressure telemetry
+
+Do not silently reinterpret, subtract terms from, or rename Tg to make it
+agree with handpicked examples. Add a separate, explicitly named,
+observer-only access-pressure measurement with:
+- cue coverage of eligible learned P structures before workspace admission;
+- weak-overlap and strong-overlap candidates separately;
+- admitted-structure fractions, budget pressure and resource allocation;
+- learned-local and resonance support traces;
+- original Tg/components, raw phase, and previous-cycle provenance beside it;
+- no authority to change canonical memory, plasticity or runtime config.
+
+Pre-admission pressure must be measured **before the access gate acts**, or
+successful suppression would erase the measurement that justified control.
+This measurement must also be stress-tested against legitimate broad recall,
+larger/new checkpoints, missing concepts and within-stream changes. The
+original V4 Tg remains a distinct signal for complexity/metabolic
+state, not a surrogate semantic correctness label.
+
+Full experimental control in the Workbench remains gated on a detector with
+demonstrated specificity and on durable save/reopen of its phase history.

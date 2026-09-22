@@ -47,6 +47,10 @@ def controlled_development_config(
         base,
         resonance_top_k=top_k,
         resonance_commit_limit=commit_limit,
+        resonance_recall_threshold=max(
+            base.resonance_recall_threshold,
+            policy.resonance_recall_threshold_floor,
+        ),
         current_evidence_resource=max(
             1e-9,
             base.current_evidence_resource
@@ -66,6 +70,10 @@ def controlled_development_config(
         structure_trigger_members=max(
             1,
             base.structure_trigger_members + policy.structure_trigger_members_delta,
+        ),
+        structure_trigger_fraction=max(
+            base.structure_trigger_fraction,
+            policy.structure_trigger_fraction_floor,
         ),
         current_evidence_persistence=max(
             1,

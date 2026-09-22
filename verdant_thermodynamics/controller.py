@@ -57,8 +57,9 @@ class PhasePolicyController:
     concepts, claims, P/Q structures, or kernel policies itself.
 
     Soft-homeostasis v1 regulates access before storage:
-    - Rigid: favor current evidence, weaken historical recruitment, and require
-      more context for earned-structure recall without broadening resonance.
+    - Rigid: favor current evidence, weaken historical recruitment, require
+      stronger resonance to enter workspace, and require both absolute and
+      fractional context support for earned-structure recall.
     - Flexible: leave the developmental policy unchanged.
     - Chaotic: favor current evidence while narrowing historical/recurrent
       recruitment.
@@ -67,7 +68,7 @@ class PhasePolicyController:
     experiments, but soft-homeostasis v1 leaves them at 1.0.
     """
 
-    revision: str = "phase_policy_homeostasis_2"
+    revision: str = "phase_policy_homeostasis_3"
     experimental_control_enabled: bool = False
     hysteresis: PhaseHysteresis = PhaseHysteresis()
 
@@ -89,8 +90,10 @@ class PhasePolicyController:
                 "resonance_commit_delta": 0,
                 "current_evidence_resource_multiplier": 1.15,
                 "historical_resource_multiplier": 0.70,
+                "resonance_recall_threshold_floor": 0.32,
                 "association_recall_threshold_delta": 0.08,
                 "structure_trigger_members_delta": 1,
+                "structure_trigger_fraction_floor": 0.50,
             }
         elif phase == ThermodynamicPhase.FLEXIBLE:
             values = {
@@ -102,8 +105,10 @@ class PhasePolicyController:
                 "resonance_commit_delta": 0,
                 "current_evidence_resource_multiplier": 1.0,
                 "historical_resource_multiplier": 1.0,
+                "resonance_recall_threshold_floor": 0.0,
                 "association_recall_threshold_delta": 0.0,
                 "structure_trigger_members_delta": 0,
+                "structure_trigger_fraction_floor": 0.0,
             }
         else:
             values = {
@@ -115,8 +120,10 @@ class PhasePolicyController:
                 "resonance_commit_delta": -1,
                 "current_evidence_resource_multiplier": 1.10,
                 "historical_resource_multiplier": 0.65,
+                "resonance_recall_threshold_floor": 0.35,
                 "association_recall_threshold_delta": 0.12,
                 "structure_trigger_members_delta": 1,
+                "structure_trigger_fraction_floor": 0.60,
             }
         return PhasePolicyDelta(
             controller_revision=self.revision,

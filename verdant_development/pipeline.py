@@ -39,6 +39,7 @@ class DevelopmentalCycleConfig:
     current_evidence_resource: float = 0.30
     resonance_resource: float = 0.10
     resonance_recall_threshold: float = 0.0
+    resonance_local_support_floor: float = 0.0
     association_resource: float = 0.08
     association_recall_threshold: float = 0.24
     structure_resource: float = 0.06
@@ -66,6 +67,8 @@ class DevelopmentalCycleConfig:
                 raise ValueError(f"{name} must be positive.")
         if not 0.0 <= self.resonance_recall_threshold <= 1.0:
             raise ValueError("resonance_recall_threshold must be between 0 and 1.")
+        if not 0.0 <= self.resonance_local_support_floor <= 1.0:
+            raise ValueError("resonance_local_support_floor must be between 0 and 1.")
         if not 0.0 <= self.association_recall_threshold <= 1.0:
             raise ValueError("association_recall_threshold must be between 0 and 1.")
         if self.structure_trigger_members < 1:
@@ -216,6 +219,30 @@ class VerdantDevelopmentPipeline:
                 unique[item.source_ref] = item
         return tuple(unique[key] for key in sorted(unique))
 
+    @staticmethod
+    def _resonance_local_support(
+        kernel: VerdantKernel,
+        current_concept_ids: set[str],
+        candidate_concept_id: str,
+    ) -> float:
+        """Strongest learned local association tying a resonant concept to now.
+
+        This is intentionally nonsemantic.  It does not decide that a resonant
+        concept is true or belongs to a named domain; it only asks whether the
+        developmental association layer has a sufficiently strong direct trace
+        between the present experience and the recalled concept.
+        """
+
+        best = 0.0
+        for association in kernel.state.plasticity_associations.values():
+            members = set(association.concept_ids)
+            if candidate_concept_id not in members:
+                continue
+            if not current_concept_ids.intersection(members):
+                continue
+            best = max(best, float(association.strength))
+        return best
+
     def _structure_workspace_candidates(
         self,
         kernel: VerdantKernel,
@@ -305,6 +332,7 @@ class VerdantDevelopmentPipeline:
         )
 
         resonance_inputs: list[WorkspaceCandidateInput] = []
+        current_concepts = set(experience.concept_ids)
         by_attention_id = {
             attention_id: kernel.state.attention_candidates[attention_id]
             for attention_id in resonance_event.attention_candidate_ids
@@ -315,6 +343,13 @@ class VerdantDevelopmentPipeline:
             label = concept.label if concept is not None else attention.source_ref
             score = max(0.0, min(1.0, attention.priority))
             if score < self.config.resonance_recall_threshold:
+                continue
+            local_support = self._resonance_local_support(
+                kernel,
+                current_concepts,
+                attention.source_ref,
+            )
+            if local_support < self.config.resonance_local_support_floor:
                 continue
             resonance_inputs.append(
                 WorkspaceCandidateInput(
@@ -335,6 +370,7 @@ class VerdantDevelopmentPipeline:
                         "developmental_stage": "resonant_recall",
                         "resonance_event_id": resonance_event.resonance_event_id,
                         "resonance_score": score,
+                        "local_support_strength": local_support,
                     },
                 )
             )

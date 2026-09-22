@@ -319,3 +319,93 @@ does not enable a governor or turn a VDK into a thermodynamic-state store.
 Full Workbench governance controls and control-state continuity on save/reopen
 remain blocked on detector validation, tests, and a durable policy state
 contract. Do not present the page as a finished homeostasis switch.
+
+
+## Detector study v1: observed result and consequence
+
+Source: `thermodynamic_detector_study_v1.json`, checkpoint SHA-256
+`06414a5b3d5c9783746d843889ea8780a57a33023eac3c9dd58447b707e55676`.
+
+**18 distinct, intentionally selected cue sets**, each tested with one and
+60 neutral text tokens, yielded 36 matched A/B case pairs. These are NOT
+36 independent samples, because all cases reuse the same checkpoint and
+the 60-token cases repeat the same cue labels and feature vectors.
+
+For each text condition, baseline admitted 29 P structures whose current
+input covered less than half their members, across 16 of 18 cue sets.
+Forced homeostasis v4 admitted **zero** below-half-match Ps across these
+cases. This is a structural access proxy, not independent semantic
+correctness: the governor explicitly implements the same 0.50 overlap
+floor, so removing below-half-match Ps is an expected sanity check,
+not proof of a detector.
+
+**Tg is not currently an effective automatic trigger for that proxy.**
+Every one-token baseline case was Flexible, including all 16 cases with
+below-half-match P recruitment. All six cycles in the two existing short
+lag streams remained fingerprint-identical across observer and controlled
+forks: Tg never engaged a non-identity policy. The previous-cycle Tg
+provenance was recorded, but no actual threshold-crossing intervention
+was exercised.
+
+The matched verbosity control is especially important: switching from
+1 to 60 neutral tokens raised **every** baseline Tg value by exactly
+0.0885 while leaving P admission and the measured access outcomes
+unchanged for all 18 cues. Three 60-token baseline cases entered raw
+Chaotic (actuator; actuator+sensor; actuator+controller+sensor), while
+the same cues with one token remained Flexible. This is a controlled
+demonstration of sensitivity to input-token complexity, not proof that
+verbosity alone will always force a phase transition across different
+checkpoint states or longer histories.
+
+### Resonance gate ablation
+
+In the `controller` development probe, the two weakly supported
+resonant intrusions (`target_point`, `forward_axis`) both have resonance
+scores above the 0.32 score floor but have zero learned local support
+from `controller`. Both entered under *score-only* and *neither-gate*
+ablation; neither entered under *support-only* or *both-gate* control.
+Thus the local-support floor, **not the 0.32 score floor**, accounts for
+removing this specific leak on this checkpoint. Both-gate policy is kept
+frozen pending tests of whether the score floor independently helps or
+blocks contextually useful recall elsewhere.
+
+### Next falsification: real lag with a high-token pulse
+
+`run_v5x_thermodynamic_lag_stress.py` is a new, separate
+**development-only** study. It uses the same checkpoint-forking pattern
+to exercise real automatic previous-cycle control on the existing
+V4-compatible Tg and the frozen homeostasis v4 policy. The four
+preselected short streams test:
+
+- high-token actuator followed by short actuator and then supported
+  foundation/frame;
+- high-token actuator/controller/sensor followed by a supported
+  foundation/frame and actuator/sensor;
+- a high-token but context-supported foundation/frame negative control;
+- a short-token actuator negative control.
+
+The report checks that the controller's source Tg is exactly the
+**previous controlled fork's** Tg, not the observer fork's or the current
+cycle's Tg. It shows whether the high-token pulse causes a non-identity
+Chaotic intervention **one cycle later**, what happens to contextual P
+recall, and whether control switches back after Tg returns to Flexible.
+The result may reveal overreaction to irrelevant verbosity; it has
+not been run yet and no outcome is presumed.
+
+The Workbench observer remains the default. Do not expose automatic
+behavioral authority as a user-facing toggle merely because this study
+causes a phase transition: detector specificity and saved controller
+state are separate gates.
+
+### Run lag stress without rerunning the 36-case calibration
+
+```powershell
+$Repo = "$env:USERPROFILE\Verdant-Minds-V5X-Test"
+$Lab = "$env:USERPROFILE\Verdant-Minds-Thermo-Test"
+$Results = "$env:USERPROFILE\Verdant-Thermo-Results"
+Set-Location $Lab
+New-Item -ItemType Directory -Force -Path $Results | Out-Null
+& "$Repo\.venv\Scripts\python.exe" -m pytest -q tests/test_thermodynamic_lag_stress.py
+if ($LASTEXITCODE -ne 0) { throw "Lag tests failed" }
+& "$Repo\.venv\Scripts\python.exe" .\run_v5x_thermodynamic_lag_stress.py "$env:USERPROFILE\Desktop\Test Test Test.vdk" --output "$Results\thermodynamic_lag_stress_v1.json"
+```

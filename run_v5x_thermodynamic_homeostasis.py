@@ -125,6 +125,7 @@ def _control_summary(result) -> dict[str, object] | None:
         "source_cycle": control.source_cycle,
         "source_t_g": control.source_t_g,
         "source_phase": control.source_phase.value,
+        "control_phase": control.control_phase.value,
         "controller_revision": control.policy.controller_revision,
         "effective_config": control.effective_config,
     }

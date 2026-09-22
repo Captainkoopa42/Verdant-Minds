@@ -559,7 +559,7 @@ def main() -> int:
         raise FileNotFoundError(checkpoint)
 
     report = {
-        "schema_id": "verdant.v5x.thermodynamic_homeostasis_probe.v1",
+        "schema_id": "verdant.v5x.thermodynamic_homeostasis_probe.v2",
         "checkpoint": str(checkpoint),
         "checkpoint_sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
         "forced_rigid": forced_rigid_pairs(checkpoint),

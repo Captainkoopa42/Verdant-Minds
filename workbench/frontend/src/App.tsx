@@ -187,24 +187,24 @@ function ThermodynamicsPage({selectedRun}:any){
       <pre className="inspector">{JSON.stringify(latest?{
         cycle:latest.engine_cycle,
         t_g:latestPayload?.t_g,
-        raw_phase:latest.payload?.phase,
-        h_sys:latest.payload?.h_sys,
-        h_env:latest.payload?.h_env,
-        c_input:latest.payload?.c_input,
-        c_memory:latest.payload?.c_memory,
-        formula_revision:latest.payload?.formula_revision,
-        observation_only:latest.payload?.metadata?.behavioral_authority===false,
+        raw_phase:latestPayload?.phase,
+        h_sys:latestPayload?.h_sys,
+        h_env:latestPayload?.h_env,
+        c_input:latestPayload?.c_input,
+        c_memory:latestPayload?.c_memory,
+        formula_revision:latestPayload?.formula_revision,
+        observation_only:latestPayload?.metadata?.behavioral_authority===false,
       }:{"status":"No thermodynamic events in the loaded history."},null,2)}</pre>
     </section>
     <section className="panel"><h3>Latest previous-cycle control decision</h3>
       <pre className="inspector">{JSON.stringify(lastControl?{
         applied_to_cycle:controlPayload?.applied_to_cycle,
-        source_cycle:lastControl.payload?.source_cycle,
-        source_t_g:lastControl.payload?.source_t_g,
-        raw_source_phase:lastControl.payload?.raw_source_phase,
-        control_phase:lastControl.payload?.control_phase,
-        policy:lastControl.payload?.policy,
-        temporary_effective_config:lastControl.payload?.effective_config,
+        source_cycle:controlPayload?.source_cycle,
+        source_t_g:controlPayload?.source_t_g,
+        raw_source_phase:controlPayload?.raw_source_phase,
+        control_phase:controlPayload?.control_phase,
+        policy:controlPayload?.policy,
+        temporary_effective_config:controlPayload?.effective_config,
       }:{"status":"No experimental control applied in loaded history."},null,2)}</pre>
     </section>
     <section className="panel"><h3>Measured phase history · {observations.length} events</h3>

@@ -283,3 +283,41 @@ def test_resonance_recall_threshold_can_gate_weak_workspace_recruitment() -> Non
         item.candidate.source_kind == WorkspaceSourceKind.RESONANCE
         for item in result.workspace.report.assessments
     )
+
+
+
+def test_resonance_local_support_uses_learned_association_strength() -> None:
+    kernel = VerdantKernel(seed=1212, state_dim=48, run_label="development-resonance-support")
+    pipeline = VerdantDevelopmentPipeline()
+
+    def pair(event_key: str, labels: tuple[str, ...]) -> ExperienceCommand:
+        return ExperienceCommand(
+            event_key=event_key,
+            source_ref=f"controlled:{event_key}",
+            modality="text",
+            payload_sha256=digest(event_key + ":" + ":".join(labels)),
+            feature_vector=(1.0, 1.0, 0.0, 0.0),
+            concept_labels=labels,
+            confidence=1.0,
+            semantic_evidence_kind=EvidenceKind.TESTIMONY,
+            semantic_evidence_details={"controlled_development_test": True},
+            metadata={"context_id": "support-test", "sentence": " ".join(labels)},
+        )
+
+    for index in range(5):
+        pipeline.advance(kernel, pair(f"alpha-beta-{index}", ("alpha", "beta")))
+
+    pipeline.advance(kernel, pair("gamma-only", ("gamma",)))
+
+    ids = {
+        concept.label: concept_id
+        for concept_id, concept in kernel.state.concepts.items()
+        if concept.label in {"alpha", "beta", "gamma"}
+    }
+    current = {ids["alpha"]}
+
+    beta_support = pipeline._resonance_local_support(kernel, current, ids["beta"])
+    gamma_support = pipeline._resonance_local_support(kernel, current, ids["gamma"])
+
+    assert beta_support > 0.0
+    assert gamma_support == pytest.approx(0.0)

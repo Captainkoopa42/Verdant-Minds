@@ -4659,7 +4659,20 @@ class VerdantKernel:
         if vector.size == 0 or not np.all(np.isfinite(vector)):
             raise ValueError("Features must be a finite non-empty vector.")
         norm = np.linalg.norm(vector)
-        return vector if norm == 0 else vector / norm
+        if norm == 0:
+            return vector
+        # inspect_resonance stores the normalized query vector in its report and
+        # commit_resonance later re-inspects that stored vector. Re-normalizing
+        # an already-unit float64 vector is not bit-idempotent (for example,
+        # normalizing (1, 1) yields a norm of 0.9999999999999999, and dividing
+        # again changes each component by ~1e-16). That tiny drift changes the
+        # deterministic projection and therefore the report checksum.
+        #
+        # Preserve vectors that are already unit length to floating precision;
+        # all materially non-unit inputs are still normalized exactly once.
+        if math.isclose(float(norm), 1.0, rel_tol=0.0, abs_tol=1e-12):
+            return vector
+        return vector / norm
 
     def _projection_seed(self, modality: str, feature_dim: int) -> int:
         digest = hashlib.blake2b(

@@ -500,3 +500,67 @@ When a cue contains concepts absent from the pre-cycle checkpoint
 complete measurement. This distinction matters for new curriculum data.
 The shadow measurement's behavior and test suite still require local
 execution before use as a validated signal.
+
+## Lag stress v2: pre-admission shadow measurement (2026-09-22)
+
+Source: `thermodynamic_lag_stress_v2.json`, the same cycle-903 calibration
+checkpoint, SHA-256
+`06414a5b3d5c9783746d843889ea8780a57a33023eac3c9dd58447b707e55676`.
+All four three-step development sequences completed; the measurement is
+observer-only and does not change the previous v1 lag outcomes.
+
+### The needed distinction is now directly visible
+
+- Before the long `actuator` cue, **both forks** see four overlapping
+  structures with weak (<0.50) cue coverage and zero supported structures.
+  Before the *next short actuator* cue, the same four weakly supported
+  structures remain visible to both forks. The previous cycle's Chaotic
+  policy suppresses P admission in the controlled fork (0 versus baseline
+  4). The detector-independent pre-access pressure is **4 in both**.
+- Before `foundation + frame` after the high-Tg pulse, both forks see
+  one supported structure and **zero weak** structures. The previous
+  Chaotic policy still reduces that P's resource (0.06 -> 0.039), even
+  though both forks admit the same supported P.
+- The short actuator negative control observes four weak candidates and
+  four admitted low-context Ps on consecutive cycles without invoking
+  a non-identity policy: Tg stays Flexible. The long supported
+  foundation/frame control observes zero weak and one supported P,
+  with identity policy.
+
+The raw V4-compatible Tg and its hysteretic control phase are therefore
+**not qualified as a detector of current-cue context quality**. A
+previous-cycle high text-complexity pulse can lead to unnecessary
+next-cue control, while repeated weak-context activation without the
+pulse can go unregulated. Tg remains valid as its implemented
+dimensionless complexity/entropy **telemetry**, without inferring
+semantic truth or cognition from the value.
+
+The new pre-admission access-pressure observation preserves the distinction
+between **available overlapping P structures** and **admitted P
+structures**. The proxy is intentionally tied to the learned P
+membership graph and the current concept cue; it is not an objective
+classifier of all relevant knowledge. Larger/held-out curriculum
+checkpoints remain necessary before granting independent automatic
+control to this new signal.
+
+### Engineering transition: dashboard runs are unblocked in observer-only mode
+
+Freeze the calibrated homeostasis v4 policy. Keep *automatic behavioral
+control disabled* in Workbench; keep Tg and structural pressure as
+separate observation streams. Do not block resumed curriculum teaching
+on inventing a universal thermodynamic detector.
+
+To check a user's existing checkpoint before dashboard work,
+`run_v5x_thermodynamic_dashboard_smoke.py` exercises a disposable
+V5-X Workbench **backend** adapter fork: load the VDK, teach a
+foundation/frame cue, record a thermodynamic observation with no
+control action, save/reopen a temporary fork, and verify the original
+checkpoint hash unchanged. It does **not** test frontend clicks,
+import arbitrary VDKs through the Workbench UI, or validate end-to-end
+curriculum queueing. Run full Python/Workbench tests and the frontend
+build separately, then launch a new isolated Workbench home for the
+dashboard runs.
+
+The current frontend adds a read-only Thermodynamics tab for
+WorkBench event history. It is not yet a proven full-scale dashboard
+run until the local test/build/smoke gates pass.

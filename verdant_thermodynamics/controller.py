@@ -58,8 +58,9 @@ class PhasePolicyController:
 
     Soft-homeostasis v1 regulates access before storage:
     - Rigid: favor current evidence, weaken historical recruitment, require
-      stronger resonance to enter workspace, and require both absolute and
-      fractional context support for earned-structure recall.
+      stronger resonance plus learned local corroboration to enter workspace,
+      and require both absolute and fractional context support for
+      earned-structure recall.
     - Flexible: leave the developmental policy unchanged.
     - Chaotic: favor current evidence while narrowing historical/recurrent
       recruitment.
@@ -68,7 +69,7 @@ class PhasePolicyController:
     experiments, but soft-homeostasis v1 leaves them at 1.0.
     """
 
-    revision: str = "phase_policy_homeostasis_3"
+    revision: str = "phase_policy_homeostasis_4"
     experimental_control_enabled: bool = False
     hysteresis: PhaseHysteresis = PhaseHysteresis()
 
@@ -91,6 +92,7 @@ class PhasePolicyController:
                 "current_evidence_resource_multiplier": 1.15,
                 "historical_resource_multiplier": 0.70,
                 "resonance_recall_threshold_floor": 0.32,
+                "resonance_local_support_floor": 0.32,
                 "association_recall_threshold_delta": 0.08,
                 "structure_trigger_members_delta": 1,
                 "structure_trigger_fraction_floor": 0.50,
@@ -106,6 +108,7 @@ class PhasePolicyController:
                 "current_evidence_resource_multiplier": 1.0,
                 "historical_resource_multiplier": 1.0,
                 "resonance_recall_threshold_floor": 0.0,
+                "resonance_local_support_floor": 0.0,
                 "association_recall_threshold_delta": 0.0,
                 "structure_trigger_members_delta": 0,
                 "structure_trigger_fraction_floor": 0.0,
@@ -121,6 +124,7 @@ class PhasePolicyController:
                 "current_evidence_resource_multiplier": 1.10,
                 "historical_resource_multiplier": 0.65,
                 "resonance_recall_threshold_floor": 0.35,
+                "resonance_local_support_floor": 0.35,
                 "association_recall_threshold_delta": 0.12,
                 "structure_trigger_members_delta": 1,
                 "structure_trigger_fraction_floor": 0.60,

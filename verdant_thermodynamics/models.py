@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class FrozenThermodynamicModel(BaseModel):
@@ -14,6 +14,111 @@ class ThermodynamicPhase(str, Enum):
     RIGID = "Rigid"
     FLEXIBLE = "Flexible"
     CHAOTIC = "Chaotic"
+
+
+class AccessPressureMeasurementStatus(str, Enum):
+    """Whether a pre-admission access-pressure measurement is interpretable."""
+
+    COMPLETE = "complete"
+    INCOMPLETE = "incomplete"
+
+
+class AccessPressureCandidate(FrozenThermodynamicModel):
+    """One available earned structure overlapping the incoming cue."""
+
+    structure_id: str
+    member_count: int = Field(ge=1)
+    trigger_count: int = Field(ge=1)
+    trigger_fraction: float = Field(gt=0.0, le=1.0)
+    trigger_concept_ids: tuple[str, ...] = Field(min_length=1)
+    weak_context: bool
+
+    @model_validator(mode="after")
+    def validate_candidate(self) -> "AccessPressureCandidate":
+        if tuple(sorted(set(self.trigger_concept_ids))) != self.trigger_concept_ids:
+            raise ValueError("Access-pressure trigger concept IDs must be sorted and unique.")
+        if self.trigger_count != len(self.trigger_concept_ids):
+            raise ValueError("Access-pressure trigger count does not match its concept IDs.")
+        if self.trigger_count > self.member_count:
+            raise ValueError("Access-pressure trigger count exceeds structure membership.")
+        expected = self.trigger_count / self.member_count
+        if abs(self.trigger_fraction - expected) > 1e-12:
+            raise ValueError("Access-pressure trigger fraction is inconsistent.")
+        if self.weak_context != (self.trigger_fraction < 0.5):
+            raise ValueError("Access-pressure weak-context classification is inconsistent.")
+        return self
+
+
+class AccessPressureObservation(FrozenThermodynamicModel):
+    """Typed, causally read-only observation made before current-cue admission.
+
+    An incomplete record is explicit: it means at least one cue concept did not
+    exist in the inspected checkpoint.  It must never be read as zero pressure.
+    """
+
+    schema_id: str = "verdant.access_pressure_observation.v2"
+    observer_revision: str = "earned_structure_overlap_v2"
+    measurement_status: AccessPressureMeasurementStatus
+    behavioral_authority_enabled: bool = False
+    semantic_truth_judgement: bool = False
+    source_event_key: str = ""
+    canonical_state_fingerprint: str
+    cycle_before_experience: int = Field(ge=0)
+    cue_labels: tuple[str, ...] = ()
+    cue_concept_ids: tuple[str, ...] = ()
+    unknown_cue_labels: tuple[str, ...] = ()
+    available_overlapping_structures: int = Field(default=0, ge=0)
+    weak_context_candidate_count: int = Field(default=0, ge=0)
+    supported_context_candidate_count: int = Field(default=0, ge=0)
+    max_weak_trigger_fraction: float | None = Field(default=None, gt=0.0, lt=0.5)
+    candidate_details: tuple[AccessPressureCandidate, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_observation(self) -> "AccessPressureObservation":
+        for values, label in (
+            (self.cue_labels, "cue labels"),
+            (self.cue_concept_ids, "cue concept IDs"),
+            (self.unknown_cue_labels, "unknown cue labels"),
+        ):
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(f"Access-pressure {label} must be sorted and unique.")
+        if not self.canonical_state_fingerprint:
+            raise ValueError("Access-pressure observation requires a canonical fingerprint.")
+        if self.behavioral_authority_enabled:
+            raise ValueError("Access-pressure telemetry has no behavioral authority.")
+        if self.semantic_truth_judgement:
+            raise ValueError("Access-pressure telemetry cannot judge semantic truth.")
+        if self.measurement_status == AccessPressureMeasurementStatus.INCOMPLETE:
+            if not self.unknown_cue_labels:
+                raise ValueError("Incomplete access pressure requires unknown cue labels.")
+            if self.candidate_details or any(
+                (
+                    self.available_overlapping_structures,
+                    self.weak_context_candidate_count,
+                    self.supported_context_candidate_count,
+                )
+            ):
+                raise ValueError("Incomplete access pressure cannot publish partial candidate counts.")
+            if self.max_weak_trigger_fraction is not None:
+                raise ValueError("Incomplete access pressure cannot publish a weak trigger maximum.")
+            return self
+        if self.unknown_cue_labels:
+            raise ValueError("Complete access pressure cannot contain unknown cue labels.")
+        if self.available_overlapping_structures != len(self.candidate_details):
+            raise ValueError("Access-pressure candidate count is inconsistent.")
+        weak = tuple(item for item in self.candidate_details if item.weak_context)
+        supported = tuple(item for item in self.candidate_details if not item.weak_context)
+        if self.weak_context_candidate_count != len(weak):
+            raise ValueError("Access-pressure weak candidate count is inconsistent.")
+        if self.supported_context_candidate_count != len(supported):
+            raise ValueError("Access-pressure supported candidate count is inconsistent.")
+        expected_max = max((item.trigger_fraction for item in weak), default=None)
+        if expected_max != self.max_weak_trigger_fraction:
+            raise ValueError("Access-pressure weak trigger maximum is inconsistent.")
+        ids = tuple(item.structure_id for item in self.candidate_details)
+        if tuple(sorted(set(ids))) != ids:
+            raise ValueError("Access-pressure candidates must be sorted and unique.")
+        return self
 
 
 class FieldEntropyMeasurement(FrozenThermodynamicModel):

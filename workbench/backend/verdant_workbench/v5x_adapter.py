@@ -50,6 +50,11 @@ class V5XEngineAdapter(VerdantEngineAdapter):
                 "semantic_firewall_held": result.semantic_firewall_held,
                 "candidate_scope_ids": list(result.candidate_scope_ids),
                 "developmental_submission": True,
+                "access_pressure_observation": (
+                    result.access_pressure.model_dump(mode="json")
+                    if result.access_pressure is not None
+                    else None
+                ),
                 "thermodynamic_observation": (
                     result.thermodynamics.model_dump(mode="json")
                     if result.thermodynamics is not None

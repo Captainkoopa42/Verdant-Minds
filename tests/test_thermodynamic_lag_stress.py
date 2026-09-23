@@ -25,11 +25,13 @@ def test_lag_stress_source_is_previous_controlled_cycle_and_checkpoint_is_read_o
     assert first["tokens"] == 60
     assert second["tokens"] == third["tokens"] == 1
     # New concepts cannot be inspected as though their P membership had
-    # existed in the starting checkpoint.
-    assert first["observer_pre_access_pressure"] is None
-    assert first["controlled_pre_access_pressure"] is None
+    # existed in the starting checkpoint; incompleteness is explicit.
+    assert first["observer_pre_access_pressure"]["measurement_status"] == "incomplete"
+    assert first["controlled_pre_access_pressure"]["measurement_status"] == "incomplete"
+    assert first["observer_pre_access_pressure"]["candidate_details"] == []
     assert second["observer_pre_access_pressure"] is not None
     assert second["controlled_pre_access_pressure"] is not None
+    assert second["observer_pre_access_pressure"]["measurement_status"] == "complete"
     assert second["observer_pre_access_pressure"]["behavioral_authority_enabled"] is False
     assert hashlib.sha256(path.read_bytes()).hexdigest() == unchanged
 

@@ -32,6 +32,12 @@ In `test/thermodynamic-homeostasis-v1`, the V5-X Workbench adapter records
 hysteretic control phase, policy revision and temporary effective config only
 if an experimental governor is explicitly enabled. Replays emit neither.
 
+On `test/obligation-substrate-v0`, the adapter additionally records
+`ACCESS_PRESSURE_OBSERVED` as a separate pre-admission stream. Its payload
+contains the inspected pre-cycle fingerprint and an explicit
+`complete`/`incomplete` status. It is not folded into Tg, and it carries no
+control or semantic-truth authority. Replays do not emit it.
+
 The frontend **Thermodynamics** page displays these durable observations and
 control decisions. This page is **read-only**. Workbench teaching, curriculum,
 checkpoint saving, and reopening remain observer-only by default; there is no

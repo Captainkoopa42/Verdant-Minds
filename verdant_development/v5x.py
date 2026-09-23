@@ -4,11 +4,13 @@ from dataclasses import asdict, dataclass, replace
 
 from verdant_kernel import ExperienceCommand, VerdantKernel
 from verdant_thermodynamics import (
+    AccessPressureObservation,
     PhasePolicyController,
     PhasePolicyDelta,
     ThermodynamicPhase,
     ThermodynamicState,
     VerdantThermodynamicObserver,
+    inspect_labeled_access_pressure,
 )
 
 from .pipeline import (
@@ -16,6 +18,16 @@ from .pipeline import (
     DevelopmentalCycleResult,
     VerdantDevelopmentPipeline,
 )
+
+
+def _access_pressure_cue_labels(command: ExperienceCommand) -> tuple[str, ...]:
+    labels = set(command.concept_labels)
+    labels.update(item.label for item in command.concept_proposals)
+    for item in command.relation_proposals:
+        labels.update((item.source_label, item.target_label))
+    for item in command.claim_proposals:
+        labels.update((item.subject_label, item.object_label))
+    return tuple(sorted(labels))
 
 
 def controlled_development_config(
@@ -113,6 +125,7 @@ class V5XDevelopmentalCycleResult:
     """
 
     development: DevelopmentalCycleResult
+    access_pressure: AccessPressureObservation | None
     thermodynamics: ThermodynamicState | None
     modality: str
     thermodynamic_control: ThermodynamicControlApplication | None = None
@@ -129,6 +142,7 @@ class V5XDevelopmentPipeline:
         development: VerdantDevelopmentPipeline | None = None,
         *,
         thermodynamic_observer: VerdantThermodynamicObserver | None = None,
+        enable_access_pressure_observation: bool = True,
         enable_thermodynamic_observation: bool = True,
         enable_thermodynamic_control: bool = False,
         phase_policy_controller: PhasePolicyController | None = None,
@@ -140,6 +154,9 @@ class V5XDevelopmentPipeline:
         self.development = development or VerdantDevelopmentPipeline()
         self.thermodynamic_observer = (
             thermodynamic_observer or VerdantThermodynamicObserver()
+        )
+        self.enable_access_pressure_observation = bool(
+            enable_access_pressure_observation
         )
         self.enable_thermodynamic_observation = bool(
             enable_thermodynamic_observation
@@ -205,6 +222,13 @@ class V5XDevelopmentPipeline:
         command: ExperienceCommand,
     ) -> V5XDevelopmentalCycleResult:
         kernel_id = kernel.state.identity.kernel_id
+        access_pressure = None
+        if self.enable_access_pressure_observation:
+            access_pressure = inspect_labeled_access_pressure(
+                kernel,
+                _access_pressure_cue_labels(command),
+                source_event_key=command.event_key,
+            )
         development, control = self._controlled_development(kernel_id)
         result = development.advance(kernel, command)
 
@@ -234,9 +258,11 @@ class V5XDevelopmentPipeline:
         # as though it had altered a committed cycle.
         if result.replayed:
             control = None
+            access_pressure = None
 
         return V5XDevelopmentalCycleResult(
             development=result,
+            access_pressure=access_pressure,
             thermodynamics=thermodynamics,
             modality=command.modality,
             thermodynamic_control=control,

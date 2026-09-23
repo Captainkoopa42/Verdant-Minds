@@ -114,6 +114,9 @@ from .models import (
     RefoldingPolicy,
     StructuralChallengeObservation,
     StructuralChallengeRecord,
+    ObligationEventType,
+    ObligationHistoryEvent,
+    ObligationStatus,
     RefoldComponentProposal,
     StructureRefoldReport,
     StructureRefoldEvent,
@@ -414,6 +417,8 @@ class VerdantKernel:
             "layered_probe_event_count": len(self.state.layered_probe_events),
             "structural_challenge_count": len(self.state.structural_challenges),
             "structure_refold_event_count": len(self.state.structure_refold_events),
+            "obligation_kernel_count": len(self.state.obligation_kernels),
+            "obligation_history_event_count": len(self.state.obligation_history),
             "refolded_structure_count": sum(
                 1 for item in self.state.structures.values()
                 if item.lineage_parent_structure_id is not None
@@ -5611,6 +5616,139 @@ class VerdantKernel:
                     raise KernelInvariantError("Refold history lost a produced structure.")
             if event.council_decision_event_id is not None and event.council_decision_event_id not in known_decision_ids:
                 raise KernelInvariantError("Refold event lost Council authorization.")
+
+        for obligation_id, obligation in self.state.obligation_kernels.items():
+            try:
+                obligation = type(obligation).model_validate(
+                    obligation.model_dump(mode="json")
+                )
+            except ValueError as exc:
+                raise KernelInvariantError(
+                    "Obligation kernel failed identity validation."
+                ) from exc
+            if obligation_id != obligation.kernel_id:
+                raise KernelInvariantError("Obligation-kernel dictionary key drift detected.")
+            if obligation.creation_cycle > self.state.cycle:
+                raise KernelInvariantError("Obligation creation cycle is in the future.")
+        seen_obligation_events: set[str] = set()
+        last_obligation_event: dict[str, str] = {}
+        creation_counts: dict[str, int] = {}
+        obligation_statuses: dict[str, ObligationStatus] = {}
+        obligation_source_keys: dict[str, set[str]] = {}
+        pending_recheck_grants: dict[str, float] = {}
+        prior_obligation_sequence = 0
+        prior_obligation_cycle = 0
+        transitions_by_sequence = {
+            item.sequence: item for item in self.state.transitions
+        }
+        for event in self.state.obligation_history:
+            try:
+                event = ObligationHistoryEvent.model_validate(
+                    event.model_dump(mode="json")
+                )
+            except ValueError as exc:
+                raise KernelInvariantError(
+                    "Obligation history event failed checksum validation."
+                ) from exc
+            if event.event_id in seen_obligation_events:
+                raise KernelInvariantError("Duplicate obligation history event detected.")
+            if event.obligation_id not in self.state.obligation_kernels:
+                raise KernelInvariantError("Obligation history lost its immutable kernel.")
+            if event.cycle > self.state.cycle or event.committed_sequence > self.state.event_sequence:
+                raise KernelInvariantError("Obligation history points beyond canonical state.")
+            if event.committed_sequence <= prior_obligation_sequence:
+                raise KernelInvariantError("Obligation history sequence is not append-only.")
+            if event.cycle <= prior_obligation_cycle:
+                raise KernelInvariantError("Obligation history cycle is not append-only.")
+            transition = transitions_by_sequence.get(event.committed_sequence)
+            if (
+                transition is None
+                or transition.cycle != event.cycle
+                or transition.operation != f"obligation_{event.event_type.value}"
+                or transition.command_hash != event.payload_sha256
+                or event.event_id not in transition.output_refs
+            ):
+                raise KernelInvariantError("Obligation history lost its canonical transition.")
+            expected_previous = last_obligation_event.get(event.obligation_id)
+            if event.previous_event_id != expected_previous:
+                raise KernelInvariantError("Obligation history hash-chain predecessor drift detected.")
+            if any(item not in seen_obligation_events for item in event.basis_event_refs):
+                raise KernelInvariantError("Obligation history cites a missing or future basis event.")
+            source_keys = obligation_source_keys.setdefault(event.obligation_id, set())
+            if event.source_event_key in source_keys:
+                raise KernelInvariantError("Obligation source event key was reused.")
+            source_keys.add(event.source_event_key)
+            if event.event_type == ObligationEventType.CREATED:
+                creation_counts[event.obligation_id] = creation_counts.get(event.obligation_id, 0) + 1
+                obligation = self.state.obligation_kernels[event.obligation_id]
+                if event.cycle != obligation.creation_cycle:
+                    raise KernelInvariantError("Obligation creation event/kernel cycle drift detected.")
+                obligation_statuses[event.obligation_id] = ObligationStatus.OPEN
+            else:
+                status = obligation_statuses.get(event.obligation_id)
+                if status is None:
+                    raise KernelInvariantError("Obligation history precedes its creation event.")
+                if event.event_type == ObligationEventType.RETRIGGERED:
+                    pass
+                elif event.event_type == ObligationEventType.ATTEMPT_RECORDED:
+                    if status not in {
+                        ObligationStatus.OPEN,
+                        ObligationStatus.INVESTIGATING,
+                        ObligationStatus.REOPENED,
+                    }:
+                        raise KernelInvariantError("Obligation attempt violates lifecycle order.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.INVESTIGATING
+                elif event.event_type == ObligationEventType.STALLED:
+                    if status not in {ObligationStatus.OPEN, ObligationStatus.INVESTIGATING}:
+                        raise KernelInvariantError("Obligation stall violates lifecycle order.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.STALLED
+                elif event.event_type == ObligationEventType.WAKE_CANDIDATE:
+                    if status not in {ObligationStatus.STALLED, ObligationStatus.MAY_WAKE}:
+                        raise KernelInvariantError("Obligation wake violates lifecycle order.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.MAY_WAKE
+                elif event.event_type == ObligationEventType.RECHECK_ALLOCATED:
+                    if status != ObligationStatus.MAY_WAKE:
+                        raise KernelInvariantError("Obligation recheck allocation violates lifecycle order.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.RECHECK_PENDING
+                    pending_recheck_grants[event.obligation_id] = event.recheck_budget_granted or 0.0
+                elif event.event_type == ObligationEventType.RECHECK_NO_CHANGE:
+                    if status != ObligationStatus.RECHECK_PENDING:
+                        raise KernelInvariantError("Obligation no-change result violates lifecycle order.")
+                    grant = pending_recheck_grants.pop(event.obligation_id, None)
+                    if grant is None or (event.recheck_budget_consumed or 0.0) > grant + 1e-12:
+                        raise KernelInvariantError("Obligation recheck exceeded its grant.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.STALLED
+                elif event.event_type == ObligationEventType.REOPENED:
+                    if status != ObligationStatus.RECHECK_PENDING:
+                        raise KernelInvariantError("Obligation reopen violates lifecycle order.")
+                    grant = pending_recheck_grants.pop(event.obligation_id, None)
+                    if grant is None or (event.recheck_budget_consumed or 0.0) > grant + 1e-12:
+                        raise KernelInvariantError("Obligation reopen exceeded its recheck grant.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.REOPENED
+                elif event.event_type == ObligationEventType.RESOLVED:
+                    if status not in {ObligationStatus.INVESTIGATING, ObligationStatus.REOPENED}:
+                        raise KernelInvariantError("Obligation resolution violates lifecycle order.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.RESOLVED
+                elif event.event_type == ObligationEventType.REVALIDATION_REQUIRED:
+                    if status != ObligationStatus.RESOLVED:
+                        raise KernelInvariantError("Obligation revalidation violates lifecycle order.")
+                    obligation_statuses[event.obligation_id] = ObligationStatus.REVALIDATION_REQUIRED
+            if event.stall_certificate is not None:
+                certificate = event.stall_certificate
+                if certificate.obligation_kernel_ref != event.obligation_id:
+                    raise KernelInvariantError("Stall certificate points to another obligation.")
+                if certificate.cycle_issued != event.cycle:
+                    raise KernelInvariantError("Stall certificate issue cycle drift detected.")
+                if any(item not in seen_obligation_events for item in certificate.basis_event_refs):
+                    raise KernelInvariantError("Stall certificate cites a missing or future basis event.")
+            seen_obligation_events.add(event.event_id)
+            last_obligation_event[event.obligation_id] = event.event_id
+            prior_obligation_sequence = event.committed_sequence
+            prior_obligation_cycle = event.cycle
+        if set(creation_counts) != set(self.state.obligation_kernels):
+            raise KernelInvariantError("Every obligation kernel requires one creation event.")
+        if any(count != 1 for count in creation_counts.values()):
+            raise KernelInvariantError("Obligation kernels must have exactly one creation event.")
 
         interaction_event_ids: set[str] = set()
         for event in self.state.structure_interaction_events:

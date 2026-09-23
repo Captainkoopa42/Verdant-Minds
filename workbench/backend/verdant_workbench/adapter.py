@@ -221,6 +221,11 @@ class VerdantEngineAdapter:
                 "experience_event_key": result.experience.event_key,
                 "semantic_firewall_held": result.semantic_firewall_held,
                 "candidate_scope_ids": list(result.candidate_scope_ids),
+                "access_pressure_observation": (
+                    result.access_pressure.model_dump(mode="json")
+                    if getattr(result, "access_pressure", None) is not None
+                    else None
+                ),
                 "thermodynamic_observation": (
                     result.thermodynamics.model_dump(mode="json")
                     if getattr(result, "thermodynamics", None) is not None

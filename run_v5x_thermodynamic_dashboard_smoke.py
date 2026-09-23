@@ -71,6 +71,20 @@ def main() -> int:
     )
     if len(events) != 1 or receipt.result["thermodynamic_control"] is not None:
         raise RuntimeError("Expected one observer event and no control action.")
+    pressure_events = tuple(
+        event for event in receipt.events
+        if event.event_type == "ACCESS_PRESSURE_OBSERVED"
+    )
+    pressure = receipt.result["access_pressure_observation"]
+    if len(pressure_events) != 1 or pressure is None:
+        raise RuntimeError("Expected one pre-admission access-pressure event.")
+    if pressure["behavioral_authority_enabled"]:
+        raise RuntimeError("Access-pressure observation gained behavioral authority.")
+    if (
+        pressure["canonical_state_fingerprint"] != original_fingerprint
+        or pressure["cycle_before_experience"] != original_cycle
+    ):
+        raise RuntimeError("Access pressure was not measured against the pre-admission state.")
     observed = receipt.result["thermodynamic_observation"]
     if observed is None or observed["metadata"]["behavioral_authority"]:
         raise RuntimeError("Thermodynamic observation is missing or authoritative.")
@@ -98,6 +112,9 @@ def main() -> int:
         "post_teaching_cycle": adapter.kernel.state.cycle,
         "reopened_fingerprint_equal": True,
         "observer_event_type": events[0].event_type,
+        "access_pressure_event_type": pressure_events[0].event_type,
+        "access_pressure_measurement_status": pressure["measurement_status"],
+        "access_pressure_pre_cycle_provenance": True,
         "observed_t_g": observed["t_g"],
         "observed_phase": observed["phase"],
         "automatic_control_enabled": False,

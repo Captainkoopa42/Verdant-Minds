@@ -17,6 +17,7 @@ from verdant_kernel import (
     VerdantKernel,
 )
 from verdant_thermodynamics import (
+    AccessPressureMeasurementStatus,
     AppendOnlyTelemetryWriter,
     PhaseHysteresis,
     PhasePolicyController,
@@ -114,6 +115,53 @@ def test_observer_is_deterministic_and_measurement_only() -> None:
     replay_kernel = VerdantKernel(seed=2302, state_dim=32, run_label="thermo-null")
     replay_result = V5XDevelopmentPipeline().advance(replay_kernel, command)
     assert replay_result.thermodynamics == observed.thermodynamics
+
+
+def test_pre_admission_pressure_includes_claim_endpoints_without_creating_them():
+    kernel = VerdantKernel(seed=2310, state_dim=24, run_label="pressure-claim-cue")
+    command = ExperienceCommand(
+        event_key="claim-cue-001",
+        source_ref="thermo:claim-cue",
+        modality="text",
+        payload_sha256=_digest("indicator is bright"),
+        feature_vector=(1.0, 0.0, 0.0),
+        claim_proposals=(ClaimProposal(
+            subject_label="indicator",
+            predicate="has_property",
+            object_label="bright",
+            source_class=ClaimSourceClass.DIRECT_OBSERVATION,
+            confidence=1.0,
+        ),),
+        semantic_evidence_kind=EvidenceKind.OBSERVATION,
+        metadata={"sentence": "indicator is bright"},
+    )
+    before = kernel.fingerprint()
+
+    result = V5XDevelopmentPipeline().advance(kernel, command)
+
+    assert result.access_pressure is not None
+    assert result.access_pressure.measurement_status == AccessPressureMeasurementStatus.INCOMPLETE
+    assert result.access_pressure.unknown_cue_labels == ("bright", "indicator")
+    assert result.access_pressure.canonical_state_fingerprint == before
+    assert result.access_pressure.cycle_before_experience == 0
+
+
+def test_pre_admission_pressure_observer_is_causally_read_only():
+    enabled = VerdantKernel(seed=2311, state_dim=24, run_label="pressure-null")
+    disabled = VerdantKernel(seed=2311, state_dim=24, run_label="pressure-null")
+    command = _command("alpha-pressure-null")
+
+    observed = V5XDevelopmentPipeline(
+        enable_access_pressure_observation=True,
+    ).advance(enabled, command)
+    unobserved = V5XDevelopmentPipeline(
+        enable_access_pressure_observation=False,
+    ).advance(disabled, command)
+
+    assert observed.access_pressure is not None
+    assert unobserved.access_pressure is None
+    assert enabled.snapshot() == disabled.snapshot()
+    assert enabled.fingerprint() == disabled.fingerprint()
 
 
 def test_contradiction_pressure_increases_environmental_uncertainty() -> None:

@@ -1,4 +1,4 @@
-from .access_pressure import inspect_access_pressure
+from .access_pressure import inspect_access_pressure, inspect_labeled_access_pressure
 from .controller import PhaseHysteresis, PhasePolicyController
 from .metrics import (
     environmental_uncertainty,
@@ -8,6 +8,9 @@ from .metrics import (
     normalized_shannon_from_nonnegative,
 )
 from .models import (
+    AccessPressureCandidate,
+    AccessPressureMeasurementStatus,
+    AccessPressureObservation,
     EnvironmentMeasurement,
     FieldEntropyMeasurement,
     InputComplexityMeasurement,
@@ -21,6 +24,9 @@ from .phase import FORMULA_REVISION, classify_phase, cognitive_temperature, comp
 from .telemetry import AppendOnlyTelemetryWriter, DevelopmentTelemetryRecord, record_from_development
 
 __all__ = [
+    "AccessPressureCandidate",
+    "AccessPressureMeasurementStatus",
+    "AccessPressureObservation",
     "AppendOnlyTelemetryWriter",
     "DevelopmentTelemetryRecord",
     "EnvironmentMeasurement",
@@ -41,6 +47,7 @@ __all__ = [
     "field_entropy",
     "input_complexity",
     "inspect_access_pressure",
+    "inspect_labeled_access_pressure",
     "memory_complexity",
     "normalized_shannon_from_nonnegative",
     "record_from_development",

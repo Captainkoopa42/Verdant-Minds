@@ -90,7 +90,7 @@ export function App(){
   const teachNow=async()=>{ if(!selectedRun)return; await execute(()=>api.teachNow(selectedRun,context,words(lesson),status?.descriptor?.state_revision)); };
   const probeNow=async()=>{ if(!selectedRun)return; await execute(()=>api.probeNow(selectedRun,words(probe),status?.descriptor?.state_revision)); };
   const save=async()=>{ if(!selectedRun)return; await execute(()=>api.save(selectedRun,checkpointLabel)); setCheckpointLabel(''); };
-  const fork=async()=>{ if(!status?.head_checkpoint_id){setError('Save a checkpoint before branching.');return;} const d=await execute(()=>api.branch(status.head_checkpoint_id)); setSelectedRun(d.run_id); setPage('Cultivate'); };
+  const fork=async()=>{ const checkpointId=status?.head_checkpoint_id; if(!checkpointId){setError('Save a checkpoint before branching.');return;} const d=await execute(()=>api.branch(checkpointId)); setSelectedRun(d.run_id); setPage('Cultivate'); };
 
   return <div className="shell">
     <aside>
@@ -129,7 +129,7 @@ function EvidencePage({selectedRun}:any){
   const a:any=api; const [snap,setSnap]=useState<any>(null); const [query,setQuery]=useState('');
   useEffect(()=>{if(selectedRun)a.snapshot(selectedRun,'full_debug').then(setSnap).catch(()=>setSnap(null));},[selectedRun]);
   if(!selectedRun)return <div className="page"><section className="title"><h2>Select an organism to inspect evidence.</h2></section></div>;
-  const st=snap?.payload?.state||{}; const groups:any[]=[['Evidence',st.evidence],['Concepts',st.concepts],['Relations',st.relations],['Claims',st.claims],['Contradictions',st.contradictions],['Structural challenges',st.structural_challenges]];
+  const st=snap?.payload?.state||{}; const groups:any[]=[['Evidence',st.evidence],['Concepts',st.concepts],['Relations',st.relations],['Claims',st.claims],['Contradictions',st.contradictions],['Structural challenges',st.structural_challenges],['Obligation kernels',st.obligation_kernels],['Obligation history',st.obligation_history]];
   return <div className="page"><section className="title compact"><div className="eyebrow">EVIDENCE / KNOWLEDGE INSPECTOR · 1.0.1</div><h2>Canonical records, searchable and read-only.</h2></section><section className="panel"><input placeholder="search records" value={query} onChange={e=>setQuery(e.target.value)}/></section><div className="studio-grid">{groups.map(([name,obj])=>{const vals:any[]=Array.isArray(obj)?obj:Object.values(obj||{});const shown=query?vals.filter(v=>JSON.stringify(v).toLowerCase().includes(query.toLowerCase())):vals;return <section className="panel" key={name}><h3>{name} · {shown.length}/{vals.length}</h3><pre className="inspector tall">{JSON.stringify(shown.slice(0,80),null,2)}</pre></section>})}</div></div>;
 }
 
@@ -154,6 +154,7 @@ function ThermodynamicsPage({selectedRun}:any){
       const batch=await api.events(selectedRun,cursor,1000);
       const received:EventEnvelope[]=batch.events||[];
       const thermodynamic=received.filter(item=>
+        item.event_type==='ACCESS_PRESSURE_OBSERVED' ||
         item.event_type==='THERMODYNAMIC_OBSERVED' ||
         item.event_type==='THERMODYNAMIC_CONTROL_APPLIED'
       );
@@ -171,16 +172,34 @@ function ThermodynamicsPage({selectedRun}:any){
   if(!selectedRun)return <div className="page"><section className="title"><h2>Select an organism to inspect thermodynamics.</h2></section></div>;
 
   const observations=records.filter(item=>item.event_type==='THERMODYNAMIC_OBSERVED');
+  const accessPressure=records.filter(item=>item.event_type==='ACCESS_PRESSURE_OBSERVED');
   const controls=records.filter(item=>item.event_type==='THERMODYNAMIC_CONTROL_APPLIED');
+  const latestAccess=accessPressure[accessPressure.length-1];
   const latest=observations[observations.length-1];
   const lastControl=controls[controls.length-1];
   const latestPayload:any=latest?.payload;
+  const accessPayload:any=latestAccess?.payload;
   const controlPayload:any=lastControl?.payload;
 
   return <div className="page">
     <section className="title compact"><div className="eyebrow">THERMODYNAMICS · EXPERIMENTAL OBSERVATION</div>
       <h2>Measured state versus behavioral authority</h2>
       <p>Observer-only is the default. The Tg measurement does not change memory or activate homeostasis. Control decisions are displayed separately with their previous-cycle provenance.</p>
+    </section>
+    <section className="panel">
+      <h3>Most recent pre-admission access pressure</h3>
+      <pre className="inspector">{JSON.stringify(latestAccess?{
+        measured_before_cycle:accessPayload?.cycle_before_experience,
+        source_event_key:accessPayload?.source_event_key,
+        measurement_status:accessPayload?.measurement_status,
+        unknown_cue_labels:accessPayload?.unknown_cue_labels,
+        overlapping_structures:accessPayload?.available_overlapping_structures,
+        weak_context_candidates:accessPayload?.weak_context_candidate_count,
+        supported_context_candidates:accessPayload?.supported_context_candidate_count,
+        canonical_state_fingerprint:accessPayload?.canonical_state_fingerprint,
+        behavioral_authority:accessPayload?.behavioral_authority_enabled,
+      }:{"status":"No access-pressure events in the loaded history."},null,2)}</pre>
+      <p>This is a separate pre-admission structural-overlap observation. It is neither Tg nor a semantic truth judgement, and incomplete does not mean zero pressure.</p>
     </section>
     <section className="panel">
       <h3>Most recent measured state</h3>

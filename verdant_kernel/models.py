@@ -91,6 +91,71 @@ class ContradictionStatus(str, Enum):
     WEIGHTED = "weighted"
 
 
+class ObligationFamily(str, Enum):
+    DEPENDENCY_GAP = "DependencyGap"
+
+
+class ObligationStatus(str, Enum):
+    OPEN = "Open"
+    INVESTIGATING = "Investigating"
+    STALLED = "Stalled"
+    MAY_WAKE = "MayWake"
+    RECHECK_PENDING = "Recheck_Pending"
+    REOPENED = "Reopened"
+    RESOLVED = "Resolved"
+    REVALIDATION_REQUIRED = "Revalidation_Required"
+
+
+class ObligationEventType(str, Enum):
+    CREATED = "Created"
+    RETRIGGERED = "Retriggered"
+    ATTEMPT_RECORDED = "AttemptRecorded"
+    STALLED = "Stalled"
+    WAKE_CANDIDATE = "WakeCandidate"
+    RECHECK_ALLOCATED = "RecheckAllocated"
+    RECHECK_NO_CHANGE = "RecheckNoChange"
+    REOPENED = "Reopened"
+    RESOLVED = "Resolved"
+    REVALIDATION_REQUIRED = "RevalidationRequired"
+
+
+class ObligationAuthority(str, Enum):
+    DETECTOR = "Detector"
+    SCHEDULER = "Scheduler"
+    RESOLUTION_GOVERNOR = "Resolution_Governor"
+    GRAPH_MONITOR = "Graph_Environment_Monitor"
+
+
+class ObligationAttemptAttribution(str, Enum):
+    PROGRESS = "Progress"
+    VALID_NULL = "ValidNull"
+    INTERACTION_FAULT = "InteractionFault"
+
+
+class StallCause(str, Enum):
+    NO_INDEPENDENT_EVIDENCE = "No_Independent_Evidence"
+    ALL_ATTEMPTS_EQUIVALENT = "All_Attempts_Equivalent"
+    MISSING_CAPABILITY = "Missing_Capability"
+    NO_APPLICABLE_LENS = "No_Applicable_Lens"
+    REPRESENTATION_INSUFFICIENT = "Representation_Insufficient"
+    GOVERNANCE_BLOCKED = "Governance_Blocked"
+    BUDGET_EXHAUSTED_UNTRIED_REMAINING = "Budget_Exhausted_Untried_Remaining"
+    BUDGET_EXHAUSTED_ALL_EXHAUSTED = "Budget_Exhausted_All_Exhausted"
+
+
+class PredicateOperator(str, Enum):
+    ATOM = "ATOM"
+    AND = "AND"
+    OR = "OR"
+
+
+class ReopenPredicate(str, Enum):
+    CROSSES_DEPENDENCY_CUT = "CrossesDependencyCut"
+    HAS_NEW_LINEAGE_ROOT = "HasNewLineageRoot"
+    HAS_NEW_EVALUATOR_VERSION = "HasNewEvaluatorVersion"
+    BUDGET_RENEWED = "BudgetRenewed"
+
+
 class GovernanceProposalKind(str, Enum):
     INVESTIGATE = "investigate"
     ATTEND = "attend"
@@ -2561,6 +2626,687 @@ class StructuralChallengeRecord(FrozenRecord):
         return self
 
 
+class StallCauseExpression(FrozenRecord):
+    """Small typed expression tree explaining why an obligation stalled."""
+
+    operator: PredicateOperator
+    cause: StallCause | None = None
+    operands: tuple["StallCauseExpression", ...] = ()
+
+    @classmethod
+    def atom(cls, cause: StallCause) -> "StallCauseExpression":
+        return cls(operator=PredicateOperator.ATOM, cause=cause)
+
+    @classmethod
+    def all_of(cls, *operands: "StallCauseExpression") -> "StallCauseExpression":
+        ordered = tuple(sorted(
+            set(operands),
+            key=lambda item: canonical_json_bytes(item.model_dump(mode="json")),
+        ))
+        return cls(operator=PredicateOperator.AND, operands=ordered)
+
+    @classmethod
+    def any_of(cls, *operands: "StallCauseExpression") -> "StallCauseExpression":
+        ordered = tuple(sorted(
+            set(operands),
+            key=lambda item: canonical_json_bytes(item.model_dump(mode="json")),
+        ))
+        return cls(operator=PredicateOperator.OR, operands=ordered)
+
+    @model_validator(mode="after")
+    def validate_expression(self) -> "StallCauseExpression":
+        if self.operator == PredicateOperator.ATOM:
+            if self.cause is None or self.operands:
+                raise ValueError("Atomic stall causes require one cause and no operands.")
+            return self
+        if self.cause is not None or len(self.operands) < 2:
+            raise ValueError("Composite stall causes require at least two operands.")
+        encodings = tuple(
+            canonical_json_bytes(item.model_dump(mode="json"))
+            for item in self.operands
+        )
+        if tuple(sorted(set(encodings))) != encodings:
+            raise ValueError("Composite stall-cause operands must be sorted and unique.")
+        return self
+
+
+class ReopenCondition(FrozenRecord):
+    """Answer-agnostic predicate tree used to wake a stalled obligation."""
+
+    operator: PredicateOperator
+    predicate: ReopenPredicate | None = None
+    operands: tuple["ReopenCondition", ...] = ()
+
+    @classmethod
+    def atom(cls, predicate: ReopenPredicate) -> "ReopenCondition":
+        return cls(operator=PredicateOperator.ATOM, predicate=predicate)
+
+    @classmethod
+    def all_of(cls, *operands: "ReopenCondition") -> "ReopenCondition":
+        ordered = tuple(sorted(
+            set(operands),
+            key=lambda item: canonical_json_bytes(item.model_dump(mode="json")),
+        ))
+        return cls(operator=PredicateOperator.AND, operands=ordered)
+
+    @classmethod
+    def any_of(cls, *operands: "ReopenCondition") -> "ReopenCondition":
+        ordered = tuple(sorted(
+            set(operands),
+            key=lambda item: canonical_json_bytes(item.model_dump(mode="json")),
+        ))
+        return cls(operator=PredicateOperator.OR, operands=ordered)
+
+    @model_validator(mode="after")
+    def validate_condition(self) -> "ReopenCondition":
+        if self.operator == PredicateOperator.ATOM:
+            if self.predicate is None or self.operands:
+                raise ValueError("Atomic reopen conditions require one predicate.")
+            return self
+        if self.predicate is not None or len(self.operands) < 2:
+            raise ValueError("Composite reopen conditions require at least two operands.")
+        encodings = tuple(
+            canonical_json_bytes(item.model_dump(mode="json"))
+            for item in self.operands
+        )
+        if tuple(sorted(set(encodings))) != encodings:
+            raise ValueError("Composite reopen operands must be sorted and unique.")
+        return self
+
+
+class DependencyCutEdge(FrozenRecord):
+    edge_id: str
+    source_node_ref: str
+    relation_type: str
+    target_node_ref: str
+
+    @classmethod
+    def build(
+        cls,
+        source_node_ref: str,
+        relation_type: str,
+        target_node_ref: str,
+    ) -> "DependencyCutEdge":
+        return cls(
+            edge_id=stable_id(
+                "dependency_cut_edge",
+                source_node_ref,
+                relation_type,
+                target_node_ref,
+            ),
+            source_node_ref=source_node_ref,
+            relation_type=relation_type,
+            target_node_ref=target_node_ref,
+        )
+
+    @model_validator(mode="after")
+    def validate_edge(self) -> "DependencyCutEdge":
+        if not all(
+            item.strip()
+            for item in (
+                self.source_node_ref,
+                self.relation_type,
+                self.target_node_ref,
+            )
+        ):
+            raise ValueError("Dependency cut edges require non-empty typed endpoints.")
+        expected = stable_id(
+            "dependency_cut_edge",
+            self.source_node_ref,
+            self.relation_type,
+            self.target_node_ref,
+        )
+        if self.edge_id != expected:
+            raise ValueError("Dependency cut edge identity checksum mismatch.")
+        return self
+
+
+class DependencyGraphDelta(FrozenRecord):
+    delta_id: str
+    source_event_key: str
+    changed_node_refs: tuple[str, ...] = ()
+    changed_edges: tuple[DependencyCutEdge, ...] = ()
+    lineage_roots: tuple[str, ...] = ()
+    evaluator_versions: tuple[str, ...] = ()
+    audit_ping: bool = False
+    budget_renewed: bool = False
+
+    @classmethod
+    def build(
+        cls,
+        source_event_key: str,
+        *,
+        changed_node_refs: tuple[str, ...] = (),
+        changed_edges: tuple[DependencyCutEdge, ...] = (),
+        lineage_roots: tuple[str, ...] = (),
+        evaluator_versions: tuple[str, ...] = (),
+        audit_ping: bool = False,
+        budget_renewed: bool = False,
+    ) -> "DependencyGraphDelta":
+        nodes = tuple(sorted(set(changed_node_refs)))
+        edges = tuple(sorted(set(changed_edges), key=lambda item: item.edge_id))
+        roots = tuple(sorted(set(lineage_roots)))
+        versions = tuple(sorted(set(evaluator_versions)))
+        delta_id = stable_id(
+            "obligation_delta",
+            source_event_key,
+            nodes,
+            tuple(item.model_dump(mode="json") for item in edges),
+            roots,
+            versions,
+            audit_ping,
+            budget_renewed,
+        )
+        return cls(
+            delta_id=delta_id,
+            source_event_key=source_event_key,
+            changed_node_refs=nodes,
+            changed_edges=edges,
+            lineage_roots=roots,
+            evaluator_versions=versions,
+            audit_ping=audit_ping,
+            budget_renewed=budget_renewed,
+        )
+
+    @model_validator(mode="after")
+    def validate_delta(self) -> "DependencyGraphDelta":
+        if not self.source_event_key.strip():
+            raise ValueError("Dependency graph delta requires a source event key.")
+        if tuple(sorted(set(self.changed_node_refs))) != self.changed_node_refs:
+            raise ValueError("Changed node refs must be sorted and unique.")
+        edge_ids = tuple(item.edge_id for item in self.changed_edges)
+        if tuple(sorted(set(edge_ids))) != edge_ids:
+            raise ValueError("Changed dependency edges must be sorted and unique.")
+        if tuple(sorted(set(self.lineage_roots))) != self.lineage_roots:
+            raise ValueError("Delta lineage roots must be sorted and unique.")
+        if tuple(sorted(set(self.evaluator_versions))) != self.evaluator_versions:
+            raise ValueError("Delta evaluator versions must be sorted and unique.")
+        if not (
+            self.changed_node_refs
+            or self.changed_edges
+            or self.lineage_roots
+            or self.evaluator_versions
+            or self.audit_ping
+            or self.budget_renewed
+        ):
+            raise ValueError("Dependency graph delta cannot be empty.")
+        expected = stable_id(
+            "obligation_delta",
+            self.source_event_key,
+            self.changed_node_refs,
+            tuple(item.model_dump(mode="json") for item in self.changed_edges),
+            self.lineage_roots,
+            self.evaluator_versions,
+            self.audit_ping,
+            self.budget_renewed,
+        )
+        if self.delta_id != expected:
+            raise ValueError("Dependency graph delta identity checksum mismatch.")
+        return self
+
+
+class ObligationBudgetState(FrozenRecord):
+    requested: float = Field(default=0.0, ge=0.0)
+    granted: float = Field(default=0.0, ge=0.0)
+    consumed: float = Field(default=0.0, ge=0.0)
+
+    @model_validator(mode="after")
+    def validate_budget(self) -> "ObligationBudgetState":
+        if self.granted > self.requested + 1e-12:
+            raise ValueError("Obligation grant cannot exceed requested budget.")
+        if self.consumed > self.granted + 1e-12:
+            raise ValueError("Obligation consumption cannot exceed granted budget.")
+        return self
+
+
+class ExhaustedAttemptSignature(FrozenRecord):
+    signature_id: str
+    projection_hash: str
+    equivalence_lens_version: str
+    horizon: int = Field(ge=0)
+    operator_version: str
+    admissibility_policy_version: str
+    outcome_hash: str
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        projection_hash: str,
+        equivalence_lens_version: str,
+        horizon: int,
+        operator_version: str,
+        admissibility_policy_version: str,
+        outcome_hash: str,
+    ) -> "ExhaustedAttemptSignature":
+        parts = (
+            projection_hash,
+            equivalence_lens_version,
+            horizon,
+            operator_version,
+            admissibility_policy_version,
+            outcome_hash,
+        )
+        return cls(
+            signature_id=stable_id("attempt_equivalence", *parts),
+            projection_hash=projection_hash,
+            equivalence_lens_version=equivalence_lens_version,
+            horizon=horizon,
+            operator_version=operator_version,
+            admissibility_policy_version=admissibility_policy_version,
+            outcome_hash=outcome_hash,
+        )
+
+    @model_validator(mode="after")
+    def validate_signature(self) -> "ExhaustedAttemptSignature":
+        values = (
+            self.projection_hash,
+            self.equivalence_lens_version,
+            self.operator_version,
+            self.admissibility_policy_version,
+            self.outcome_hash,
+        )
+        if not all(item.strip() for item in values):
+            raise ValueError("Attempt-equivalence signature fields cannot be empty.")
+        expected = stable_id(
+            "attempt_equivalence",
+            self.projection_hash,
+            self.equivalence_lens_version,
+            self.horizon,
+            self.operator_version,
+            self.admissibility_policy_version,
+            self.outcome_hash,
+        )
+        if self.signature_id != expected:
+            raise ValueError("Attempt-equivalence signature checksum mismatch.")
+        return self
+
+
+class ObligationAttempt(FrozenRecord):
+    attempt_id: str
+    action_operator: str
+    target_lens: str
+    signature: ExhaustedAttemptSignature
+    budget: ObligationBudgetState
+    result_attribution: ObligationAttemptAttribution
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        action_operator: str,
+        target_lens: str,
+        signature: ExhaustedAttemptSignature,
+        budget: ObligationBudgetState,
+        result_attribution: ObligationAttemptAttribution,
+    ) -> "ObligationAttempt":
+        attempt_id = stable_id(
+            "obligation_attempt",
+            action_operator,
+            target_lens,
+            signature.signature_id,
+            budget.model_dump(mode="json"),
+            result_attribution.value,
+        )
+        return cls(
+            attempt_id=attempt_id,
+            action_operator=action_operator,
+            target_lens=target_lens,
+            signature=signature,
+            budget=budget,
+            result_attribution=result_attribution,
+        )
+
+    @model_validator(mode="after")
+    def validate_attempt(self) -> "ObligationAttempt":
+        if not self.action_operator.strip() or not self.target_lens.strip():
+            raise ValueError("Obligation attempts require an operator and lens.")
+        expected = stable_id(
+            "obligation_attempt",
+            self.action_operator,
+            self.target_lens,
+            self.signature.signature_id,
+            self.budget.model_dump(mode="json"),
+            self.result_attribution.value,
+        )
+        if self.attempt_id != expected:
+            raise ValueError("Obligation attempt identity checksum mismatch.")
+        return self
+
+
+class DependencyGapStallCertificate(FrozenRecord):
+    certificate_id: str
+    obligation_kernel_ref: str
+    cycle_issued: int = Field(ge=1)
+    stall_cause_expression: StallCauseExpression
+    unresolved_evidence_frontier: tuple[str, ...] = ()
+    bounded_subgraph_hash: str
+    reachable_partition_refs: tuple[str, ...] = ()
+    evidence_partition_refs: tuple[str, ...] = ()
+    dependency_cut_set: tuple[DependencyCutEdge, ...] = ()
+    exhausted_attempts: tuple[ExhaustedAttemptSignature, ...] = ()
+    provenance_independence_semantics: str = "lineage_root_exclusion_v1"
+    exhausted_lineage_roots: tuple[str, ...] = ()
+    unavailable_input_operator_types: tuple[str, ...] = ()
+    active_lens_and_policy_versions: tuple[str, ...] = ()
+    governance_constraints: tuple[str, ...] = ()
+    budget_state_at_stall: ObligationBudgetState
+    reopen_condition: ReopenCondition
+    derivation_policy_version: str
+    basis_event_refs: tuple[str, ...] = Field(min_length=1)
+    supersedes_certificate_id: str | None = None
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        obligation_kernel_ref: str,
+        cycle_issued: int,
+        stall_cause_expression: StallCauseExpression,
+        bounded_subgraph_hash: str,
+        budget_state_at_stall: ObligationBudgetState,
+        reopen_condition: ReopenCondition,
+        derivation_policy_version: str,
+        basis_event_refs: tuple[str, ...],
+        unresolved_evidence_frontier: tuple[str, ...] = (),
+        reachable_partition_refs: tuple[str, ...] = (),
+        evidence_partition_refs: tuple[str, ...] = (),
+        dependency_cut_set: tuple[DependencyCutEdge, ...] = (),
+        exhausted_attempts: tuple[ExhaustedAttemptSignature, ...] = (),
+        exhausted_lineage_roots: tuple[str, ...] = (),
+        unavailable_input_operator_types: tuple[str, ...] = (),
+        active_lens_and_policy_versions: tuple[str, ...] = (),
+        governance_constraints: tuple[str, ...] = (),
+        provenance_independence_semantics: str = "lineage_root_exclusion_v1",
+        supersedes_certificate_id: str | None = None,
+    ) -> "DependencyGapStallCertificate":
+        values = {
+            "obligation_kernel_ref": obligation_kernel_ref,
+            "cycle_issued": cycle_issued,
+            "stall_cause_expression": stall_cause_expression,
+            "unresolved_evidence_frontier": tuple(sorted(set(unresolved_evidence_frontier))),
+            "bounded_subgraph_hash": bounded_subgraph_hash,
+            "reachable_partition_refs": tuple(sorted(set(reachable_partition_refs))),
+            "evidence_partition_refs": tuple(sorted(set(evidence_partition_refs))),
+            "dependency_cut_set": tuple(sorted(set(dependency_cut_set), key=lambda item: item.edge_id)),
+            "exhausted_attempts": tuple(sorted(set(exhausted_attempts), key=lambda item: item.signature_id)),
+            "provenance_independence_semantics": provenance_independence_semantics,
+            "exhausted_lineage_roots": tuple(sorted(set(exhausted_lineage_roots))),
+            "unavailable_input_operator_types": tuple(sorted(set(unavailable_input_operator_types))),
+            "active_lens_and_policy_versions": tuple(sorted(set(active_lens_and_policy_versions))),
+            "governance_constraints": tuple(sorted(set(governance_constraints))),
+            "budget_state_at_stall": budget_state_at_stall,
+            "reopen_condition": reopen_condition,
+            "derivation_policy_version": derivation_policy_version,
+            "basis_event_refs": tuple(sorted(set(basis_event_refs))),
+            "supersedes_certificate_id": supersedes_certificate_id,
+        }
+        certificate_id = stable_id(
+            "stall_certificate",
+            {
+                key: value.model_dump(mode="json") if isinstance(value, BaseModel)
+                else [item.model_dump(mode="json") for item in value]
+                if isinstance(value, tuple) and value and isinstance(value[0], BaseModel)
+                else value
+                for key, value in values.items()
+            },
+        )
+        return cls(certificate_id=certificate_id, **values)
+
+    @model_validator(mode="after")
+    def validate_certificate(self) -> "DependencyGapStallCertificate":
+        for values, label in (
+            (self.unresolved_evidence_frontier, "unresolved frontier"),
+            (self.reachable_partition_refs, "reachable partition"),
+            (self.evidence_partition_refs, "evidence partition"),
+            (self.exhausted_lineage_roots, "exhausted lineage roots"),
+            (self.unavailable_input_operator_types, "unavailable operator types"),
+            (self.active_lens_and_policy_versions, "lens/policy versions"),
+            (self.governance_constraints, "governance constraints"),
+            (self.basis_event_refs, "basis event refs"),
+        ):
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(f"Stall certificate {label} must be sorted and unique.")
+        edge_ids = tuple(item.edge_id for item in self.dependency_cut_set)
+        if tuple(sorted(set(edge_ids))) != edge_ids:
+            raise ValueError("Stall certificate cut edges must be sorted and unique.")
+        signatures = tuple(item.signature_id for item in self.exhausted_attempts)
+        if tuple(sorted(set(signatures))) != signatures:
+            raise ValueError("Stall certificate attempts must be sorted and unique.")
+        if not self.bounded_subgraph_hash.strip():
+            raise ValueError("Stall certificate requires a bounded subgraph hash.")
+        if not self.derivation_policy_version.strip():
+            raise ValueError("Stall certificate requires a derivation policy version.")
+        values = {
+            key: value
+            for key, value in self.model_dump(mode="json").items()
+            if key != "certificate_id"
+        }
+        expected = stable_id("stall_certificate", values)
+        if self.certificate_id != expected:
+            raise ValueError("Stall certificate identity checksum mismatch.")
+        return self
+
+
+class DependencyGapObligationKernel(FrozenRecord):
+    kernel_id: str
+    schema_version: str = "0.1"
+    family: ObligationFamily = ObligationFamily.DEPENDENCY_GAP
+    target_action_node: str
+    missing_input_signature: str
+    trigger_relation: str
+    scope_key: str
+    canonical_triggering_refs: tuple[str, ...] = Field(min_length=1)
+    creation_cycle: int = Field(ge=1)
+    policy_version: str
+
+    @model_validator(mode="after")
+    def validate_kernel(self) -> "DependencyGapObligationKernel":
+        if self.family != ObligationFamily.DEPENDENCY_GAP:
+            raise ValueError("The v0 obligation substrate only supports DependencyGap.")
+        text = (
+            self.schema_version,
+            self.target_action_node,
+            self.missing_input_signature,
+            self.trigger_relation,
+            self.scope_key,
+            self.policy_version,
+        )
+        if not all(item.strip() for item in text):
+            raise ValueError("Dependency-gap kernel identity fields cannot be empty.")
+        if tuple(sorted(set(self.canonical_triggering_refs))) != self.canonical_triggering_refs:
+            raise ValueError("Canonical triggering refs must be sorted and unique.")
+        expected = stable_id(
+            "obligation",
+            self.schema_version,
+            self.family.value,
+            self.target_action_node,
+            self.missing_input_signature,
+            self.trigger_relation,
+            self.scope_key,
+        )
+        if self.kernel_id != expected:
+            raise ValueError("Dependency-gap kernel identity checksum mismatch.")
+        return self
+
+
+class ObligationHistoryEvent(FrozenRecord):
+    event_id: str
+    obligation_id: str
+    event_type: ObligationEventType
+    authority: ObligationAuthority
+    source_event_key: str
+    cycle: int = Field(ge=1)
+    committed_sequence: int = Field(ge=1)
+    previous_event_id: str | None = None
+    triggering_refs: tuple[str, ...] = ()
+    context_snapshot_hash: str | None = None
+    source_lineage_roots: tuple[str, ...] = ()
+    attempt: ObligationAttempt | None = None
+    stall_certificate: DependencyGapStallCertificate | None = None
+    graph_delta: DependencyGraphDelta | None = None
+    recheck_budget_granted: float | None = Field(default=None, gt=0.0)
+    recheck_budget_consumed: float | None = Field(default=None, ge=0.0)
+    resolution_structure_ref: str | None = None
+    basis_event_refs: tuple[str, ...] = ()
+    policy_version: str
+    payload_sha256: str
+
+    @staticmethod
+    def _content_payload(values: dict[str, Any]) -> dict[str, Any]:
+        keys = (
+            "obligation_id", "event_type", "authority", "source_event_key",
+            "cycle", "committed_sequence", "previous_event_id", "triggering_refs",
+            "context_snapshot_hash", "source_lineage_roots", "attempt",
+            "stall_certificate", "graph_delta", "recheck_budget_granted",
+            "recheck_budget_consumed",
+            "resolution_structure_ref", "basis_event_refs", "policy_version",
+        )
+        defaults: dict[str, Any] = {
+            "previous_event_id": None,
+            "triggering_refs": (),
+            "context_snapshot_hash": None,
+            "source_lineage_roots": (),
+            "attempt": None,
+            "stall_certificate": None,
+            "graph_delta": None,
+            "recheck_budget_granted": None,
+            "recheck_budget_consumed": None,
+            "resolution_structure_ref": None,
+            "basis_event_refs": (),
+        }
+        payload: dict[str, Any] = {}
+        for key in keys:
+            value = values.get(key, defaults.get(key))
+            if isinstance(value, BaseModel):
+                value = value.model_dump(mode="json")
+            elif isinstance(value, Enum):
+                value = value.value
+            payload[key] = value
+        return payload
+
+    @classmethod
+    def build(cls, **values: Any) -> "ObligationHistoryEvent":
+        event_type = ObligationEventType(values["event_type"])
+        obligation_id = str(values["obligation_id"])
+        source_event_key = str(values["source_event_key"])
+        values["event_type"] = event_type
+        payload_sha256 = hashlib.sha256(
+            canonical_json_bytes(cls._content_payload(values))
+        ).hexdigest()
+        values["payload_sha256"] = payload_sha256
+        values["event_id"] = stable_id(
+            "obligation_event",
+            obligation_id,
+            event_type.value,
+            source_event_key,
+            payload_sha256,
+        )
+        return cls(**values)
+
+    @model_validator(mode="after")
+    def validate_history_event(self) -> "ObligationHistoryEvent":
+        if not self.source_event_key.strip() or not self.policy_version.strip():
+            raise ValueError("Obligation history events require source and policy versions.")
+        for values, label in (
+            (self.triggering_refs, "triggering refs"),
+            (self.source_lineage_roots, "source lineage roots"),
+            (self.basis_event_refs, "basis event refs"),
+        ):
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(f"Obligation event {label} must be sorted and unique.")
+        expected_authority = {
+            ObligationEventType.CREATED: ObligationAuthority.DETECTOR,
+            ObligationEventType.RETRIGGERED: ObligationAuthority.DETECTOR,
+            ObligationEventType.ATTEMPT_RECORDED: ObligationAuthority.SCHEDULER,
+            ObligationEventType.STALLED: ObligationAuthority.RESOLUTION_GOVERNOR,
+            ObligationEventType.WAKE_CANDIDATE: ObligationAuthority.GRAPH_MONITOR,
+            ObligationEventType.RECHECK_ALLOCATED: ObligationAuthority.SCHEDULER,
+            ObligationEventType.RECHECK_NO_CHANGE: ObligationAuthority.RESOLUTION_GOVERNOR,
+            ObligationEventType.REOPENED: ObligationAuthority.RESOLUTION_GOVERNOR,
+            ObligationEventType.RESOLVED: ObligationAuthority.RESOLUTION_GOVERNOR,
+            ObligationEventType.REVALIDATION_REQUIRED: ObligationAuthority.RESOLUTION_GOVERNOR,
+        }[self.event_type]
+        if self.authority != expected_authority:
+            raise ValueError("Obligation event authority does not match its event type.")
+        if self.event_type == ObligationEventType.CREATED:
+            if self.previous_event_id is not None or not self.triggering_refs:
+                raise ValueError("Created obligation events require refs and no predecessor.")
+        elif self.previous_event_id is None:
+            raise ValueError("Non-creation obligation events require a predecessor.")
+        if self.event_type in {
+            ObligationEventType.CREATED,
+            ObligationEventType.RETRIGGERED,
+        } and (not self.triggering_refs or not (self.context_snapshot_hash or "").strip()):
+            raise ValueError("Detection events require triggering refs and a context snapshot.")
+        required_payload = {
+            ObligationEventType.ATTEMPT_RECORDED: self.attempt is not None,
+            ObligationEventType.STALLED: self.stall_certificate is not None,
+            ObligationEventType.WAKE_CANDIDATE: self.graph_delta is not None,
+            ObligationEventType.RECHECK_ALLOCATED: self.recheck_budget_granted is not None,
+            ObligationEventType.RECHECK_NO_CHANGE: (
+                self.stall_certificate is not None
+                and self.recheck_budget_consumed is not None
+            ),
+            ObligationEventType.REOPENED: (
+                self.graph_delta is not None
+                and self.recheck_budget_consumed is not None
+            ),
+            ObligationEventType.RESOLVED: self.resolution_structure_ref is not None,
+            ObligationEventType.REVALIDATION_REQUIRED: self.resolution_structure_ref is not None,
+        }
+        if self.event_type in required_payload and not required_payload[self.event_type]:
+            raise ValueError("Obligation event is missing its typed payload.")
+        present_payloads = {
+            "detection": bool(
+                self.triggering_refs
+                or self.context_snapshot_hash is not None
+                or self.source_lineage_roots
+            ),
+            "attempt": self.attempt is not None,
+            "stall": self.stall_certificate is not None,
+            "delta": self.graph_delta is not None,
+            "grant": self.recheck_budget_granted is not None,
+            "consumption": self.recheck_budget_consumed is not None,
+            "resolution": self.resolution_structure_ref is not None,
+        }
+        allowed_payloads = {
+            ObligationEventType.CREATED: {"detection"},
+            ObligationEventType.RETRIGGERED: {"detection"},
+            ObligationEventType.ATTEMPT_RECORDED: {"attempt"},
+            ObligationEventType.STALLED: {"stall"},
+            ObligationEventType.WAKE_CANDIDATE: {"delta"},
+            ObligationEventType.RECHECK_ALLOCATED: {"grant"},
+            ObligationEventType.RECHECK_NO_CHANGE: {"stall", "consumption"},
+            ObligationEventType.REOPENED: {"delta", "consumption"},
+            ObligationEventType.RESOLVED: {"resolution"},
+            ObligationEventType.REVALIDATION_REQUIRED: {"resolution"},
+        }[self.event_type]
+        unexpected = {
+            key for key, present in present_payloads.items()
+            if present and key not in allowed_payloads
+        }
+        if unexpected:
+            raise ValueError("Obligation event contains payloads outside its event type.")
+        expected_payload = hashlib.sha256(
+            canonical_json_bytes(
+                self._content_payload(self.model_dump(mode="python"))
+            )
+        ).hexdigest()
+        expected_id = stable_id(
+            "obligation_event",
+            self.obligation_id,
+            self.event_type.value,
+            self.source_event_key,
+            expected_payload,
+        )
+        if self.event_id != expected_id:
+            raise ValueError("Obligation history event identity checksum mismatch.")
+        if self.payload_sha256 != expected_payload:
+            raise ValueError("Obligation history event payload checksum mismatch.")
+        return self
+
+
 class RefoldComponentProposal(FrozenRecord):
     proposed_structure_id: str
     proposed_opaque_name: str
@@ -3410,6 +4156,8 @@ class KernelState(BaseModel):
     refolding_policy: RefoldingPolicy = Field(default_factory=RefoldingPolicy)
     structural_challenges: dict[str, StructuralChallengeRecord] = Field(default_factory=dict)
     structure_refold_events: list[StructureRefoldEvent] = Field(default_factory=list)
+    obligation_kernels: dict[str, DependencyGapObligationKernel] = Field(default_factory=dict)
+    obligation_history: list[ObligationHistoryEvent] = Field(default_factory=list)
     workspace_policy: WorkspacePolicy = Field(default_factory=WorkspacePolicy)
     workspace_items: dict[str, WorkspaceItemRecord] = Field(default_factory=dict)
     workspace_cycle_events: list[WorkspaceCycleEvent] = Field(default_factory=list)

@@ -32,12 +32,19 @@ def test_v5x_workbench_emits_durable_observer_event_without_control() -> None:
                 if event.event_type == "THERMODYNAMIC_OBSERVED"]
     controlled = [event for event in receipt.events
                   if event.event_type == "THERMODYNAMIC_CONTROL_APPLIED"]
+    pressure = [event for event in receipt.events
+                if event.event_type == "ACCESS_PRESSURE_OBSERVED"]
 
     assert len(measured) == 1
+    assert len(pressure) == 1
     assert controlled == []
     assert receipt.result["thermodynamic_control"] is None
     assert receipt.result["thermodynamic_observation"]["metadata"]["behavioral_authority"] is False
     assert measured[0].payload["cycle"] == adapter.kernel.state.cycle
+    assert pressure[0].payload["cycle_before_experience"] == 0
+    assert pressure[0].payload["measurement_status"] == "incomplete"
+    assert pressure[0].payload["behavioral_authority_enabled"] is False
+    assert receipt.result["access_pressure_observation"] == pressure[0].payload
 
     replay = adapter.submit_teaching(
         _envelope(adapter, "teach02"),
@@ -45,6 +52,8 @@ def test_v5x_workbench_emits_durable_observer_event_without_control() -> None:
     )
     assert replay.replayed
     assert not any(event.event_type.startswith("THERMODYNAMIC_")
+                   for event in replay.events)
+    assert not any(event.event_type == "ACCESS_PRESSURE_OBSERVED"
                    for event in replay.events)
 
 

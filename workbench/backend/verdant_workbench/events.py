@@ -83,6 +83,18 @@ def development_events(*, run_id: str, organism_id: str, kernel, command_id: str
             event_type="STRUCTURE_CANDIDATE_OBSERVED", payload=native.model_dump(mode="json"),
             native_id=getattr(native, "event_id", None),
         ))
+    access_pressure = getattr(result, "access_pressure", None)
+    if access_pressure is not None and not result.replayed:
+        events.append(make_event(
+            run_id=run_id, organism_id=organism_id, kernel=kernel,
+            command_id=command_id, event_type="ACCESS_PRESSURE_OBSERVED",
+            payload=access_pressure.model_dump(mode="json"),
+            native_id=(
+                f"{access_pressure.cycle_before_experience}:"
+                f"{access_pressure.source_event_key}:"
+                f"{access_pressure.canonical_state_fingerprint}"
+            ),
+        ))
     thermodynamics = getattr(result, "thermodynamics", None)
     if thermodynamics is not None and not result.replayed:
         events.append(make_event(

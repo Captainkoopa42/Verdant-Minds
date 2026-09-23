@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 
 from verdant_development.v5x import V5XDevelopmentPipeline
-from verdant_thermodynamics import ThermodynamicPhase, inspect_access_pressure
+from verdant_thermodynamics import ThermodynamicPhase
 from run_v5x_thermodynamic_detector_study import _probe_command
 from run_v5x_thermodynamic_homeostasis import (
     _access_metrics, _known_labels, _load, _thermodynamic_summary,
@@ -95,26 +95,16 @@ def _run_sequence(checkpoint: Path, name: str, sequence) -> dict:
         command = _probe_command(
             labels, baseline_kernel.state.field.state_dim, key, tokens
         )
-        # Access pressure is inspected on each fork BEFORE the current
-        # experience is admitted and BEFORE the previous-cycle policy acts.
-        # This avoids using the governor's own successful suppression as
-        # supposed evidence that the original contextual pressure was low.
-        pre_pressure = []
-        for source in (baseline_kernel, controlled_kernel):
-            id_by_label = {
-                concept.label: concept_id
-                for concept_id, concept in source.state.concepts.items()
-            }
-            if all(label in id_by_label for label in labels):
-                pre_pressure.append(inspect_access_pressure(
-                    source, (id_by_label[label] for label in labels)
-                ))
-            else:
-                # A new-concept cue cannot be compared as if it already had
-                # established structural membership in the checkpoint.
-                pre_pressure.append(None)
         observer = baseline_pipeline.advance(baseline_kernel, command)
         experimental = controlled_pipeline.advance(controlled_kernel, command)
+        # These typed observations were captured before current-cue admission
+        # and before prior-cycle control acted. Unknown cue concepts produce an
+        # explicit incomplete record rather than a misleading zero count.
+        pre_pressure = [
+            item.access_pressure.model_dump(mode="json")
+            if item.access_pressure is not None else None
+            for item in (observer, experimental)
+        ]
         control = _control_record(experimental)
         previous_observer_t_g = (
             rows[-1]["observer_t_g"] if rows else None

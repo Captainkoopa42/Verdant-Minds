@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.1
+# DependencyGap Obligation Substrate v0.2
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -23,13 +23,26 @@ generation, or safe autonomous policy revision.
   only; it cannot itself satisfy the reopen predicate.
 - Atomic canonical commits through a validated state copy and ordinary VDK
   checkpoint serialization.
+- A deterministic `DependencyGapDetector` that scans canonical directed
+  dependency edges without parsing concept labels. When a policy-declared
+  dependency target lacks policy-declared canonical input evidence, the
+  detector derives the action/input refs, local context hash, lineage roots,
+  scope key, and source-event identity before appending the obligation.
+- Pure inspection is fingerprint-invariant. Repeating an unchanged detection
+  replays at zero canonical cost; newly accumulated non-qualifying local
+  evidence retriggers the same obligation rather than fragmenting identity.
 
 ## Explicit exclusions
 
-- No automatic detection of DependencyGaps from semantic content yet.
-- Target refs, missing-input signatures, cut partitions, and initial reopen
-  predicates are supplied through the typed experimental API; endogenous graph
-  derivation of those inputs is the next layer, not a v0.1 claim.
+- The v0.2 detector is endogenous only relative to canonical dependency edges:
+  it derives obligation inputs from graph topology, but its visible, versioned
+  policy still declares which relation types mean dependency and which evidence
+  kinds count as available input. Verdant has not yet earned or revised that
+  operator grammar.
+- The detector heartbeat is explicitly invoked by the experimental pipeline;
+  it is not yet attached to an autonomous Attention Portfolio scheduler.
+- Cut partitions and initial reopen predicates are still supplied through the
+  typed stall API. Automatic cut derivation is not a v0.2 claim.
 - No scheduler loop or background clock yet; probes, audit pings, and graph
   deltas are explicitly submitted through the experimental pipeline.
 - No `Resolved` API until a Resolution Contract and matched-control validator
@@ -48,7 +61,9 @@ not a semantic truth judgement, and has no behavioral authority.
 
 ## Falsification focus
 
-The initial tests target deterministic identity and replay, checkpoint/View
-rebuild equality, irrelevant-delta silence, remote cut crossing, wake-storm
-deduplication, multi-causal stall supersession, source laundering, and budget
-renewal that does not create a new search space.
+The tests target deterministic identity and replay, checkpoint/View rebuild
+equality, pure detector inspection, native action/input derivation, qualifying
+evidence suppression, irrelevant and rejected edge rejection, explicit policy
+grammar, local-evidence retriggering, irrelevant-delta silence, remote cut
+crossing, wake-storm deduplication, multi-causal stall supersession, source
+laundering, and budget renewal that does not create a new search space.

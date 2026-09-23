@@ -176,4 +176,3 @@ def test_attention_history_survives_checkpoint_and_tampering_is_detected(tmp_pat
     )
     with pytest.raises(KernelInvariantError, match="canonical transition"):
         VerdantKernel.from_state(tampered)
-

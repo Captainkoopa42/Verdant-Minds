@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.2
+# DependencyGap Obligation Substrate v0.3
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -31,6 +31,14 @@ generation, or safe autonomous policy revision.
 - Pure inspection is fingerprint-invariant. Repeating an unchanged detection
   replays at zero canonical cost; newly accumulated non-qualifying local
   evidence retriggers the same obligation rather than fragmenting identity.
+- A bounded `AttentionPortfolio` records one typed bid for every eligible
+  obligation, computes a multidimensional Pareto frontier, protects a separate
+  exploration reserve, and rotates starvation micro-probes using checkpointed
+  selection history. Every grant and deferral is stored in a content-addressed
+  `ObligationAttentionDecisionRecord` with a canonical transition.
+- Attention decisions have no epistemic authority. Replaying the same decision
+  request is a zero-cycle no-op, while reusing its source key with changed
+  metrics is rejected.
 
 ## Explicit exclusions
 
@@ -41,6 +49,13 @@ generation, or safe autonomous policy revision.
   operator grammar.
 - The detector heartbeat is explicitly invoked by the experimental pipeline;
   it is not yet attached to an autonomous Attention Portfolio scheduler.
+- The Attention Portfolio is explicitly invoked and only authorizes bounded
+  budget. It does not yet execute probes, consume simulation budget, or move a
+  `MayWake` obligation into `Recheck_Pending`; those belong to the isolated
+  counterfactual runtime in the next layer.
+- Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
+  provenance-visible bids, but v0.3 does not claim Verdant has learned their
+  calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
 - No scheduler loop or background clock yet; probes, audit pings, and graph
@@ -64,6 +79,9 @@ not a semantic truth judgement, and has no behavioral authority.
 The tests target deterministic identity and replay, checkpoint/View rebuild
 equality, pure detector inspection, native action/input derivation, qualifying
 evidence suppression, irrelevant and rejected edge rejection, explicit policy
-grammar, local-evidence retriggering, irrelevant-delta silence, remote cut
-crossing, wake-storm deduplication, multi-causal stall supersession, source
-laundering, and budget renewal that does not create a new search space.
+grammar, local-evidence retriggering, Pareto membership, protected exploration,
+complete eligible-set accounting, deterministic replay, starvation rotation,
+checkpointed decision history, decision tamper rejection, irrelevant-delta
+silence, remote cut crossing, wake-storm deduplication, multi-causal stall
+supersession, source laundering, and budget renewal that does not create a new
+search space.

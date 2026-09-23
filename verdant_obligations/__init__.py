@@ -17,6 +17,13 @@ from .detection import (
     DependencyGapDetectionReport,
     DependencyGapDetector,
 )
+from .attention import (
+    ATTENTION_PORTFOLIO_POLICY_VERSION,
+    AttentionBidInput,
+    AttentionPortfolio,
+    AttentionPortfolioPolicy,
+    AttentionPortfolioResult,
+)
 
 __all__ = [
     "DERIVATION_POLICY_VERSION",
@@ -34,4 +41,9 @@ __all__ = [
     "DependencyGapDetectionPolicy",
     "DependencyGapDetectionReport",
     "DependencyGapDetector",
+    "ATTENTION_PORTFOLIO_POLICY_VERSION",
+    "AttentionBidInput",
+    "AttentionPortfolio",
+    "AttentionPortfolioPolicy",
+    "AttentionPortfolioResult",
 ]

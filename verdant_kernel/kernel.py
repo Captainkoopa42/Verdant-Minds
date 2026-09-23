@@ -5750,6 +5750,46 @@ class VerdantKernel:
         if any(count != 1 for count in creation_counts.values()):
             raise KernelInvariantError("Obligation kernels must have exactly one creation event.")
 
+        attention_decision_ids: set[str] = set()
+        attention_source_keys: set[str] = set()
+        obligation_event_owner = {
+            event.event_id: event.obligation_id
+            for event in self.state.obligation_history
+        }
+        prior_attention_sequence = 0
+        prior_attention_cycle = 0
+        for decision in self.state.obligation_attention_decisions:
+            if decision.decision_id in attention_decision_ids:
+                raise KernelInvariantError("Duplicate obligation attention decision detected.")
+            if decision.source_event_key in attention_source_keys:
+                raise KernelInvariantError("Obligation attention source key was reused.")
+            if decision.committed_sequence <= prior_attention_sequence:
+                raise KernelInvariantError("Obligation attention sequence is not append-only.")
+            if decision.cycle <= prior_attention_cycle:
+                raise KernelInvariantError("Obligation attention cycle is not append-only.")
+            transition = transitions_by_sequence.get(decision.committed_sequence)
+            if (
+                transition is None
+                or transition.cycle != decision.cycle
+                or transition.operation != "obligation_attention_decision"
+                or transition.command_hash != decision.payload_sha256
+                or transition.input_fingerprint != decision.input_fingerprint
+                or decision.decision_id not in transition.output_refs
+            ):
+                raise KernelInvariantError("Attention decision lost its canonical transition.")
+            if any(
+                obligation_id not in self.state.obligation_kernels
+                for obligation_id in decision.eligible_obligation_ids
+            ):
+                raise KernelInvariantError("Attention decision references a missing obligation.")
+            for bid in decision.bids:
+                if obligation_event_owner.get(bid.basis_event_id) != bid.obligation_id:
+                    raise KernelInvariantError("Attention bid lost its obligation-event basis.")
+            attention_decision_ids.add(decision.decision_id)
+            attention_source_keys.add(decision.source_event_key)
+            prior_attention_sequence = decision.committed_sequence
+            prior_attention_cycle = decision.cycle
+
         interaction_event_ids: set[str] = set()
         for event in self.state.structure_interaction_events:
             if event.event_id in interaction_event_ids:

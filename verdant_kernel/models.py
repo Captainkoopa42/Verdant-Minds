@@ -132,6 +132,12 @@ class ObligationAttemptAttribution(str, Enum):
     INTERACTION_FAULT = "InteractionFault"
 
 
+class ObligationAttentionLane(str, Enum):
+    STARVATION = "starvation"
+    EXPLORATION = "exploration"
+    EXPLOITATION = "exploitation"
+
+
 class StallCause(str, Enum):
     NO_INDEPENDENT_EVIDENCE = "No_Independent_Evidence"
     ALL_ATTEMPTS_EQUIVALENT = "All_Attempts_Equivalent"
@@ -2859,6 +2865,199 @@ class ObligationBudgetState(FrozenRecord):
         return self
 
 
+class ObligationAttentionBid(FrozenRecord):
+    bid_id: str
+    obligation_id: str
+    basis_event_id: str
+    action_operator: str
+    requested_budget: float = Field(gt=0.0)
+    estimated_cost: float = Field(gt=0.0)
+    expected_gain: float = Field(ge=0.0, le=1.0)
+    uncertainty: float = Field(ge=0.0, le=1.0)
+    urgency: float = Field(ge=0.0, le=1.0)
+    novelty: float = Field(ge=0.0, le=1.0)
+    metric_provenance_refs: tuple[str, ...] = Field(min_length=1)
+    generator_version: str
+
+    @classmethod
+    def build(cls, **values: Any) -> "ObligationAttentionBid":
+        values["metric_provenance_refs"] = tuple(
+            sorted(set(values["metric_provenance_refs"]))
+        )
+        values["bid_id"] = stable_id(
+            "obligation_attention_bid",
+            {key: value for key, value in values.items() if key != "bid_id"},
+        )
+        return cls(**values)
+
+    @model_validator(mode="after")
+    def validate_bid(self) -> "ObligationAttentionBid":
+        for value in (
+            self.obligation_id,
+            self.basis_event_id,
+            self.action_operator,
+            self.generator_version,
+        ):
+            if not value.strip():
+                raise ValueError("Attention bid identity fields cannot be empty.")
+        if tuple(sorted(set(self.metric_provenance_refs))) != self.metric_provenance_refs:
+            raise ValueError("Attention bid provenance refs must be sorted and unique.")
+        payload = self.model_dump(mode="json", exclude={"bid_id"})
+        if self.bid_id != stable_id("obligation_attention_bid", payload):
+            raise ValueError("Attention bid identity checksum mismatch.")
+        return self
+
+
+class ObligationAttentionAllocation(FrozenRecord):
+    allocation_id: str
+    bid_id: str
+    obligation_id: str
+    granted_budget: float = Field(gt=0.0)
+    lane: ObligationAttentionLane
+    frontier_member: bool
+    starvation_age: int = Field(ge=0)
+    reason: str
+
+    @classmethod
+    def build(cls, **values: Any) -> "ObligationAttentionAllocation":
+        values["allocation_id"] = stable_id(
+            "obligation_attention_allocation",
+            {key: value for key, value in values.items() if key != "allocation_id"},
+        )
+        return cls(**values)
+
+    @model_validator(mode="after")
+    def validate_allocation(self) -> "ObligationAttentionAllocation":
+        if not all(
+            item.strip() for item in (self.bid_id, self.obligation_id, self.reason)
+        ):
+            raise ValueError("Attention allocation fields cannot be empty.")
+        payload = self.model_dump(mode="json", exclude={"allocation_id"})
+        if self.allocation_id != stable_id("obligation_attention_allocation", payload):
+            raise ValueError("Attention allocation identity checksum mismatch.")
+        return self
+
+
+class ObligationAttentionDecisionRecord(FrozenRecord):
+    decision_id: str
+    source_event_key: str
+    cycle: int = Field(ge=1)
+    committed_sequence: int = Field(ge=1)
+    policy_version: str
+    request_sha256: str
+    input_fingerprint: str
+    total_budget: float = Field(gt=0.0)
+    exploration_reserve: float = Field(ge=0.0)
+    eligible_obligation_ids: tuple[str, ...] = Field(min_length=1)
+    pareto_frontier_bid_ids: tuple[str, ...] = Field(min_length=1)
+    bids: tuple[ObligationAttentionBid, ...] = Field(min_length=1)
+    allocations: tuple[ObligationAttentionAllocation, ...] = ()
+    deferred_bid_ids: tuple[str, ...] = ()
+    epistemic_authority_enabled: bool = False
+    payload_sha256: str
+
+    @classmethod
+    def build(cls, **values: Any) -> "ObligationAttentionDecisionRecord":
+        values.setdefault("epistemic_authority_enabled", False)
+
+        def jsonable(value: Any) -> Any:
+            if isinstance(value, BaseModel):
+                return value.model_dump(mode="json")
+            if isinstance(value, Enum):
+                return value.value
+            if isinstance(value, (tuple, list)):
+                return tuple(jsonable(item) for item in value)
+            if isinstance(value, dict):
+                return {key: jsonable(item) for key, item in value.items()}
+            return value
+
+        payload = {
+            key: jsonable(value)
+            for key, value in values.items()
+            if key not in {"decision_id", "payload_sha256"}
+        }
+        payload_sha256 = hashlib.sha256(canonical_json_bytes(payload)).hexdigest()
+        values["payload_sha256"] = payload_sha256
+        values["decision_id"] = stable_id(
+            "obligation_attention_decision",
+            values["source_event_key"],
+            payload_sha256,
+        )
+        return cls(**values)
+
+    @model_validator(mode="after")
+    def validate_decision(self) -> "ObligationAttentionDecisionRecord":
+        if not self.source_event_key.strip() or not self.policy_version.strip():
+            raise ValueError("Attention decisions require source and policy identifiers.")
+        for digest in (self.request_sha256, self.input_fingerprint, self.payload_sha256):
+            if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+                raise ValueError("Attention decision digests must be lowercase SHA-256.")
+        if self.epistemic_authority_enabled:
+            raise ValueError("Attention decisions cannot carry epistemic authority.")
+        if self.exploration_reserve > self.total_budget + 1e-12:
+            raise ValueError("Exploration reserve cannot exceed total attention budget.")
+        for values, label in (
+            (self.eligible_obligation_ids, "eligible obligations"),
+            (self.pareto_frontier_bid_ids, "Pareto frontier"),
+            (self.deferred_bid_ids, "deferred bids"),
+        ):
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(f"Attention decision {label} must be sorted and unique.")
+        bid_ids = tuple(item.bid_id for item in self.bids)
+        if tuple(sorted(set(bid_ids))) != bid_ids:
+            raise ValueError("Attention decision bids must be sorted and unique.")
+        obligation_ids = tuple(sorted(item.obligation_id for item in self.bids))
+        if obligation_ids != self.eligible_obligation_ids:
+            raise ValueError("Every eligible obligation requires exactly one attention bid.")
+        if not set(self.pareto_frontier_bid_ids).issubset(set(bid_ids)):
+            raise ValueError("Pareto frontier references an unknown bid.")
+        allocation_ids = tuple(item.allocation_id for item in self.allocations)
+        if tuple(sorted(set(allocation_ids))) != allocation_ids:
+            raise ValueError("Attention allocations must be sorted and unique.")
+        allocated_bid_ids = tuple(item.bid_id for item in self.allocations)
+        if len(set(allocated_bid_ids)) != len(allocated_bid_ids):
+            raise ValueError("An attention bid cannot receive multiple allocations.")
+        bids_by_id = {item.bid_id: item for item in self.bids}
+        for allocation in self.allocations:
+            bid = bids_by_id.get(allocation.bid_id)
+            if bid is None or bid.obligation_id != allocation.obligation_id:
+                raise ValueError("Attention allocation lost its bid lineage.")
+            if allocation.granted_budget > bid.requested_budget + 1e-12:
+                raise ValueError("Attention allocation exceeds its requested budget.")
+            if allocation.frontier_member != (
+                allocation.bid_id in self.pareto_frontier_bid_ids
+            ):
+                raise ValueError("Attention allocation frontier flag drift detected.")
+        if sum(item.granted_budget for item in self.allocations) > self.total_budget + 1e-12:
+            raise ValueError("Attention allocations exceed the total budget.")
+        reserve_spend = sum(
+            item.granted_budget for item in self.allocations
+            if item.lane in {
+                ObligationAttentionLane.STARVATION,
+                ObligationAttentionLane.EXPLORATION,
+            }
+        )
+        if reserve_spend > self.exploration_reserve + 1e-12:
+            raise ValueError("Exploration lanes exceed their protected reserve.")
+        expected_deferred = tuple(sorted(set(bid_ids) - set(allocated_bid_ids)))
+        if self.deferred_bid_ids != expected_deferred:
+            raise ValueError("Attention decision deferred set is inconsistent.")
+        payload = self.model_dump(
+            mode="json", exclude={"decision_id", "payload_sha256"}
+        )
+        expected_payload = hashlib.sha256(canonical_json_bytes(payload)).hexdigest()
+        if self.payload_sha256 != expected_payload:
+            raise ValueError("Attention decision payload checksum mismatch.")
+        expected_id = stable_id(
+            "obligation_attention_decision",
+            self.source_event_key,
+            self.payload_sha256,
+        )
+        if self.decision_id != expected_id:
+            raise ValueError("Attention decision identity checksum mismatch.")
+        return self
+
+
 class ExhaustedAttemptSignature(FrozenRecord):
     signature_id: str
     projection_hash: str
@@ -4158,6 +4357,9 @@ class KernelState(BaseModel):
     structure_refold_events: list[StructureRefoldEvent] = Field(default_factory=list)
     obligation_kernels: dict[str, DependencyGapObligationKernel] = Field(default_factory=dict)
     obligation_history: list[ObligationHistoryEvent] = Field(default_factory=list)
+    obligation_attention_decisions: list[ObligationAttentionDecisionRecord] = Field(
+        default_factory=list
+    )
     workspace_policy: WorkspacePolicy = Field(default_factory=WorkspacePolicy)
     workspace_items: dict[str, WorkspaceItemRecord] = Field(default_factory=dict)
     workspace_cycle_events: list[WorkspaceCycleEvent] = Field(default_factory=list)

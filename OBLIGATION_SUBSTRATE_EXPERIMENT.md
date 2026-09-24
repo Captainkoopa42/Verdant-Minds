@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.6
+# DependencyGap Obligation Substrate v0.7
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -87,6 +87,21 @@ generation, or safe autonomous policy revision.
   superseded predecessor. Approval, evidence, suspension, and rollback requests
   replay idempotently or reject changed reuse of their source key. Registry and
   ledger snapshots rebuild with identical fingerprints.
+- A pure `DependencyGapResolutionValidator` evaluates replicated, preregistered
+  baseline/treatment pairs from the same canonical checkpoint, cue, context,
+  seed, horizon, and active family-local lens. Every observation cites a real,
+  discarded simulation settlement and every candidate carries content-addressed
+  simulation and lens-governance lineage.
+- The v0.7 Resolution Contract checks matched controls, canonical evidence
+  preservation, absence of edge/slot suppression, a changed outgoing action,
+  operational explanatory gain, traceable lineage, active governance,
+  DependencyGap path completion, and cross-seed replication. A completed path
+  must run from the obligation's action node to canonical `ACTION` or `OUTCOME`
+  evidence; a noncanonical dummy endpoint cannot satisfy the contract.
+- Contract evaluation is fingerprint-pure across the kernel, simulation ledger,
+  and lens sidecar. A passing `ResolutionContractVerdict` is explicitly
+  non-authoritative and cannot append `Resolved`, promote the hypothetical
+  structure, or otherwise mutate canonical state.
 
 ## Explicit exclusions
 
@@ -102,15 +117,18 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.6 does not claim Verdant has learned their
+  provenance-visible bids, but v0.7 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
 - No scheduler loop or background clock yet; probes, audit pings, and graph
   deltas are explicitly submitted through the experimental pipeline.
-- No `Resolved` API until a Resolution Contract and matched-control validator
-  exist. The model contains future event/status types, but v0.1 does not grant
-  resolution authority.
+- The Resolution Contract accepts explicitly supplied, typed trial observations;
+  the counterfactual runtime does not yet derive retrieved/admitted sets,
+  outgoing actions, or dependency paths from overlay execution automatically.
+- No canonical `Resolved` API or earned-structure promotion exists. A passing
+  verdict supplies bounded evidence for a later governor but grants no
+  resolution authority itself.
 - Simulation consumption is declared by the typed plan and bounded by its
   reservation; v0.4 does not yet meter physical CPU, memory, or wall-clock use.
 - The separate ledger has a deterministic snapshot/reload model but is not yet
@@ -142,8 +160,13 @@ generation, or safe autonomous policy revision.
 - Isomorphic projection of earned structures and provenance-symmetric-difference
   generation remain unimplemented because the required resolved-history and
   additional obligation-family substrates do not yet exist.
-- No Resolution Contract, Council tournament, Diagnostic Obligation, or
-  Paradigm Challenge implementation yet.
+- Governance validation proves that cited lens events exist and that the
+  family-local binding is active; it is not a complete Council review.
+- Resolution validation tests operational structure, not semantic truth. It
+  does not establish that a completed path means what an external researcher
+  interprets it to mean.
+- No Council tournament, Diagnostic Obligation, or Paradigm Challenge
+  implementation yet.
 - The paired-checkpoint isolation result covers declared in-process kernel
   state and tested future behavior. The runtime currently performs no external
   I/O; it does not claim a general operating-system side-effect sandbox.
@@ -181,3 +204,8 @@ read-only application, local dimensional projection, exact approval/evidence
 replay, changed-request rejection, valid-null immunity, automatic suspension,
 atomic tripwire failure, direct-predecessor rollback, deterministic sidecar
 reload, and checksum/sequence tamper detection.
+Resolution-Contract tests additionally target replicated matched controls,
+non-authoritative passing verdicts, kernel/ledger/lens purity, evidence-slot and
+edge-suppression attacks, tautological unchanged actions, noncanonical dummy
+paths, seed reuse, mismatched controls, unknown lineage/governance references,
+simulation-budget enforcement, and checksum tampering.

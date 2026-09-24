@@ -78,6 +78,21 @@ from .equivalence import (
     LensPartition,
     LensUnavailableError,
 )
+from .resolution import (
+    RESOLUTION_CONTRACT_VERSION,
+    DependencyGapResolutionValidator,
+    DependencyPathObservation,
+    MatchedResolutionPair,
+    ResolutionCandidate,
+    ResolutionContractPolicy,
+    ResolutionContractVerdict,
+    ResolutionIntegrityError,
+    ResolutionInvariant,
+    ResolutionInvariantResult,
+    ResolutionTrialObservation,
+    TrialArm,
+    dependency_evidence_edge_ref,
+)
 
 __all__ = [
     "DERIVATION_POLICY_VERSION",
@@ -148,4 +163,17 @@ __all__ = [
     "LensOutcomeClass",
     "LensPartition",
     "LensUnavailableError",
+    "RESOLUTION_CONTRACT_VERSION",
+    "DependencyGapResolutionValidator",
+    "DependencyPathObservation",
+    "MatchedResolutionPair",
+    "ResolutionCandidate",
+    "ResolutionContractPolicy",
+    "ResolutionContractVerdict",
+    "ResolutionIntegrityError",
+    "ResolutionInvariant",
+    "ResolutionInvariantResult",
+    "ResolutionTrialObservation",
+    "TrialArm",
+    "dependency_evidence_edge_ref",
 ]

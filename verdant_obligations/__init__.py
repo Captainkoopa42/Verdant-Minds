@@ -93,6 +93,23 @@ from .resolution import (
     TrialArm,
     dependency_evidence_edge_ref,
 )
+from .diagnostics import (
+    DIAGNOSTIC_LEDGER_SCHEMA_VERSION,
+    DIAGNOSTIC_POLICY_VERSION,
+    DiagnosticConclusion,
+    DiagnosticEngine,
+    DiagnosticIntegrityError,
+    DiagnosticLedgerState,
+    DiagnosticObligation,
+    DiagnosticPolicy,
+    DiagnosticProbeFinding,
+    DiagnosticProbeKind,
+    DiagnosticProbeObservation,
+    DiagnosticRecursionError,
+    DiagnosticResult,
+    DiagnosticTriggerKind,
+    InquiryFailureEvidence,
+)
 
 __all__ = [
     "DERIVATION_POLICY_VERSION",
@@ -176,4 +193,19 @@ __all__ = [
     "ResolutionTrialObservation",
     "TrialArm",
     "dependency_evidence_edge_ref",
+    "DIAGNOSTIC_LEDGER_SCHEMA_VERSION",
+    "DIAGNOSTIC_POLICY_VERSION",
+    "DiagnosticConclusion",
+    "DiagnosticEngine",
+    "DiagnosticIntegrityError",
+    "DiagnosticLedgerState",
+    "DiagnosticObligation",
+    "DiagnosticPolicy",
+    "DiagnosticProbeFinding",
+    "DiagnosticProbeKind",
+    "DiagnosticProbeObservation",
+    "DiagnosticRecursionError",
+    "DiagnosticResult",
+    "DiagnosticTriggerKind",
+    "InquiryFailureEvidence",
 ]

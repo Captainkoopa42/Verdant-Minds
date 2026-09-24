@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.7
+# DependencyGap Obligation Substrate v0.8
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -102,6 +102,23 @@ generation, or safe autonomous policy revision.
   and lens sidecar. A passing `ResolutionContractVerdict` is explicitly
   non-authoritative and cannot append `Resolved`, promote the hypothetical
   structure, or otherwise mutate canonical state.
+- A separately serialized `DiagnosticLedgerState` now holds immutable
+  `DiagnosticObligation` and terminal `DiagnosticResult` records. Opening a
+  diagnostic verifies the parent DependencyGap, canonical Attention decision,
+  isolated failed-inquiry settlement, family-local lens binding, hypothesis
+  lineage, and complete causal evidence references.
+- Diagnostic reverse probes are capped by both count and simulation budget.
+  Each typed primitive-baseline, adjacent-context, generator-coherence, or
+  cost-calibration observation must cite a distinct isolated settlement whose
+  result lineage includes the diagnostic and its declared basis evidence.
+- The deterministic diagnostic reducer distinguishes a valid epistemic null,
+  lens over-smoothing, lens hyper-discrimination, binding miscalibration,
+  generator fault, scheduler misalignment, a multi-component interaction, and
+  an inconclusive terminal result. Valid nulls attribute no component fault.
+- The diagnostic circuit breaker is constitutional in the typed result: every
+  result is terminal, has no epistemic authority, and cannot spawn a second
+  diagnostic. The engine rejects direct attempts to diagnose a diagnostic
+  result, including inconclusive and interaction-suspected outcomes.
 
 ## Explicit exclusions
 
@@ -117,7 +134,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.7 does not claim Verdant has learned their
+  provenance-visible bids, but v0.8 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -146,7 +163,7 @@ generation, or safe autonomous policy revision.
 - Lens operators are typed, deterministic, provenance-visible selectors, but
   Verdant does not yet synthesize or revise them. Approval and evidence-result
   classification are explicit experimental inputs rather than an implemented
-  Council or endogenous Diagnostic Obligation.
+  Council.
 - Binding calibration is deliberately narrow: v0.6 uses a declared cumulative
   failure count. It does not yet learn contextual activation envelopes, compare
   failure rates against matched controls, or distinguish interaction faults.
@@ -165,8 +182,16 @@ generation, or safe autonomous policy revision.
 - Resolution validation tests operational structure, not semantic truth. It
   does not establish that a completed path means what an external researcher
   interprets it to mean.
-- No Council tournament, Diagnostic Obligation, or Paradigm Challenge
-  implementation yet.
+- Diagnostic probe findings are explicit, typed experimental observations. The
+  engine verifies their simulation lineage and structural consistency but does
+  not yet generate or execute reverse ablations autonomously.
+- A diagnostic attribution does not penalize, suspend, revise, or roll back a
+  scheduler, generator, binding, or lens. It is bounded evidence for the future
+  Council intervention layer, not authority to edit evaluator machinery.
+- The diagnostic ledger is a tamper-checked sidecar rather than canonical VDK
+  state. It establishes deterministic in-process/snapshot replay, not durable
+  canonical self-diagnosis across abrupt process loss.
+- No Council least-regret tournament or Paradigm Challenge implementation yet.
 - The paired-checkpoint isolation result covers declared in-process kernel
   state and tested future behavior. The runtime currently performs no external
   I/O; it does not claim a general operating-system side-effect sandbox.
@@ -209,3 +234,8 @@ non-authoritative passing verdicts, kernel/ledger/lens purity, evidence-slot and
 edge-suppression attacks, tautological unchanged actions, noncanonical dummy
 paths, seed reuse, mismatched controls, unknown lineage/governance references,
 simulation-budget enforcement, and checksum tampering.
+Diagnostic-Obligation tests additionally target valid-null immunity, each
+single-component attribution, multi-component interaction outcomes,
+inconclusive termination, strict probe-kind typing, causal-lineage closure,
+probe and budget ceilings, exact replay, sidecar reconstruction, tamper
+rejection, and the non-recursive terminal circuit breaker.

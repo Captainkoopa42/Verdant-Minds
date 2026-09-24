@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.8
+# DependencyGap Obligation Substrate v0.9
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -119,6 +119,24 @@ generation, or safe autonomous policy revision.
   result is terminal, has no epistemic authority, and cannot spawn a second
   diagnostic. The engine rejects direct attempts to diagnose a diagnostic
   result, including inconclusive and interaction-suspected outcomes.
+- A separately serialized, non-executing `CouncilLeastRegretTournament` accepts
+  two to eight typed intervention candidates only after a terminal diagnostic
+  has attributed a component or interaction fault. Candidate kinds constrain
+  their targets to the causal lens definition/binding, Attention decision,
+  hypothesis generator, or a coordinated subset of that stack.
+- Each intervention requires an isolated, successfully completed counterfactual
+  settlement from the parent obligation. Its preservation observation records
+  whether repair was restored, which known obligations would be reopened,
+  integer wave-state/`c_memory`/observer-only `T_g` deviations, and exact
+  before/after fingerprints for unrelated validation contexts.
+- Failed repair, changed orthogonal fingerprints, checkpoint mismatch, broken
+  simulation lineage, and unknown blast-radius references exclude a candidate.
+  Surviving candidates form a Pareto frontier over blast radius and the three
+  ripple measures. A scale-free minimax rank of preservation regret selects the
+  recommendation; component footprint is only a final tiebreaker.
+- High blast radius is therefore an auditable cost, not a permanent veto. The
+  resulting `CouncilTournamentDecision` is content-addressed, replay-safe, and
+  explicitly has no intervention authority; it cannot apply its recommendation.
 
 ## Explicit exclusions
 
@@ -134,7 +152,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.8 does not claim Verdant has learned their
+  provenance-visible bids, but v0.9 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -166,7 +184,8 @@ generation, or safe autonomous policy revision.
   Council.
 - Binding calibration is deliberately narrow: v0.6 uses a declared cumulative
   failure count. It does not yet learn contextual activation envelopes, compare
-  failure rates against matched controls, or distinguish interaction faults.
+  failure rates against matched controls, or automatically consume diagnostic
+  interaction attributions.
 - Only `DependencyGap` exists, so borrow-before-synthesize, held-out cross-family
   adoption, representational merging, and independent per-family rollback of a
   shared lens remain proposed rather than implemented.
@@ -191,7 +210,20 @@ generation, or safe autonomous policy revision.
 - The diagnostic ledger is a tamper-checked sidecar rather than canonical VDK
   state. It establishes deterministic in-process/snapshot replay, not durable
   canonical self-diagnosis across abrupt process loss.
-- No Council least-regret tournament or Paradigm Challenge implementation yet.
+- Candidate interventions and preservation measurements are explicit, typed
+  experimental inputs. The Council does not yet generate a complete spanning
+  intervention set or execute the standard-load simulations autonomously.
+- Blast radius currently validates references against existing obligation
+  kernels, but canonical resolution/promotion is still disabled. It therefore
+  cannot yet prove that every listed obligation was historically closed or
+  derive all obligations that would truly reopen after an edit.
+- Wave-state, `c_memory`, and observer-only `T_g` deviations are reported by the
+  counterfactual harness as deterministic integer observations; this increment
+  does not independently derive them from physical resource use. `T_g` remains
+  non-authoritative and cannot influence behavior.
+- A Council recommendation cannot mutate, demote, roll back, or substitute any
+  component. Applying interventions, validating post-application recovery, and
+  the governed Paradigm Challenge lane remain unimplemented.
 - The paired-checkpoint isolation result covers declared in-process kernel
   state and tested future behavior. The runtime currently performs no external
   I/O; it does not claim a general operating-system side-effect sandbox.
@@ -239,3 +271,9 @@ single-component attribution, multi-component interaction outcomes,
 inconclusive termination, strict probe-kind typing, causal-lineage closure,
 probe and budget ceilings, exact replay, sidecar reconstruction, tamper
 rejection, and the non-recursive terminal circuit breaker.
+Council-intervention tests additionally target Pareto dominance, scale-free
+minimax regret, footprint-only tiebreaking, high-blast eligibility, orthogonal
+fingerprint and failed-repair exclusion, cancelled/missing simulation lineage,
+typed component targets, null-diagnostic rejection, all-candidate abstention,
+exact request replay, sidecar reconstruction, decision tampering, and the hard
+absence of intervention authority.

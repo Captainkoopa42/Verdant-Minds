@@ -152,6 +152,19 @@ from .interventions import (
     InterventionKind,
     OrthogonalFingerprintObservation,
 )
+from .paradigms import (
+    PARADIGM_CHALLENGE_LEDGER_VERSION,
+    PARADIGM_CHALLENGE_POLICY_VERSION,
+    ParadigmAnomalySignal,
+    ParadigmChallenge,
+    ParadigmChallengeDecision,
+    ParadigmChallengeDisposition,
+    ParadigmChallengeIntegrityError,
+    ParadigmChallengeLane,
+    ParadigmChallengeLedgerState,
+    ParadigmChallengePolicy,
+    ParadigmShadowTrial,
+)
 
 __all__ = [
     "DERIVATION_POLICY_VERSION",
@@ -282,4 +295,15 @@ __all__ = [
     "EpistemicPreservationObservation",
     "InterventionKind",
     "OrthogonalFingerprintObservation",
+    "PARADIGM_CHALLENGE_LEDGER_VERSION",
+    "PARADIGM_CHALLENGE_POLICY_VERSION",
+    "ParadigmAnomalySignal",
+    "ParadigmChallenge",
+    "ParadigmChallengeDecision",
+    "ParadigmChallengeDisposition",
+    "ParadigmChallengeIntegrityError",
+    "ParadigmChallengeLane",
+    "ParadigmChallengeLedgerState",
+    "ParadigmChallengePolicy",
+    "ParadigmShadowTrial",
 ]

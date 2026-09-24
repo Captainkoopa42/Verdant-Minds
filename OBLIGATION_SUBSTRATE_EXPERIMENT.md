@@ -1,4 +1,4 @@
-# Obligation Substrate v0.13
+# Obligation Substrate v0.14
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -202,6 +202,21 @@ generation, or safe autonomous policy revision.
   cost, independent governance scopes remain separate, checkpoint/View replay
   is exact, and loss of a foundational denial fails closed. Ordinary bounded
   Attention may fund a probe but cannot change the policy or any denial.
+- A separately serialized `ParadigmChallengeLane` now admits a challenged
+  assumption only when canonical anomaly events expose that same versioned
+  assumption across at least two obligation families and two independent
+  provenance roots. Created/open obligations alone cannot trigger the lane.
+- Every admitted challenge is immutable, replay-safe, bound to the exact
+  canonical checkpoint fingerprint, and constitutionally shadow-only. Its
+  trials must replay the complete append-only history of every signaled
+  obligation through verified discarded counterfactual settlements.
+- Shadow evaluation requires independent simulation seeds, replicated outcome
+  signatures, preserved evidence, and unchanged orthogonal fingerprints for
+  every signaled obligation. Unstable or suppressive variants are rejected.
+- A large declared blast radius remains visible evidence and never becomes an
+  automatic veto. Even a `shadow_supported` decision has no promotion or
+  canonical-mutation authority; it records bounded evidence for later human or
+  separately governed work only.
 
 ## Explicit exclusions
 
@@ -217,7 +232,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.13 does not claim Verdant has learned their
+  provenance-visible bids, but v0.14 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -319,8 +334,8 @@ generation, or safe autonomous policy revision.
   does not independently derive them from physical resource use. `T_g` remains
   non-authoritative and cannot influence behavior.
 - A Council recommendation cannot mutate, demote, roll back, or substitute any
-  component. Applying interventions, validating post-application recovery, and
-  the governed Paradigm Challenge lane remain unimplemented.
+  component. Applying interventions and validating post-application recovery
+  remain unimplemented.
 - The paired-checkpoint isolation result covers declared in-process kernel
   state and tested future behavior. The runtime currently performs no external
   I/O; it does not claim a general operating-system side-effect sandbox.
@@ -329,7 +344,19 @@ generation, or safe autonomous policy revision.
   subsystem's explicit subject/predicate/object/polarity representation. The
   new detector does not establish semantic understanding, discover novel
   predicates, decide which claim is true, or operationalize consciousness.
-- The governed Paradigm Challenge lane remains proposed.
+- Paradigm anomaly signals currently require explicit canonical obligation
+  history events whose visible `policy_version` equals the challenged
+  assumption reference. Verdant does not yet discover latent shared assumptions
+  across differently named policies or ontologies.
+- Shadow-trial outcome signatures, improvement flags, evidence-preservation
+  observations, and orthogonal fingerprints remain typed experimental inputs.
+  The lane validates their lineage and replication but does not derive all of
+  them automatically from simulated geometry.
+- `shadow_supported` is not ontology replacement. No variant promotion,
+  canonical replay commit, mass reopening, policy rewrite, or autonomous
+  paradigm shift exists in v0.14.
+- The Paradigm lane does not establish semantic understanding, consciousness,
+  a mind, or complete endogenous agency.
 
 ## Access-pressure integration
 
@@ -398,3 +425,9 @@ control, repeated-block detection, pure inspection, exact replay, stable-scope
 retriggering, policy-version continuity, independent-scope separation,
 checkpoint/View rebuilding, missing-decision rejection, and executive Attention
 without policy or denial mutation authority.
+Paradigm-Challenge tests additionally target cross-family and independent-root
+admission, rejection of ordinary open obligations, exact request replay,
+complete immutable-history replay, isolated simulation lineage, cross-seed
+replication, evidence and orthogonal-fingerprint preservation, high-blast-radius
+eligibility, sidecar reconstruction, sequence tampering, and the hard absence
+of promotion or canonical-mutation authority.

@@ -41,6 +41,22 @@ from .counterfactual import (
     SimulationReservation,
     SimulationSettlement,
 )
+from .hypotheses import (
+    FUNCTIONAL_PARTITION_VERSION,
+    HYPOTHESIS_GRAMMAR_VERSION,
+    DependencyGapHypothesisGenerator,
+    FunctionalAction,
+    FunctionalConsequence,
+    FunctionalOutcome,
+    FunctionalOutcomeClass,
+    FunctionalPartitionIndex,
+    HypothesisGenerationPolicy,
+    HypothesisOperator,
+    OutcomeKind,
+    ProjectedTopologyEdge,
+    StructuralHypothesis,
+    build_hypothesis_plan,
+)
 
 __all__ = [
     "DERIVATION_POLICY_VERSION",
@@ -78,4 +94,18 @@ __all__ = [
     "SimulationLedgerState",
     "SimulationReservation",
     "SimulationSettlement",
+    "FUNCTIONAL_PARTITION_VERSION",
+    "HYPOTHESIS_GRAMMAR_VERSION",
+    "DependencyGapHypothesisGenerator",
+    "FunctionalAction",
+    "FunctionalConsequence",
+    "FunctionalOutcome",
+    "FunctionalOutcomeClass",
+    "FunctionalPartitionIndex",
+    "HypothesisGenerationPolicy",
+    "HypothesisOperator",
+    "OutcomeKind",
+    "ProjectedTopologyEdge",
+    "StructuralHypothesis",
+    "build_hypothesis_plan",
 ]

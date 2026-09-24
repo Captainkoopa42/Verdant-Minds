@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.4
+# DependencyGap Obligation Substrate v0.5
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -55,6 +55,21 @@ generation, or safe autonomous policy revision.
   simulations on one arm, then applies the same canonical event to both arms.
   Canonical fingerprints and obligation histories remain identical while only
   the simulation ledger differs.
+- A deterministic `DependencyGapHypothesisGenerator` composes candidate
+  inquiries only from canonical graph paths, evidence kinds, obligation
+  operands, and provenance references. Its bounded evidence-path projection is
+  accompanied by mandatory null-artifact and insufficient-evidence hypotheses.
+- Every projected candidate preregisters mutually named completion, stall, and
+  conflict arms. A primitive `FunctionalConsequence` maps each arm to discrete
+  activated canonical refs, proposed topology edges, and a bounded next action;
+  continuous relation weights and generator identity do not define difference.
+- A `FunctionalPartitionIndex` groups prospectively equivalent outcomes before
+  simulation and marks redundant outcome arms. Distinct graph paths that expose
+  the same evidence, proposed bridge, and action therefore cannot manufacture
+  discrimination from cosmetic derivation differences.
+- A selected preregistered arm can be translated into a `CounterfactualPlan`.
+  Only a path-completion arm applies its hypothetical bridge patch, and the
+  existing isolated runtime still prevents any canonical commit.
 
 ## Explicit exclusions
 
@@ -70,7 +85,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.3 does not claim Verdant has learned their
+  provenance-visible bids, but v0.5 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -87,8 +102,19 @@ generation, or safe autonomous policy revision.
 - The overlay supports a deliberately bounded set of canonical mapping
   collections and JSON hypothesis values. It does not validate those values as
   promotable canonical records and exposes no commit path.
-- No compositional hypothesis generator, functional outcome partition,
-  Equivalence Lens registry, Resolution Contract, Council tournament, or
+- The v0.5 generator is limited to DependencyGap evidence-path projection. Its
+  evidence kinds, traversable relation statuses, path-depth bound, and candidate
+  cap remain explicit policy machinery; Verdant has not learned that grammar.
+- The prospective arms are preregistered structural possibilities, not observed
+  simulation results. No outcome evaluator yet selects which arm occurred, and
+  no canonical `AttemptRecord` or obligation status transition is appended.
+- The primitive functional signature is not an earned Equivalence Lens. There
+  is no typed lens registry, local binding/evidence calibration, tripwire,
+  rollback, or cross-family adoption in this increment.
+- Isomorphic projection of earned structures and provenance-symmetric-difference
+  generation remain unimplemented because the required resolved-history and
+  additional obligation-family substrates do not yet exist.
+- No Resolution Contract, Council tournament, Diagnostic Obligation, or
   Paradigm Challenge implementation yet.
 - The paired-checkpoint isolation result covers declared in-process kernel
   state and tested future behavior. The runtime currently performs no external
@@ -117,3 +143,8 @@ isolation, canonical-allocation enforcement, cumulative budget bounds,
 separate-ledger reload, zero-cost request replay, changed-request rejection,
 cancelled/failed partial settlement, explicit leak detection, and paired
 checkpoint equivalence after 100 discarded simulations.
+Hypothesis-generation tests additionally target deterministic and fingerprint-
+pure composition, mandatory null/defer counterweights, bounded path search,
+canonical provenance closure, cosmetic-path equivalence collapse, invariance to
+continuous relation-confidence noise, tamper rejection, cross-hypothesis arm
+rejection, and end-to-end execution through the non-committing runtime.

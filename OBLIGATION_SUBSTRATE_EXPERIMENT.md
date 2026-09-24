@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.5
+# DependencyGap Obligation Substrate v0.6
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -70,6 +70,23 @@ generation, or safe autonomous policy revision.
 - A selected preregistered arm can be translated into a `CounterfactualPlan`.
   Only a path-completion arm applies its hypothetical bridge patch, and the
   existing isolated runtime still prevents any canonical commit.
+- Immutable `EquivalenceLensDefinition` records now hold a deterministic,
+  side-effect-free operator IR in a content-addressed registry. Definitions
+  preserve provenance and optional parent lineage; duplicate content reuses the
+  same definition rather than creating identity churn.
+- Family-local `LensBinding` records, append-only `LensEvidence`, and governance
+  events occupy a separate typed ledger. Applying an active lens is a pure
+  scheduler operation: it projects outcomes through the approved dimensions,
+  creates discrete equivalence classes, and performs no governance write.
+- Evidence distinguishes support, valid nulls, over-smoothing,
+  hyper-discrimination, and absent explanatory gain. Valid nulls do not count
+  as evaluator failures. A binding suspends atomically when its declared
+  cumulative failure tripwire is reached, removing scheduler authority to use
+  it without changing the immutable definition.
+- Explicit rollback can reactivate only the suspended binding's direct,
+  superseded predecessor. Approval, evidence, suspension, and rollback requests
+  replay idempotently or reject changed reuse of their source key. Registry and
+  ledger snapshots rebuild with identical fingerprints.
 
 ## Explicit exclusions
 
@@ -85,7 +102,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.5 does not claim Verdant has learned their
+  provenance-visible bids, but v0.6 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -108,9 +125,20 @@ generation, or safe autonomous policy revision.
 - The prospective arms are preregistered structural possibilities, not observed
   simulation results. No outcome evaluator yet selects which arm occurred, and
   no canonical `AttemptRecord` or obligation status transition is appended.
-- The primitive functional signature is not an earned Equivalence Lens. There
-  is no typed lens registry, local binding/evidence calibration, tripwire,
-  rollback, or cross-family adoption in this increment.
+- Lens operators are typed, deterministic, provenance-visible selectors, but
+  Verdant does not yet synthesize or revise them. Approval and evidence-result
+  classification are explicit experimental inputs rather than an implemented
+  Council or endogenous Diagnostic Obligation.
+- Binding calibration is deliberately narrow: v0.6 uses a declared cumulative
+  failure count. It does not yet learn contextual activation envelopes, compare
+  failure rates against matched controls, or distinguish interaction faults.
+- Only `DependencyGap` exists, so borrow-before-synthesize, held-out cross-family
+  adoption, representational merging, and independent per-family rollback of a
+  shared lens remain proposed rather than implemented.
+- The registry/ledger boundary is separately serializable and tamper checked,
+  but is not yet packaged into `.vdk` or committed into the canonical graph.
+  Consequently, this increment establishes sidecar replay continuity, not
+  crash-durable canonical lens governance.
 - Isomorphic projection of earned structures and provenance-symmetric-difference
   generation remain unimplemented because the required resolved-history and
   additional obligation-family substrates do not yet exist.
@@ -148,3 +176,8 @@ pure composition, mandatory null/defer counterweights, bounded path search,
 canonical provenance closure, cosmetic-path equivalence collapse, invariance to
 continuous relation-confidence noise, tamper rejection, cross-hypothesis arm
 rejection, and end-to-end execution through the non-committing runtime.
+Equivalence-Lens tests additionally target content addressing, parent lineage,
+read-only application, local dimensional projection, exact approval/evidence
+replay, changed-request rejection, valid-null immunity, automatic suspension,
+atomic tripwire failure, direct-predecessor rollback, deterministic sidecar
+reload, and checksum/sequence tamper detection.

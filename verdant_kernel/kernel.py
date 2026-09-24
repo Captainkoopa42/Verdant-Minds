@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 70076)
-Total output lines: 5979
-
 from __future__ import annotations
 
 import hashlib
@@ -2356,7 +2353,1756 @@ class VerdantKernel:
                 key = (
                     "group:" + group
                     if group
-                    else "evidence:…20076 tokens truncated…
+                    else "evidence:" + entry.evidence_id
+                )
+                weights[key] = max(weights.get(key, 0.0), entry.effective_weight)
+            for key in sorted(weights):
+                remaining *= 1.0 - weights[key]
+        return max(0.0, min(1.0, 1.0 - remaining))
+
+    def _refresh_claim_pair(self, claim_key: str) -> ContradictionRecord | None:
+        claims = {claim.polarity: claim for claim in self._claims_for_key(claim_key)}
+        for polarity, claim in list(claims.items()):
+            opposite = (
+                ClaimPolarity.NEGATED
+                if polarity == ClaimPolarity.AFFIRMED
+                else ClaimPolarity.AFFIRMED
+            )
+            opposing = claims.get(opposite)
+            refutations = ()
+            if opposing is not None:
+                refutations = tuple(
+                    entry.model_copy(update={"stance": EvidenceStance.REFUTE})
+                    for entry in opposing.support_ledger
+                )
+            support_mode = claim.attributes.get(
+                "experimental_dependency_aggregation", "independent"
+            )
+            refutation_mode = (
+                opposing.attributes.get(
+                    "experimental_dependency_aggregation", "independent"
+                ) if opposing is not None else "independent"
+            )
+            support_score = self._saturating_score(
+                claim.support_ledger, mode=support_mode
+            )
+            refutation_score = self._saturating_score(
+                refutations, mode=refutation_mode
+            )
+            net_score = support_score - refutation_score
+            status = (
+                ClaimStatus.CONFIRMED
+                if support_score >= self.state.epistemic_policy.confirmation_threshold
+                else ClaimStatus.SUPPORTED
+            )
+            updated = claim.model_copy(
+                update={
+                    "refutation_ledger": refutations,
+                    "support_score": support_score,
+                    "refutation_score": refutation_score,
+                    "net_score": net_score,
+                    "status": status,
+                    "updated_cycle": self.state.cycle,
+                }
+            )
+            self.state.claims[claim.claim_id] = updated
+            claims[polarity] = updated
+
+        if len(claims) < 2:
+            return None
+        affirmed = claims[ClaimPolarity.AFFIRMED]
+        negated = claims[ClaimPolarity.NEGATED]
+        difference = affirmed.net_score - negated.net_score
+        preferred: str | None = None
+        if (
+            abs(difference) >= self.state.epistemic_policy.resolution_margin
+            and max(affirmed.net_score, negated.net_score)
+            >= self.state.epistemic_policy.minimum_preference_score
+        ):
+            preferred = affirmed.claim_id if difference > 0 else negated.claim_id
+        for claim in (affirmed, negated):
+            if preferred is None:
+                status = ClaimStatus.CONTESTED
+            elif claim.claim_id == preferred:
+                status = ClaimStatus.CONFIRMED
+            else:
+                status = ClaimStatus.REJECTED
+            self.state.claims[claim.claim_id] = claim.model_copy(update={"status": status})
+
+        contradiction_id = stable_id("contradiction", claim_key)
+        existing = self.state.contradictions.get(contradiction_id)
+        evidence_refs = tuple(sorted({
+            entry.evidence_id
+            for claim in (affirmed, negated)
+            for entry in claim.support_ledger
+        }))
+        contradiction = ContradictionRecord(
+            contradiction_id=contradiction_id,
+            claim_key=claim_key,
+            claim_ids=tuple(sorted((affirmed.claim_id, negated.claim_id))),
+            detected_cycle=(existing.detected_cycle if existing else self.state.cycle),
+            updated_cycle=self.state.cycle,
+            status=(
+                ContradictionStatus.WEIGHTED
+                if preferred is not None
+                else ContradictionStatus.ACTIVE
+            ),
+            preferred_claim_id=preferred,
+            evidence_refs=evidence_refs,
+            latest_revision_id=(existing.latest_revision_id if existing else None),
+        )
+        self.state.contradictions[contradiction_id] = contradiction
+        return contradiction
+
+    def register_sensory_archive(
+        self,
+        record: SensoryArchiveRecord,
+    ) -> SensoryArchiveRecord:
+        """Register a deterministic raw-payload archive before sample ingestion."""
+
+        try:
+            record = SensoryArchiveRecord.model_validate(record.model_dump(mode="json"))
+        except ValueError as exc:
+            raise SensoryIntegrityError("Sensory archive record is invalid.") from exc
+        existing = self.state.sensory_archives.get(record.archive_id)
+        if existing is not None:
+            if existing != record:
+                raise SensoryIntegrityError("Sensory archive ID was reused with different content.")
+            return existing.model_copy(deep=True)
+        duplicate_batch = next(
+            (
+                item
+                for item in self.state.sensory_archives.values()
+                if item.batch_key == record.batch_key
+            ),
+            None,
+        )
+        if duplicate_batch is not None:
+            raise SensoryIntegrityError("Sensory batch key has already been registered.")
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        committed = record.model_copy(update={"created_cycle": self.state.cycle})
+        committed = SensoryArchiveRecord.model_validate(committed.model_dump(mode="json"))
+        self.state.sensory_archives[committed.archive_id] = committed
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(committed.model_dump(mode="json"))
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "register_sensory_archive",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="register_sensory_archive",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(committed.archive_id,),
+                output_refs=(committed.archive_id,),
+            )
+        )
+        self._validate_state()
+        return committed.model_copy(deep=True)
+
+    def commit_sensory_sample(
+        self,
+        record: SensorySampleRecord,
+    ) -> SensorySampleRecord:
+        """Commit one native sample after its evidence and translation exist."""
+
+        try:
+            record = SensorySampleRecord.model_validate(record.model_dump(mode="json"))
+        except ValueError as exc:
+            raise SensoryIntegrityError("Sensory sample record is invalid.") from exc
+        archive = self.state.sensory_archives.get(record.archive_id)
+        if archive is None:
+            raise SensoryIntegrityError("Sensory sample references an unregistered archive.")
+        if record.sample_id not in archive.sample_ids:
+            raise SensoryIntegrityError("Sensory sample is absent from its archive manifest.")
+        if record.sample_id in self.state.sensory_samples:
+            existing = self.state.sensory_samples[record.sample_id]
+            if existing != record:
+                raise SensoryIntegrityError("Sensory sample ID was reused with different content.")
+            return existing.model_copy(deep=True)
+        observation = self.state.evidence.get(record.observation_evidence_id)
+        translation = self.state.evidence.get(record.translation_evidence_id)
+        if observation is None or translation is None:
+            raise SensoryIntegrityError("Sensory sample evidence is missing.")
+        if observation.kind != EvidenceKind.OBSERVATION:
+            raise SensoryIntegrityError("Sensory native evidence must be an observation.")
+        if translation.kind != EvidenceKind.TRANSLATION:
+            raise SensoryIntegrityError("Sensory derived evidence must be a translation.")
+        if observation.payload_sha256 != record.payload_sha256:
+            raise SensoryIntegrityError("Sensory native evidence payload digest drift detected.")
+        prior_stream = sorted(
+            (
+                item
+                for item in self.state.sensory_samples.values()
+                if item.stream_id == record.stream_id
+            ),
+            key=lambda item: (item.sequence_number, item.sample_id),
+        )
+        if prior_stream:
+            previous = prior_stream[-1]
+            if record.sequence_number <= previous.sequence_number:
+                raise SensoryIntegrityError("Sensory stream sequence must advance monotonically.")
+            if record.timestamp_ns < previous.timestamp_ns:
+                raise SensoryIntegrityError("Sensory stream timestamps cannot move backward.")
+            if record.previous_sample_id != previous.sample_id:
+                raise SensoryIntegrityError("Sensory previous-sample lineage is incorrect.")
+        elif record.previous_sample_id is not None:
+            raise SensoryIntegrityError("First sensory stream sample cannot name a predecessor.")
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        committed = record.model_copy(update={"committed_cycle": self.state.cycle})
+        committed = SensorySampleRecord.model_validate(committed.model_dump(mode="json"))
+        self.state.sensory_samples[committed.sample_id] = committed
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(committed.model_dump(mode="json"))
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_sensory_sample",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_sensory_sample",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(
+                    committed.archive_id,
+                    committed.observation_evidence_id,
+                    committed.translation_evidence_id,
+                ),
+                output_refs=(committed.sample_id,),
+            )
+        )
+        self._validate_state()
+        return committed.model_copy(deep=True)
+
+    def validate_temporal_event_report(
+        self,
+        report: TemporalEventAssemblyReport,
+    ) -> None:
+        try:
+            report = TemporalEventAssemblyReport.model_validate(
+                report.model_dump(mode="json")
+            )
+        except ValueError as exc:
+            raise SensoryIntegrityError("Temporal event report is invalid.") from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise SensoryIntegrityError("Temporal event report belongs to another kernel.")
+        if report.cycle != self.state.cycle:
+            raise SensoryStaleError("Temporal event report cycle is stale.")
+        if report.structural_fingerprint != self.sensory_structural_fingerprint():
+            raise SensoryStaleError("Temporal event report was computed against different sensory state.")
+        if report.policy_revision != self.state.sensory_policy.revision:
+            raise SensoryStaleError("Sensory policy changed after event inspection.")
+        if any(sample_id not in self.state.sensory_samples for sample_id in report.sample_ids):
+            raise SensoryIntegrityError("Temporal event report references unknown samples.")
+        already_assigned = {
+            sample_id
+            for event in self.state.temporal_events.values()
+            for sample_id in event.sample_ids
+        }
+        if already_assigned.intersection(report.sample_ids):
+            raise SensoryIntegrityError("A sensory sample cannot be assigned to two temporal events.")
+        report_sample_set = set(report.sample_ids)
+        group_ids = {group.group_id for group in report.synchronization_groups}
+        if len(group_ids) != len(report.synchronization_groups):
+            raise SensoryIntegrityError("Duplicate synchronization groups in report.")
+        for group in report.synchronization_groups:
+            if not set(group.sample_ids).issubset(report_sample_set):
+                raise SensoryIntegrityError("Synchronization group includes samples outside report.")
+            self._validated_evidence_refs(group.evidence_refs)
+        event_sample_union: set[str] = set()
+        event_group_union: set[str] = set()
+        for event in report.proposed_events:
+            if event.committed_cycle != self.state.cycle + 1:
+                raise SensoryIntegrityError("Proposed temporal event commit cycle drift.")
+            if not set(event.sample_ids).issubset(report_sample_set):
+                raise SensoryIntegrityError("Temporal event includes samples outside report.")
+            if not set(event.synchronization_group_ids).issubset(group_ids):
+                raise SensoryIntegrityError("Temporal event includes unknown synchronization groups.")
+            self._validated_evidence_refs(event.evidence_refs)
+            if event_sample_union.intersection(event.sample_ids):
+                raise SensoryIntegrityError("Temporal events overlap in sample membership.")
+            if event_group_union.intersection(event.synchronization_group_ids):
+                raise SensoryIntegrityError("Temporal events overlap in group membership.")
+            event_sample_union.update(event.sample_ids)
+            event_group_union.update(event.synchronization_group_ids)
+        if event_sample_union != report_sample_set:
+            raise SensoryIntegrityError("Temporal event report does not account for every sample.")
+        if event_group_union != group_ids:
+            raise SensoryIntegrityError("Temporal event report does not account for every synchronization group.")
+
+    def commit_temporal_event_report(
+        self,
+        report: TemporalEventAssemblyReport,
+    ) -> TemporalEventAssemblyEvent:
+        self.validate_temporal_event_report(report)
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        for group in report.synchronization_groups:
+            self.state.synchronization_groups[group.group_id] = group
+        committed_events: list[TemporalEventRecord] = []
+        for event in report.proposed_events:
+            committed = event.model_copy(update={"committed_cycle": self.state.cycle})
+            committed = TemporalEventRecord.model_validate(committed.model_dump(mode="json"))
+            self.state.temporal_events[committed.event_id] = committed
+            committed_events.append(committed)
+        event_ids = tuple(sorted(item.event_id for item in committed_events))
+        group_ids = tuple(sorted(item.group_id for item in report.synchronization_groups))
+        assembly_id = stable_id(
+            "temporal_event_assembly",
+            report.report_id,
+            event_ids,
+            group_ids,
+            self.state.cycle,
+        )
+        assembly = TemporalEventAssemblyEvent(
+            assembly_event_id=assembly_id,
+            report=report,
+            committed_event_ids=event_ids,
+            committed_group_ids=group_ids,
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        self.state.temporal_event_assembly_events.append(assembly)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(report.model_dump(mode="json"))
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_temporal_event_report",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_temporal_event_report",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(report.report_id, *report.sample_ids),
+                output_refs=(assembly_id, *event_ids, *group_ids),
+            )
+        )
+        self._validate_state()
+        return assembly
+
+    def update_sensory_policy(self, **changes: object) -> SensoryPolicy:
+        next_policy = self.state.sensory_policy.model_copy(
+            update={
+                **changes,
+                "revision": self.state.sensory_policy.revision + 1,
+            }
+        )
+        self.state.sensory_policy = SensoryPolicy.model_validate(
+            next_policy.model_dump(mode="json")
+        )
+        return self.state.sensory_policy.model_copy(deep=True)
+
+    def validate_workspace_report(self, report: WorkspaceAdmissionReport) -> None:
+        try:
+            report = WorkspaceAdmissionReport.model_validate(
+                report.model_dump(mode="json")
+            )
+        except ValueError as exc:
+            raise WorkspaceIntegrityError(
+                "Workspace report failed its identity checksum."
+            ) from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise WorkspaceIntegrityError("Workspace report belongs to another kernel.")
+        if report.structural_fingerprint != self.workspace_structural_fingerprint():
+            raise WorkspaceStaleError(
+                "Workspace report was computed against different active state."
+            )
+        if report.policy_revision != self.state.workspace_policy.revision:
+            raise WorkspaceStaleError("Workspace policy changed after inspection.")
+        if report.resource_budget != self.state.workspace_policy.resource_budget:
+            raise WorkspaceIntegrityError("Workspace budget drift detected.")
+        if report.total_allocated_resource > report.resource_budget + 1e-9:
+            raise WorkspaceIntegrityError("Workspace report exceeds its resource budget.")
+        admitted = {
+            item.candidate_id
+            for item in report.assessments
+            if item.disposition == WorkspaceDisposition.ADMIT
+        }
+        suppressed = {
+            item.candidate_id
+            for item in report.assessments
+            if item.disposition != WorkspaceDisposition.ADMIT
+        }
+        if admitted != set(report.admitted_candidate_ids):
+            raise WorkspaceIntegrityError("Workspace admitted-candidate index drift.")
+        if suppressed != set(report.suppressed_candidate_ids):
+            raise WorkspaceIntegrityError("Workspace suppressed-candidate index drift.")
+        if len(admitted) > self.state.workspace_policy.max_active_items:
+            raise WorkspaceIntegrityError("Workspace report exceeds its slot bound.")
+        for item in report.assessments:
+            self._validated_evidence_refs(item.candidate.evidence_refs)
+            if item.candidate.persistence_cycles > self.state.workspace_policy.maximum_persistence_cycles:
+                raise WorkspaceIntegrityError("Workspace persistence request exceeds policy.")
+            if item.disposition == WorkspaceDisposition.ADMIT and item.allocated_resource <= 0.0:
+                raise WorkspaceIntegrityError("Admitted workspace items require resources.")
+            if item.disposition != WorkspaceDisposition.ADMIT and item.allocated_resource != 0.0:
+                raise WorkspaceIntegrityError("Suppressed workspace items cannot hold resources.")
+        missing_evictions = set(report.evicted_item_ids) - set(self.state.workspace_items)
+        if missing_evictions:
+            raise WorkspaceIntegrityError("Workspace report evicts unknown active items.")
+
+    def validate_plasticity_report(self, report: PlasticityReport) -> None:
+        try:
+            report = PlasticityReport.model_validate(report.model_dump(mode="json"))
+        except ValueError as exc:
+            raise PlasticityIntegrityError(
+                "Plasticity report failed its identity checksum."
+            ) from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise PlasticityIntegrityError("Plasticity report belongs to another kernel.")
+        if report.cycle != self.state.cycle:
+            raise PlasticityStaleError("Plasticity report cycle is stale.")
+        if report.structural_fingerprint != self.plasticity_structural_fingerprint():
+            raise PlasticityStaleError(
+                "Plasticity report was computed against different active state."
+            )
+        if report.policy_revision != self.state.plasticity_policy.revision:
+            raise PlasticityStaleError("Plasticity policy changed after inspection.")
+        if not self.state.workspace_cycle_events:
+            raise PlasticityIntegrityError("Plasticity requires a committed workspace cycle.")
+        latest_workspace = self.state.workspace_cycle_events[-1]
+        if latest_workspace.event_id != report.workspace_event_id:
+            raise PlasticityStaleError(
+                "Plasticity report does not reference the latest workspace event."
+            )
+        proposed = {item.association_id: item for item in report.proposed_associations}
+        if len(proposed) != len(report.proposed_associations):
+            raise PlasticityIntegrityError("Plasticity report contains duplicate associations.")
+        degree: dict[str, int] = {}
+        for association in proposed.values():
+            a, b = association.concept_ids
+            if a not in self.state.concepts or b not in self.state.concepts:
+                raise PlasticityIntegrityError(
+                    "Plasticity association references a missing concept."
+                )
+            self._validated_evidence_refs(association.evidence_refs)
+            degree[a] = degree.get(a, 0) + 1
+            degree[b] = degree.get(b, 0) + 1
+        max_degree = max(degree.values(), default=0)
+        if max_degree != report.max_degree_after:
+            raise PlasticityIntegrityError("Plasticity max-degree diagnostic drift detected.")
+        if max_degree > self.state.plasticity_policy.max_degree:
+            raise PlasticityIntegrityError("Plasticity report exceeds the degree cap.")
+        if len(proposed) != report.edge_count_after:
+            raise PlasticityIntegrityError("Plasticity edge-count diagnostic drift detected.")
+        concept_count = max(1, len(self.state.concepts))
+        ratio = len(proposed) / concept_count
+        if abs(ratio - report.edge_ratio_after) > 1e-9:
+            raise PlasticityIntegrityError("Plasticity edge-ratio diagnostic drift detected.")
+        if ratio > self.state.plasticity_policy.max_edge_ratio + 1e-9:
+            raise PlasticityIntegrityError("Plasticity report exceeds the edge-ratio cap.")
+        if report.edge_count_before != len(self.state.plasticity_associations):
+            raise PlasticityStaleError("Plasticity association count changed after inspection.")
+
+    def commit_plasticity_report(self, report: PlasticityReport) -> PlasticityEvent:
+        self.validate_plasticity_report(report)
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        self.state.plasticity_associations = {
+            item.association_id: item for item in report.proposed_associations
+        }
+        active_ids = tuple(sorted(self.state.plasticity_associations))
+        event_id = stable_id(
+            "plasticity_event",
+            report.report_id,
+            active_ids,
+            self.state.cycle,
+        )
+        event = PlasticityEvent(
+            event_id=event_id,
+            report=report,
+            active_association_ids=active_ids,
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        self.state.plasticity_events.append(event)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(report.model_dump(mode="json"))
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_local_plasticity",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_local_plasticity",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(report.report_id, report.workspace_event_id),
+                output_refs=(event_id, *active_ids),
+            )
+        )
+        self._validate_state()
+        return event
+
+    def validate_structure_observation_report(
+        self,
+        report: StructureObservationReport,
+    ) -> None:
+        try:
+            report = StructureObservationReport.model_validate(
+                report.model_dump(mode="json")
+            )
+        except ValueError as exc:
+            raise StructureIntegrityError(
+                "Structure observation report failed its identity checksum."
+            ) from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise StructureIntegrityError("Structure report belongs to another kernel.")
+        if report.cycle != self.state.cycle:
+            raise StructureStaleError("Structure observation report cycle is stale.")
+        if report.structural_fingerprint != self.structure_structural_fingerprint():
+            raise StructureStaleError(
+                "Structure report was computed against different active state."
+            )
+        if report.policy_revision != self.state.structure_policy.revision:
+            raise StructureStaleError("Structure policy changed after inspection.")
+        if not self.state.plasticity_events:
+            raise StructureIntegrityError("Structure observation requires plasticity history.")
+        if self.state.plasticity_events[-1].event_id != report.plasticity_event_id:
+            raise StructureStaleError(
+                "Structure report does not reference the latest plasticity event."
+            )
+        for candidate in report.proposed_candidates:
+            if any(item not in self.state.concepts for item in candidate.member_concept_ids):
+                raise StructureIntegrityError(
+                    "Structure candidate references a missing concept."
+                )
+            if any(item not in self.state.relations for item in candidate.member_relation_ids):
+                raise StructureIntegrityError(
+                    "Structure candidate references a missing canonical relation."
+                )
+            if any(
+                item not in self.state.plasticity_associations
+                for item in candidate.internal_association_ids
+            ):
+                raise StructureIntegrityError(
+                    "Structure candidate references a missing internal association."
+                )
+            if any(
+                item not in self.state.plasticity_associations
+                for item in candidate.boundary_association_ids
+            ):
+                raise StructureIntegrityError(
+                    "Structure candidate references a missing boundary association."
+                )
+            self._validated_evidence_refs(candidate.evidence_refs)
+            if candidate.field_state_dim not in {0, self.state.field.state_dim}:
+                raise StructureIntegrityError("Structure field prototype dimension drift.")
+
+    def commit_structure_observation(
+        self,
+        report: StructureObservationReport,
+    ) -> StructureObservationEvent:
+        self.validate_structure_observation_report(report)
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        for candidate in report.proposed_candidates:
+            self.state.structure_candidates[candidate.candidate_id] = candidate
+        active_ids = tuple(sorted(self.state.structure_candidates))
+        event_id = stable_id(
+            "structure_observation_event",
+            report.report_id,
+            active_ids,
+            self.state.cycle,
+        )
+        event = StructureObservationEvent(
+            event_id=event_id,
+            report=report,
+            active_candidate_ids=active_ids,
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        self.state.structure_observation_events.append(event)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(report.model_dump(mode="json"))
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_structure_observation",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_structure_observation",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(report.report_id, report.plasticity_event_id),
+                output_refs=(event_id, *report.observed_candidate_ids),
+            )
+        )
+        self._validate_state()
+        return event
+
+    def validate_structure_promotion_report(
+        self,
+        report: StructurePromotionReport,
+    ) -> None:
+        try:
+            report = StructurePromotionReport.model_validate(
+                report.model_dump(mode="json")
+            )
+        except ValueError as exc:
+            raise StructureIntegrityError(
+                "Structure promotion report failed its identity checksum."
+            ) from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise StructureIntegrityError("Structure promotion belongs to another kernel.")
+        if report.structural_fingerprint != self.structure_structural_fingerprint():
+            raise StructureStaleError(
+                "Structure promotion report was computed against different state."
+            )
+        if report.policy_revision != self.state.structure_policy.revision:
+            raise StructureStaleError("Structure policy changed after promotion inspection.")
+        candidate = self.state.structure_candidates.get(report.candidate_id)
+        if candidate is None:
+            raise StructureIntegrityError("Structure promotion references a missing candidate.")
+        if candidate != report.candidate_snapshot:
+            raise StructureStaleError("Structure candidate changed after promotion inspection.")
+        if candidate.status == StructureCandidateStatus.PROMOTED:
+            raise StructureIntegrityError("Structure candidate is already promoted.")
+        self._validated_evidence_refs(report.evidence_refs)
+        if report.evidence_refs != candidate.evidence_refs:
+            raise StructureIntegrityError(
+                "Structure promotion must preserve the candidate evidence path."
+            )
+        expected_structure_id = stable_id("structure", candidate.candidate_id)
+        if report.proposed_structure_id != expected_structure_id:
+            raise StructureIntegrityError("Proposed structure identity drift detected.")
+
+    def commit_structure_promotion(
+        self,
+        report: StructurePromotionReport,
+        *,
+        council_decision_event_id: str,
+    ) -> StructurePromotionEvent:
+        self.validate_structure_promotion_report(report)
+        if report.disposition != StructurePromotionDisposition.PROMOTE:
+            raise StructureIntegrityError("Only an eligible structure can be promoted.")
+        if report.rejection_codes:
+            raise StructureIntegrityError("Structure promotion still contains failed gates.")
+        try:
+            self.assert_operation_authorized(council_decision_event_id, report.operation)
+        except GovernanceAuthorizationError as exc:
+            raise StructureAuthorizationError(
+                "Council did not authorize earned-structure promotion."
+            ) from exc
+
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        candidate = self.state.structure_candidates[report.candidate_id]
+        record = StructureRecord(
+            structure_id=report.proposed_structure_id,
+            source_candidate_id=candidate.candidate_id,
+            opaque_name=report.proposed_opaque_name,
+            member_concept_ids=candidate.member_concept_ids,
+            member_relation_ids=candidate.member_relation_ids,
+            internal_association_ids=candidate.internal_association_ids,
+            internal_edge_snapshots=tuple(
+                StructureEdgeSnapshot(
+                    association_id=association_id,
+                    concept_ids=self.state.plasticity_associations[association_id].concept_ids,
+                    strength=self.state.plasticity_associations[association_id].strength,
+                )
+                for association_id in candidate.internal_association_ids
+                if association_id in self.state.plasticity_associations
+            ),
+            evidence_refs=candidate.evidence_refs,
+            quality_at_promotion=candidate.quality,
+            field_state_dim=candidate.field_state_dim,
+            field_prototype_real=candidate.field_prototype_real,
+            field_prototype_imag=candidate.field_prototype_imag,
+            field_prototype_sha256=candidate.field_prototype_sha256,
+            created_cycle=self.state.cycle,
+            council_decision_event_id=council_decision_event_id,
+            promotion_policy_revision=report.policy_revision,
+            semantic_label_preinstalled=False,
+        )
+        self.state.structures[record.structure_id] = record
+        updated = candidate.model_copy(
+            update={
+                "status": StructureCandidateStatus.PROMOTED,
+                "updated_cycle": self.state.cycle,
+                "promoted_structure_id": record.structure_id,
+            }
+        )
+        self.state.structure_candidates[candidate.candidate_id] = (
+            StructureCandidateRecord.model_validate(updated.model_dump(mode="json"))
+        )
+        event_id = stable_id(
+            "structure_promotion_event",
+            report.report_id,
+            council_decision_event_id,
+            record.structure_id,
+            self.state.cycle,
+        )
+        event = StructurePromotionEvent(
+            event_id=event_id,
+            report=report,
+            council_decision_event_id=council_decision_event_id,
+            structure_id=record.structure_id,
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        self.state.structure_promotion_events.append(event)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(
+                {
+                    "report": report.model_dump(mode="json"),
+                    "council_decision_event_id": council_decision_event_id,
+                }
+            )
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_structure_promotion",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_structure_promotion",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(
+                    report.report_id,
+                    council_decision_event_id,
+                    candidate.candidate_id,
+                ),
+                output_refs=(event_id, record.structure_id),
+            )
+        )
+        self._validate_state()
+        return event
+
+    def refolding_structural_fingerprint(self) -> str:
+        """Fingerprint immutable fold bodies, challenges, and availability for M18."""
+
+        payload = {
+            "kernel_id": self.state.identity.kernel_id,
+            "structures": {
+                key: value.model_dump(mode="json")
+                for key, value in sorted(self.state.structures.items())
+            },
+            "ablated_structure_ids": self.state.ablated_structure_ids,
+            "structural_challenges": {
+                key: value.model_dump(mode="json")
+                for key, value in sorted(self.state.structural_challenges.items())
+            },
+            "structure_refold_events": [
+                item.model_dump(mode="json") for item in self.state.structure_refold_events
+            ],
+            "refolding_policy": self.state.refolding_policy.model_dump(mode="json"),
+            "evidence": {
+                key: value.model_dump(mode="json")
+                for key, value in sorted(self.state.evidence.items())
+            },
+        }
+        return hashlib.sha256(canonical_json_bytes(payload)).hexdigest()
+
+    def update_refolding_policy(self, **changes: object):
+        updated = self.state.refolding_policy.model_copy(
+            update={**changes, "revision": self.state.refolding_policy.revision + 1}
+        )
+        updated = type(self.state.refolding_policy).model_validate(
+            updated.model_dump(mode="json")
+        )
+        self.state.refolding_policy = updated
+        self._validate_state()
+        return updated
+
+    def record_structural_challenge(
+        self,
+        structure_id: str,
+        concept_ids: tuple[str, str],
+        *,
+        evidence_refs: Iterable[str],
+        confidence: float,
+    ) -> StructuralChallengeRecord:
+        if structure_id not in self.state.structures:
+            raise RefoldingIntegrityError("Structural challenge references a missing structure.")
+        endpoints = tuple(sorted(concept_ids))
+        if len(endpoints) != 2 or endpoints[0] == endpoints[1]:
+            raise RefoldingIntegrityError("Structural challenge requires two distinct endpoints.")
+        structure = self.state.structures[structure_id]
+        if not set(endpoints).issubset(set(structure.member_concept_ids)):
+            raise RefoldingIntegrityError("Structural challenge endpoints escaped the structure.")
+        edge = next(
+            (item for item in structure.internal_edge_snapshots if item.concept_ids == endpoints),
+            None,
+        )
+        if edge is None:
+            raise RefoldingIntegrityError("Structural challenge must target a frozen internal edge.")
+        if not 0.0 <= confidence <= 1.0:
+            raise RefoldingIntegrityError("Structural challenge confidence must be in [0,1].")
+        evidence = self._validated_evidence_refs(evidence_refs)
+        event_keys = {self.state.evidence[item].event_key for item in evidence}
+        if len(event_keys) != 1:
+            raise RefoldingIntegrityError(
+                "One structural challenge observation must come from one evidence event."
+            )
+        event_key = next(iter(event_keys))
+        challenge_id = stable_id("structural_challenge", structure_id, endpoints)
+        existing = self.state.structural_challenges.get(challenge_id)
+        observations = {
+            item.event_key: item for item in (existing.observations if existing else ())
+        }
+        prior_observation = observations.get(event_key)
+        if prior_observation is not None:
+            if prior_observation.evidence_refs != evidence or abs(prior_observation.confidence - confidence) > 1e-12:
+                raise RefoldingIntegrityError(
+                    "Structural challenge event key was reused with different evidence or confidence."
+                )
+            return existing
+        prospective_cycle = self.state.cycle + 1
+        observations[event_key] = StructuralChallengeObservation(
+            event_key=event_key,
+            evidence_refs=evidence,
+            confidence=confidence,
+            cycle=prospective_cycle,
+        )
+        ordered = tuple(observations[key] for key in sorted(observations))
+        remaining = 1.0
+        for item in ordered:
+            remaining *= 1.0 - item.confidence
+        combined = max(0.0, min(1.0, 1.0 - remaining))
+        record = StructuralChallengeRecord(
+            challenge_id=challenge_id,
+            structure_id=structure_id,
+            concept_ids=endpoints,
+            observations=ordered,
+            combined_confidence=combined,
+            created_cycle=(existing.created_cycle if existing else prospective_cycle),
+            updated_cycle=prospective_cycle,
+        )
+        if existing == record:
+            return existing
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        self.state.structural_challenges[challenge_id] = record
+        command_hash = hashlib.sha256(canonical_json_bytes(record.model_dump(mode="json"))).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "record_structural_challenge",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="record_structural_challenge",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(structure_id, *evidence),
+                output_refs=(challenge_id,),
+            )
+        )
+        self._validate_state()
+        return record
+
+    def validate_structure_refold_report(self, report: StructureRefoldReport) -> None:
+        try:
+            report = StructureRefoldReport.model_validate(report.model_dump(mode="json"))
+        except ValueError as exc:
+            raise RefoldingIntegrityError("Structure refold report failed validation.") from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise RefoldingIntegrityError("Structure refold report belongs to another kernel.")
+        # Council authorization advances the canonical cycle. Refolding staleness
+        # is therefore keyed to the dedicated structural fingerprint and policy,
+        # not the absolute cycle number recorded at pure inspection time.
+        if report.structural_fingerprint != self.refolding_structural_fingerprint():
+            raise RefoldingStaleError("Structure refold report was computed against different state.")
+        if report.policy_revision != self.state.refolding_policy.revision:
+            raise RefoldingStaleError("Refolding policy changed after inspection.")
+        parent = self.state.structures.get(report.parent_structure_id)
+        if parent is None:
+            raise RefoldingIntegrityError("Refold report references a missing parent structure.")
+        for challenge_id in report.challenge_ids:
+            challenge = self.state.structural_challenges.get(challenge_id)
+            if challenge is None or challenge.structure_id != parent.structure_id:
+                raise RefoldingIntegrityError("Refold report lost structural challenge lineage.")
+        if report.evidence_refs:
+            self._validated_evidence_refs(report.evidence_refs)
+        for proposal in report.proposals:
+            if proposal.parent_structure_id != parent.structure_id:
+                raise RefoldingIntegrityError("Refold proposal parent drift detected.")
+            if any(item not in self.state.concepts for item in proposal.member_concept_ids):
+                raise RefoldingIntegrityError("Refold proposal references a missing concept.")
+            if any(
+                item.association_id not in set(parent.internal_association_ids)
+                for item in proposal.internal_edge_snapshots
+            ):
+                raise RefoldingIntegrityError("Refold proposal invented a non-parent edge.")
+            self._validated_evidence_refs(proposal.evidence_refs)
+
+    def commit_structure_refold(
+        self,
+        report: StructureRefoldReport,
+        *,
+        council_decision_event_id: str | None = None,
+    ) -> StructureRefoldEvent:
+        self.validate_structure_refold_report(report)
+        actionable = report.disposition in {RefoldDisposition.REVISE, RefoldDisposition.SPLIT}
+        if actionable:
+            if not report.proposals:
+                raise RefoldingIntegrityError("Actionable refolding requires replacement proposals.")
+            if council_decision_event_id is None:
+                raise RefoldingAuthorizationError("Actionable refolding requires Council authorization.")
+            try:
+                self.assert_operation_authorized(council_decision_event_id, report.operation)
+            except GovernanceAuthorizationError as exc:
+                raise RefoldingAuthorizationError("Council did not authorize refolding.") from exc
+        elif council_decision_event_id is not None:
+            raise RefoldingIntegrityError("Non-actionable refolding must not consume Council authorization.")
+
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        parent = self.state.structures[report.parent_structure_id]
+        produced: list[str] = []
+        if actionable:
+            root_id = parent.lineage_root_structure_id or parent.structure_id
+            for proposal in report.proposals:
+                record = StructureRecord(
+                    structure_id=proposal.proposed_structure_id,
+                    source_candidate_id=parent.source_candidate_id,
+                    opaque_name=proposal.proposed_opaque_name,
+                    member_concept_ids=proposal.member_concept_ids,
+                    member_relation_ids=tuple(
+                        sorted(
+                            relation_id
+                            for relation_id in parent.member_relation_ids
+                            if {
+                                self.state.relations[relation_id].source_concept_id,
+                                self.state.relations[relation_id].target_concept_id,
+                            }.issubset(set(proposal.member_concept_ids))
+                        )
+                    ),
+                    internal_association_ids=proposal.internal_association_ids,
+                    internal_edge_snapshots=proposal.internal_edge_snapshots,
+                    evidence_refs=proposal.evidence_refs,
+                    quality_at_promotion=proposal.quality,
+                    field_state_dim=proposal.field_state_dim,
+                    field_prototype_real=proposal.field_prototype_real,
+                    field_prototype_imag=proposal.field_prototype_imag,
+                    field_prototype_sha256=proposal.field_prototype_sha256,
+                    created_cycle=self.state.cycle,
+                    council_decision_event_id=council_decision_event_id,
+                    promotion_policy_revision=parent.promotion_policy_revision,
+                    lineage_parent_structure_id=parent.structure_id,
+                    lineage_root_structure_id=root_id,
+                    revision_index=proposal.revision_index,
+                    refold_basis_challenge_ids=proposal.refold_basis_challenge_ids,
+                    semantic_label_preinstalled=False,
+                )
+                self.state.structures[record.structure_id] = record
+                produced.append(record.structure_id)
+            if self.state.refolding_policy.ablate_parent_on_success:
+                current = set(self.state.ablated_structure_ids)
+                current.add(parent.structure_id)
+                self.state.ablated_structure_ids = tuple(sorted(current))
+
+        event_id = stable_id(
+            "structure_refold_event",
+            report.report_id,
+            council_decision_event_id,
+            tuple(sorted(produced)),
+            actionable and self.state.refolding_policy.ablate_parent_on_success,
+            self.state.cycle,
+        )
+        event = StructureRefoldEvent(
+            event_id=event_id,
+            report=report,
+            council_decision_event_id=council_decision_event_id,
+            produced_structure_ids=tuple(sorted(produced)),
+            parent_ablated=actionable and self.state.refolding_policy.ablate_parent_on_success,
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        self.state.structure_refold_events.append(event)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(
+                {
+                    "report": report.model_dump(mode="json"),
+                    "council_decision_event_id": council_decision_event_id,
+                }
+            )
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_structure_refold",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_structure_refold",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(report.report_id, report.parent_structure_id, *report.challenge_ids),
+                output_refs=(event_id, *sorted(produced)),
+            )
+        )
+        self._validate_state()
+        return event
+
+    def commit_workspace_cycle(
+        self,
+        report: WorkspaceAdmissionReport,
+    ) -> WorkspaceCycleEvent:
+        self.validate_workspace_report(report)
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        next_items: dict[str, WorkspaceItemRecord] = {}
+        assessment_by_id = {item.candidate_id: item for item in report.assessments}
+        for candidate_id in report.admitted_candidate_ids:
+            assessment = assessment_by_id[candidate_id]
+            candidate = assessment.candidate
+            prior = None
+            if assessment.carried_from_item_id is not None:
+                prior = self.state.workspace_items.get(assessment.carried_from_item_id)
+            item_id = stable_id(
+                "workspace_item",
+                self.state.identity.kernel_id,
+                candidate.source_kind.value,
+                candidate.source_ref,
+                candidate.operation,
+            )
+            admitted_cycle = prior.admitted_cycle if prior is not None else self.state.cycle
+            expires_cycle = self.state.cycle + min(
+                candidate.persistence_cycles,
+                self.state.workspace_policy.maximum_persistence_cycles,
+            ) - 1
+            record = WorkspaceItemRecord(
+                item_id=item_id,
+                candidate_id=candidate_id,
+                source_kind=candidate.source_kind,
+                source_ref=candidate.source_ref,
+                label=candidate.label,
+                evidence_refs=candidate.evidence_refs,
+                operation=candidate.operation,
+                binding_refs=candidate.binding_refs,
+                allocated_resource=assessment.allocated_resource,
+                raw_score=assessment.raw_score,
+                effective_score=assessment.effective_score,
+                components=assessment.components,
+                signals=candidate.signals,
+                admitted_cycle=admitted_cycle,
+                updated_cycle=self.state.cycle,
+                expires_cycle=expires_cycle,
+                admission_report_id=report.report_id,
+                metadata=candidate.metadata,
+            )
+            next_items[item_id] = record
+        self.state.workspace_items = next_items
+        active_ids = tuple(sorted(next_items))
+        broadcast_ids = tuple(
+            sorted(
+                item.item_id
+                for item in next_items.values()
+                if item.effective_score >= self.state.workspace_policy.broadcast_threshold
+            )
+        )
+        event_id = stable_id(
+            "workspace_cycle_event",
+            report.report_id,
+            active_ids,
+            broadcast_ids,
+            report.suppressed_candidate_ids,
+            report.evicted_item_ids,
+            self.state.cycle,
+        )
+        event = WorkspaceCycleEvent(
+            event_id=event_id,
+            report=report,
+            active_item_ids=active_ids,
+            broadcast_item_ids=broadcast_ids,
+            suppressed_candidate_ids=report.suppressed_candidate_ids,
+            evicted_item_ids=report.evicted_item_ids,
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        self.state.workspace_cycle_events.append(event)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(report.model_dump(mode="json"))
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_workspace_cycle",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_workspace_cycle",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=tuple(
+                    sorted(
+                        {
+                            report.report_id,
+                            *(
+                                evidence
+                                for item in report.assessments
+                                for evidence in item.candidate.evidence_refs
+                            ),
+                        }
+                    )
+                ),
+                output_refs=(event_id, *active_ids),
+            )
+        )
+        self._validate_state()
+        return event
+
+    def commit_workspace_writeback(
+        self,
+        *,
+        item_id: str,
+        disposition: WorkspaceWritebackDisposition,
+        evidence_refs: Iterable[str],
+        reason: str,
+    ) -> WorkspaceWritebackEvent:
+        item = self.state.workspace_items.get(item_id)
+        if item is None:
+            raise WorkspaceIntegrityError("Workspace writeback references no active item.")
+        evidence = self._validated_evidence_refs(evidence_refs)
+        if not reason.strip():
+            raise WorkspaceIntegrityError("Workspace writeback requires a reason.")
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        event_id = stable_id(
+            "workspace_writeback_event",
+            item.model_dump(mode="json"),
+            disposition.value,
+            evidence,
+            reason.strip(),
+            self.state.cycle,
+        )
+        event = WorkspaceWritebackEvent(
+            event_id=event_id,
+            item_snapshot=item,
+            disposition=disposition,
+            evidence_refs=evidence,
+            reason=reason.strip(),
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        self.state.workspace_writeback_events.append(event)
+        if disposition == WorkspaceWritebackDisposition.RESOLVE:
+            del self.state.workspace_items[item_id]
+        else:
+            refreshed = item.model_copy(
+                update={
+                    "updated_cycle": self.state.cycle,
+                    "expires_cycle": max(item.expires_cycle, self.state.cycle),
+                }
+            )
+            self.state.workspace_items[item_id] = WorkspaceItemRecord.model_validate(
+                refreshed.model_dump(mode="json")
+            )
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(
+                {
+                    "item_id": item_id,
+                    "disposition": disposition.value,
+                    "evidence_refs": evidence,
+                    "reason": reason.strip(),
+                }
+            )
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_workspace_writeback",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_workspace_writeback",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(item_id, *evidence),
+                output_refs=(event_id,),
+            )
+        )
+        self._validate_state()
+        return event
+
+    def set_attention_candidate(
+        self,
+        *,
+        source_ref: str,
+        priority: float,
+        resource_request: float,
+        reason: str,
+        evidence_refs: Iterable[str],
+    ) -> AttentionCandidate:
+        evidence = self._validated_evidence_refs(evidence_refs)
+        candidate_id = stable_id("attention", source_ref, reason)
+        candidate = AttentionCandidate(
+            candidate_id=candidate_id,
+            source_ref=source_ref,
+            created_cycle=self.state.cycle,
+            priority=priority,
+            resource_request=resource_request,
+            reason=reason,
+            evidence_refs=evidence,
+        )
+        self.state.attention_candidates[candidate_id] = candidate
+        return candidate
+
+    def update_governance(
+        self,
+        *,
+        t_g: float | None = None,
+        weights: dict[str, float] | None = None,
+        enabled_kings: dict[str, bool] | None = None,
+        attention_budget: float | None = None,
+        forefront_priority_threshold: float | None = None,
+        ethics_veto_threshold: float | None = None,
+        outcome_learning_rate: float | None = None,
+    ) -> GovernanceState:
+        current = self.state.governance
+        self.state.governance = current.model_copy(
+            update={
+                "t_g": current.t_g if t_g is None else t_g,
+                "weights": current.weights if weights is None else weights,
+                "enabled_kings": (
+                    current.enabled_kings if enabled_kings is None else enabled_kings
+                ),
+                "attention_budget": (
+                    current.attention_budget
+                    if attention_budget is None
+                    else attention_budget
+                ),
+                "forefront_priority_threshold": (
+                    current.forefront_priority_threshold
+                    if forefront_priority_threshold is None
+                    else forefront_priority_threshold
+                ),
+                "ethics_veto_threshold": (
+                    current.ethics_veto_threshold
+                    if ethics_veto_threshold is None
+                    else ethics_veto_threshold
+                ),
+                "outcome_learning_rate": (
+                    current.outcome_learning_rate
+                    if outcome_learning_rate is None
+                    else outcome_learning_rate
+                ),
+                "revision": current.revision + 1,
+            },
+            deep=True,
+        )
+        # Revalidate model-copy updates because Pydantic does not validate update payloads.
+        self.state.governance = GovernanceState.model_validate(
+            self.state.governance.model_dump(mode="json")
+        )
+        return self.state.governance.model_copy(deep=True)
+
+    def commit_council_decision(self, report: CouncilReport) -> CouncilDecisionEvent:
+        """Persist a fully reproduced Council report without changing semantic truth."""
+
+        try:
+            report = CouncilReport.model_validate(report.model_dump(mode="json"))
+        except ValueError as exc:
+            raise GovernanceIntegrityError(
+                "Council report failed its identity or content checksum."
+            ) from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise GovernanceIntegrityError(
+                "Council report belongs to a different kernel."
+            )
+        if report.state_fingerprint != self.semantic_fingerprint():
+            raise GovernanceStaleError(
+                "Council report was computed against a different canonical state."
+            )
+        if report.governance_fingerprint != self.governance_fingerprint():
+            raise GovernanceStaleError(
+                "Council report was computed against a different governance policy."
+            )
+        self._validate_council_report_refs(report)
+
+        evidence_refs = tuple(
+            sorted(
+                set(report.proposal.evidence_refs).union(
+                    *[set(item.evidence_refs) for item in report.assessments]
+                )
+            )
+        )
+        if evidence_refs:
+            self._validated_evidence_refs(evidence_refs)
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        event_id = stable_id(
+            "council_decision",
+            report.report_id,
+            self.state.cycle,
+            evidence_refs,
+        )
+        event = CouncilDecisionEvent(
+            decision_event_id=event_id,
+            report=report,
+            committed_cycle=self.state.cycle,
+            evidence_refs=evidence_refs,
+            semantic_mutation_permitted=False,
+            governance_policy_mutation_permitted=False,
+        )
+        self.state.council_decisions.append(event)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(report.model_dump(mode="json"))
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        transition = TransitionRecord(
+            transition_id=stable_id(
+                "transition",
+                self.state.identity.kernel_id,
+                self.state.event_sequence,
+                "commit_council_decision",
+                command_hash,
+                input_fingerprint,
+                output_fingerprint,
+            ),
+            sequence=self.state.event_sequence,
+            cycle=self.state.cycle,
+            operation="commit_council_decision",
+            command_hash=command_hash,
+            input_fingerprint=input_fingerprint,
+            output_fingerprint=output_fingerprint,
+            input_refs=(report.proposal.proposal_id, report.report_id),
+            output_refs=(event_id,),
+        )
+        self.state.transitions.append(transition)
+        self._validate_state()
+        return event
+
+    def operation_authorized(self, decision_event_id: str, operation: str) -> bool:
+        event = next(
+            (
+                item
+                for item in self.state.council_decisions
+                if item.decision_event_id == decision_event_id
+            ),
+            None,
+        )
+        if event is None:
+            raise GovernanceAuthorizationError("Unknown Council decision event.")
+        return operation in event.report.authorized_operations
+
+    def assert_operation_authorized(
+        self,
+        decision_event_id: str,
+        operation: str,
+    ) -> None:
+        if not self.operation_authorized(decision_event_id, operation):
+            raise GovernanceAuthorizationError(
+                f"Operation {operation!r} is not authorized by Council decision "
+                f"{decision_event_id!r}."
+            )
+
+    def validate_shard_formation_report(
+        self,
+        report: ShardFormationReport,
+    ) -> None:
+        try:
+            report = ShardFormationReport.model_validate(
+                report.model_dump(mode="json")
+            )
+        except ValueError as exc:
+            raise ShardIntegrityError(
+                "Shard formation report failed its identity checksum."
+            ) from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise ShardIntegrityError("Shard report belongs to another kernel.")
+        if report.structural_fingerprint != self.shard_structural_fingerprint():
+            raise ShardStaleError(
+                "Shard formation report was computed against different structure."
+            )
+        if report.policy_revision != self.state.shard_policy.revision:
+            raise ShardStaleError("Shard policy changed after report inspection.")
+        if report.parent_shard_id not in self.state.shards:
+            raise ShardIntegrityError("Shard parent does not exist.")
+        if report.proposed_shard_id in self.state.shards:
+            raise ShardIntegrityError("Proposed shard already exists.")
+        if len(report.concept_ids) > self.state.shard_policy.max_concepts_per_shard:
+            raise ShardIntegrityError("Proposed shard exceeds concept bound.")
+        if len(report.relation_ids) > self.state.shard_policy.max_relations_per_shard:
+            raise ShardIntegrityError("Proposed shard exceeds relation bound.")
+        missing_concepts = [
+            item for item in report.concept_ids if item not in self.state.concepts
+        ]
+        if missing_concepts:
+            raise ShardIntegrityError(
+                "Shard report references missing concepts: "
+                + ", ".join(missing_concepts)
+            )
+        concept_set = set(report.concept_ids)
+        for relation_id in report.relation_ids:
+            relation = self.state.relations.get(relation_id)
+            if relation is None:
+                raise ShardIntegrityError("Shard report references a missing relation.")
+            if not {
+                relation.source_concept_id,
+                relation.target_concept_id,
+            }.issubset(concept_set):
+                raise ShardIntegrityError(
+                    "Shard relation endpoints must both belong to the shard."
+                )
+        self._validated_evidence_refs(report.evidence_refs)
+        if not set(report.specialization_signature).issubset(concept_set):
+            raise ShardIntegrityError(
+                "Specialization signature must reference member concepts."
+            )
+
+    def commit_shard_formation(
+        self,
+        report: ShardFormationReport,
+        *,
+        council_decision_event_id: str,
+    ) -> ShardFormationEvent:
+        self.validate_shard_formation_report(report)
+        try:
+            self.assert_operation_authorized(
+                council_decision_event_id,
+                report.operation,
+            )
+        except GovernanceAuthorizationError as exc:
+            raise ShardAuthorizationError(
+                "Council did not authorize shard formation."
+            ) from exc
+
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        event_id = stable_id(
+            "shard_formation_event",
+            report.report_id,
+            council_decision_event_id,
+            self.state.cycle,
+        )
+        event = ShardFormationEvent(
+            formation_event_id=event_id,
+            report=report,
+            council_decision_event_id=council_decision_event_id,
+            committed_cycle=self.state.cycle,
+            semantic_mutation_permitted=False,
+        )
+        shard = ShardRecord(
+            shard_id=report.proposed_shard_id,
+            label=report.shard_label,
+            normalized_label=report.normalized_label,
+            status=ShardStatus.DORMANT,
+            created_cycle=self.state.cycle,
+            updated_cycle=self.state.cycle,
+            parent_shard_id=report.parent_shard_id,
+            concept_ids=report.concept_ids,
+            relation_ids=report.relation_ids,
+            evidence_refs=report.evidence_refs,
+            specialization_signature=report.specialization_signature,
+            formation_event_id=event_id,
+        )
+        self.state.shards[shard.shard_id] = shard
+        self.state.shard_formation_events.append(event)
+        command_hash = hashlib.sha256(
+            canonical_json_bytes(
+                {
+                    "report": report.model_dump(mode="json"),
+                    "council_decision_event_id": council_decision_event_id,
+                }
+            )
+        ).hexdigest()
+        output_fingerprint = self.semantic_fingerprint()
+        self.state.transitions.append(
+            TransitionRecord(
+                transition_id=stable_id(
+                    "transition",
+                    self.state.identity.kernel_id,
+                    self.state.event_sequence,
+                    "commit_shard_formation",
+                    command_hash,
+                    input_fingerprint,
+                    output_fingerprint,
+                ),
+                sequence=self.state.event_sequence,
+                cycle=self.state.cycle,
+                operation="commit_shard_formation",
+                command_hash=command_hash,
+                input_fingerprint=input_fingerprint,
+                output_fingerprint=output_fingerprint,
+                input_refs=(
+                    report.report_id,
+                    council_decision_event_id,
+                    *report.evidence_refs,
+                ),
+                output_refs=(event_id, shard.shard_id),
+            )
+        )
+        self._validate_state()
+        return event
+
+    def validate_routing_report(self, report: RoutingReport) -> None:
+        try:
+            report = RoutingReport.model_validate(report.model_dump(mode="json"))
+        except ValueError as exc:
+            raise ShardIntegrityError(
+                "Routing report failed its identity checksum."
+            ) from exc
+        if report.kernel_id != self.state.identity.kernel_id:
+            raise ShardIntegrityError("Routing report belongs to another kernel.")
+        if report.structural_fingerprint != self.shard_structural_fingerprint():
+            raise ShardStaleError(
+                "Routing report was computed against different shard structure."
+            )
+        if report.policy_revision != self.state.shard_policy.revision:
+            raise ShardStaleError("Shard policy changed after routing inspection.")
+        if report.source_shard_id != self.state.active_shard_id:
+            raise ShardStaleError("Active shard changed after routing inspection.")
+        if report.source_shard_id not in self.state.shards:
+            raise ShardIntegrityError("Routing source shard does not exist.")
+        self._validated_evidence_refs(report.evidence_refs)
+        for concept_id in report.cue_concept_ids:
+            if concept_id not in self.state.concepts:
+                raise ShardIntegrityError("Routing cue references a missing concept.")
+        known_resonance = {
+            item.resonance_event_id for item in self.state.resonance_events
+        }
+        if any(item not in known_resonance for item in report.resonance_event_ids):
+            raise ShardIntegrityError("Routing report references missing resonance.")
+        candidate_ids = [item.shard_id for item in report.candidates]
+        if len(candidate_ids) != len(set(candidate_ids)):
+            raise ShardIntegrityError("Routing report duplicates shard candidates.")
+        for candidate in report.candidates:
+            if candidate.shard_id not in self.state.shards:
+                raise ShardIntegrityError("Routing candidate shard is missing.")
+            if any(
+                item not in self.state.concepts
+                for item in candidate.directly_grounded_concept_ids
+            ):
+                raise ShardIntegrityError("Routing grounding references missing concepts.")
+        if report.disposition == RoutingDisposition.ROUTE:
+            selected = next(
+                (
+                    item
+                    for item in report.candidates
+                    if item.shard_id == report.selected_shard_id
+                ),
+                None,
+            )
+            if selected is None or not selected.eligible:
+                raise ShardIntegrityError("Selected routing candidate is not eligible.")
+            if (
+                selected.components.direct_grounding
+                < self.state.shard_policy.minimum_direct_grounding
+            ):
+                raise ShardIntegrityError(
+                    "Selected route lacks required direct grounding."
+                )
+            if selected.score < self.state.shard_policy.minimum_route_score:
+                raise ShardIntegrityError("Selected route score is below threshold.")
+            expected_direct = tuple(
+                sorted(
+                    set(report.cue_concept_ids)
+                    & set(self.state.shards[selected.shard_id].concept_ids)
+                )
+            )
+            if expected_direct != selected.directly_grounded_concept_ids:
+                raise ShardIntegrityError("Routing direct-grounding set drift detected.")
+
+    def commit_routing(
+        self,
+        report: RoutingReport,
+        *,
+        council_decision_event_id: str,
+    ) -> RoutingEvent:
+        self.validate_routing_report(report)
+        if report.disposition != RoutingDisposition.ROUTE:
+            raise ShardIntegrityError("Only a ROUTE report can be committed.")
+        try:
+            self.assert_operation_authorized(
+                council_decision_event_id,
+                report.operation,
+            )
+        except GovernanceAuthorizationError as exc:
+            raise ShardAuthorizationError(
+                "Council did not authorize shard routing."
+            ) from exc
+
+        selected = next(
+            item
+            for item in report.candidates
+            if item.shard_id == report.selected_shard_id
+        )
+        source_id = self.state.active_shard_id
+        target_id = selected.shard_id
+        if source_id == target_id:
+            raise ShardIntegrityError("Routing target is already active.")
+        evidence = self._validated_evidence_refs(report.evidence_refs)
+        direct = selected.directly_grounded_concept_ids
+        if not direct:
+            raise EvidenceGateError("A route requires direct cue grounding.")
+
+        input_fingerprint = self.semantic_fingerprint()
+        self.state.cycle += 1
+        self.state.event_sequence += 1
+        left, right = sorted((source_id, target_id))
+        bridge_id = stable_id("shard_bridge", left, right)
+        existing = self.state.shard_bridges.get(bridge_id)
+        portals = tuple(
+            sorted(
+                set(selected.portal_concept_ids)
+                | set(direct)
+            )[: self.state.shard_policy.max_portals_per_bridge]
+        )
+        if existing is None:
+            bridge = ShardBridgeRecord(
+                bridge_id=bridge_id,
+                source_shard_id=left,
+                target_shard_id=right,
+                portal_concept_ids=portals,
+                evidence_refs=evidence,
+                traversal_count=1,
+                created_cycle=self.state.cycle,
+                last_traversed_cycle=self.state.cycle,
+                status=BridgeStatus.TRAVERSED,
+            )
+        else:
+            bridge = existing.model_copy(
+                update={
+                    "portal_concept_ids": tuple(
+                        sorted(set(existing.portal_concept_ids) | set(portals))
+                    )[: self.state.shard_policy.max_portals_per_bridge],
+                    "evidence_refs": tuple(
+                        sorted(set(existing.evidence_refs) | set(evidence))
+                    ),
+                    "traversal_count": existing.traversal_count + 1,
+                    "last_traversed_cycle": self.state.cycle,
+                }
+            )
+        self.state.shard_bridges[bridge_id] = ShardBridgeRecord.model_validate(
+            bridge.model_dump(mode="json")
+        )
+
+        for shard_id, shard in list(self.state.shards.items()):
+            if shard_id == "root":
+                status = ShardStatus.ACTIVE if target_id == "root" else ShardStatus.ROOT
+            else:
+                status = ShardStatus.ACTIVE if shard_id == target_id else ShardStatus.DORMANT
+            if shard.status != status:
+                self.state.shards[shard_id] = shard.model_copy(
+                    update={"status": status, "updated_cycle": self.state.cycle}
+                )
+        self.state.active_shard_id = target_id
+        event_id = stable_id(
+            "routing_event",
+            report.report_id,
+            council_decision_event_id,
+            self.state.cycle,
+            source_id,
+            target_id,
+            bridge_id,
+            direct,
+            evidence,
+        )
+        event = RoutingEvent(
+            routing_event_id=event_id,
+            report=report,
+            council_decision_event_id=council_decision_event_id,
             committed_cycle=self.state.cycle,
             from_shard_id=source_id,
             to_shard_id=target_id,

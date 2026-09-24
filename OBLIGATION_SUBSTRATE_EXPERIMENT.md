@@ -1,4 +1,4 @@
-# Obligation Substrate v0.10
+# Obligation Substrate v0.11
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -8,9 +8,9 @@ generation, or safe autonomous policy revision.
 
 ## Implemented boundary
 
-- Two obligation families at different maturity levels: the complete
+- Three obligation families at different maturity levels: the complete
   experimental `DependencyGap` vertical slice described below, and a bounded
-  `Contradiction` detection/continuity substrate.
+  `Contradiction` and `PredictionFailure` detection/continuity substrate.
 - An immutable, deterministically identified `DependencyGapObligationKernel`.
 - An append-only, checkpointed `ObligationHistoryEvent` chain with typed
   authorities and payload hashes.
@@ -156,6 +156,23 @@ generation, or safe autonomous policy revision.
   Portfolio, whose allocation remains executive-only and cannot change the
   contradiction or mark it resolved. DependencyGap-specific attempt, stall,
   wake, and recheck APIs fail closed on this new family.
+- A deterministic `PredictionFailureDetector` now scans native
+  `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
+  harm risk with the canonical observed harm score already recorded by the
+  governance outcome learner. Only outcomes meeting a visible, versioned error
+  threshold become candidates.
+- Each admitted mismatch produces an immutable
+  `PredictionFailureObligationKernel` retaining the outcome, Council decision,
+  proposal, physical outcome evidence, action class, expected value, observed
+  value, exact error, and source lineage. Identity excludes detection cycle and
+  workspace context; distinct prediction events remain distinct.
+- Unchanged scans replay without a canonical write. A detector-policy revision
+  can retrigger the same immutable mismatch without fragmenting its identity.
+  Checkpoint validation fails closed if its prediction, outcome, numerical
+  values, evidence, or causal lineage is missing or changed.
+- Prediction-failure anchors are eligible for bounded executive Attention, but
+  no allocation can resolve them. DependencyGap-specific lifecycle operations
+  continue to reject every other family.
 
 ## Explicit exclusions
 
@@ -171,7 +188,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.10 does not claim Verdant has learned their
+  provenance-visible bids, but v0.11 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -210,7 +227,17 @@ generation, or safe autonomous policy revision.
   not yet have provenance-symmetric-difference hypothesis generation,
   dimensional-separation Resolution Contracts, family-local learned lenses, or
   canonical resolution authority.
-- Two family enum values now exist, but borrow-before-synthesize, held-out
+- `PredictionFailure` currently covers only the native governance prediction
+  that declared harm risk for an authorized action and later received physical
+  outcome evidence. It does not yet cover arbitrary workspace forecasts,
+  object-motion mismatch strings, or externally supplied predictions.
+- The initial prediction-error threshold is explicit developer policy. Verdant
+  has not learned, calibrated, or revised this threshold, and an obligation does
+  not prove that either the prediction or observation is semantically correct.
+- Target-ablation hypothesis generation, matched baseline/ablation trials, and
+  PredictionFailure-specific Resolution Contracts remain unimplemented. No
+  routing heuristic or P-structure is identified as causal in this increment.
+- Three family enum values now exist, but borrow-before-synthesize, held-out
   cross-family lens adoption, representational merging, and independent
   per-family rollback of a shared lens remain proposed rather than implemented.
 - The registry/ledger boundary is separately serializable and tamper checked,
@@ -256,8 +283,8 @@ generation, or safe autonomous policy revision.
   subsystem's explicit subject/predicate/object/polarity representation. The
   new detector does not establish semantic understanding, discover novel
   predicates, decide which claim is true, or operationalize consciousness.
-- `PredictionFailure`, `IdentityAmbiguity`, and `FailedPolicy` obligation
-  families, as well as the governed Paradigm Challenge lane, remain proposed.
+- `IdentityAmbiguity` and `FailedPolicy` obligation families, as well as the
+  governed Paradigm Challenge lane, remain proposed.
 
 ## Access-pressure integration
 
@@ -311,3 +338,8 @@ Contradiction-family tests additionally target fingerprint-pure inspection,
 native-record anchoring, exact replay, evidence-driven retriggering, claim-key
 scope separation, preserved claim/evidence references, checkpoint/View rebuild,
 canonical-claim deletion rejection, and silence when no contradiction exists.
+PredictionFailure-family tests additionally target native expected/observed
+value derivation, threshold rejection, fingerprint-pure inspection, exact
+replay, policy-version retriggering without identity fragmentation, event-scope
+separation, checkpoint/View rebuild, numerical and lineage tamper rejection,
+and executive Attention without resolution authority.

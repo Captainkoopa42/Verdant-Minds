@@ -23,6 +23,13 @@ from .contradictions import (
     ContradictionObligationCandidate,
     ContradictionObligationDetector,
 )
+from .prediction_failures import (
+    PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
+    PredictionFailureCandidate,
+    PredictionFailureDetectionPolicy,
+    PredictionFailureDetectionReport,
+    PredictionFailureDetector,
+)
 from .attention import (
     ATTENTION_PORTFOLIO_POLICY_VERSION,
     AttentionBidInput,
@@ -152,6 +159,11 @@ __all__ = [
     "ContradictionDetectionReport",
     "ContradictionObligationCandidate",
     "ContradictionObligationDetector",
+    "PREDICTION_FAILURE_DETECTOR_POLICY_VERSION",
+    "PredictionFailureCandidate",
+    "PredictionFailureDetectionPolicy",
+    "PredictionFailureDetectionReport",
+    "PredictionFailureDetector",
     "ATTENTION_PORTFOLIO_POLICY_VERSION",
     "AttentionBidInput",
     "AttentionPortfolio",

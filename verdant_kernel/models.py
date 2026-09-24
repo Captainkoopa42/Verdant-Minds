@@ -94,6 +94,7 @@ class ContradictionStatus(str, Enum):
 class ObligationFamily(str, Enum):
     DEPENDENCY_GAP = "DependencyGap"
     CONTRADICTION = "Contradiction"
+    PREDICTION_FAILURE = "PredictionFailure"
 
 
 class ObligationStatus(str, Enum):
@@ -3378,6 +3379,64 @@ class ContradictionObligationKernel(FrozenRecord):
         return self
 
 
+class PredictionFailureObligationKernel(FrozenRecord):
+    """Immutable anchor for one canonical prediction/outcome mismatch."""
+
+    kernel_id: str
+    schema_version: str = "0.11"
+    family: ObligationFamily = ObligationFamily.PREDICTION_FAILURE
+    outcome_ref: str
+    prediction_source_ref: str
+    action_class: str
+    expected_value: float = Field(ge=0.0, le=1.0)
+    observed_value: float = Field(ge=0.0, le=1.0)
+    prediction_error: float = Field(gt=0.0, le=1.0)
+    scope_key: str
+    canonical_triggering_refs: tuple[str, ...] = Field(min_length=3)
+    creation_cycle: int = Field(ge=1)
+    policy_version: str
+
+    @model_validator(mode="after")
+    def validate_kernel(self) -> "PredictionFailureObligationKernel":
+        if self.family != ObligationFamily.PREDICTION_FAILURE:
+            raise ValueError("Prediction-failure kernel requires its declared family.")
+        text = (
+            self.schema_version,
+            self.outcome_ref,
+            self.prediction_source_ref,
+            self.action_class,
+            self.scope_key,
+            self.policy_version,
+        )
+        if not all(item.strip() for item in text):
+            raise ValueError("Prediction-failure identity fields cannot be empty.")
+        if tuple(sorted(set(self.canonical_triggering_refs))) != self.canonical_triggering_refs:
+            raise ValueError("Canonical triggering refs must be sorted and unique.")
+        if not {self.outcome_ref, self.prediction_source_ref}.issubset(
+            self.canonical_triggering_refs
+        ):
+            raise ValueError("Prediction failure must preserve prediction and outcome refs.")
+        if not math.isclose(
+            self.prediction_error,
+            abs(self.observed_value - self.expected_value),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError("Prediction-failure error does not match expected/observed values.")
+        expected = stable_id(
+            "obligation",
+            self.schema_version,
+            self.family.value,
+            self.outcome_ref,
+            self.prediction_source_ref,
+            self.action_class,
+            self.scope_key,
+        )
+        if self.kernel_id != expected:
+            raise ValueError("Prediction-failure kernel identity checksum mismatch.")
+        return self
+
+
 class ObligationHistoryEvent(FrozenRecord):
     event_id: str
     obligation_id: str
@@ -4405,7 +4464,10 @@ class KernelState(BaseModel):
     structural_challenges: dict[str, StructuralChallengeRecord] = Field(default_factory=dict)
     structure_refold_events: list[StructureRefoldEvent] = Field(default_factory=list)
     obligation_kernels: dict[
-        str, DependencyGapObligationKernel | ContradictionObligationKernel
+        str,
+        DependencyGapObligationKernel
+        | ContradictionObligationKernel
+        | PredictionFailureObligationKernel,
     ] = Field(default_factory=dict)
     obligation_history: list[ObligationHistoryEvent] = Field(default_factory=list)
     obligation_attention_decisions: list[ObligationAttentionDecisionRecord] = Field(

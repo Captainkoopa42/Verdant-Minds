@@ -5644,6 +5644,50 @@ class VerdantKernel:
                     raise KernelInvariantError("Contradiction obligation lost an opposed claim.")
                 if any(ref not in self.state.evidence for ref in contradiction.evidence_refs):
                     raise KernelInvariantError("Contradiction obligation lost canonical evidence.")
+            elif obligation.family == ObligationFamily.PREDICTION_FAILURE:
+                outcome = next(
+                    (
+                        item for item in self.state.governance_outcomes
+                        if item.outcome_id == obligation.outcome_ref
+                    ),
+                    None,
+                )
+                decision = next(
+                    (
+                        item for item in self.state.council_decisions
+                        if item.decision_event_id == obligation.prediction_source_ref
+                    ),
+                    None,
+                )
+                if outcome is None or decision is None:
+                    raise KernelInvariantError(
+                        "Prediction-failure obligation lost prediction or outcome lineage."
+                    )
+                proposal = decision.report.proposal
+                if (
+                    outcome.decision_event_id != decision.decision_event_id
+                    or outcome.action_class != obligation.action_class
+                    or proposal.action_class != obligation.action_class
+                    or outcome.harm_score != obligation.observed_value
+                    or proposal.harm_risk != obligation.expected_value
+                    or outcome.prediction_error != obligation.prediction_error
+                ):
+                    raise KernelInvariantError(
+                        "Prediction-failure obligation drifted from canonical values."
+                    )
+                if any(ref not in self.state.evidence for ref in outcome.evidence_refs):
+                    raise KernelInvariantError(
+                        "Prediction-failure obligation lost physical outcome evidence."
+                    )
+                if not {
+                    outcome.outcome_id,
+                    decision.decision_event_id,
+                    proposal.proposal_id,
+                    *outcome.evidence_refs,
+                }.issubset(obligation.canonical_triggering_refs):
+                    raise KernelInvariantError(
+                        "Prediction-failure obligation suppressed canonical lineage."
+                    )
         seen_obligation_events: set[str] = set()
         last_obligation_event: dict[str, str] = {}
         creation_counts: dict[str, int] = {}
@@ -5958,6 +6002,9 @@ class VerdantKernel:
         known_decisions = {
             item.decision_event_id for item in self.state.council_decisions
         }
+        decision_records = {
+            item.decision_event_id: item for item in self.state.council_decisions
+        }
         seen_outcomes: set[str] = set()
         for outcome in self.state.governance_outcomes:
             if outcome.decision_event_id not in known_decisions:
@@ -5969,6 +6016,20 @@ class VerdantKernel:
                     "Multiple governance outcomes reference one Council decision."
                 )
             seen_outcomes.add(outcome.decision_event_id)
+            proposal = decision_records[outcome.decision_event_id].report.proposal
+            if outcome.action_class != proposal.action_class:
+                raise KernelInvariantError(
+                    "Governance outcome action class drifted from its prediction."
+                )
+            if not math.isclose(
+                outcome.prediction_error,
+                abs(outcome.harm_score - proposal.harm_risk),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                raise KernelInvariantError(
+                    "Governance outcome prediction error drift detected."
+                )
             self._validated_evidence_refs(outcome.evidence_refs)
             if not any(
                 self.state.evidence[item].kind == EvidenceKind.OUTCOME

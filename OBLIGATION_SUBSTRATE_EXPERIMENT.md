@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.3
+# DependencyGap Obligation Substrate v0.4
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -39,6 +39,22 @@ generation, or safe autonomous policy revision.
 - Attention decisions have no epistemic authority. Replaying the same decision
   request is a zero-cycle no-op, while reusing its source key with changed
   metrics is rejected.
+- A causally non-committing `CounterfactualRuntime` now requires a canonical
+  Attention allocation before it will reserve simulation budget. It exposes
+  canonical mapping records through read-through access while retaining every
+  upsert/delete only as a typed copy-on-write overlay patch.
+- Simulation reservations and settlements live in a separately serializable
+  `SimulationLedgerState`, not `KernelState`. Cumulative consumption is bounded
+  by the originating Attention allocation, unused reservation is returned on
+  settlement, identical requests replay without new cost, and changed reuse of
+  a source key is rejected.
+- Every settlement requires exact equality of the complete canonical kernel
+  fingerprint before and after the dry run. Discarded, cancelled, and failed
+  runs all remain non-authoritative and cannot commit their overlay.
+- A paired-checkpoint test executes 100 mixed discarded/cancelled/failed
+  simulations on one arm, then applies the same canonical event to both arms.
+  Canonical fingerprints and obligation histories remain identical while only
+  the simulation ledger differs.
 
 ## Explicit exclusions
 
@@ -49,10 +65,10 @@ generation, or safe autonomous policy revision.
   operator grammar.
 - The detector heartbeat is explicitly invoked by the experimental pipeline;
   it is not yet attached to an autonomous Attention Portfolio scheduler.
-- The Attention Portfolio is explicitly invoked and only authorizes bounded
-  budget. It does not yet execute probes, consume simulation budget, or move a
-  `MayWake` obligation into `Recheck_Pending`; those belong to the isolated
-  counterfactual runtime in the next layer.
+- The Attention Portfolio and counterfactual runtime are explicitly invoked.
+  The runtime consumes separately accounted simulation budget, but it does not
+  yet move a `MayWake` obligation into `Recheck_Pending` or append an
+  `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
   provenance-visible bids, but v0.3 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
@@ -63,8 +79,20 @@ generation, or safe autonomous policy revision.
 - No `Resolved` API until a Resolution Contract and matched-control validator
   exist. The model contains future event/status types, but v0.1 does not grant
   resolution authority.
-- No Equivalence Lens registry, counterfactual micro-runtime, Council
-  tournament, or Paradigm Challenge implementation yet.
+- Simulation consumption is declared by the typed plan and bounded by its
+  reservation; v0.4 does not yet meter physical CPU, memory, or wall-clock use.
+- The separate ledger has a deterministic snapshot/reload model but is not yet
+  packaged into `.vdk` or another crash-durable archive. Abrupt process-loss
+  recovery and concurrent reservations remain outside this increment.
+- The overlay supports a deliberately bounded set of canonical mapping
+  collections and JSON hypothesis values. It does not validate those values as
+  promotable canonical records and exposes no commit path.
+- No compositional hypothesis generator, functional outcome partition,
+  Equivalence Lens registry, Resolution Contract, Council tournament, or
+  Paradigm Challenge implementation yet.
+- The paired-checkpoint isolation result covers declared in-process kernel
+  state and tested future behavior. The runtime currently performs no external
+  I/O; it does not claim a general operating-system side-effect sandbox.
 - No thermodynamic control authority. `T_g` remains observer-only.
 
 ## Access-pressure integration
@@ -84,4 +112,8 @@ complete eligible-set accounting, deterministic replay, starvation rotation,
 checkpointed decision history, decision tamper rejection, irrelevant-delta
 silence, remote cut crossing, wake-storm deduplication, multi-causal stall
 supersession, source laundering, and budget renewal that does not create a new
-search space.
+search space. Counterfactual tests additionally target copy-on-write read
+isolation, canonical-allocation enforcement, cumulative budget bounds,
+separate-ledger reload, zero-cost request replay, changed-request rejection,
+cancelled/failed partial settlement, explicit leak detection, and paired
+checkpoint equivalence after 100 discarded simulations.

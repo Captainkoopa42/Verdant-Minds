@@ -24,6 +24,23 @@ from .attention import (
     AttentionPortfolioPolicy,
     AttentionPortfolioResult,
 )
+from .counterfactual import (
+    COUNTERFACTUAL_RUNTIME_VERSION,
+    SIMULATION_LEDGER_SCHEMA_VERSION,
+    CounterfactualLeakError,
+    CounterfactualOverlay,
+    CounterfactualPatch,
+    CounterfactualPlan,
+    CounterfactualRunResult,
+    CounterfactualRuntime,
+    OverlayOperation,
+    SimulationDisposition,
+    SimulationIntegrityError,
+    SimulationLedger,
+    SimulationLedgerState,
+    SimulationReservation,
+    SimulationSettlement,
+)
 
 __all__ = [
     "DERIVATION_POLICY_VERSION",
@@ -46,4 +63,19 @@ __all__ = [
     "AttentionPortfolio",
     "AttentionPortfolioPolicy",
     "AttentionPortfolioResult",
+    "COUNTERFACTUAL_RUNTIME_VERSION",
+    "SIMULATION_LEDGER_SCHEMA_VERSION",
+    "CounterfactualLeakError",
+    "CounterfactualOverlay",
+    "CounterfactualPatch",
+    "CounterfactualPlan",
+    "CounterfactualRunResult",
+    "CounterfactualRuntime",
+    "OverlayOperation",
+    "SimulationDisposition",
+    "SimulationIntegrityError",
+    "SimulationLedger",
+    "SimulationLedgerState",
+    "SimulationReservation",
+    "SimulationSettlement",
 ]

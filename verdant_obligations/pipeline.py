@@ -83,7 +83,6 @@ class ObligationMutationResult:
         | PredictionFailureObligationKernel
         | IdentityAmbiguityObligationKernel
         | FailedPolicyObligationKernel
-        | FailedPolicyObligationKernel
     )
     event: ObligationHistoryEvent
     replayed: bool = False

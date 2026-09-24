@@ -96,6 +96,7 @@ class ObligationFamily(str, Enum):
     CONTRADICTION = "Contradiction"
     PREDICTION_FAILURE = "PredictionFailure"
     IDENTITY_AMBIGUITY = "IdentityAmbiguity"
+    FAILED_POLICY = "FailedPolicy"
 
 
 class ObligationStatus(str, Enum):
@@ -3490,6 +3491,63 @@ class IdentityAmbiguityObligationKernel(FrozenRecord):
         return self
 
 
+class FailedPolicyObligationKernel(FrozenRecord):
+    """Immutable anchor for repeated denial of one stable governance scope."""
+
+    kernel_id: str
+    schema_version: str = "0.13"
+    family: ObligationFamily = ObligationFamily.FAILED_POLICY
+    operation: str
+    action_class: str
+    proposal_kind: GovernanceProposalKind
+    failure_signal: str = "repeated_governance_block"
+    blocked_decision_refs: tuple[str, ...] = Field(min_length=2)
+    scope_key: str
+    canonical_triggering_refs: tuple[str, ...] = Field(min_length=4)
+    creation_cycle: int = Field(ge=1)
+    policy_version: str
+
+    @model_validator(mode="after")
+    def validate_kernel(self) -> "FailedPolicyObligationKernel":
+        if self.family != ObligationFamily.FAILED_POLICY:
+            raise ValueError("Failed-policy kernel requires its declared family.")
+        if self.failure_signal != "repeated_governance_block":
+            raise ValueError("Failed-policy kernel has an unsupported signal.")
+        if not all(
+            item.strip()
+            for item in (
+                self.schema_version,
+                self.operation,
+                self.action_class,
+                self.scope_key,
+                self.policy_version,
+            )
+        ):
+            raise ValueError("Failed-policy identity fields cannot be empty.")
+        for values, label in (
+            (self.blocked_decision_refs, "blocked decision refs"),
+            (self.canonical_triggering_refs, "canonical triggering refs"),
+        ):
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(f"Failed-policy {label} must be sorted and unique.")
+        if not set(self.blocked_decision_refs).issubset(
+            self.canonical_triggering_refs
+        ):
+            raise ValueError("Failed policy must preserve every blocked decision.")
+        expected = stable_id(
+            "obligation",
+            self.schema_version,
+            self.family.value,
+            self.operation,
+            self.action_class,
+            self.proposal_kind.value,
+            self.scope_key,
+        )
+        if self.kernel_id != expected:
+            raise ValueError("Failed-policy kernel identity checksum mismatch.")
+        return self
+
+
 class ObligationHistoryEvent(FrozenRecord):
     event_id: str
     obligation_id: str
@@ -4521,7 +4579,8 @@ class KernelState(BaseModel):
         DependencyGapObligationKernel
         | ContradictionObligationKernel
         | PredictionFailureObligationKernel
-        | IdentityAmbiguityObligationKernel,
+        | IdentityAmbiguityObligationKernel
+        | FailedPolicyObligationKernel,
     ] = Field(default_factory=dict)
     obligation_history: list[ObligationHistoryEvent] = Field(default_factory=list)
     obligation_attention_decisions: list[ObligationAttentionDecisionRecord] = Field(

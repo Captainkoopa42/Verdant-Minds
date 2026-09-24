@@ -21,6 +21,7 @@ from verdant_kernel.models import (
     DependencyGraphDelta,
     ExhaustedAttemptSignature,
     IdentityAmbiguityObligationKernel,
+    FailedPolicyObligationKernel,
     ObligationAttempt,
     ObligationAuthority,
     ObligationBudgetState,
@@ -81,6 +82,8 @@ class ObligationMutationResult:
         | ContradictionObligationKernel
         | PredictionFailureObligationKernel
         | IdentityAmbiguityObligationKernel
+        | FailedPolicyObligationKernel
+        | FailedPolicyObligationKernel
     )
     event: ObligationHistoryEvent
     replayed: bool = False
@@ -320,6 +323,7 @@ def _commit(
         | ContradictionObligationKernel
         | PredictionFailureObligationKernel
         | IdentityAmbiguityObligationKernel
+        | FailedPolicyObligationKernel
         | None
     ) = None,
 ) -> ObligationHistoryEvent:
@@ -524,6 +528,67 @@ def record_detected_identity_ambiguity(
     if existing is None:
         if obligation.creation_cycle != kernel.state.cycle + 1:
             raise ObligationIntegrityError("Identity obligation has a stale creation cycle.")
+        event_type = ObligationEventType.CREATED
+        previous = None
+    else:
+        event_type = ObligationEventType.RETRIGGERED
+        previous = _events_for(kernel, obligation.kernel_id)[-1].event_id
+    event = ObligationHistoryEvent.build(
+        obligation_id=obligation.kernel_id,
+        event_type=event_type,
+        authority=ObligationAuthority.DETECTOR,
+        source_event_key=source_event_key,
+        cycle=kernel.state.cycle + 1,
+        committed_sequence=kernel.state.event_sequence + 1,
+        previous_event_id=previous,
+        triggering_refs=refs,
+        context_snapshot_hash=context_snapshot_hash,
+        source_lineage_roots=roots,
+        policy_version=policy_version,
+    )
+    committed = _commit(
+        kernel,
+        event,
+        obligation=(obligation if existing is None else None),
+    )
+    return ObligationMutationResult(
+        kernel.state.obligation_kernels[obligation.kernel_id], committed
+    )
+
+
+def record_detected_failed_policy(
+    kernel: VerdantKernel,
+    *,
+    obligation: FailedPolicyObligationKernel,
+    triggering_refs: tuple[str, ...],
+    source_event_key: str,
+    context_snapshot_hash: str,
+    source_lineage_roots: tuple[str, ...],
+    policy_version: str,
+) -> ObligationMutationResult:
+    """Commit, retrigger, or replay one repeated governance-block scope."""
+
+    refs = tuple(sorted(set(triggering_refs)))
+    roots = tuple(sorted(set(source_lineage_roots)))
+    existing = kernel.state.obligation_kernels.get(obligation.kernel_id)
+    if existing is not None and not isinstance(existing, FailedPolicyObligationKernel):
+        raise ObligationIntegrityError("Failed policy collided with another family.")
+    prior = _existing_source_event(kernel, obligation.kernel_id, source_event_key)
+    if prior is not None:
+        if (
+            prior.triggering_refs != refs
+            or prior.context_snapshot_hash != context_snapshot_hash
+            or prior.source_lineage_roots != roots
+            or prior.policy_version != policy_version
+        ):
+            raise ObligationIntegrityError(
+                "Obligation source event key was reused with different evidence."
+            )
+        assert existing is not None
+        return ObligationMutationResult(existing, prior, replayed=True)
+    if existing is None:
+        if obligation.creation_cycle != kernel.state.cycle + 1:
+            raise ObligationIntegrityError("Failed-policy obligation has a stale creation cycle.")
         event_type = ObligationEventType.CREATED
         previous = None
     else:

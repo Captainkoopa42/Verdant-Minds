@@ -1,4 +1,4 @@
-# Obligation Substrate v0.12
+# Obligation Substrate v0.13
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -8,9 +8,9 @@ generation, or safe autonomous policy revision.
 
 ## Implemented boundary
 
-- Four obligation families at different maturity levels: the complete
+- Five obligation families at different maturity levels: the complete
   experimental `DependencyGap` vertical slice described below, and a bounded
-  `Contradiction`, `PredictionFailure`, and `IdentityAmbiguity`
+  `Contradiction`, `PredictionFailure`, `IdentityAmbiguity`, and `FailedPolicy`
   detection/continuity substrate.
 - An immutable, deterministically identified `DependencyGapObligationKernel`.
 - An append-only, checkpointed `ObligationHistoryEvent` chain with typed
@@ -190,6 +190,18 @@ generation, or safe autonomous policy revision.
   unity or distinction. A new cross-family creation invariant also requires
   every obligation's creation event to retain exactly the immutable triggering
   refs recorded by its kernel.
+- A deterministic `FailedPolicyDetector` now groups native Council decisions by
+  stable `(operation, action_class, proposal_kind)` scope and admits a candidate
+  only after at least two canonical `DENY` decisions explicitly block the same
+  operation. One safety denial remains a negative control and creates nothing.
+- Each admitted scope creates an immutable `FailedPolicyObligationKernel` that
+  preserves its initial denied decisions, Council reports, proposals, evidence,
+  and source lineage. Additional denials retrigger the same anchor; detector
+  policy revisions do not fragment its identity.
+- Inspection is fingerprint-pure, unchanged scans replay at zero canonical
+  cost, independent governance scopes remain separate, checkpoint/View replay
+  is exact, and loss of a foundational denial fails closed. Ordinary bounded
+  Attention may fund a probe but cannot change the policy or any denial.
 
 ## Explicit exclusions
 
@@ -205,7 +217,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.12 does not claim Verdant has learned their
+  provenance-visible bids, but v0.13 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -261,7 +273,17 @@ generation, or safe autonomous policy revision.
   coreference, and Identity-specific Resolution Contracts remain unimplemented.
   The obligation records an unresolved structural question; it does not answer
   whether any candidates represent the same real-world entity.
-- Four family enum values now exist, but borrow-before-synthesize, held-out
+- `FailedPolicy` is intentionally a conservative name for a repeated-block
+  obligation family, not a verdict that the Council or its safety policy is
+  defective. Repetition establishes a persistent structural question only.
+- The threshold of two denied decisions and the grouping scope are explicit,
+  versioned experimental policy. They are not learned or self-revised.
+- `DEFER`, constraints, one-off denials, and approved operations do not trigger
+  this detector. No controlled policy substitution, matched policy fork,
+  safety-property proof, rollback, or canonical policy mutation is implemented.
+- `T_g` and thermodynamic observations are not inputs to this detector and do
+  not control its behavior.
+- Five family enum values now exist, but borrow-before-synthesize, held-out
   cross-family lens adoption, representational merging, and independent
   per-family rollback of a shared lens remain proposed rather than implemented.
 - The registry/ledger boundary is separately serializable and tamper checked,
@@ -307,8 +329,7 @@ generation, or safe autonomous policy revision.
   subsystem's explicit subject/predicate/object/polarity representation. The
   new detector does not establish semantic understanding, discover novel
   predicates, decide which claim is true, or operationalize consciousness.
-- The `FailedPolicy` obligation family and governed Paradigm Challenge lane
-  remain proposed.
+- The governed Paradigm Challenge lane remains proposed.
 
 ## Access-pressure integration
 
@@ -372,3 +393,8 @@ derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative
 noncontested controls, checkpoint/View rebuild, triggering-reference
 suppression rejection, and executive Attention without identity authority.
+FailedPolicy-family tests additionally target the single-denial negative
+control, repeated-block detection, pure inspection, exact replay, stable-scope
+retriggering, policy-version continuity, independent-scope separation,
+checkpoint/View rebuilding, missing-decision rejection, and executive Attention
+without policy or denial mutation authority.

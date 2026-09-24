@@ -5729,6 +5729,49 @@ class VerdantKernel:
                     raise KernelInvariantError(
                         "Identity-ambiguity obligation lost canonical history."
                     )
+            elif obligation.family == ObligationFamily.FAILED_POLICY:
+                decisions_by_id = {
+                    item.decision_event_id: item
+                    for item in self.state.council_decisions
+                }
+                blocked_decisions = tuple(
+                    decisions_by_id.get(ref)
+                    for ref in obligation.blocked_decision_refs
+                )
+                if any(item is None for item in blocked_decisions):
+                    raise KernelInvariantError(
+                        "Failed-policy obligation lost a blocked Council decision."
+                    )
+                for decision in blocked_decisions:
+                    assert decision is not None
+                    report = decision.report
+                    proposal = report.proposal
+                    if (
+                        report.disposition != CouncilDisposition.DENY
+                        or obligation.operation not in report.blocked_operations
+                        or proposal.operation != obligation.operation
+                        or proposal.action_class != obligation.action_class
+                        or proposal.proposal_kind != obligation.proposal_kind
+                    ):
+                        raise KernelInvariantError(
+                            "Failed-policy obligation drifted from its governance block."
+                        )
+                known_policy_refs = set(self.state.evidence)
+                for decision in self.state.council_decisions:
+                    known_policy_refs.update(
+                        (
+                            decision.decision_event_id,
+                            decision.report.report_id,
+                            decision.report.proposal.proposal_id,
+                        )
+                    )
+                if any(
+                    ref not in known_policy_refs
+                    for ref in obligation.canonical_triggering_refs
+                ):
+                    raise KernelInvariantError(
+                        "Failed-policy obligation lost canonical governance history."
+                    )
         seen_obligation_events: set[str] = set()
         last_obligation_event: dict[str, str] = {}
         creation_counts: dict[str, int] = {}

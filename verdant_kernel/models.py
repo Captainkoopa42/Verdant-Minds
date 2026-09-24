@@ -95,6 +95,7 @@ class ObligationFamily(str, Enum):
     DEPENDENCY_GAP = "DependencyGap"
     CONTRADICTION = "Contradiction"
     PREDICTION_FAILURE = "PredictionFailure"
+    IDENTITY_AMBIGUITY = "IdentityAmbiguity"
 
 
 class ObligationStatus(str, Enum):
@@ -3437,6 +3438,58 @@ class PredictionFailureObligationKernel(FrozenRecord):
         return self
 
 
+class IdentityAmbiguityObligationKernel(FrozenRecord):
+    """Immutable anchor for one native contested object association."""
+
+    kernel_id: str
+    schema_version: str = "0.12"
+    family: ObligationFamily = ObligationFamily.IDENTITY_AMBIGUITY
+    ambiguous_candidate_ref: str
+    competing_candidate_refs: tuple[str, ...] = Field(min_length=2)
+    scope_key: str
+    canonical_triggering_refs: tuple[str, ...] = Field(min_length=4)
+    creation_cycle: int = Field(ge=1)
+    policy_version: str
+
+    @model_validator(mode="after")
+    def validate_kernel(self) -> "IdentityAmbiguityObligationKernel":
+        if self.family != ObligationFamily.IDENTITY_AMBIGUITY:
+            raise ValueError("Identity-ambiguity kernel requires its declared family.")
+        if not all(
+            item.strip()
+            for item in (
+                self.schema_version,
+                self.ambiguous_candidate_ref,
+                self.scope_key,
+                self.policy_version,
+            )
+        ):
+            raise ValueError("Identity-ambiguity identity fields cannot be empty.")
+        for values, label in (
+            (self.competing_candidate_refs, "competing candidate refs"),
+            (self.canonical_triggering_refs, "canonical triggering refs"),
+        ):
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(f"Identity-ambiguity {label} must be sorted and unique.")
+        if self.ambiguous_candidate_ref in self.competing_candidate_refs:
+            raise ValueError("An ambiguous candidate cannot compete with itself.")
+        if not {
+            self.ambiguous_candidate_ref,
+            *self.competing_candidate_refs,
+        }.issubset(self.canonical_triggering_refs):
+            raise ValueError("Identity ambiguity must preserve every candidate reference.")
+        expected = stable_id(
+            "obligation",
+            self.schema_version,
+            self.family.value,
+            self.ambiguous_candidate_ref,
+            self.scope_key,
+        )
+        if self.kernel_id != expected:
+            raise ValueError("Identity-ambiguity kernel identity checksum mismatch.")
+        return self
+
+
 class ObligationHistoryEvent(FrozenRecord):
     event_id: str
     obligation_id: str
@@ -4467,7 +4520,8 @@ class KernelState(BaseModel):
         str,
         DependencyGapObligationKernel
         | ContradictionObligationKernel
-        | PredictionFailureObligationKernel,
+        | PredictionFailureObligationKernel
+        | IdentityAmbiguityObligationKernel,
     ] = Field(default_factory=dict)
     obligation_history: list[ObligationHistoryEvent] = Field(default_factory=list)
     obligation_attention_decisions: list[ObligationAttentionDecisionRecord] = Field(

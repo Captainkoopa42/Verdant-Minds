@@ -5688,6 +5688,47 @@ class VerdantKernel:
                     raise KernelInvariantError(
                         "Prediction-failure obligation suppressed canonical lineage."
                     )
+            elif obligation.family == ObligationFamily.IDENTITY_AMBIGUITY:
+                ambiguous = self.state.object_candidates.get(
+                    obligation.ambiguous_candidate_ref
+                )
+                if ambiguous is None:
+                    raise KernelInvariantError(
+                        "Identity-ambiguity obligation lost its contested candidate."
+                    )
+                if (
+                    ambiguous.status != ObjectCandidateStatus.CONTESTED
+                    or ambiguous.ambiguity_count < 1
+                    or not set(obligation.competing_candidate_refs).issubset(
+                        ambiguous.competing_candidate_ids
+                    )
+                ):
+                    raise KernelInvariantError(
+                        "Identity-ambiguity obligation drifted from native competition."
+                    )
+                records = (
+                    ambiguous,
+                    *(
+                        self.state.object_candidates.get(ref)
+                        for ref in obligation.competing_candidate_refs
+                    ),
+                )
+                if any(item is None for item in records):
+                    raise KernelInvariantError(
+                        "Identity-ambiguity obligation lost a competing candidate."
+                    )
+                known_identity_refs = (
+                    set(self.state.object_candidates)
+                    | set(self.state.object_observations)
+                    | set(self.state.evidence)
+                )
+                if any(
+                    ref not in known_identity_refs
+                    for ref in obligation.canonical_triggering_refs
+                ):
+                    raise KernelInvariantError(
+                        "Identity-ambiguity obligation lost canonical history."
+                    )
         seen_obligation_events: set[str] = set()
         last_obligation_event: dict[str, str] = {}
         creation_counts: dict[str, int] = {}
@@ -5741,6 +5782,10 @@ class VerdantKernel:
                 obligation = self.state.obligation_kernels[event.obligation_id]
                 if event.cycle != obligation.creation_cycle:
                     raise KernelInvariantError("Obligation creation event/kernel cycle drift detected.")
+                if event.triggering_refs != obligation.canonical_triggering_refs:
+                    raise KernelInvariantError(
+                        "Obligation creation event suppressed immutable triggering refs."
+                    )
                 obligation_statuses[event.obligation_id] = ObligationStatus.OPEN
             else:
                 status = obligation_statuses.get(event.obligation_id)

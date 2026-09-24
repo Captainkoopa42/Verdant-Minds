@@ -30,6 +30,13 @@ from .prediction_failures import (
     PredictionFailureDetectionReport,
     PredictionFailureDetector,
 )
+from .identity_ambiguities import (
+    IDENTITY_AMBIGUITY_DETECTOR_POLICY_VERSION,
+    IdentityAmbiguityCandidate,
+    IdentityAmbiguityDetectionPolicy,
+    IdentityAmbiguityDetectionReport,
+    IdentityAmbiguityDetector,
+)
 from .attention import (
     ATTENTION_PORTFOLIO_POLICY_VERSION,
     AttentionBidInput,
@@ -164,6 +171,11 @@ __all__ = [
     "PredictionFailureDetectionPolicy",
     "PredictionFailureDetectionReport",
     "PredictionFailureDetector",
+    "IDENTITY_AMBIGUITY_DETECTOR_POLICY_VERSION",
+    "IdentityAmbiguityCandidate",
+    "IdentityAmbiguityDetectionPolicy",
+    "IdentityAmbiguityDetectionReport",
+    "IdentityAmbiguityDetector",
     "ATTENTION_PORTFOLIO_POLICY_VERSION",
     "AttentionBidInput",
     "AttentionPortfolio",

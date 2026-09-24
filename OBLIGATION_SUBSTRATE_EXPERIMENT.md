@@ -1,4 +1,4 @@
-# Obligation Substrate v0.11
+# Obligation Substrate v0.12
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -8,9 +8,10 @@ generation, or safe autonomous policy revision.
 
 ## Implemented boundary
 
-- Three obligation families at different maturity levels: the complete
+- Four obligation families at different maturity levels: the complete
   experimental `DependencyGap` vertical slice described below, and a bounded
-  `Contradiction` and `PredictionFailure` detection/continuity substrate.
+  `Contradiction`, `PredictionFailure`, and `IdentityAmbiguity`
+  detection/continuity substrate.
 - An immutable, deterministically identified `DependencyGapObligationKernel`.
 - An append-only, checkpointed `ObligationHistoryEvent` chain with typed
   authorities and payload hashes.
@@ -173,6 +174,22 @@ generation, or safe autonomous policy revision.
 - Prediction-failure anchors are eligible for bounded executive Attention, but
   no allocation can resolve them. DependencyGap-specific lifecycle operations
   continue to reject every other family.
+- A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
+  candidates only when the object tracker has already marked a candidate
+  `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
+  candidates. It does not parse labels or accept a teacher-declared entity pair.
+- Each ambiguity creates an immutable `IdentityAmbiguityObligationKernel`
+  retaining the contested candidate, initial competitor set, all bounded
+  observation/evidence history available at creation, and source lineage.
+  Identity is scoped to the contested candidate rather than the detection cycle.
+- Pure scans are fingerprint-invariant, unchanged scans replay at zero cost,
+  policy-version changes retrigger the same question, and independent contested
+  candidates remain separate. Checkpoint validation fails closed if the native
+  competition or any immutable triggering reference disappears.
+- Identity anchors can receive ordinary bounded Attention but cannot declare
+  unity or distinction. A new cross-family creation invariant also requires
+  every obligation's creation event to retain exactly the immutable triggering
+  refs recorded by its kernel.
 
 ## Explicit exclusions
 
@@ -188,7 +205,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.11 does not claim Verdant has learned their
+  provenance-visible bids, but v0.12 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -237,7 +254,14 @@ generation, or safe autonomous policy revision.
 - Target-ablation hypothesis generation, matched baseline/ablation trials, and
   PredictionFailure-specific Resolution Contracts remain unimplemented. No
   routing heuristic or P-structure is identified as causal in this increment.
-- Three family enum values now exist, but borrow-before-synthesize, held-out
+- `IdentityAmbiguity` currently covers only Verdant's native proto-object
+  association competition. It does not cover text aliases, claim-level entity
+  resolution, promoted-concept mergers, or arbitrary developer-supplied pairs.
+- Attribute-exclusivity proof, complete lineage merger, provisional
+  coreference, and Identity-specific Resolution Contracts remain unimplemented.
+  The obligation records an unresolved structural question; it does not answer
+  whether any candidates represent the same real-world entity.
+- Four family enum values now exist, but borrow-before-synthesize, held-out
   cross-family lens adoption, representational merging, and independent
   per-family rollback of a shared lens remain proposed rather than implemented.
 - The registry/ledger boundary is separately serializable and tamper checked,
@@ -283,8 +307,8 @@ generation, or safe autonomous policy revision.
   subsystem's explicit subject/predicate/object/polarity representation. The
   new detector does not establish semantic understanding, discover novel
   predicates, decide which claim is true, or operationalize consciousness.
-- `IdentityAmbiguity` and `FailedPolicy` obligation families, as well as the
-  governed Paradigm Challenge lane, remain proposed.
+- The `FailedPolicy` obligation family and governed Paradigm Challenge lane
+  remain proposed.
 
 ## Access-pressure integration
 
@@ -343,3 +367,8 @@ value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope
 separation, checkpoint/View rebuild, numerical and lineage tamper rejection,
 and executive Attention without resolution authority.
+IdentityAmbiguity-family tests additionally target native contested-candidate
+derivation, label-free evidence closure, fingerprint-pure inspection, exact
+replay, policy-version retriggering, independent-scope separation, negative
+noncontested controls, checkpoint/View rebuild, triggering-reference
+suppression rejection, and executive Attention without identity authority.

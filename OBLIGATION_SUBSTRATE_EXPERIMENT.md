@@ -1,4 +1,4 @@
-# DependencyGap Obligation Substrate v0.9
+# Obligation Substrate v0.10
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -8,7 +8,9 @@ generation, or safe autonomous policy revision.
 
 ## Implemented boundary
 
-- One obligation family: `DependencyGap`.
+- Two obligation families at different maturity levels: the complete
+  experimental `DependencyGap` vertical slice described below, and a bounded
+  `Contradiction` detection/continuity substrate.
 - An immutable, deterministically identified `DependencyGapObligationKernel`.
 - An append-only, checkpointed `ObligationHistoryEvent` chain with typed
   authorities and payload hashes.
@@ -137,6 +139,23 @@ generation, or safe autonomous policy revision.
 - High blast radius is therefore an auditable cost, not a permanent veto. The
   resulting `CouncilTournamentDecision` is content-addressed, replay-safe, and
   explicitly has no intervention authority; it cannot apply its recommendation.
+- A deterministic `ContradictionObligationDetector` now consumes Verdant's
+  existing canonical `ContradictionRecord` objects. It performs no text parsing
+  and makes no new truth judgement: both opposed claims, their native claim key,
+  preserved evidence, and source-lineage roots define the detection context.
+- Each contradiction produces an immutable, content-addressed
+  `ContradictionObligationKernel`. Identity excludes the detection cycle and
+  transient workspace state. Unchanged scans replay at zero canonical cost;
+  changed canonical claim/evidence context appends a `Retriggered` event to the
+  same anchor, while distinct claim keys remain separate.
+- Contradiction kernels and histories use the same checkpointed canonical
+  ledger and pure rebuildable `ObligationView` as DependencyGap. Kernel
+  validation fails closed if the native contradiction, either opposed claim,
+  or its canonical evidence disappears.
+- Open contradiction anchors are eligible for the ordinary bounded Attention
+  Portfolio, whose allocation remains executive-only and cannot change the
+  contradiction or mark it resolved. DependencyGap-specific attempt, stall,
+  wake, and recheck APIs fail closed on this new family.
 
 ## Explicit exclusions
 
@@ -152,7 +171,7 @@ generation, or safe autonomous policy revision.
   yet move a `MayWake` obligation into `Recheck_Pending` or append an
   `AttemptRecord` to canonical obligation history.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.9 does not claim Verdant has learned their
+  provenance-visible bids, but v0.10 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -186,9 +205,14 @@ generation, or safe autonomous policy revision.
   failure count. It does not yet learn contextual activation envelopes, compare
   failure rates against matched controls, or automatically consume diagnostic
   interaction attributions.
-- Only `DependencyGap` exists, so borrow-before-synthesize, held-out cross-family
-  adoption, representational merging, and independent per-family rollback of a
-  shared lens remain proposed rather than implemented.
+- `Contradiction` currently has detection, immutable identity, retrigger
+  continuity, checkpoint replay, and anti-suppression validation only. It does
+  not yet have provenance-symmetric-difference hypothesis generation,
+  dimensional-separation Resolution Contracts, family-local learned lenses, or
+  canonical resolution authority.
+- Two family enum values now exist, but borrow-before-synthesize, held-out
+  cross-family lens adoption, representational merging, and independent
+  per-family rollback of a shared lens remain proposed rather than implemented.
 - The registry/ledger boundary is separately serializable and tamper checked,
   but is not yet packaged into `.vdk` or committed into the canonical graph.
   Consequently, this increment establishes sidecar replay continuity, not
@@ -228,6 +252,12 @@ generation, or safe autonomous policy revision.
   state and tested future behavior. The runtime currently performs no external
   I/O; it does not claim a general operating-system side-effect sandbox.
 - No thermodynamic control authority. `T_g` remains observer-only.
+- Native contradiction recognition still depends on the existing claim
+  subsystem's explicit subject/predicate/object/polarity representation. The
+  new detector does not establish semantic understanding, discover novel
+  predicates, decide which claim is true, or operationalize consciousness.
+- `PredictionFailure`, `IdentityAmbiguity`, and `FailedPolicy` obligation
+  families, as well as the governed Paradigm Challenge lane, remain proposed.
 
 ## Access-pressure integration
 
@@ -277,3 +307,7 @@ fingerprint and failed-repair exclusion, cancelled/missing simulation lineage,
 typed component targets, null-diagnostic rejection, all-candidate abstention,
 exact request replay, sidecar reconstruction, decision tampering, and the hard
 absence of intervention authority.
+Contradiction-family tests additionally target fingerprint-pure inspection,
+native-record anchoring, exact replay, evidence-driven retriggering, claim-key
+scope separation, preserved claim/evidence references, checkpoint/View rebuild,
+canonical-claim deletion rejection, and silence when no contradiction exists.

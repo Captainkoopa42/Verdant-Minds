@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from verdant_kernel import VerdantKernel
 from verdant_kernel.models import (
+    ContradictionObligationKernel,
     DependencyCutEdge,
     DependencyGapObligationKernel,
     DependencyGapStallCertificate,
@@ -73,7 +74,7 @@ class ObligationView(BaseModel):
 
 @dataclass(frozen=True)
 class ObligationMutationResult:
-    obligation: DependencyGapObligationKernel
+    obligation: DependencyGapObligationKernel | ContradictionObligationKernel
     event: ObligationHistoryEvent
     replayed: bool = False
 
@@ -288,11 +289,21 @@ def _existing_source_event(
     )
 
 
+def _require_dependency_gap(
+    obligation: DependencyGapObligationKernel | ContradictionObligationKernel,
+) -> DependencyGapObligationKernel:
+    if not isinstance(obligation, DependencyGapObligationKernel):
+        raise ObligationIntegrityError(
+            "DependencyGap lifecycle operations cannot govern another family."
+        )
+    return obligation
+
+
 def _commit(
     kernel: VerdantKernel,
     event: ObligationHistoryEvent,
     *,
-    obligation: DependencyGapObligationKernel | None = None,
+    obligation: DependencyGapObligationKernel | ContradictionObligationKernel | None = None,
 ) -> ObligationHistoryEvent:
     state = kernel.snapshot()
     input_fingerprint = kernel.semantic_fingerprint()
@@ -333,6 +344,68 @@ def _commit(
     validated = VerdantKernel.from_state(state)
     kernel.state = validated.state
     return kernel.state.obligation_history[-1]
+
+
+def record_detected_contradiction(
+    kernel: VerdantKernel,
+    *,
+    obligation: ContradictionObligationKernel,
+    triggering_refs: tuple[str, ...],
+    source_event_key: str,
+    context_snapshot_hash: str,
+    source_lineage_roots: tuple[str, ...],
+    policy_version: str,
+) -> ObligationMutationResult:
+    """Commit or retrigger one detector-authored contradiction anchor."""
+
+    refs = tuple(sorted(set(triggering_refs)))
+    roots = tuple(sorted(set(source_lineage_roots)))
+    existing = kernel.state.obligation_kernels.get(obligation.kernel_id)
+    if existing is not None and not isinstance(existing, ContradictionObligationKernel):
+        raise ObligationIntegrityError("Contradiction identity collided with another family.")
+    prior = _existing_source_event(kernel, obligation.kernel_id, source_event_key)
+    if prior is not None:
+        if (
+            prior.triggering_refs != refs
+            or prior.context_snapshot_hash != context_snapshot_hash
+            or prior.source_lineage_roots != roots
+            or prior.policy_version != policy_version
+        ):
+            raise ObligationIntegrityError(
+                "Obligation source event key was reused with different evidence."
+            )
+        assert existing is not None
+        return ObligationMutationResult(existing, prior, replayed=True)
+
+    if existing is None:
+        if obligation.creation_cycle != kernel.state.cycle + 1:
+            raise ObligationIntegrityError("Contradiction obligation has a stale creation cycle.")
+        event_type = ObligationEventType.CREATED
+        previous = None
+    else:
+        event_type = ObligationEventType.RETRIGGERED
+        previous = _events_for(kernel, obligation.kernel_id)[-1].event_id
+    event = ObligationHistoryEvent.build(
+        obligation_id=obligation.kernel_id,
+        event_type=event_type,
+        authority=ObligationAuthority.DETECTOR,
+        source_event_key=source_event_key,
+        cycle=kernel.state.cycle + 1,
+        committed_sequence=kernel.state.event_sequence + 1,
+        previous_event_id=previous,
+        triggering_refs=refs,
+        context_snapshot_hash=context_snapshot_hash,
+        source_lineage_roots=roots,
+        policy_version=policy_version,
+    )
+    committed = _commit(
+        kernel,
+        event,
+        obligation=(obligation if existing is None else None),
+    )
+    return ObligationMutationResult(
+        kernel.state.obligation_kernels[obligation.kernel_id], committed
+    )
 
 
 class DependencyGapPipeline:
@@ -436,6 +509,7 @@ class DependencyGapPipeline:
         obligation = kernel.state.obligation_kernels.get(obligation_id)
         if obligation is None:
             raise ObligationIntegrityError("Unknown obligation kernel.")
+        obligation = _require_dependency_gap(obligation)
         prior = _existing_source_event(kernel, obligation_id, source_event_key)
         if prior is not None:
             if prior.attempt != attempt or prior.policy_version != policy_version:
@@ -485,6 +559,7 @@ class DependencyGapPipeline:
         obligation = kernel.state.obligation_kernels.get(obligation_id)
         if obligation is None:
             raise ObligationIntegrityError("Unknown obligation kernel.")
+        obligation = _require_dependency_gap(obligation)
         prior = _existing_source_event(kernel, obligation_id, source_event_key)
         if prior is not None:
             return ObligationMutationResult(obligation, prior, replayed=True)
@@ -548,6 +623,7 @@ class DependencyGapPipeline:
         obligation = kernel.state.obligation_kernels.get(obligation_id)
         if obligation is None:
             raise ObligationIntegrityError("Unknown obligation kernel.")
+        obligation = _require_dependency_gap(obligation)
         prior = _existing_source_event(kernel, obligation_id, delta.source_event_key)
         if prior is not None:
             if prior.graph_delta != delta:
@@ -589,6 +665,7 @@ class DependencyGapPipeline:
         obligation = kernel.state.obligation_kernels.get(obligation_id)
         if obligation is None:
             raise ObligationIntegrityError("Unknown obligation kernel.")
+        obligation = _require_dependency_gap(obligation)
         prior = _existing_source_event(kernel, obligation_id, source_event_key)
         if prior is not None:
             if prior.recheck_budget_granted != granted_budget:
@@ -623,6 +700,7 @@ class DependencyGapPipeline:
         obligation = kernel.state.obligation_kernels.get(obligation_id)
         if obligation is None:
             raise ObligationIntegrityError("Unknown obligation kernel.")
+        obligation = _require_dependency_gap(obligation)
         prior = _existing_source_event(kernel, obligation_id, source_event_key)
         if prior is not None:
             if (

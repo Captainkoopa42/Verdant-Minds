@@ -17,6 +17,12 @@ from .detection import (
     DependencyGapDetectionReport,
     DependencyGapDetector,
 )
+from .contradictions import (
+    CONTRADICTION_DETECTOR_POLICY_VERSION,
+    ContradictionDetectionReport,
+    ContradictionObligationCandidate,
+    ContradictionObligationDetector,
+)
 from .attention import (
     ATTENTION_PORTFOLIO_POLICY_VERSION,
     AttentionBidInput,
@@ -142,6 +148,10 @@ __all__ = [
     "DependencyGapDetectionPolicy",
     "DependencyGapDetectionReport",
     "DependencyGapDetector",
+    "CONTRADICTION_DETECTOR_POLICY_VERSION",
+    "ContradictionDetectionReport",
+    "ContradictionObligationCandidate",
+    "ContradictionObligationDetector",
     "ATTENTION_PORTFOLIO_POLICY_VERSION",
     "AttentionBidInput",
     "AttentionPortfolio",

@@ -93,6 +93,7 @@ class ContradictionStatus(str, Enum):
 
 class ObligationFamily(str, Enum):
     DEPENDENCY_GAP = "DependencyGap"
+    CONTRADICTION = "Contradiction"
 
 
 class ObligationStatus(str, Enum):
@@ -3329,6 +3330,54 @@ class DependencyGapObligationKernel(FrozenRecord):
         return self
 
 
+class ContradictionObligationKernel(FrozenRecord):
+    """Immutable anchor for one already-canonical claim contradiction."""
+
+    kernel_id: str
+    schema_version: str = "0.10"
+    family: ObligationFamily = ObligationFamily.CONTRADICTION
+    contradiction_ref: str
+    claim_key: str
+    claim_refs: tuple[str, str]
+    scope_key: str
+    canonical_triggering_refs: tuple[str, ...] = Field(min_length=3)
+    creation_cycle: int = Field(ge=1)
+    policy_version: str
+
+    @model_validator(mode="after")
+    def validate_kernel(self) -> "ContradictionObligationKernel":
+        if self.family != ObligationFamily.CONTRADICTION:
+            raise ValueError("Contradiction kernel requires the Contradiction family.")
+        text = (
+            self.schema_version,
+            self.contradiction_ref,
+            self.claim_key,
+            self.scope_key,
+            self.policy_version,
+        )
+        if not all(item.strip() for item in text):
+            raise ValueError("Contradiction kernel identity fields cannot be empty.")
+        if tuple(sorted(set(self.claim_refs))) != self.claim_refs:
+            raise ValueError("Contradiction claim refs must be sorted and unique.")
+        if tuple(sorted(set(self.canonical_triggering_refs))) != self.canonical_triggering_refs:
+            raise ValueError("Canonical triggering refs must be sorted and unique.")
+        if not set(self.claim_refs).issubset(self.canonical_triggering_refs):
+            raise ValueError("Contradiction triggering refs must retain both claims.")
+        if self.contradiction_ref not in self.canonical_triggering_refs:
+            raise ValueError("Contradiction triggering refs must retain the contradiction.")
+        expected = stable_id(
+            "obligation",
+            self.schema_version,
+            self.family.value,
+            self.contradiction_ref,
+            self.claim_key,
+            self.scope_key,
+        )
+        if self.kernel_id != expected:
+            raise ValueError("Contradiction kernel identity checksum mismatch.")
+        return self
+
+
 class ObligationHistoryEvent(FrozenRecord):
     event_id: str
     obligation_id: str
@@ -4355,7 +4404,9 @@ class KernelState(BaseModel):
     refolding_policy: RefoldingPolicy = Field(default_factory=RefoldingPolicy)
     structural_challenges: dict[str, StructuralChallengeRecord] = Field(default_factory=dict)
     structure_refold_events: list[StructureRefoldEvent] = Field(default_factory=list)
-    obligation_kernels: dict[str, DependencyGapObligationKernel] = Field(default_factory=dict)
+    obligation_kernels: dict[
+        str, DependencyGapObligationKernel | ContradictionObligationKernel
+    ] = Field(default_factory=dict)
     obligation_history: list[ObligationHistoryEvent] = Field(default_factory=list)
     obligation_attention_decisions: list[ObligationAttentionDecisionRecord] = Field(
         default_factory=list

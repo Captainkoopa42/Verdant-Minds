@@ -1,4 +1,4 @@
-# Obligation Substrate v0.14
+# Obligation Substrate v0.15
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -58,6 +58,17 @@ generation, or safe autonomous policy revision.
   simulations on one arm, then applies the same canonical event to both arms.
   Canonical fingerprints and obligation histories remain identical while only
   the simulation ledger differs.
+- An explicitly invoked `.vob` experiment archive now pairs an unchanged VDK
+  canonical checkpoint with the separately serialized simulation ledger and a
+  versioned, content-addressed manifest. Writing the pair uses one temporary
+  file, a synced replace, and a POSIX directory sync where available. Loading
+  validates member hashes, both rebuilt fingerprints, and the reservation-to-
+  canonical-Attention links before returning either reconstructed ledger.
+- The paired-archive test exercises `DependencyGap` and `Contradiction` in the
+  same snapshot, then applies the same future canonical event to original and
+  restored kernels. Both retain equal fingerprints and obligation Views while
+  discarded simulation settlements remain in the isolated ledger. All 17
+  existing VDK checkpoints also load and embed in an empty-ledger archive.
 - A deterministic `DependencyGapHypothesisGenerator` composes candidate
   inquiries only from canonical graph paths, evidence kinds, obligation
   operands, and provenance references. Its bounded evidence-path projection is
@@ -246,9 +257,13 @@ generation, or safe autonomous policy revision.
   resolution authority itself.
 - Simulation consumption is declared by the typed plan and bounded by its
   reservation; v0.4 does not yet meter physical CPU, memory, or wall-clock use.
-- The separate ledger has a deterministic snapshot/reload model but is not yet
-  packaged into `.vdk` or another crash-durable archive. Abrupt process-loss
-  recovery and concurrent reservations remain outside this increment.
+- The simulation ledger is packaged only by explicit `.vob` save/load calls;
+  ordinary `.vdk` checkpoints and runtime scheduling do not automatically
+  include it. The atomic replace failure test and sync path support paired
+  durability, but process-kill recovery and concurrent writers have not been
+  exercised. Archive hashes detect accidental or non-rehashed alteration;
+  they are not signatures or an authenticity boundary against an adversary
+  able to rewrite every member and the manifest.
 - The overlay supports a deliberately bounded set of canonical mapping
   collections and JSON hypothesis values. It does not validate those values as
   promotable canonical records and exposes no commit path.
@@ -302,7 +317,7 @@ generation, or safe autonomous policy revision.
   cross-family lens adoption, representational merging, and independent
   per-family rollback of a shared lens remain proposed rather than implemented.
 - The registry/ledger boundary is separately serializable and tamper checked,
-  but is not yet packaged into `.vdk` or committed into the canonical graph.
+  but is not yet packaged into `.vob`/`.vdk` or committed into the canonical graph.
   Consequently, this increment establishes sidecar replay continuity, not
   crash-durable canonical lens governance.
 - Isomorphic projection of earned structures and provenance-symmetric-difference
@@ -320,8 +335,12 @@ generation, or safe autonomous policy revision.
   scheduler, generator, binding, or lens. It is bounded evidence for the future
   Council intervention layer, not authority to edit evaluator machinery.
 - The diagnostic ledger is a tamper-checked sidecar rather than canonical VDK
-  state. It establishes deterministic in-process/snapshot replay, not durable
-  canonical self-diagnosis across abrupt process loss.
+  state and is not included in `.vob`. It establishes deterministic in-process
+  snapshot replay, not durable canonical self-diagnosis across abrupt process
+  loss.
+- Council tournament and Paradigm Challenge ledgers are likewise outside the
+  paired archive. Their cross-ledger recovery and reference closure remain
+  untested. The archive tests cover two obligation families, not all five.
 - Candidate interventions and preservation measurements are explicit, typed
   experimental inputs. The Council does not yet generate a complete spanning
   intervention set or execute the standard-load simulations autonomously.
@@ -357,6 +376,20 @@ generation, or safe autonomous policy revision.
   paradigm shift exists in v0.14.
 - The Paradigm lane does not establish semantic understanding, consciousness,
   a mind, or complete endogenous agency.
+
+## v0.15 claim boundary
+
+- **OBSERVED:** Five focused paired-archive tests and the 351-test full suite
+  pass. The archive test restores both `DependencyGap` and `Contradiction`
+  Views, verifies a subsequent canonical transition is identical after reload,
+  and loads all 17 preexisting VDK checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** Explicit `.vob` save/load pairs canonical VDK
+  bytes with a separate simulation ledger, validates their internal and cross-
+  ledger references, and atomically replaces the pair as a single file.
+- **PROPOSED:** Durable pairing of lens, diagnostic, Council, and Paradigm
+  sidecars; real process-kill and concurrent-writer proofs; an opt-in integrated
+  detector-to-simulation path; and observations derived from experiment traces.
+  None is established by the paired archive.
 
 ## Access-pressure integration
 
@@ -431,3 +464,9 @@ complete immutable-history replay, isolated simulation lineage, cross-seed
 replication, evidence and orthogonal-fingerprint preservation, high-blast-radius
 eligibility, sidecar reconstruction, sequence tampering, and the hard absence
 of promotion or canonical-mutation authority.
+Paired-archive tests additionally target deterministic byte replay, two-family
+View restoration, future canonical transition equivalence, canonical versus
+simulation ledger separation, checksum alteration, rehashed cross-ledger
+substitution, rehashed settlement-origin forgery, failed atomic replacement,
+and embedding all 17 preexisting VDK checkpoints without changing their
+format.

@@ -69,10 +69,9 @@ def save_checkpoint(path: Path, state: KernelState) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def load_checkpoint(path: Path) -> KernelState:
-    with zipfile.ZipFile(path, "r") as archive:
-        state_payload = archive.read(STATE_PATH)
-        manifest = json.loads(archive.read(MANIFEST_PATH).decode("utf-8"))
+def _load_archive(archive: zipfile.ZipFile) -> KernelState:
+    state_payload = archive.read(STATE_PATH)
+    manifest = json.loads(archive.read(MANIFEST_PATH).decode("utf-8"))
     if manifest.get("format") != FORMAT_VERSION:
         raise CheckpointIntegrityError("Unsupported checkpoint format.")
     actual_hash = hashlib.sha256(state_payload).hexdigest()
@@ -81,3 +80,14 @@ def load_checkpoint(path: Path) -> KernelState:
     if len(state_payload) != manifest.get("state_bytes"):
         raise CheckpointIntegrityError("Checkpoint state length mismatch.")
     return KernelState.model_validate_json(state_payload)
+
+
+def load_checkpoint_bytes(data: bytes) -> KernelState:
+    """Validate an embedded .vdk using the existing checkpoint rules."""
+    with zipfile.ZipFile(io.BytesIO(data), "r") as archive:
+        return _load_archive(archive)
+
+
+def load_checkpoint(path: Path) -> KernelState:
+    with zipfile.ZipFile(path, "r") as archive:
+        return _load_archive(archive)

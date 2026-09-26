@@ -68,6 +68,13 @@ from .counterfactual import (
     SimulationReservation,
     SimulationSettlement,
 )
+from .experiment_archive import (
+    EXPERIMENT_ARCHIVE_FORMAT,
+    ExperimentArchiveIntegrityError,
+    experiment_archive_bytes,
+    load_experiment_archive,
+    save_experiment_archive,
+)
 from .hypotheses import (
     FUNCTIONAL_PARTITION_VERSION,
     HYPOTHESIS_GRAMMAR_VERSION,
@@ -221,6 +228,11 @@ __all__ = [
     "SimulationLedgerState",
     "SimulationReservation",
     "SimulationSettlement",
+    "EXPERIMENT_ARCHIVE_FORMAT",
+    "ExperimentArchiveIntegrityError",
+    "experiment_archive_bytes",
+    "load_experiment_archive",
+    "save_experiment_archive",
     "FUNCTIONAL_PARTITION_VERSION",
     "HYPOTHESIS_GRAMMAR_VERSION",
     "DependencyGapHypothesisGenerator",

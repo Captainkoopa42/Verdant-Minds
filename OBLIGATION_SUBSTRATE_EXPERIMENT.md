@@ -1,4 +1,4 @@
-# Obligation Substrate v0.16
+# Obligation Substrate v0.17
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -103,6 +103,16 @@ generation, or safe autonomous policy revision.
   simulation reservation/settlement identity prefix must exist in the paired
   archive. Legacy v1 canonical-plus-simulation archives remain readable and
   retain their original byte format.
+- An explicit v3 `.vob` archive can additionally persist the append-only
+  Diagnostic ledger. A diagnostic archive requires its Lens sidecar and
+  revalidates each diagnostic's parent obligation, exact canonical Attention
+  decision, failed-inquiry reservation and settlement, family-local binding and
+  definition, hypothesis result lineage, causal evidence set, terminal
+  attribution, available probe-settlement count, and an upper bound on
+  traceable probe budget.
+- Diagnostic archive loading rebuilds an independent `DiagnosticEngine` with
+  the same fingerprint. v1 and v2 archive layouts remain readable and keep
+  `diagnostic_engine=None`; ordinary VDK checkpoints remain unchanged.
 - Evidence distinguishes support, valid nulls, over-smoothing,
   hyper-discrimination, and absent explanatory gain. Valid nulls do not count
   as evaluator failures. A binding suspends atomically when its declared
@@ -351,10 +361,16 @@ generation, or safe autonomous policy revision.
 - A diagnostic attribution does not penalize, suspend, revise, or roll back a
   scheduler, generator, binding, or lens. It is bounded evidence for the future
   Council intervention layer, not authority to edit evaluator machinery.
-- The diagnostic ledger is a tamper-checked sidecar rather than canonical VDK
-  state and is not included in `.vob`. It establishes deterministic in-process
-  snapshot replay, not durable canonical self-diagnosis across abrupt process
-  loss.
+- The diagnostic ledger remains a sidecar rather than canonical VDK state. It
+  is durable only when a caller explicitly supplies it for a v3 `.vob`; v1,
+  v2, ordinary VDK, and the backward-compatible two-value archive loader do not
+  expose it or grant it authority.
+- `DiagnosticProbeObservation` objects are still transient inputs rather than
+  ledger members. v3 preserves terminal probe IDs and proves that enough
+  isolated, parent-local simulation settlements and budget exist, but it cannot
+  reconstruct each probe's finding, basis refs, or exact settlement mapping.
+  Custom numeric `DiagnosticPolicy` limits are likewise not serialized beyond
+  the policy version carried by durable records.
 - Council tournament and Paradigm Challenge ledgers are likewise outside the
   paired archive. Their cross-ledger recovery and reference closure remain
   untested. The archive tests cover Lens bindings for `DependencyGap` and
@@ -425,6 +441,26 @@ generation, or safe autonomous policy revision.
   for free-form provenance and hypothesis/outcome refs; real process-kill and
   concurrent-writer proofs; and automatic scheduler use of recovered lenses.
   No canonical resolution, promotion, or policy-rewrite authority is added.
+
+## v0.17 claim boundary
+
+- **OBSERVED:** Thirteen focused archive tests and the 359-test full repository
+  suite pass. A v3 round trip restores a terminal, probe-backed Diagnostic result
+  across canonical, simulation, Lens, and Diagnostic ledgers with unchanged
+  fingerprints. Rehashed foreign Diagnostic substitution, causal-attribution
+  forgery, and removal of the cited probe settlement fail closed. All 17
+  preexisting VDK checkpoints embed and reload through v1, v2, and empty-
+  Diagnostic v3 envelopes.
+- **IMPLEMENTED-EXPERIMENTAL:** Explicit v3 `.vob` save/load durably pairs the
+  Diagnostic ledger after its canonical, simulation, and Lens prerequisites,
+  validates the durable cross-ledger causal closure available in the current
+  schema, and exposes the reconstructed non-authoritative engine through the
+  bundle loader.
+- **PROPOSED:** Durable Diagnostic probe observations and policy parameters;
+  Council and Paradigm sidecar pairing; real process-kill and concurrent-writer
+  proofs; and an opt-in integrated detector-to-simulation path. No canonical
+  diagnosis, resolution, component penalty, promotion, or policy rewrite is
+  established.
 
 ## Access-pressure integration
 
@@ -509,3 +545,8 @@ Lens-archive tests additionally target v2 deterministic replay, two family-
 local active bindings, evidence and governance restoration, post-reload
 sidecar isolation, legacy v1 compatibility, rehashed registry/ledger mixing,
 unresolved typed settlement refs, and future-dated governance rejection.
+Diagnostic-archive tests additionally target deterministic v3 byte replay,
+four-ledger fingerprint restoration, mandatory Lens pairing, v1/v2
+compatibility, rehashed foreign-ledger substitution, causal-attribution
+forgery, missing probe-settlement rejection, terminal non-authority, and all 17
+legacy checkpoints embedded in an empty-Diagnostic v3 envelope.

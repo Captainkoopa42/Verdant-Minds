@@ -17,8 +17,12 @@ from verdant_kernel.models import canonical_json_bytes
 from verdant_obligations import (
     AttentionBidInput, AttentionPortfolio, ContradictionObligationDetector,
     CounterfactualPatch, CounterfactualPlan, CounterfactualRuntime,
-    DependencyGapPipeline, EquivalenceLensSystem, ExperimentArchiveIntegrityError,
-    EXPERIMENT_ARCHIVE_FORMAT, EXPERIMENT_ARCHIVE_LEGACY_FORMAT, LensEvidenceResult,
+    DependencyGapPipeline, DiagnosticConclusion, DiagnosticEngine,
+    DiagnosticLedgerState, DiagnosticProbeFinding, DiagnosticProbeKind,
+    DiagnosticProbeObservation, DiagnosticResult, DiagnosticTriggerKind,
+    EquivalenceLensSystem, ExperimentArchiveIntegrityError,
+    EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT, EXPERIMENT_ARCHIVE_FORMAT,
+    EXPERIMENT_ARCHIVE_LEGACY_FORMAT, InquiryFailureEvidence, LensEvidenceResult,
     LensOpcode, SimulationLedger, SimulationLedgerState, SimulationSettlement,
     derive_obligation_view, experiment_archive_bytes, load_experiment_archive,
     load_experiment_archive_bundle, save_experiment_archive,
@@ -84,6 +88,7 @@ def _repack(
     *,
     canonical: VerdantKernel | None = None,
     lenses: EquivalenceLensSystem | None = None,
+    diagnostics: DiagnosticEngine | None = None,
 ) -> bytes:
     manifest = json.loads(parts["manifest.json"])
     for name in manifest["files"]:
@@ -99,6 +104,8 @@ def _repack(
         ).fingerprint()
     if lenses is not None:
         manifest["lens_fingerprint"] = lenses.fingerprint()
+    if diagnostics is not None:
+        manifest["diagnostic_fingerprint"] = diagnostics.fingerprint()
     parts["manifest.json"] = canonical_json_bytes(manifest)
     output = io.BytesIO()
     with zipfile.ZipFile(output, "w") as archive:
@@ -218,6 +225,24 @@ def test_all_17_legacy_checkpoints_load_and_embed(tmp_path: Path) -> None:
         assert bundle.simulation_ledger.state.reservations == ()
         assert bundle.lens_system is not None
         assert bundle.lens_system.fingerprint() == empty_lenses.fingerprint()
+        diagnostic_path = tmp_path / f"{original.stem}-v3.vob"
+        empty_diagnostics = DiagnosticEngine()
+        save_experiment_archive(
+            diagnostic_path,
+            kernel,
+            SimulationLedger(),
+            lens_system=empty_lenses,
+            diagnostic_engine=empty_diagnostics,
+        )
+        diagnostic_bundle = load_experiment_archive_bundle(diagnostic_path)
+        assert diagnostic_bundle.kernel.fingerprint() == kernel.fingerprint()
+        assert diagnostic_bundle.simulation_ledger.state.reservations == ()
+        assert diagnostic_bundle.lens_system is not None
+        assert diagnostic_bundle.diagnostic_engine is not None
+        assert (
+            diagnostic_bundle.diagnostic_engine.fingerprint()
+            == empty_diagnostics.fingerprint()
+        )
 
 
 def _lenses(
@@ -263,6 +288,91 @@ def _lenses(
     return lenses
 
 
+def _diagnostics(
+    kernel: VerdantKernel,
+    runtime: CounterfactualRuntime,
+    lenses: EquivalenceLensSystem,
+    *,
+    suffix: str = "primary",
+) -> DiagnosticEngine:
+    obligation_id = next(
+        key for key, value in kernel.state.obligation_kernels.items()
+        if value.family == ObligationFamily.DEPENDENCY_GAP
+    )
+    decision = kernel.state.obligation_attention_decisions[0]
+    allocation = next(
+        item for item in decision.allocations
+        if item.obligation_id == obligation_id
+    )
+    binding = lenses.active_binding(ObligationFamily.DEPENDENCY_GAP).binding
+    hypothesis_ref = f"archive:hypothesis:{suffix}"
+    failed = runtime.execute(
+        kernel,
+        allocation_id=allocation.allocation_id,
+        plan=CounterfactualPlan.build(
+            source_event_key=f"archive:diagnostic:{suffix}:failure",
+            operator_version="archive-diagnostic-v1",
+            requested_budget=0.01,
+            consumed_budget=0.005,
+            result_refs=(hypothesis_ref,),
+        ),
+    ).settlement
+    trigger = InquiryFailureEvidence.build(
+        trigger_kind=DiagnosticTriggerKind.INQUIRY_FAILURE,
+        attention_decision_id=decision.decision_id,
+        failed_settlement_id=failed.settlement_id,
+        obligation_id=obligation_id,
+        lens_binding_id=binding.binding_id,
+        lens_definition_id=binding.definition_id,
+        hypothesis_ref=hypothesis_ref,
+        completed_within_predicted_cost=True,
+        graph_traversal_valid=True,
+        action_executed=False,
+        explanatory_gain_observed=False,
+        evidence_refs=(
+            decision.decision_id,
+            failed.settlement_id,
+            binding.binding_id,
+            binding.definition_id,
+            hypothesis_ref,
+        ),
+    )
+    diagnostics = DiagnosticEngine()
+    diagnostic = diagnostics.open(
+        kernel,
+        trigger=trigger,
+        simulation_ledger=runtime.ledger,
+        lens_system=lenses,
+        source_event_key=f"archive:diagnostic:{suffix}:open",
+    )
+    basis_ref = f"archive:diagnostic:{suffix}:basis"
+    probe_settlement = runtime.execute(
+        kernel,
+        allocation_id=allocation.allocation_id,
+        plan=CounterfactualPlan.build(
+            source_event_key=f"archive:diagnostic:{suffix}:probe",
+            operator_version="archive-diagnostic-probe-v1",
+            requested_budget=0.01,
+            consumed_budget=0.005,
+            result_refs=(diagnostic.diagnostic_id, basis_ref),
+        ),
+    ).settlement
+    probe = DiagnosticProbeObservation.build(
+        diagnostic_id=diagnostic.diagnostic_id,
+        kind=DiagnosticProbeKind.PRIMITIVE_BASELINE,
+        finding=DiagnosticProbeFinding.LENS_COLLAPSED_DISTINCT,
+        simulation_settlement_id=probe_settlement.settlement_id,
+        basis_refs=(basis_ref,),
+    )
+    diagnostics.conclude(
+        diagnostic_id=diagnostic.diagnostic_id,
+        probes=(probe,),
+        simulation_ledger=runtime.ledger,
+        source_event_key=f"archive:diagnostic:{suffix}:conclude",
+    )
+    return diagnostics
+
+
 def test_lens_archive_replays_both_sidecars_without_canonical_leakage(
     tmp_path: Path,
 ) -> None:
@@ -290,6 +400,7 @@ def test_lens_archive_replays_both_sidecars_without_canonical_leakage(
     assert bundle.simulation_ledger.fingerprint() == simulation_before
     assert bundle.lens_system is not None
     assert bundle.lens_system.fingerprint() == lens_before
+    assert bundle.diagnostic_engine is None
     for family in (ObligationFamily.DEPENDENCY_GAP, ObligationFamily.CONTRADICTION):
         assert bundle.lens_system.active_binding(family) == lenses.active_binding(family)
 
@@ -316,6 +427,7 @@ def test_v1_archive_remains_readable_by_bundle_loader(tmp_path: Path) -> None:
     bundle = load_experiment_archive_bundle(path)
     assert bundle.format_version == EXPERIMENT_ARCHIVE_LEGACY_FORMAT
     assert bundle.lens_system is None
+    assert bundle.diagnostic_engine is None
     assert bundle.kernel.fingerprint() == kernel.fingerprint()
     assert bundle.simulation_ledger.fingerprint() == runtime.ledger.fingerprint()
 
@@ -381,3 +493,173 @@ def test_unresolved_typed_lens_reference_and_future_history_are_rejected(
     )
     with pytest.raises(ExperimentArchiveIntegrityError, match="ahead"):
         experiment_archive_bytes(kernel, runtime.ledger, lens_system=future)
+
+
+def test_diagnostic_archive_replays_three_sidecars_without_canonical_leakage(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+    before = (
+        kernel.fingerprint(),
+        runtime.ledger.fingerprint(),
+        lenses.fingerprint(),
+        diagnostics.fingerprint(),
+    )
+
+    data = experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+    )
+    assert data == experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+    )
+    assert json.loads(_parts(data)["manifest.json"])["format"] == (
+        EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT
+    )
+    path = tmp_path / "diagnostic-paired.vob"
+    save_experiment_archive(
+        path,
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+    )
+    bundle = load_experiment_archive_bundle(path)
+
+    assert bundle.format_version == EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT
+    assert bundle.lens_system is not None
+    assert bundle.diagnostic_engine is not None
+    assert (
+        bundle.kernel.fingerprint(),
+        bundle.simulation_ledger.fingerprint(),
+        bundle.lens_system.fingerprint(),
+        bundle.diagnostic_engine.fingerprint(),
+    ) == before
+    result = bundle.diagnostic_engine.state.results[0]
+    assert result.conclusion == DiagnosticConclusion.LENS_OVER_SMOOTHING
+    assert result.terminal and not result.may_spawn_diagnostic
+    assert not result.epistemic_authority_enabled
+    assert (
+        kernel.fingerprint(),
+        runtime.ledger.fingerprint(),
+        lenses.fingerprint(),
+        diagnostics.fingerprint(),
+    ) == before
+
+
+def test_diagnostic_archive_requires_lens_sidecar() -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+
+    with pytest.raises(ExperimentArchiveIntegrityError, match="require.*Lens"):
+        experiment_archive_bytes(
+            kernel,
+            runtime.ledger,
+            diagnostic_engine=diagnostics,
+        )
+
+
+def test_rehashed_foreign_diagnostic_ledger_fails_cross_ledger_closure(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime, suffix="primary-diagnostic")
+    diagnostics = _diagnostics(
+        kernel, runtime, lenses, suffix="primary-diagnostic"
+    )
+    parts = _parts(experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+    ))
+
+    foreign_kernel, foreign_runtime = _experiment()
+    foreign_lenses = _lenses(
+        foreign_kernel, foreign_runtime, suffix="foreign-diagnostic"
+    )
+    foreign_diagnostics = _diagnostics(
+        foreign_kernel,
+        foreign_runtime,
+        foreign_lenses,
+        suffix="foreign-diagnostic",
+    )
+    foreign_parts = _parts(experiment_archive_bytes(
+        foreign_kernel,
+        foreign_runtime.ledger,
+        lens_system=foreign_lenses,
+        diagnostic_engine=foreign_diagnostics,
+    ))
+    parts["diagnostic_ledger.json"] = foreign_parts["diagnostic_ledger.json"]
+    path = tmp_path / "mixed-diagnostic.vob"
+    path.write_bytes(_repack(parts, diagnostics=foreign_diagnostics))
+
+    with pytest.raises(
+        ExperimentArchiveIntegrityError,
+        match="failed-inquiry|Lens lineage",
+    ):
+        load_experiment_archive_bundle(path)
+
+
+def test_rehashed_diagnostic_attribution_and_missing_probe_fail_closed(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+    data = experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+    )
+
+    original = diagnostics.state.results[0]
+    wrong_definition = lenses.active_binding(
+        ObligationFamily.CONTRADICTION
+    ).binding.definition_id
+    values = original.model_dump(mode="python", exclude={"result_id"})
+    values["attributed_component_refs"] = (wrong_definition,)
+    forged_result = DiagnosticResult.build(**values)
+    forged_state = DiagnosticLedgerState(
+        obligations=diagnostics.state.obligations,
+        results=(forged_result,),
+    )
+    forged_diagnostics = DiagnosticEngine(state=forged_state)
+    attribution_parts = _parts(data)
+    attribution_parts["diagnostic_ledger.json"] = canonical_json_bytes(
+        forged_state.model_dump(mode="json")
+    )
+    attribution_path = tmp_path / "forged-attribution.vob"
+    attribution_path.write_bytes(_repack(
+        attribution_parts,
+        diagnostics=forged_diagnostics,
+    ))
+    with pytest.raises(ExperimentArchiveIntegrityError, match="attribution"):
+        load_experiment_archive_bundle(attribution_path)
+
+    diagnostic_id = diagnostics.state.obligations[0].diagnostic_id
+    ledger_state = runtime.ledger.snapshot()
+    without_probe = SimulationLedgerState(
+        reservations=ledger_state.reservations,
+        settlements=tuple(
+            item for item in ledger_state.settlements
+            if diagnostic_id not in item.result_refs
+        ),
+    )
+    probe_parts = _parts(data)
+    probe_parts["simulation.json"] = canonical_json_bytes(
+        without_probe.model_dump(mode="json")
+    )
+    probe_path = tmp_path / "missing-probe.vob"
+    probe_path.write_bytes(_repack(probe_parts))
+    with pytest.raises(ExperimentArchiveIntegrityError, match="probe settlements"):
+        load_experiment_archive_bundle(probe_path)

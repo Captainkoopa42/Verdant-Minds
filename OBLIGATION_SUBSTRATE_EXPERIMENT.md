@@ -1,4 +1,4 @@
-# Obligation Substrate v0.15
+# Obligation Substrate v0.16
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -92,6 +92,17 @@ generation, or safe autonomous policy revision.
   events occupy a separate typed ledger. Applying an active lens is a pure
   scheduler operation: it projects outcomes through the approved dimensions,
   creates discrete equivalence classes, and performs no governance write.
+- An opt-in v2 `.vob` archive now makes the immutable Lens definition registry
+  and append-only binding/evidence/governance ledger durable beside canonical
+  VDK bytes and the isolated simulation ledger. The loader reconstructs the
+  registry and ledger as one `EquivalenceLensSystem`, checks its fingerprint,
+  requires every binding's definition lineage, and rejects lens events dated
+  after the paired canonical checkpoint.
+- Typed cross-sidecar refs are closed on archive save and load: any lens or
+  simulation ref using a known Lens definition/binding/evidence/governance or
+  simulation reservation/settlement identity prefix must exist in the paired
+  archive. Legacy v1 canonical-plus-simulation archives remain readable and
+  retain their original byte format.
 - Evidence distinguishes support, valid nulls, over-smoothing,
   hyper-discrimination, and absent explanatory gain. Valid nulls do not count
   as evaluator failures. A binding suspends atomically when its declared
@@ -316,10 +327,16 @@ generation, or safe autonomous policy revision.
 - Five family enum values now exist, but borrow-before-synthesize, held-out
   cross-family lens adoption, representational merging, and independent
   per-family rollback of a shared lens remain proposed rather than implemented.
-- The registry/ledger boundary is separately serializable and tamper checked,
-  but is not yet packaged into `.vob`/`.vdk` or committed into the canonical graph.
-  Consequently, this increment establishes sidecar replay continuity, not
-  crash-durable canonical lens governance.
+- Lens durability remains explicitly sidecar-local: only v2 `.vob` calls that
+  supply a Lens system include it. Ordinary `.vdk`, legacy v1 `.vob`, and the
+  backward-compatible two-value loader do not expose recovered Lens state;
+  callers must use the bundle loader. Lens governance is not committed into
+  the canonical graph and receives no canonical authority from serialization.
+- Free-form provenance, calibration, hypothesis, outcome, and independent-
+  consequence refs remain externally namespaced strings. v0.16 closes typed
+  IDs whose namespace it recognizes, but cannot prove the referent or semantic
+  meaning of arbitrary strings. Resolution observations and partitions are not
+  serialized by this archive.
 - Isomorphic projection of earned structures and provenance-symmetric-difference
   generation remain unimplemented because the required resolved-history and
   additional obligation-family substrates do not yet exist.
@@ -340,7 +357,8 @@ generation, or safe autonomous policy revision.
   loss.
 - Council tournament and Paradigm Challenge ledgers are likewise outside the
   paired archive. Their cross-ledger recovery and reference closure remain
-  untested. The archive tests cover two obligation families, not all five.
+  untested. The archive tests cover Lens bindings for `DependencyGap` and
+  `Contradiction`, not all five obligation families.
 - Candidate interventions and preservation measurements are explicit, typed
   experimental inputs. The Council does not yet generate a complete spanning
   intervention set or execute the standard-load simulations autonomously.
@@ -390,6 +408,23 @@ generation, or safe autonomous policy revision.
   sidecars; real process-kill and concurrent-writer proofs; an opt-in integrated
   detector-to-simulation path; and observations derived from experiment traces.
   None is established by the paired archive.
+
+## v0.16 claim boundary
+
+- **OBSERVED:** Nine focused archive tests and the full repository suite pass.
+  A v2 round trip restores two family-local active bindings and supporting Lens
+  evidence without changing canonical or simulation fingerprints. Rehashed
+  registry/ledger substitution, an unresolved typed settlement ref, and future-
+  dated Lens governance all fail closed; all 17 preexisting VDK checkpoints
+  embed and reload through both legacy v1 and empty-Lens v2 archives.
+- **IMPLEMENTED-EXPERIMENTAL:** Explicit v2 `.vob` save/load durably pairs the
+  Lens registry and ledger with canonical and simulation state, validates
+  deterministic replay plus typed cross-sidecar closure, and exposes recovered
+  Lens state through `load_experiment_archive_bundle`.
+- **PROPOSED:** Diagnostic, Council, and Paradigm sidecar pairing; full closure
+  for free-form provenance and hypothesis/outcome refs; real process-kill and
+  concurrent-writer proofs; and automatic scheduler use of recovered lenses.
+  No canonical resolution, promotion, or policy-rewrite authority is added.
 
 ## Access-pressure integration
 
@@ -469,4 +504,8 @@ View restoration, future canonical transition equivalence, canonical versus
 simulation ledger separation, checksum alteration, rehashed cross-ledger
 substitution, rehashed settlement-origin forgery, failed atomic replacement,
 and embedding all 17 preexisting VDK checkpoints without changing their
-format.
+format in both v1 and v2 archive envelopes.
+Lens-archive tests additionally target v2 deterministic replay, two family-
+local active bindings, evidence and governance restoration, post-reload
+sidecar isolation, legacy v1 compatibility, rehashed registry/ledger mixing,
+unresolved typed settlement refs, and future-dated governance rejection.

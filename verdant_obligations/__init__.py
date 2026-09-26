@@ -68,13 +68,6 @@ from .counterfactual import (
     SimulationReservation,
     SimulationSettlement,
 )
-from .experiment_archive import (
-    EXPERIMENT_ARCHIVE_FORMAT,
-    ExperimentArchiveIntegrityError,
-    experiment_archive_bytes,
-    load_experiment_archive,
-    save_experiment_archive,
-)
 from .hypotheses import (
     FUNCTIONAL_PARTITION_VERSION,
     HYPOTHESIS_GRAMMAR_VERSION,
@@ -111,6 +104,16 @@ from .equivalence import (
     LensOutcomeClass,
     LensPartition,
     LensUnavailableError,
+)
+from .experiment_archive import (
+    EXPERIMENT_ARCHIVE_FORMAT,
+    EXPERIMENT_ARCHIVE_LEGACY_FORMAT,
+    ExperimentArchiveBundle,
+    ExperimentArchiveIntegrityError,
+    experiment_archive_bytes,
+    load_experiment_archive,
+    load_experiment_archive_bundle,
+    save_experiment_archive,
 )
 from .resolution import (
     RESOLUTION_CONTRACT_VERSION,
@@ -229,9 +232,12 @@ __all__ = [
     "SimulationReservation",
     "SimulationSettlement",
     "EXPERIMENT_ARCHIVE_FORMAT",
+    "EXPERIMENT_ARCHIVE_LEGACY_FORMAT",
+    "ExperimentArchiveBundle",
     "ExperimentArchiveIntegrityError",
     "experiment_archive_bytes",
     "load_experiment_archive",
+    "load_experiment_archive_bundle",
     "save_experiment_archive",
     "FUNCTIONAL_PARTITION_VERSION",
     "HYPOTHESIS_GRAMMAR_VERSION",

@@ -84,6 +84,15 @@ from .hypotheses import (
     StructuralHypothesis,
     build_hypothesis_plan,
 )
+from .inquiry import (
+    INTEGRATED_INQUIRY_POLICY_VERSION,
+    DependencyGapInquiryCoordinator,
+    IntegratedInquiryError,
+    IntegratedInquiryPolicy,
+    IntegratedInquiryResult,
+    IntegratedInquiryTrace,
+    IntegratedInquiryTrial,
+)
 from .equivalence import (
     EQUIVALENCE_LENS_IR_VERSION,
     LENS_LEDGER_SCHEMA_VERSION,
@@ -267,6 +276,13 @@ __all__ = [
     "ProjectedTopologyEdge",
     "StructuralHypothesis",
     "build_hypothesis_plan",
+    "INTEGRATED_INQUIRY_POLICY_VERSION",
+    "DependencyGapInquiryCoordinator",
+    "IntegratedInquiryError",
+    "IntegratedInquiryPolicy",
+    "IntegratedInquiryResult",
+    "IntegratedInquiryTrace",
+    "IntegratedInquiryTrial",
     "EQUIVALENCE_LENS_IR_VERSION",
     "LENS_LEDGER_SCHEMA_VERSION",
     "EquivalenceLensDefinition",

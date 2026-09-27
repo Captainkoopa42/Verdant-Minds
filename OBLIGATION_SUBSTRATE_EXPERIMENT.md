@@ -1,4 +1,4 @@
-# Obligation Substrate v0.21
+# Obligation Substrate v0.22
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -93,6 +93,23 @@ generation, or safe autonomous policy revision.
 - A selected preregistered arm can be translated into a `CounterfactualPlan`.
   Only a path-completion arm applies its hypothetical bridge patch, and the
   existing isolated runtime still prevents any canonical commit.
+- An explicitly invoked `DependencyGapInquiryCoordinator` now stages the
+  existing detector, hypothesis generator, functional partitioner, Attention
+  Portfolio, and counterfactual runtime as one transaction. It publishes only
+  after detector candidates are exactly the eligible `DependencyGap` set and
+  every simulated arm leaves the post-Attention canonical fingerprint intact.
+- The coordinator supplies one complete bid per eligible detected obligation,
+  with provenance linking the detector candidate and canonical history event
+  to every generated hypothesis and its functional partition. Each allocation
+  funds a bounded, deterministic representative from at most three functional
+  outcome classes; all plans remain discarded copy-on-write simulations.
+- A content-addressed integration trace links candidate, obligation event,
+  hypothesis, outcome, partition, Attention decision/allocation, plan,
+  reservation, and settlement identifiers together with hashes of every
+  visible component policy. Saving the resulting canonical and simulation
+  state in an existing `.vob`, reloading it, and explicitly rerunning the same
+  request reconstructs the identical trace at zero additional canonical or
+  simulation cost.
 - Immutable `EquivalenceLensDefinition` records now hold a deterministic,
   side-effect-free operator IR in a content-addressed registry. Definitions
   preserve provenance and optional parent lineage; duplicate content reuses the
@@ -300,12 +317,30 @@ generation, or safe autonomous policy revision.
   policy still declares which relation types mean dependency and which evidence
   kinds count as available input. Verdant has not yet earned or revised that
   operator grammar.
-- The detector heartbeat is explicitly invoked by the experimental pipeline;
-  it is not yet attached to an autonomous Attention Portfolio scheduler.
-- The Attention Portfolio and counterfactual runtime are explicitly invoked.
-  The runtime consumes separately accounted simulation budget, but it does not
-  yet move a `MayWake` obligation into `Recheck_Pending` or append an
-  `AttemptRecord` to canonical obligation history.
+- The detector heartbeat remains explicitly invoked. v0.22 adds an opt-in
+  coordinator, not an autonomous Attention scheduler, background loop, or
+  independent goal source.
+- The coordinator supports only a closed invocation whose current detector
+  candidates are exactly all eligible obligations and all are
+  `DependencyGap`. Mixed-family or unrelated eligible obligations fail the
+  staged transaction without publishing partial canonical or simulation
+  writes. Cross-family orchestration remains unimplemented.
+- Attention metrics, trial count, budget, and representative-arm ordering are
+  visible supplied policy values. Verdant has not learned their calibration or
+  chosen the integration request endogenously.
+- Integrated trace objects are transient, reconstructable receipts rather than
+  a new archive member. Existing `.vob` canonical and simulation state can
+  regenerate an identical receipt under the same code and policies, but v0.22
+  does not claim independent long-term schema durability for the trace itself.
+- Coordinator atomicity is bounded to staged in-process validation before its
+  two supplied Python objects are published. It adds no cross-thread or cross-
+  process lock, transaction journal, or automatic archive write; callers must
+  serialize invocation and explicitly save the resulting `.vob` when durable
+  recovery is required.
+- The runtime consumes separately accounted simulation budget, but the
+  coordinator does not move a `MayWake` obligation into `Recheck_Pending`,
+  append an `AttemptRecord`, classify an arm as actually observed, or alter
+  obligation status from the simulation result.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
   provenance-visible bids, but v0.14 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
@@ -606,6 +641,28 @@ generation, or safe autonomous policy revision.
   remain excluded. No canonical resolution, promotion, policy rewrite, or
   semantic claim is established.
 
+## v0.22 claim boundary
+
+- **OBSERVED:** Thirty focused detector/Attention/hypothesis/runtime/integration
+  tests and the 377-test full repository suite pass. One explicit invocation
+  detects a native topology gap, composes mandatory alternative hypotheses,
+  records a complete Attention decision, and executes three functionally
+  distinct isolated arms. Reloading its existing `.vob` state reconstructs the
+  exact same integration trace with no additional canonical or simulation
+  cost. An unrelated eligible obligation, a simulated canonical leak, and a
+  rehashed trace with dropped provenance all fail without partial publication.
+- **IMPLEMENTED-EXPERIMENTAL:** A transactional, explicitly invoked
+  `DependencyGap` integration path with content-addressed provenance now joins
+  the previously separate components. Detector and Attention writes remain
+  canonical; hypotheses, partitions, plans, traces, and settlements retain
+  their existing non-authoritative or separately ledgered boundaries.
+- **PROPOSED:** Derive arm results and preservation observations from actual
+  experiment traces under matched controls, then add family-local hypothesis
+  and resolution-evidence protocols after their prerequisites exist. v0.22
+  adds no autonomous scheduler, observed-outcome evaluator, `Resolved` path,
+  structure promotion, policy rewrite, thermodynamic control, or semantic
+  claim.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -712,3 +769,8 @@ Archive-durability tests additionally target controlled pre/post-replace
 process termination, old-or-new visibility, subsequent-save recovery, six
 competing process writers, live-reader whole-file atomicity, final archive
 validation, and successful-writer temporary-file cleanup.
+Integrated-inquiry tests additionally target detector-to-settlement provenance,
+mandatory hypothesis counterweights, functional-class trial selection, bounded
+Attention funding, copy-on-write non-leakage, exact zero-cost replay after
+archive reload, mixed-scope transactional rejection, injected-leak rollback,
+and rehashed internal-provenance deletion.

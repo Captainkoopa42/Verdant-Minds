@@ -44,6 +44,11 @@ from .hypotheses import (
     StructuralHypothesis,
     build_hypothesis_plan,
 )
+from .operational_probe import (
+    MatchedOverlayOperationalObservation,
+    OperationalProbeIntegrityError,
+    OverlayOperationalProbe,
+)
 from .pipeline import ObligationMutationResult, derive_obligation_view
 from .resolution_evidence import (
     TraceResolutionEvidenceDeriver,
@@ -59,7 +64,7 @@ from .trace_observations import (
 )
 
 
-INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.25"
+INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.26"
 MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION = 2
 
 
@@ -221,6 +226,9 @@ class IntegratedInquiryTrace(FrozenRecord):
     matched_observations: tuple[MatchedStructuralObservation, ...] = Field(
         min_length=1
     )
+    operational_probe_observations: tuple[
+        MatchedOverlayOperationalObservation, ...
+    ] = Field(min_length=1)
     resolution_evidence_receipts: tuple[
         TraceResolutionEvidenceReceipt, ...
     ] = Field(min_length=1)
@@ -258,6 +266,15 @@ class IntegratedInquiryTrace(FrozenRecord):
         )
         values["matched_observations"] = tuple(
             sorted(observations, key=lambda item: item.observation_id)
+        )
+        operational_observations = tuple(
+            item
+            if isinstance(item, MatchedOverlayOperationalObservation)
+            else MatchedOverlayOperationalObservation.model_validate(item)
+            for item in values["operational_probe_observations"]
+        )
+        values["operational_probe_observations"] = tuple(
+            sorted(operational_observations, key=lambda item: item.match_id)
         )
         receipts = tuple(
             item
@@ -322,6 +339,13 @@ class IntegratedInquiryTrace(FrozenRecord):
         if tuple(sorted(set(observation_ids))) != observation_ids:
             raise ValueError(
                 "Integrated inquiry matched observations must be sorted and unique."
+            )
+        operational_ids = tuple(
+            item.match_id for item in self.operational_probe_observations
+        )
+        if tuple(sorted(set(operational_ids))) != operational_ids:
+            raise ValueError(
+                "Integrated operational observations must be sorted and unique."
             )
         receipt_ids = tuple(
             item.receipt_id for item in self.resolution_evidence_receipts
@@ -398,6 +422,53 @@ class IntegratedInquiryTrace(FrozenRecord):
         observations_by_id = {
             item.observation_id: item for item in self.matched_observations
         }
+        operational_by_structural_ref: dict[
+            str, MatchedOverlayOperationalObservation
+        ] = {}
+        for operational in self.operational_probe_observations:
+            structural = observations_by_id.get(
+                operational.structural_observation_ref
+            )
+            if structural is None:
+                raise ValueError(
+                    "Operational probe lost its matched structural observation."
+                )
+            if operational.structural_observation_ref in operational_by_structural_ref:
+                raise ValueError(
+                    "Matched structural observation has multiple operational probes."
+                )
+            if (
+                operational.baseline.obligation_id
+                != structural.baseline.obligation_id
+                or operational.treatment.obligation_id
+                != structural.treatment.obligation_id
+                or operational.baseline.hypothesis_ref
+                != structural.hypothesis_ref
+                or operational.treatment.hypothesis_ref
+                != structural.hypothesis_ref
+                or operational.baseline.structural_trace_ref
+                != structural.baseline.trace_id
+                or operational.treatment.structural_trace_ref
+                != structural.treatment.trace_id
+                or operational.baseline.settlement_id
+                != structural.baseline.settlement_id
+                or operational.treatment.settlement_id
+                != structural.treatment.settlement_id
+                or operational.baseline.canonical_checkpoint_fingerprint
+                != self.canonical_checkpoint_fingerprint
+                or operational.treatment.canonical_checkpoint_fingerprint
+                != self.canonical_checkpoint_fingerprint
+            ):
+                raise ValueError(
+                    "Operational probe crossed its matched structural lineage."
+                )
+            operational_by_structural_ref[
+                operational.structural_observation_ref
+            ] = operational
+        if tuple(sorted(operational_by_structural_ref)) != observation_ids:
+            raise ValueError(
+                "Every matched observation requires one operational probe."
+            )
         receipt_observation_refs: list[str] = []
         for receipt in self.resolution_evidence_receipts:
             observation = observations_by_id.get(receipt.matched_observation_ref)
@@ -405,6 +476,9 @@ class IntegratedInquiryTrace(FrozenRecord):
                 raise ValueError(
                     "Resolution evidence receipt lost its matched observation."
                 )
+            operational = operational_by_structural_ref[
+                receipt.matched_observation_ref
+            ]
             if (
                 receipt.obligation_id != observation.baseline.obligation_id
                 or receipt.hypothesis_ref != observation.hypothesis_ref
@@ -416,6 +490,18 @@ class IntegratedInquiryTrace(FrozenRecord):
                 != observation.baseline.settlement_id
                 or receipt.treatment_settlement_ref
                 != observation.treatment.settlement_id
+                or receipt.matched_operational_probe_ref != operational.match_id
+                or receipt.baseline_operational_probe_ref
+                != operational.baseline.observation_id
+                or receipt.treatment_operational_probe_ref
+                != operational.treatment.observation_id
+                or receipt.overlay_access_effect != operational.effect
+                or receipt.overlay_newly_retrieved_evidence_refs
+                != operational.newly_retrieved_evidence_refs
+                or receipt.overlay_treatment_path_node_refs
+                != operational.treatment.traversed_node_refs
+                or receipt.overlay_treatment_path_relation_refs
+                != operational.treatment.traversed_relation_refs
             ):
                 raise ValueError(
                     "Resolution evidence receipt crossed its matched lineage."
@@ -448,6 +534,7 @@ class IntegratedMatchedInquiryPair:
     baseline: CounterfactualRunResult
     treatment: CounterfactualRunResult
     observation: MatchedStructuralObservation
+    operational_observation: MatchedOverlayOperationalObservation
     resolution_evidence: TraceResolutionEvidenceReceipt
 
     @property
@@ -488,12 +575,14 @@ class DependencyGapInquiryCoordinator:
         attention: AttentionPortfolio | None = None,
         generator: DependencyGapHypothesisGenerator | None = None,
         matched_observer: MatchedCounterfactualObserver | None = None,
+        operational_probe: OverlayOperationalProbe | None = None,
     ) -> None:
         self.policy = policy or IntegratedInquiryPolicy()
         self.detector = detector or DependencyGapDetector()
         self.attention = attention or AttentionPortfolio()
         self.generator = generator or DependencyGapHypothesisGenerator()
         self.matched_observer = matched_observer or MatchedCounterfactualObserver()
+        self.operational_probe = operational_probe or OverlayOperationalProbe()
         if (
             self.policy.simulation_requested_budget
             > self.attention.policy.micro_probe_budget + 1e-12
@@ -834,6 +923,44 @@ class DependencyGapInquiryCoordinator:
                     "Matched treatment changed a pre-existing canonical record."
                 )
             try:
+                operational_observation = self.operational_probe.observe(
+                    working_kernel,
+                    working_runtime.ledger,
+                    hypothesis_ref=matched_hypothesis.hypothesis_id,
+                    baseline_plan=matched_plans.baseline,
+                    baseline_result=matched_baseline,
+                    treatment_plan=matched_plans.treatment,
+                    treatment_result=matched_treatment,
+                    structural_observation=observation,
+                )
+                operational_observation = (
+                    MatchedOverlayOperationalObservation.model_validate(
+                        operational_observation.model_dump(mode="json")
+                    )
+                )
+            except (
+                OperationalProbeIntegrityError,
+                ValueError,
+                TypeError,
+            ) as exc:
+                raise IntegratedInquiryError(
+                    f"Operational probe failed validation: {exc}"
+                ) from exc
+            expected_operational_observation = OverlayOperationalProbe().observe(
+                working_kernel,
+                working_runtime.ledger,
+                hypothesis_ref=matched_hypothesis.hypothesis_id,
+                baseline_plan=matched_plans.baseline,
+                baseline_result=matched_baseline,
+                treatment_plan=matched_plans.treatment,
+                treatment_result=matched_treatment,
+                structural_observation=observation,
+            )
+            if operational_observation != expected_operational_observation:
+                raise IntegratedInquiryError(
+                    "Operational probe disagrees with executed overlays."
+                )
+            try:
                 resolution_evidence = TraceResolutionEvidenceDeriver().derive(
                     working_kernel,
                     working_runtime.ledger,
@@ -845,6 +972,7 @@ class DependencyGapInquiryCoordinator:
                     baseline_result=matched_baseline,
                     treatment_result=matched_treatment,
                     observation=observation,
+                    operational_observation=operational_observation,
                 )
             except TraceResolutionEvidenceIntegrityError as exc:
                 raise IntegratedInquiryError(
@@ -858,6 +986,7 @@ class DependencyGapInquiryCoordinator:
                     baseline=matched_baseline,
                     treatment=matched_treatment,
                     observation=observation,
+                    operational_observation=operational_observation,
                     resolution_evidence=resolution_evidence,
                 )
             )
@@ -980,6 +1109,9 @@ class DependencyGapInquiryCoordinator:
             trials=tuple(trials),
             matched_observations=tuple(
                 item.observation for item in matched_pairs
+            ),
+            operational_probe_observations=tuple(
+                item.operational_observation for item in matched_pairs
             ),
             resolution_evidence_receipts=tuple(
                 item.resolution_evidence for item in matched_pairs

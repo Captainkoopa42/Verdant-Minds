@@ -1,9 +1,10 @@
 """Coverage gate between matched traces and Resolution Contract observations.
 
-The current counterfactual trace records structural overlay changes.  It does
-not record retrieval, workspace admission, an outgoing action, or execution of
-a dependency path.  This module makes that boundary content-addressed instead
-of filling the Resolution Contract's required fields from hypothesis labels.
+Counterfactual traces record structural overlay changes, while the v0.26
+operational probe additionally records overlay-local access to canonical
+evidence. Neither records workspace admission, an outgoing action, or a
+canonical dependency path. This module makes that boundary content-addressed
+instead of filling Resolution Contract fields from hypothesis labels.
 """
 from __future__ import annotations
 
@@ -16,6 +17,12 @@ from verdant_kernel.models import FrozenRecord, stable_id
 
 from .counterfactual import CounterfactualRunResult, SimulationLedger
 from .hypotheses import HypothesisOperator, StructuralHypothesis
+from .operational_probe import (
+    MatchedOverlayOperationalObservation,
+    OperationalProbeIntegrityError,
+    OverlayAccessEffect,
+    OverlayOperationalProbe,
+)
 from .trace_observations import (
     MatchedCounterfactualObserver,
     MatchedCounterfactualPlans,
@@ -25,7 +32,7 @@ from .trace_observations import (
 )
 
 
-TRACE_RESOLUTION_EVIDENCE_VERSION = "trace_resolution_evidence_coverage_v0.25"
+TRACE_RESOLUTION_EVIDENCE_VERSION = "trace_resolution_evidence_coverage_v0.26"
 
 
 class TraceResolutionEvidenceIntegrityError(RuntimeError):
@@ -41,6 +48,8 @@ class ResolutionEvidenceRequirement(str, Enum):
     STRUCTURAL_DELTA = "structural_delta"
     CANONICAL_RECORD_PRESERVATION = "canonical_record_preservation"
     CANDIDATE_PATH_LINEAGE = "candidate_path_lineage"
+    OVERLAY_RETRIEVAL_OBSERVATION = "overlay_retrieval_observation"
+    OVERLAY_PATH_OBSERVATION = "overlay_path_observation"
     RETRIEVED_REFS = "retrieved_refs"
     ADMITTED_REFS = "admitted_refs"
     OUTGOING_ACTION = "outgoing_action"
@@ -63,6 +72,8 @@ GROUNDED_TRACE_REQUIREMENTS = tuple(
             ResolutionEvidenceRequirement.STRUCTURAL_DELTA,
             ResolutionEvidenceRequirement.CANONICAL_RECORD_PRESERVATION,
             ResolutionEvidenceRequirement.CANDIDATE_PATH_LINEAGE,
+            ResolutionEvidenceRequirement.OVERLAY_RETRIEVAL_OBSERVATION,
+            ResolutionEvidenceRequirement.OVERLAY_PATH_OBSERVATION,
         ),
         key=lambda item: item.value,
     )
@@ -97,6 +108,9 @@ class TraceResolutionEvidenceReceipt(FrozenRecord):
     obligation_event_ref: str
     hypothesis_ref: str
     matched_observation_ref: str
+    matched_operational_probe_ref: str
+    baseline_operational_probe_ref: str
+    treatment_operational_probe_ref: str
     cue_ref: str
     context_fingerprint: str
     canonical_checkpoint_fingerprint: str
@@ -112,6 +126,10 @@ class TraceResolutionEvidenceReceipt(FrozenRecord):
     structural_removed_refs: tuple[str, ...] = ()
     structural_changed_refs: tuple[str, ...] = ()
     canonical_records_preserved: bool
+    overlay_access_effect: OverlayAccessEffect
+    overlay_newly_retrieved_evidence_refs: tuple[str, ...] = ()
+    overlay_treatment_path_node_refs: tuple[str, ...] = Field(min_length=1)
+    overlay_treatment_path_relation_refs: tuple[str, ...] = ()
     grounded_requirements: tuple[ResolutionEvidenceRequirement, ...]
     missing_requirements: tuple[ResolutionEvidenceRequirement, ...]
     resolution_trial_ready: bool = False
@@ -135,10 +153,17 @@ class TraceResolutionEvidenceReceipt(FrozenRecord):
             "structural_added_refs",
             "structural_removed_refs",
             "structural_changed_refs",
+            "overlay_newly_retrieved_evidence_refs",
         ):
             values[key] = tuple(sorted(set(values.get(key, ()))))
         values["candidate_path_relation_refs"] = tuple(
             values["candidate_path_relation_refs"]
+        )
+        values["overlay_treatment_path_node_refs"] = tuple(
+            values["overlay_treatment_path_node_refs"]
+        )
+        values["overlay_treatment_path_relation_refs"] = tuple(
+            values.get("overlay_treatment_path_relation_refs", ())
         )
         values.setdefault("deriver_version", TRACE_RESOLUTION_EVIDENCE_VERSION)
         values["grounded_requirements"] = GROUNDED_TRACE_REQUIREMENTS
@@ -166,6 +191,9 @@ class TraceResolutionEvidenceReceipt(FrozenRecord):
             self.obligation_event_ref,
             self.hypothesis_ref,
             self.matched_observation_ref,
+            self.matched_operational_probe_ref,
+            self.baseline_operational_probe_ref,
+            self.treatment_operational_probe_ref,
             self.cue_ref,
             self.baseline_trace_ref,
             self.treatment_trace_ref,
@@ -192,6 +220,10 @@ class TraceResolutionEvidenceReceipt(FrozenRecord):
             (self.structural_added_refs, "added refs"),
             (self.structural_removed_refs, "removed refs"),
             (self.structural_changed_refs, "changed refs"),
+            (
+                self.overlay_newly_retrieved_evidence_refs,
+                "overlay-retrieved evidence refs",
+            ),
         ):
             if tuple(sorted(set(refs))) != refs:
                 raise ValueError(
@@ -201,6 +233,33 @@ class TraceResolutionEvidenceReceipt(FrozenRecord):
             self.candidate_path_relation_refs
         ):
             raise ValueError("Candidate path relation lineage cannot repeat an edge.")
+        if len(set(self.overlay_treatment_path_node_refs)) != len(
+            self.overlay_treatment_path_node_refs
+        ):
+            raise ValueError("Overlay treatment path cannot repeat a node.")
+        if len(set(self.overlay_treatment_path_relation_refs)) != len(
+            self.overlay_treatment_path_relation_refs
+        ):
+            raise ValueError("Overlay treatment path cannot repeat a relation.")
+        if len(self.overlay_treatment_path_node_refs) != (
+            len(self.overlay_treatment_path_relation_refs) + 1
+        ):
+            raise ValueError("Overlay treatment path is not contiguous.")
+        if self.overlay_access_effect == OverlayAccessEffect.ACCESS_GAIN and (
+            not self.overlay_newly_retrieved_evidence_refs
+            or not self.overlay_treatment_path_relation_refs
+        ):
+            raise ValueError(
+                "Overlay access gain requires newly retrieved evidence and a path."
+            )
+        if (
+            self.overlay_access_effect
+            in {OverlayAccessEffect.VALID_NULL, OverlayAccessEffect.ACCESS_LOSS}
+            and self.overlay_newly_retrieved_evidence_refs
+        ):
+            raise ValueError(
+                "Overlay null or loss cannot claim newly retrieved evidence."
+            )
         if self.grounded_requirements != GROUNDED_TRACE_REQUIREMENTS:
             raise ValueError("Trace-grounded requirement coverage was altered.")
         if self.missing_requirements != MISSING_OPERATIONAL_REQUIREMENTS:
@@ -251,6 +310,7 @@ class TraceResolutionEvidenceDeriver:
         baseline_result: CounterfactualRunResult,
         treatment_result: CounterfactualRunResult,
         observation: MatchedStructuralObservation,
+        operational_observation: MatchedOverlayOperationalObservation,
     ) -> TraceResolutionEvidenceReceipt:
         try:
             hypothesis = StructuralHypothesis.model_validate(
@@ -258,6 +318,11 @@ class TraceResolutionEvidenceDeriver:
             )
             observation = MatchedStructuralObservation.model_validate(
                 observation.model_dump(mode="json")
+            )
+            operational_observation = (
+                MatchedOverlayOperationalObservation.model_validate(
+                    operational_observation.model_dump(mode="json")
+                )
             )
             obligation = kernel.state.obligation_kernels.get(
                 hypothesis.obligation_id
@@ -328,6 +393,20 @@ class TraceResolutionEvidenceDeriver:
                 raise TraceResolutionEvidenceIntegrityError(
                     "Matched structural observation differs from actual lineage."
                 )
+            verified_operational = OverlayOperationalProbe().observe(
+                kernel,
+                ledger,
+                hypothesis_ref=hypothesis.hypothesis_id,
+                baseline_plan=plans.baseline,
+                baseline_result=baseline_result,
+                treatment_plan=plans.treatment,
+                treatment_result=treatment_result,
+                structural_observation=observation,
+            )
+            if verified_operational != operational_observation:
+                raise TraceResolutionEvidenceIntegrityError(
+                    "Operational probe observation differs from actual lineage."
+                )
             checkpoint = kernel.fingerprint()
             if (
                 observation.baseline.canonical_fingerprint != checkpoint
@@ -357,6 +436,13 @@ class TraceResolutionEvidenceDeriver:
                 obligation_event_ref=event.event_id,
                 hypothesis_ref=hypothesis.hypothesis_id,
                 matched_observation_ref=observation.observation_id,
+                matched_operational_probe_ref=operational_observation.match_id,
+                baseline_operational_probe_ref=(
+                    operational_observation.baseline.observation_id
+                ),
+                treatment_operational_probe_ref=(
+                    operational_observation.treatment.observation_id
+                ),
                 cue_ref=obligation.missing_input_signature,
                 context_fingerprint=event.context_snapshot_hash,
                 canonical_checkpoint_fingerprint=checkpoint,
@@ -376,8 +462,23 @@ class TraceResolutionEvidenceDeriver:
                 canonical_records_preserved=(
                     observation.canonical_records_preserved
                 ),
+                overlay_access_effect=operational_observation.effect,
+                overlay_newly_retrieved_evidence_refs=(
+                    operational_observation.newly_retrieved_evidence_refs
+                ),
+                overlay_treatment_path_node_refs=(
+                    operational_observation.treatment.traversed_node_refs
+                ),
+                overlay_treatment_path_relation_refs=(
+                    operational_observation.treatment.traversed_relation_refs
+                ),
             )
         except TraceResolutionEvidenceIntegrityError:
             raise
-        except (TraceObservationIntegrityError, ValueError, TypeError) as exc:
+        except (
+            OperationalProbeIntegrityError,
+            TraceObservationIntegrityError,
+            ValueError,
+            TypeError,
+        ) as exc:
             raise TraceResolutionEvidenceIntegrityError(str(exc)) from exc

@@ -88,6 +88,17 @@ from .hypotheses import (
     StructuralHypothesis,
     build_hypothesis_plan,
 )
+from .operational_probe import (
+    OVERLAY_OPERATIONAL_PROBE_VERSION,
+    MatchedOverlayOperationalObservation,
+    OperationalProbeArm,
+    OperationalProbeDisposition,
+    OperationalProbeIntegrityError,
+    OverlayAccessEffect,
+    OverlayOperationalProbe,
+    OverlayOperationalProbeObservation,
+    OverlayOperationalProbePolicy,
+)
 from .inquiry import (
     INTEGRATED_INQUIRY_POLICY_VERSION,
     DependencyGapInquiryCoordinator,
@@ -303,6 +314,15 @@ __all__ = [
     "ProjectedTopologyEdge",
     "StructuralHypothesis",
     "build_hypothesis_plan",
+    "OVERLAY_OPERATIONAL_PROBE_VERSION",
+    "MatchedOverlayOperationalObservation",
+    "OperationalProbeArm",
+    "OperationalProbeDisposition",
+    "OperationalProbeIntegrityError",
+    "OverlayAccessEffect",
+    "OverlayOperationalProbe",
+    "OverlayOperationalProbeObservation",
+    "OverlayOperationalProbePolicy",
     "INTEGRATED_INQUIRY_POLICY_VERSION",
     "DependencyGapInquiryCoordinator",
     "IntegratedInquiryError",

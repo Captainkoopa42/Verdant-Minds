@@ -28,6 +28,9 @@ from verdant_obligations import (
     MatchedCounterfactualPlans,
     MISSING_OPERATIONAL_REQUIREMENTS,
     OutcomeKind,
+    OperationalProbeDisposition,
+    OverlayAccessEffect,
+    OverlayOperationalProbe,
     ResolutionEvidenceRequirement,
     SimulationLedger,
     StructuralTraceEffect,
@@ -122,6 +125,9 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     assert len(result.matched_pairs) == 1
     matched = result.matched_pairs[0]
     assert result.trace.matched_observations == (matched.observation,)
+    assert result.trace.operational_probe_observations == (
+        matched.operational_observation,
+    )
     assert result.trace.resolution_evidence_receipts == (
         matched.resolution_evidence,
     )
@@ -131,6 +137,25 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     assert matched.observation.canonical_records_preserved
     assert matched.observation.baseline.result_refs == (matched.hypothesis_id,)
     assert matched.observation.treatment.result_refs == (matched.hypothesis_id,)
+    operational = matched.operational_observation
+    assert operational.effect == OverlayAccessEffect.ACCESS_GAIN
+    assert (
+        operational.baseline.disposition
+        == OperationalProbeDisposition.NO_QUALIFYING_ACCESS_PATH
+    )
+    assert operational.baseline.retrieved_evidence_refs == ()
+    assert (
+        operational.treatment.disposition
+        == OperationalProbeDisposition.CANONICAL_EVIDENCE_RETRIEVED
+    )
+    assert operational.treatment.retrieved_evidence_refs
+    assert all(
+        ref in kernel.state.evidence
+        for ref in operational.treatment.retrieved_evidence_refs
+    )
+    assert not operational.treatment.workspace_admission_observed
+    assert not operational.treatment.outgoing_action_observed
+    assert not operational.treatment.canonical_dependency_path_established
     assert len(runtime.ledger.state.reservations) == 5
     assert len(runtime.ledger.state.settlements) == 5
     assert {item.operator for item in result.hypotheses} == {
@@ -178,15 +203,23 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     completion_hypothesis = hypotheses[completion_trial.hypothesis_id]
     assert completion_hypothesis.patches
     assert completion_hypothesis.patches[0].record_key not in kernel.state.relations
+    assert operational.treatment.traversed_relation_refs == (
+        completion_hypothesis.patches[0].record_key,
+    )
 
     coverage = matched.resolution_evidence
     assert coverage.matched_observation_ref == matched.observation.observation_id
+    assert coverage.matched_operational_probe_ref == operational.match_id
     assert coverage.candidate_path_relation_refs == (
         completion_hypothesis.derivation_path_relation_ids
     )
     assert coverage.structural_added_refs == matched.observation.added_record_refs
     assert coverage.grounded_requirements == GROUNDED_TRACE_REQUIREMENTS
     assert coverage.missing_requirements == MISSING_OPERATIONAL_REQUIREMENTS
+    assert {
+        ResolutionEvidenceRequirement.OVERLAY_RETRIEVAL_OBSERVATION,
+        ResolutionEvidenceRequirement.OVERLAY_PATH_OBSERVATION,
+    }.issubset(coverage.grounded_requirements)
     assert {
         ResolutionEvidenceRequirement.RETRIEVED_REFS,
         ResolutionEvidenceRequirement.ADMITTED_REFS,
@@ -247,6 +280,9 @@ def test_trace_reconstructs_exactly_after_archive_reload(tmp_path: Path) -> None
     assert tuple(item.observation for item in replay.matched_pairs) == tuple(
         item.observation for item in first.matched_pairs
     )
+    assert tuple(
+        item.operational_observation for item in replay.matched_pairs
+    ) == tuple(item.operational_observation for item in first.matched_pairs)
     assert tuple(item.resolution_evidence for item in replay.matched_pairs) == tuple(
         item.resolution_evidence for item in first.matched_pairs
     )
@@ -518,6 +554,7 @@ def test_resolution_coverage_rejects_foreign_simulation_ledger() -> None:
             baseline_result=pair.baseline,
             treatment_result=pair.treatment,
             observation=pair.observation,
+            operational_observation=pair.operational_observation,
         )
 
 
@@ -537,3 +574,47 @@ def test_resolution_coverage_cannot_claim_readiness_or_hide_missing_fields() -> 
     hidden_payload["missing_requirements"] = ()
     with pytest.raises(ValueError, match="Missing operational"):
         TraceResolutionEvidenceReceipt.model_validate(hidden_payload)
+
+    false_gain = receipt.model_dump(mode="python")
+    false_gain["overlay_newly_retrieved_evidence_refs"] = ()
+    with pytest.raises(ValueError, match="access gain"):
+        TraceResolutionEvidenceReceipt.model_validate(false_gain)
+
+
+def test_rehashed_trace_cannot_drop_operational_probe() -> None:
+    result = DependencyGapInquiryCoordinator().run(
+        _kernel(),
+        CounterfactualRuntime(),
+        source_event_key="integrated-inquiry:drop-operational-probe",
+    )
+    payload = result.trace.model_dump(mode="python", exclude={"trace_id"})
+    payload["operational_probe_observations"] = ()
+
+    with pytest.raises(ValueError):
+        IntegratedInquiryTrace.build(**payload)
+
+
+def test_tampered_operational_probe_rejects_staged_transaction() -> None:
+    class TamperingOperationalProbe:
+        def observe(self, *args, **kwargs):
+            observation = OverlayOperationalProbe().observe(*args, **kwargs)
+            return observation.model_copy(
+                update={"canonical_commit_permitted": True}
+            )
+
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+
+    with pytest.raises(IntegratedInquiryError, match="Operational probe"):
+        DependencyGapInquiryCoordinator(
+            operational_probe=TamperingOperationalProbe()
+        ).run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:tampered-operational-probe",
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before

@@ -27,6 +27,7 @@ from .counterfactual import (
     CounterfactualPlan,
     CounterfactualRunResult,
     CounterfactualRuntime,
+    SimulationDisposition,
     SimulationLedger,
 )
 from .detection import (
@@ -44,9 +45,17 @@ from .hypotheses import (
     build_hypothesis_plan,
 )
 from .pipeline import ObligationMutationResult, derive_obligation_view
+from .trace_observations import (
+    MatchedCounterfactualObserver,
+    MatchedCounterfactualPlans,
+    MatchedStructuralObservation,
+    TraceObservationIntegrityError,
+    build_matched_counterfactual_plans,
+)
 
 
-INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.22"
+INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.24"
+MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION = 2
 
 
 class IntegratedInquiryError(RuntimeError):
@@ -78,14 +87,20 @@ class IntegratedInquiryPolicy(BaseModel):
     @property
     def attention_requested_budget(self) -> float:
         return (
-            self.maximum_simulations_per_obligation
+            (
+                self.maximum_simulations_per_obligation
+                + MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION
+            )
             * self.simulation_requested_budget
         )
 
     @property
     def attention_estimated_cost(self) -> float:
         return (
-            self.maximum_simulations_per_obligation
+            (
+                self.maximum_simulations_per_obligation
+                + MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION
+            )
             * self.simulation_consumed_budget
         )
 
@@ -198,6 +213,9 @@ class IntegratedInquiryTrace(FrozenRecord):
     attention_allocation_ids: tuple[str, ...] = Field(min_length=1)
     deferred_bid_ids: tuple[str, ...] = ()
     trials: tuple[IntegratedInquiryTrial, ...] = Field(min_length=1)
+    matched_observations: tuple[MatchedStructuralObservation, ...] = Field(
+        min_length=1
+    )
     canonical_checkpoint_fingerprint: str
     simulation_ledger_fingerprint: str
     canonical_simulation_leakage_detected: bool = False
@@ -224,6 +242,15 @@ class IntegratedInquiryTrace(FrozenRecord):
             for item in values["trials"]
         )
         values["trials"] = tuple(sorted(trials, key=lambda item: item.trial_id))
+        observations = tuple(
+            item
+            if isinstance(item, MatchedStructuralObservation)
+            else MatchedStructuralObservation.model_validate(item)
+            for item in values["matched_observations"]
+        )
+        values["matched_observations"] = tuple(
+            sorted(observations, key=lambda item: item.observation_id)
+        )
         values.setdefault("canonical_simulation_leakage_detected", False)
         values.setdefault("canonical_resolution_permitted", False)
         values.setdefault("epistemic_authority_enabled", False)
@@ -272,6 +299,13 @@ class IntegratedInquiryTrace(FrozenRecord):
         trial_ids = tuple(item.trial_id for item in self.trials)
         if tuple(sorted(set(trial_ids))) != trial_ids:
             raise ValueError("Integrated inquiry trials must be sorted and unique.")
+        observation_ids = tuple(
+            item.observation_id for item in self.matched_observations
+        )
+        if tuple(sorted(set(observation_ids))) != observation_ids:
+            raise ValueError(
+                "Integrated inquiry matched observations must be sorted and unique."
+            )
         if (
             self.canonical_simulation_leakage_detected
             or self.canonical_resolution_permitted
@@ -293,6 +327,50 @@ class IntegratedInquiryTrace(FrozenRecord):
                 raise ValueError("Integrated trial crossed an Attention decision.")
             if trial.attention_allocation_id not in self.attention_allocation_ids:
                 raise ValueError("Integrated trial lost its Attention allocation.")
+        observed_allocations: list[str] = []
+        for observation in self.matched_observations:
+            baseline = observation.baseline
+            treatment = observation.treatment
+            if (
+                baseline.obligation_id != treatment.obligation_id
+                or baseline.obligation_id not in self.obligation_ids
+            ):
+                raise ValueError("Matched observation crossed an obligation boundary.")
+            if (
+                baseline.attention_decision_id != self.attention_decision_id
+                or treatment.attention_decision_id != self.attention_decision_id
+            ):
+                raise ValueError("Matched observation crossed an Attention decision.")
+            if (
+                baseline.allocation_id != treatment.allocation_id
+                or baseline.allocation_id not in self.attention_allocation_ids
+            ):
+                raise ValueError("Matched observation lost its Attention allocation.")
+            if observation.hypothesis_ref not in self.hypothesis_ids:
+                raise ValueError("Matched observation lost its hypothesis.")
+            if (
+                baseline.result_refs != (observation.hypothesis_ref,)
+                or treatment.result_refs != (observation.hypothesis_ref,)
+            ):
+                raise ValueError(
+                    "Matched observation acquired supplied outcome authority."
+                )
+            if (
+                baseline.canonical_fingerprint
+                != self.canonical_checkpoint_fingerprint
+                or treatment.canonical_fingerprint
+                != self.canonical_checkpoint_fingerprint
+            ):
+                raise ValueError("Matched observation crossed a canonical checkpoint.")
+            if not observation.canonical_records_preserved:
+                raise ValueError(
+                    "Integrated inquiry cannot publish a mutating matched treatment."
+                )
+            observed_allocations.append(baseline.allocation_id)
+        if tuple(sorted(observed_allocations)) != self.attention_allocation_ids:
+            raise ValueError(
+                "Every integrated Attention allocation requires one matched receipt."
+            )
         expected = stable_id(
             "integrated_inquiry_trace",
             self.model_dump(mode="json", exclude={"trace_id"}),
@@ -300,6 +378,22 @@ class IntegratedInquiryTrace(FrozenRecord):
         if self.trace_id != expected:
             raise ValueError("Integrated inquiry trace identity checksum mismatch.")
         return self
+
+
+@dataclass(frozen=True)
+class IntegratedMatchedInquiryPair:
+    """One executed zero/full control pair and its derived structural receipt."""
+
+    obligation_id: str
+    hypothesis_id: str
+    plans: MatchedCounterfactualPlans
+    baseline: CounterfactualRunResult
+    treatment: CounterfactualRunResult
+    observation: MatchedStructuralObservation
+
+    @property
+    def replayed(self) -> bool:
+        return self.baseline.replayed and self.treatment.replayed
 
 
 @dataclass(frozen=True)
@@ -311,6 +405,7 @@ class IntegratedInquiryResult:
     attention: AttentionPortfolioResult
     plans: tuple[CounterfactualPlan, ...]
     simulations: tuple[CounterfactualRunResult, ...]
+    matched_pairs: tuple[IntegratedMatchedInquiryPair, ...]
     replayed: bool
 
 
@@ -333,11 +428,13 @@ class DependencyGapInquiryCoordinator:
         detector: DependencyGapDetector | None = None,
         attention: AttentionPortfolio | None = None,
         generator: DependencyGapHypothesisGenerator | None = None,
+        matched_observer: MatchedCounterfactualObserver | None = None,
     ) -> None:
         self.policy = policy or IntegratedInquiryPolicy()
         self.detector = detector or DependencyGapDetector()
         self.attention = attention or AttentionPortfolio()
         self.generator = generator or DependencyGapHypothesisGenerator()
+        self.matched_observer = matched_observer or MatchedCounterfactualObserver()
         if (
             self.policy.simulation_requested_budget
             > self.attention.policy.micro_probe_budget + 1e-12
@@ -521,6 +618,7 @@ class DependencyGapInquiryCoordinator:
         plans: list[CounterfactualPlan] = []
         simulations: list[CounterfactualRunResult] = []
         trials: list[IntegratedInquiryTrial] = []
+        matched_pairs: list[IntegratedMatchedInquiryPair] = []
         for allocation in decision.allocations:
             obligation_id = allocation.obligation_id
             hypotheses = hypotheses_by_obligation[obligation_id]
@@ -530,15 +628,162 @@ class DependencyGapInquiryCoordinator:
                 (allocation.granted_budget + 1e-12)
                 / self.policy.simulation_requested_budget
             )
+            arm_capacity = affordable - MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION
             trial_count = min(
                 self.policy.maximum_simulations_per_obligation,
-                affordable,
+                arm_capacity,
                 len(representatives),
             )
             if trial_count < 1:
                 raise IntegratedInquiryError(
-                    "Attention allocation cannot fund one declared simulation."
+                    "Attention allocation cannot fund one declared simulation plus "
+                    "the matched control pair."
                 )
+            projected = tuple(
+                sorted(
+                    (
+                        item
+                        for item in hypotheses
+                        if item.operator
+                        == HypothesisOperator.EVIDENCE_PATH_PROJECTION
+                        and item.patches
+                    ),
+                    key=lambda item: item.hypothesis_id,
+                )
+            )
+            if not projected:
+                raise IntegratedInquiryError(
+                    "Matched inquiry requires one patch-bearing evidence-path "
+                    "hypothesis."
+                )
+            requested = (
+                trial_count + MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION
+            ) * self.policy.simulation_requested_budget
+            if requested > allocation.granted_budget + 1e-12:
+                raise IntegratedInquiryError(
+                    "Integrated inquiry plans exceed their Attention allocation."
+                )
+
+            matched_hypothesis = projected[0]
+            matched_plans = build_matched_counterfactual_plans(
+                matched_hypothesis,
+                source_event_key=stable_id(
+                    "integrated_inquiry_matched_pair",
+                    source_event_key,
+                    obligation_id,
+                    matched_hypothesis.hypothesis_id,
+                    self.policy.policy_version,
+                ),
+                requested_budget=self.policy.simulation_requested_budget,
+                consumed_budget=self.policy.simulation_consumed_budget,
+            )
+            if any(
+                (
+                    plan.operator_version != matched_hypothesis.grammar_version
+                    or plan.patches != matched_hypothesis.patches
+                    or abs(
+                        plan.requested_budget
+                        - self.policy.simulation_requested_budget
+                    )
+                    > 1e-12
+                    or abs(
+                        plan.consumed_budget
+                        - self.policy.simulation_consumed_budget
+                    )
+                    > 1e-12
+                    or plan.disposition != SimulationDisposition.DISCARDED
+                    or plan.result_refs != (matched_hypothesis.hypothesis_id,)
+                )
+                for plan in (
+                    matched_plans.baseline,
+                    matched_plans.treatment,
+                )
+            ) or (
+                matched_plans.baseline.apply_patch_count != 0
+                or matched_plans.treatment.apply_patch_count
+                != len(matched_hypothesis.patches)
+            ):
+                raise IntegratedInquiryError(
+                    "Matched plans differ from their declared hypothesis or policy."
+                )
+            matched_baseline = working_runtime.execute(
+                working_kernel,
+                allocation_id=allocation.allocation_id,
+                plan=matched_plans.baseline,
+            )
+            if working_kernel.fingerprint() != canonical_checkpoint:
+                raise IntegratedInquiryError(
+                    "Counterfactual execution changed canonical state."
+                )
+            matched_treatment = working_runtime.execute(
+                working_kernel,
+                allocation_id=allocation.allocation_id,
+                plan=matched_plans.treatment,
+            )
+            if working_kernel.fingerprint() != canonical_checkpoint:
+                raise IntegratedInquiryError(
+                    "Counterfactual execution changed canonical state."
+                )
+            try:
+                observation = self.matched_observer.observe(
+                    working_kernel,
+                    working_runtime.ledger,
+                    hypothesis_ref=matched_hypothesis.hypothesis_id,
+                    baseline_plan=matched_plans.baseline,
+                    baseline_result=matched_baseline,
+                    treatment_plan=matched_plans.treatment,
+                    treatment_result=matched_treatment,
+                )
+                observation = MatchedStructuralObservation.model_validate(
+                    observation.model_dump(mode="json")
+                )
+            except (TraceObservationIntegrityError, ValueError, TypeError) as exc:
+                raise IntegratedInquiryError(
+                    f"Matched structural observation failed validation: {exc}"
+                ) from exc
+            expected_observation = MatchedStructuralObservation.build(
+                hypothesis_ref=matched_hypothesis.hypothesis_id,
+                baseline=matched_baseline.trace,
+                treatment=matched_treatment.trace,
+            )
+            if observation != expected_observation:
+                raise IntegratedInquiryError(
+                    "Matched structural observation disagrees with executed traces."
+                )
+            for matched_plan, matched_simulation in (
+                (matched_plans.baseline, matched_baseline),
+                (matched_plans.treatment, matched_treatment),
+            ):
+                if (
+                    matched_simulation.reservation.plan_id != matched_plan.plan_id
+                    or matched_simulation.reservation.attention_decision_id
+                    != decision.decision_id
+                    or matched_simulation.reservation.allocation_id
+                    != allocation.allocation_id
+                    or matched_simulation.reservation.obligation_id != obligation_id
+                    or matched_simulation.settlement.result_refs
+                    != (matched_hypothesis.hypothesis_id,)
+                    or not matched_simulation.settlement.canonical_unchanged
+                    or matched_simulation.settlement.canonical_commit_permitted
+                    or matched_simulation.settlement.epistemic_authority_enabled
+                ):
+                    raise IntegratedInquiryError(
+                        "Matched simulation lost provenance or authority isolation."
+                    )
+            if not observation.canonical_records_preserved:
+                raise IntegratedInquiryError(
+                    "Matched treatment changed a pre-existing canonical record."
+                )
+            matched_pairs.append(
+                IntegratedMatchedInquiryPair(
+                    obligation_id=obligation_id,
+                    hypothesis_id=matched_hypothesis.hypothesis_id,
+                    plans=matched_plans,
+                    baseline=matched_baseline,
+                    treatment=matched_treatment,
+                    observation=observation,
+                )
+            )
             for outcome in representatives[:trial_count]:
                 hypothesis = hypothesis_by_id[outcome.hypothesis_id]
                 plan = build_hypothesis_plan(
@@ -656,6 +901,9 @@ class DependencyGapInquiryCoordinator:
             ),
             deferred_bid_ids=decision.deferred_bid_ids,
             trials=tuple(trials),
+            matched_observations=tuple(
+                item.observation for item in matched_pairs
+            ),
             canonical_checkpoint_fingerprint=canonical_checkpoint,
             simulation_ledger_fingerprint=working_runtime.ledger.fingerprint(),
         )
@@ -664,6 +912,7 @@ class DependencyGapInquiryCoordinator:
             all(item.replayed for item in detection.mutations)
             and attention.replayed
             and all(item.replayed for item in simulations)
+            and all(item.replayed for item in matched_pairs)
         )
         kernel.state = working_kernel.snapshot()
         runtime.ledger.state = working_runtime.ledger.snapshot()
@@ -675,5 +924,6 @@ class DependencyGapInquiryCoordinator:
             attention=attention,
             plans=tuple(plans),
             simulations=tuple(simulations),
+            matched_pairs=tuple(matched_pairs),
             replayed=replayed,
         )

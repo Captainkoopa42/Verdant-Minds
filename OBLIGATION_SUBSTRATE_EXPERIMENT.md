@@ -1,4 +1,4 @@
-# Obligation Substrate v0.23
+# Obligation Substrate v0.24
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -126,6 +126,21 @@ generation, or safe autonomous policy revision.
   overlay record was removed or changed. Both arms remain discarded
   simulations, and the receipt hard-codes simulated-only status with no
   observed-outcome, resolution, promotion, or commit authority.
+- The opt-in coordinator now reserves two additional simulation slots per
+  allocated `DependencyGap`: one zero-intervention baseline and one full-patch
+  treatment built from a deterministic patch-bearing evidence-path hypothesis.
+  It will run the pair only when the same Attention grant can also fund at
+  least one of the existing preregistered outcome arms.
+- Exactly one reconstructed `MatchedStructuralObservation` per allocation is
+  embedded in the content-addressed integration trace. The coordinator checks
+  the pair against its actual plans, reservations, settlements, runtime
+  traces, obligation, Attention decision/allocation, hypothesis, and canonical
+  checkpoint before publishing either staged state object.
+- Underfunded allocations, absent projected interventions, altered receipts,
+  canonical-record mutation, supplied outcome refs in a matched arm, and
+  missing per-allocation receipts fail the whole staged invocation. A valid
+  receipt remains a structural simulation result rather than evidence that a
+  preregistered outcome occurred.
 - Immutable `EquivalenceLensDefinition` records now hold a deterministic,
   side-effect-free operator IR in a content-addressed registry. Definitions
   preserve provenance and optional parent lineage; duplicate content reuses the
@@ -344,9 +359,10 @@ generation, or safe autonomous policy revision.
 - Attention metrics, trial count, budget, and representative-arm ordering are
   visible supplied policy values. Verdant has not learned their calibration or
   chosen the integration request endogenously.
-- Integrated trace objects are transient, reconstructable receipts rather than
+- Integrated trace objects, including their matched structural receipts, are
+  transient and reconstructable rather than
   a new archive member. Existing `.vob` canonical and simulation state can
-  regenerate an identical receipt under the same code and policies, but v0.22
+  regenerate an identical receipt under the same code and policies, but v0.24
   does not claim independent long-term schema durability for the trace itself.
 - Coordinator atomicity is bounded to staged in-process validation before its
   two supplied Python objects are published. It adds no cross-thread or cross-
@@ -357,7 +373,7 @@ generation, or safe autonomous policy revision.
   coordinator does not move a `MayWake` obligation into `Recheck_Pending`,
   append an `AttemptRecord`, classify an arm as actually observed, or alter
   obligation status from the simulation result.
-- v0.23 execution traces and matched structural observations are transient,
+- v0.24 execution traces and matched structural observations are transient,
   deterministically reconstructable receipts. The simulation reservation and
   settlement remain durable in `.vob`, but the materialized collection deltas
   and matched receipt are not new archive members or canonical VDK records.
@@ -371,12 +387,12 @@ generation, or safe autonomous policy revision.
   `canonical_record_mutation` means the simulated overlay removed or changed a
   pre-existing record. Neither result establishes causal sufficiency, semantic
   correctness, predictive improvement, real-world success, or truth.
-- v0.23 does not infer retrieved/admitted reference sets, an outgoing action,
+- v0.24 does not infer retrieved/admitted reference sets, an outgoing action,
   a dependency path, or an actually occurring preregistered `OutcomeKind`.
   It therefore does not automatically construct a `ResolutionTrialObservation`
   or feed the Resolution Contract, Diagnostic, Council, or Paradigm ledgers.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.14 does not claim Verdant has learned their
+  provenance-visible bids, but v0.24 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -724,6 +740,36 @@ generation, or safe autonomous policy revision.
   for other obligation families remain downstream. v0.23 does not establish an
   actually occurring functional outcome, causal sufficiency, semantic truth,
   autonomous inquiry, `T_g` control, or thermodynamic behavior.
+
+## v0.24 claim boundary
+
+- **OBSERVED:** Twenty-nine focused counterfactual, hypothesis, integrated-
+  inquiry, and matched-trace tests and the 388-test full repository suite pass.
+  A single explicit inquiry now executes three distinct preregistered arms and
+  one real zero/full matched pair under the same bounded Attention allocation.
+  The pair derives an additive structural receipt without an `OutcomeKind` and
+  leaves all pre-existing canonical records unchanged. Archive reload exactly
+  replays both pair settlements and reconstructs the same receipt without
+  additional canonical or simulation cost. An underfunded grant, a rehashed
+  receipt, a foreign matched-plan patch, a gap with no patch-bearing evidence
+  path, and a trace with its matched receipt removed all fail without partial
+  publication.
+- **IMPLEMENTED-EXPERIMENTAL:** The explicitly invoked `DependencyGap`
+  coordinator now makes matched structural observation part of its atomic
+  detector-to-simulation transaction. Its visible policy requests budget for
+  two control arms in addition to the bounded labeled-arm set, publishes
+  exactly one verified receipt per Attention allocation, and rejects any
+  treatment that removes or changes a pre-existing canonical record. The
+  receipt is content-addressed, simulated-only, and non-authoritative.
+- **PROPOSED:** Derive retrieved and admitted canonical references, an outgoing
+  action, and dependency-path completion evidence from actual held-out traces
+  so the existing Resolution Contract can consume trace-grounded typed
+  observations. That later step must preserve matched controls and must not
+  turn a structural delta into causal, semantic, resolution, or promotion
+  authority. Family-local protocols for the other obligation families remain
+  downstream. v0.24 adds no autonomous scheduler, real-world observation,
+  canonical `Resolved` transition, policy rewrite, `T_g` control, or
+  thermodynamic behavior.
 
 ## Access-pressure integration
 

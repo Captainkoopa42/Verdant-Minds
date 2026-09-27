@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+import verdant_obligations.inquiry as inquiry_module
 from verdant_kernel import (
     EvidenceKind,
     ExperienceCommand,
@@ -12,6 +13,9 @@ from verdant_kernel import (
     VerdantKernel,
 )
 from verdant_obligations import (
+    AttentionPortfolio,
+    AttentionPortfolioPolicy,
+    CounterfactualPatch,
     CounterfactualRuntime,
     DependencyGapInquiryCoordinator,
     DependencyGapPipeline,
@@ -19,7 +23,10 @@ from verdant_obligations import (
     IntegratedInquiryError,
     IntegratedInquiryPolicy,
     IntegratedInquiryTrace,
+    MatchedCounterfactualObserver,
+    MatchedCounterfactualPlans,
     OutcomeKind,
+    StructuralTraceEffect,
     experiment_archive_bytes,
     load_experiment_archive,
     save_experiment_archive,
@@ -105,6 +112,17 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     assert len(result.detection.candidates) == 1
     assert len(result.attention.decision.allocations) == 1
     assert len(result.simulations) == len(result.plans) == len(result.trace.trials) == 3
+    assert len(result.matched_pairs) == 1
+    matched = result.matched_pairs[0]
+    assert result.trace.matched_observations == (matched.observation,)
+    assert matched.obligation_id == result.detection.mutations[0].obligation.kernel_id
+    assert matched.hypothesis_id == matched.observation.hypothesis_ref
+    assert matched.observation.effect == StructuralTraceEffect.ADDITIVE_OVERLAY_EFFECT
+    assert matched.observation.canonical_records_preserved
+    assert matched.observation.baseline.result_refs == (matched.hypothesis_id,)
+    assert matched.observation.treatment.result_refs == (matched.hypothesis_id,)
+    assert len(runtime.ledger.state.reservations) == 5
+    assert len(runtime.ledger.state.settlements) == 5
     assert {item.operator for item in result.hypotheses} == {
         HypothesisOperator.EVIDENCE_PATH_PROJECTION,
         HypothesisOperator.NULL_ARTIFACT,
@@ -152,6 +170,7 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     assert completion_hypothesis.patches[0].record_key not in kernel.state.relations
 
     bid = result.attention.decision.bids[0]
+    assert bid.requested_budget == pytest.approx(0.05)
     assert set(bid.metric_provenance_refs) >= {
         result.detection.candidates[0].candidate_id,
         result.detection.mutations[0].event.event_id,
@@ -191,6 +210,27 @@ def test_trace_reconstructs_exactly_after_archive_reload(tmp_path: Path) -> None
     assert replay.replayed
     assert replay.trace == first.trace
     assert replay.plans == first.plans
+    assert tuple(item.plans for item in replay.matched_pairs) == tuple(
+        item.plans for item in first.matched_pairs
+    )
+    assert tuple(item.observation for item in replay.matched_pairs) == tuple(
+        item.observation for item in first.matched_pairs
+    )
+    assert tuple(
+        (item.baseline.reservation, item.treatment.reservation)
+        for item in replay.matched_pairs
+    ) == tuple(
+        (item.baseline.reservation, item.treatment.reservation)
+        for item in first.matched_pairs
+    )
+    assert tuple(
+        (item.baseline.settlement, item.treatment.settlement)
+        for item in replay.matched_pairs
+    ) == tuple(
+        (item.baseline.settlement, item.treatment.settlement)
+        for item in first.matched_pairs
+    )
+    assert all(item.replayed for item in replay.matched_pairs)
     assert tuple(item.reservation for item in replay.simulations) == tuple(
         item.reservation for item in first.simulations
     )
@@ -199,6 +239,131 @@ def test_trace_reconstructs_exactly_after_archive_reload(tmp_path: Path) -> None
     )
     assert restored_kernel.fingerprint() == canonical_before
     assert restored_runtime.ledger.fingerprint() == simulation_before
+
+
+def test_allocation_must_fund_matched_pair_and_one_labeled_arm() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+    attention = AttentionPortfolio(
+        AttentionPortfolioPolicy(micro_probe_budget=0.02)
+    )
+
+    with pytest.raises(IntegratedInquiryError, match="matched control pair"):
+        DependencyGapInquiryCoordinator(attention=attention).run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:underfunded-match",
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+
+
+def test_matched_receipt_tamper_rejects_entire_staged_transaction() -> None:
+    class TamperingObserver:
+        def observe(self, *args, **kwargs):
+            receipt = MatchedCounterfactualObserver().observe(*args, **kwargs)
+            return receipt.model_copy(
+                update={"canonical_records_preserved": False}
+            )
+
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+
+    with pytest.raises(
+        IntegratedInquiryError,
+        match="Matched structural observation failed validation",
+    ):
+        DependencyGapInquiryCoordinator(
+            matched_observer=TamperingObserver()
+        ).run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:tampered-match",
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+
+
+def test_matched_plan_cannot_substitute_a_foreign_patch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_builder = inquiry_module.build_matched_counterfactual_plans
+
+    def forged_builder(hypothesis, **kwargs):
+        plans = real_builder(hypothesis, **kwargs)
+        foreign_patch = CounterfactualPatch.upsert(
+            "relations",
+            "forged-foreign-relation",
+            {"counterfactual": True, "forged": True},
+        )
+        return MatchedCounterfactualPlans(
+            baseline=plans.baseline.model_copy(
+                update={"patches": (foreign_patch,)}
+            ),
+            treatment=plans.treatment.model_copy(
+                update={"patches": (foreign_patch,)}
+            ),
+        )
+
+    monkeypatch.setattr(
+        inquiry_module,
+        "build_matched_counterfactual_plans",
+        forged_builder,
+    )
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+
+    with pytest.raises(IntegratedInquiryError, match="declared hypothesis"):
+        DependencyGapInquiryCoordinator().run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:foreign-matched-patch",
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+
+
+def test_missing_projected_intervention_rejects_without_partial_writes() -> None:
+    kernel = VerdantKernel(
+        seed=7402,
+        state_dim=16,
+        run_label="integrated-inquiry-no-route",
+    )
+    kernel.apply_experience(
+        _experience(
+            "integrated-dependency-no-route",
+            relations=(
+                RelationProposal(
+                    source_label="stabilize loop",
+                    target_label="pressure input",
+                    relation_type="requires",
+                    confidence=0.9,
+                ),
+            ),
+        )
+    )
+    runtime = CounterfactualRuntime()
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+
+    with pytest.raises(IntegratedInquiryError, match="patch-bearing"):
+        DependencyGapInquiryCoordinator().run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:no-projected-path",
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
 
 
 def test_unrelated_eligible_obligation_rejects_transaction_without_partial_writes() -> None:
@@ -267,4 +432,17 @@ def test_rehashed_trace_cannot_drop_internal_provenance() -> None:
     payload["detection_candidate_ids"] = ("dependency_gap_candidate_forged",)
 
     with pytest.raises(ValueError, match="lost its detector candidate"):
+        IntegratedInquiryTrace.build(**payload)
+
+
+def test_rehashed_trace_cannot_drop_matched_receipt() -> None:
+    result = DependencyGapInquiryCoordinator().run(
+        _kernel(),
+        CounterfactualRuntime(),
+        source_event_key="integrated-inquiry:drop-match",
+    )
+    payload = result.trace.model_dump(mode="python", exclude={"trace_id"})
+    payload["matched_observations"] = ()
+
+    with pytest.raises(ValueError):
         IntegratedInquiryTrace.build(**payload)

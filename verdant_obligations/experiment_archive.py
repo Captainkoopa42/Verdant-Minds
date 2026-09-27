@@ -5,8 +5,9 @@ format. Legacy v1 holds canonical plus simulation state; v2 may additionally
 hold the Equivalence Lens registry and ledger; v3 may also hold the terminal
 Diagnostic ledger; v4 may also hold the non-executing Council tournament; v5
 may additionally retain the evidence required to recompute every Council
-decision. A complete archive is one atomic file, not independently timed
-checkpoint writes.
+decision; v6 may retain the shadow-only Paradigm lane and the complete trial
+evidence required to recompute it. A complete archive is one atomic file, not
+independently timed checkpoint writes.
 """
 from __future__ import annotations
 
@@ -46,6 +47,14 @@ from .interventions import (
     CouncilInterventionPolicy,
     CouncilLeastRegretTournament,
 )
+from .paradigms import (
+    ParadigmChallenge,
+    ParadigmChallengeEvidenceLedgerState,
+    ParadigmChallengeIntegrityError,
+    ParadigmChallengeLane,
+    ParadigmChallengeLedgerState,
+    ParadigmChallengePolicy,
+)
 
 
 EXPERIMENT_ARCHIVE_LEGACY_FORMAT = "verdant-obligation-experiment-v1"
@@ -53,6 +62,7 @@ EXPERIMENT_ARCHIVE_FORMAT = "verdant-obligation-experiment-v2"
 EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT = "verdant-obligation-experiment-v3"
 EXPERIMENT_ARCHIVE_COUNCIL_FORMAT = "verdant-obligation-experiment-v4"
 EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT = "verdant-obligation-experiment-v5"
+EXPERIMENT_ARCHIVE_PARADIGM_FORMAT = "verdant-obligation-experiment-v6"
 _CANONICAL = "canonical.vdk"
 _SIMULATION = "simulation.json"
 _LENS_REGISTRY = "lens_registry.json"
@@ -61,12 +71,16 @@ _DIAGNOSTIC_LEDGER = "diagnostic_ledger.json"
 _COUNCIL_POLICY = "council_policy.json"
 _COUNCIL_LEDGER = "council_ledger.json"
 _COUNCIL_EVIDENCE = "council_evidence.json"
+_PARADIGM_POLICY = "paradigm_policy.json"
+_PARADIGM_LEDGER = "paradigm_ledger.json"
+_PARADIGM_EVIDENCE = "paradigm_evidence.json"
 _MANIFEST = "manifest.json"
 _V1_FILES = (_CANONICAL, _SIMULATION)
 _V2_FILES = (*_V1_FILES, _LENS_REGISTRY, _LENS_LEDGER)
 _V3_FILES = (*_V2_FILES, _DIAGNOSTIC_LEDGER)
 _V4_FILES = (*_V3_FILES, _COUNCIL_POLICY, _COUNCIL_LEDGER)
 _V5_FILES = (*_V4_FILES, _COUNCIL_EVIDENCE)
+_V6_FILES = (*_V5_FILES, _PARADIGM_POLICY, _PARADIGM_LEDGER, _PARADIGM_EVIDENCE)
 _MAX_MEMBER_BYTES = 128 * 1024 * 1024
 _FIXED_ZIP_TIME = (2026, 1, 1, 0, 0, 0)
 
@@ -83,6 +97,8 @@ class ExperimentArchiveBundle:
     diagnostic_engine: DiagnosticEngine | None
     council_tournament: CouncilLeastRegretTournament | None
     council_evidence: CouncilEvidenceLedgerState | None
+    paradigm_lane: ParadigmChallengeLane | None
+    paradigm_evidence: ParadigmChallengeEvidenceLedgerState | None
     format_version: str
 
 
@@ -479,6 +495,74 @@ def _validate_council_evidence(
         )
 
 
+def _paradigm_fingerprint(lane: ParadigmChallengeLane) -> str:
+    payload = {
+        "policy": lane.policy.model_dump(mode="json"),
+        "ledger": lane.state.model_dump(mode="json"),
+    }
+    return _digest(canonical_json_bytes(payload))
+
+
+def _validate_paradigm_evidence(
+    kernel: VerdantKernel,
+    ledger: SimulationLedger,
+    lane: ParadigmChallengeLane,
+    evidence: ParadigmChallengeEvidenceLedgerState,
+) -> None:
+    """Rebuild the complete shadow lane from canonical and trial evidence."""
+    decisions = lane.state.decisions
+    if len(evidence.records) != len(decisions):
+        raise ExperimentArchiveIntegrityError(
+            "Paradigm evidence does not cover every durable decision."
+        )
+    records = {item.decision_id: item for item in evidence.records}
+    replay = ParadigmChallengeLane(policy=lane.policy)
+    try:
+        for event in sorted(
+            (*lane.state.challenges, *lane.state.decisions),
+            key=lambda item: item.sequence,
+        ):
+            if isinstance(event, ParadigmChallenge):
+                recomputed = replay.open(
+                    kernel,
+                    signals=event.signals,
+                    source_event_key=event.source_event_key,
+                )
+            else:
+                record = records.get(event.decision_id)
+                if (
+                    record is None
+                    or record.decision_sequence != event.sequence
+                    or record.challenge_id != event.challenge_id
+                    or record.source_event_key != event.source_event_key
+                    or tuple(item.trial_id for item in record.trials)
+                    != event.trial_ids
+                ):
+                    raise ExperimentArchiveIntegrityError(
+                        "Paradigm evidence disagrees with its durable decision."
+                    )
+                recomputed = replay.decide(
+                    kernel,
+                    challenge_id=event.challenge_id,
+                    trials=record.trials,
+                    simulation_ledger=ledger,
+                    blast_radius_obligation_ids=event.blast_radius_obligation_ids,
+                    source_event_key=event.source_event_key,
+                )
+            if recomputed != event:
+                raise ExperimentArchiveIntegrityError(
+                    "Paradigm event could not be reproduced from durable evidence."
+                )
+    except ParadigmChallengeIntegrityError as error:
+        raise ExperimentArchiveIntegrityError(
+            "Paradigm evidence failed deterministic shadow-lane replay."
+        ) from error
+    if replay.state != lane.state:
+        raise ExperimentArchiveIntegrityError(
+            "Paradigm evidence replay produced a different ledger."
+        )
+
+
 def experiment_archive_bytes(
     kernel: VerdantKernel,
     ledger: SimulationLedger,
@@ -487,6 +571,8 @@ def experiment_archive_bytes(
     diagnostic_engine: DiagnosticEngine | None = None,
     council_tournament: CouncilLeastRegretTournament | None = None,
     council_evidence: CouncilEvidenceLedgerState | None = None,
+    paradigm_lane: ParadigmChallengeLane | None = None,
+    paradigm_evidence: ParadigmChallengeEvidenceLedgerState | None = None,
 ) -> bytes:
     """Build a deterministic, non-mutating experimental snapshot."""
     canonical = VerdantKernel.from_state(kernel.snapshot())
@@ -574,6 +660,50 @@ def experiment_archive_bytes(
         )
         fingerprints["council_evidence_fingerprint"] = evidence.fingerprint()
         format_version = EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT
+    if paradigm_lane is not None:
+        if council_evidence is None:
+            raise ExperimentArchiveIntegrityError(
+                "Paradigm archives require the complete paired v5 sidecars."
+            )
+        if paradigm_evidence is None:
+            raise ExperimentArchiveIntegrityError(
+                "Paradigm archives require durable shadow-trial evidence."
+            )
+        paradigm = ParadigmChallengeLane(
+            policy=ParadigmChallengePolicy.model_validate(
+                paradigm_lane.policy.model_dump(mode="json")
+            ),
+            state=ParadigmChallengeLedgerState.model_validate(
+                paradigm_lane.snapshot()
+            ),
+        )
+        shadow_evidence = ParadigmChallengeEvidenceLedgerState.model_validate(
+            paradigm_evidence.model_dump(mode="json")
+        )
+        _validate_paradigm_evidence(
+            canonical,
+            simulation,
+            paradigm,
+            shadow_evidence,
+        )
+        files[_PARADIGM_POLICY] = canonical_json_bytes(
+            paradigm.policy.model_dump(mode="json")
+        )
+        files[_PARADIGM_LEDGER] = canonical_json_bytes(
+            paradigm.state.model_dump(mode="json")
+        )
+        files[_PARADIGM_EVIDENCE] = canonical_json_bytes(
+            shadow_evidence.model_dump(mode="json")
+        )
+        fingerprints["paradigm_fingerprint"] = _paradigm_fingerprint(paradigm)
+        fingerprints["paradigm_evidence_fingerprint"] = (
+            shadow_evidence.fingerprint()
+        )
+        format_version = EXPERIMENT_ARCHIVE_PARADIGM_FORMAT
+    elif paradigm_evidence is not None:
+        raise ExperimentArchiveIntegrityError(
+            "Paradigm evidence archives require their paired shadow lane."
+        )
     manifest = canonical_json_bytes({
         "format": format_version,
         **fingerprints,
@@ -600,6 +730,8 @@ def save_experiment_archive(
     diagnostic_engine: DiagnosticEngine | None = None,
     council_tournament: CouncilLeastRegretTournament | None = None,
     council_evidence: CouncilEvidenceLedgerState | None = None,
+    paradigm_lane: ParadigmChallengeLane | None = None,
+    paradigm_evidence: ParadigmChallengeEvidenceLedgerState | None = None,
 ) -> str:
     """Replace one archive after syncing its bytes, then its POSIX directory."""
     data = experiment_archive_bytes(
@@ -609,6 +741,8 @@ def save_experiment_archive(
         diagnostic_engine=diagnostic_engine,
         council_tournament=council_tournament,
         council_evidence=council_evidence,
+        paradigm_lane=paradigm_lane,
+        paradigm_evidence=paradigm_evidence,
     )
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -686,6 +820,14 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
                 "lens_fingerprint", "diagnostic_fingerprint",
                 "council_fingerprint", "council_evidence_fingerprint", "files",
             }
+        elif format_version == EXPERIMENT_ARCHIVE_PARADIGM_FORMAT:
+            expected_files = _V6_FILES
+            expected_manifest_keys = {
+                "format", "canonical_fingerprint", "simulation_fingerprint",
+                "lens_fingerprint", "diagnostic_fingerprint",
+                "council_fingerprint", "council_evidence_fingerprint",
+                "paradigm_fingerprint", "paradigm_evidence_fingerprint", "files",
+            }
         else:
             raise ExperimentArchiveIntegrityError("Archive manifest is invalid.")
         if (
@@ -719,6 +861,7 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
             EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT,
             EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
             EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
+            EXPERIMENT_ARCHIVE_PARADIGM_FORMAT,
         }:
             registry_bytes = files[_LENS_REGISTRY]
             ledger_bytes = files[_LENS_LEDGER]
@@ -739,6 +882,7 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
             EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT,
             EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
             EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
+            EXPERIMENT_ARCHIVE_PARADIGM_FORMAT,
         }:
             diagnostic_bytes = files[_DIAGNOSTIC_LEDGER]
             diagnostic_state = DiagnosticLedgerState.model_validate_json(
@@ -761,6 +905,7 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
         if format_version in {
             EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
             EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
+            EXPERIMENT_ARCHIVE_PARADIGM_FORMAT,
         }:
             policy_bytes = files[_COUNCIL_POLICY]
             council_bytes = files[_COUNCIL_LEDGER]
@@ -789,11 +934,17 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
                 diagnostics,
                 council,
                 complete_evidence=(
-                    format_version == EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT
+                    format_version in {
+                        EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
+                        EXPERIMENT_ARCHIVE_PARADIGM_FORMAT,
+                    }
                 ),
             )
         evidence = None
-        if format_version == EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT:
+        if format_version in {
+            EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
+            EXPERIMENT_ARCHIVE_PARADIGM_FORMAT,
+        }:
             evidence_bytes = files[_COUNCIL_EVIDENCE]
             evidence = CouncilEvidenceLedgerState.model_validate_json(
                 evidence_bytes
@@ -818,6 +969,51 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
                 council,
                 evidence,
             )
+        paradigm = None
+        shadow_evidence = None
+        if format_version == EXPERIMENT_ARCHIVE_PARADIGM_FORMAT:
+            paradigm_policy_bytes = files[_PARADIGM_POLICY]
+            paradigm_ledger_bytes = files[_PARADIGM_LEDGER]
+            paradigm_evidence_bytes = files[_PARADIGM_EVIDENCE]
+            paradigm_policy = ParadigmChallengePolicy.model_validate_json(
+                paradigm_policy_bytes
+            )
+            paradigm_state = ParadigmChallengeLedgerState.model_validate_json(
+                paradigm_ledger_bytes
+            )
+            shadow_evidence = (
+                ParadigmChallengeEvidenceLedgerState.model_validate_json(
+                    paradigm_evidence_bytes
+                )
+            )
+            if (
+                canonical_json_bytes(paradigm_policy.model_dump(mode="json"))
+                != paradigm_policy_bytes
+                or canonical_json_bytes(paradigm_state.model_dump(mode="json"))
+                != paradigm_ledger_bytes
+                or canonical_json_bytes(shadow_evidence.model_dump(mode="json"))
+                != paradigm_evidence_bytes
+            ):
+                raise ExperimentArchiveIntegrityError(
+                    "Paradigm JSON is not canonical."
+                )
+            paradigm = ParadigmChallengeLane(
+                policy=paradigm_policy,
+                state=paradigm_state,
+            )
+            if (
+                manifest["paradigm_fingerprint"]
+                != _paradigm_fingerprint(paradigm)
+                or manifest["paradigm_evidence_fingerprint"]
+                != shadow_evidence.fingerprint()
+            ):
+                raise ExperimentArchiveIntegrityError("Archive fingerprint mismatch.")
+            _validate_paradigm_evidence(
+                kernel,
+                ledger,
+                paradigm,
+                shadow_evidence,
+            )
         return ExperimentArchiveBundle(
             kernel=kernel,
             simulation_ledger=ledger,
@@ -825,6 +1021,8 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
             diagnostic_engine=diagnostics,
             council_tournament=council,
             council_evidence=evidence,
+            paradigm_lane=paradigm,
+            paradigm_evidence=shadow_evidence,
             format_version=format_version,
         )
     except (

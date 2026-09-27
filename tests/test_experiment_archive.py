@@ -9,8 +9,10 @@ from pathlib import Path
 import pytest
 
 from verdant_claims import ClaimLearningPipeline
+from verdant_governance import VerdantGovernancePipeline
 from verdant_kernel import (
-    ClaimPolarity, ClaimSourceClass, ObligationFamily, VerdantKernel,
+    ClaimPolarity, ClaimSourceClass, CouncilDisposition, ExperienceCommand,
+    GovernanceProposalKind, ObligationFamily, RelationProposal, VerdantKernel,
     checkpoint_bytes, load_checkpoint,
 )
 from verdant_kernel.models import canonical_json_bytes
@@ -21,7 +23,8 @@ from verdant_obligations import (
     CouncilInterventionPolicy,
     CouncilLeastRegretTournament,
     CouncilTournamentDisposition, CouncilTournamentEvidenceRecord,
-    DependencyGapPipeline, DiagnosticConclusion, DiagnosticEngine,
+    DependencyGapDetectionPolicy, DependencyGapDetector, DependencyGapPipeline,
+    DiagnosticConclusion, DiagnosticEngine,
     DiagnosticLedgerState, DiagnosticProbeFinding, DiagnosticProbeKind,
     DiagnosticProbeObservation, DiagnosticResult, DiagnosticTriggerKind,
     EpistemicPreservationObservation, EquivalenceLensSystem,
@@ -29,9 +32,15 @@ from verdant_obligations import (
     EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
     EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
     EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT, EXPERIMENT_ARCHIVE_FORMAT,
-    EXPERIMENT_ARCHIVE_LEGACY_FORMAT, InquiryFailureEvidence, LensEvidenceResult,
+    EXPERIMENT_ARCHIVE_LEGACY_FORMAT, EXPERIMENT_ARCHIVE_PARADIGM_FORMAT,
+    FailedPolicyDetectionPolicy, FailedPolicyDetector, InquiryFailureEvidence,
+    LensEvidenceResult,
     InterventionKind, LensOpcode, OrthogonalFingerprintObservation,
-    SimulationLedger, SimulationLedgerState, SimulationSettlement,
+    ParadigmAnomalySignal, ParadigmChallenge, ParadigmChallengeDisposition,
+    ParadigmChallengeEvidenceLedgerState, ParadigmChallengeEvidenceRecord,
+    ParadigmChallengeLane, ParadigmChallengeLedgerState,
+    ParadigmChallengePolicy, ParadigmShadowTrial, SimulationLedger,
+    SimulationLedgerState, SimulationSettlement,
     derive_obligation_view, experiment_archive_bytes, load_experiment_archive,
     load_experiment_archive_bundle, save_experiment_archive,
 )
@@ -99,6 +108,8 @@ def _repack(
     diagnostics: DiagnosticEngine | None = None,
     council: CouncilLeastRegretTournament | None = None,
     council_evidence: CouncilEvidenceLedgerState | None = None,
+    paradigm: ParadigmChallengeLane | None = None,
+    paradigm_evidence: ParadigmChallengeEvidenceLedgerState | None = None,
 ) -> bytes:
     manifest = json.loads(parts["manifest.json"])
     for name in manifest["files"]:
@@ -127,6 +138,18 @@ def _repack(
     if council_evidence is not None:
         manifest["council_evidence_fingerprint"] = (
             council_evidence.fingerprint()
+        )
+    if paradigm is not None:
+        paradigm_payload = {
+            "policy": paradigm.policy.model_dump(mode="json"),
+            "ledger": paradigm.state.model_dump(mode="json"),
+        }
+        manifest["paradigm_fingerprint"] = hashlib.sha256(
+            canonical_json_bytes(paradigm_payload)
+        ).hexdigest()
+    if paradigm_evidence is not None:
+        manifest["paradigm_evidence_fingerprint"] = (
+            paradigm_evidence.fingerprint()
         )
     parts["manifest.json"] = canonical_json_bytes(manifest)
     output = io.BytesIO()
@@ -299,6 +322,32 @@ def test_all_17_legacy_checkpoints_load_and_embed(tmp_path: Path) -> None:
         assert (
             evidence_bundle.council_evidence.fingerprint()
             == empty_evidence.fingerprint()
+        )
+        paradigm_path = tmp_path / f"{original.stem}-v6.vob"
+        empty_paradigm = ParadigmChallengeLane()
+        empty_paradigm_evidence = ParadigmChallengeEvidenceLedgerState()
+        save_experiment_archive(
+            paradigm_path,
+            kernel,
+            SimulationLedger(),
+            lens_system=empty_lenses,
+            diagnostic_engine=empty_diagnostics,
+            council_tournament=empty_council,
+            council_evidence=empty_evidence,
+            paradigm_lane=empty_paradigm,
+            paradigm_evidence=empty_paradigm_evidence,
+        )
+        paradigm_bundle = load_experiment_archive_bundle(paradigm_path)
+        assert paradigm_bundle.kernel.fingerprint() == kernel.fingerprint()
+        assert paradigm_bundle.paradigm_lane is not None
+        assert paradigm_bundle.paradigm_evidence is not None
+        assert (
+            paradigm_bundle.paradigm_lane.fingerprint()
+            == empty_paradigm.fingerprint()
+        )
+        assert (
+            paradigm_bundle.paradigm_evidence.fingerprint()
+            == empty_paradigm_evidence.fingerprint()
         )
 
 
@@ -1159,5 +1208,380 @@ def test_rehashed_council_evidence_change_fails_full_recomputation(
     with pytest.raises(
         ExperimentArchiveIntegrityError,
         match="could not be reproduced",
+    ):
+        load_experiment_archive_bundle(path)
+
+
+_ARCHIVE_SHARED_ASSUMPTION = "archive_shared_representational_assumption_v1"
+
+
+def _archive_denial(kernel: VerdantKernel, evidence_ref: str) -> None:
+    governance = VerdantGovernancePipeline()
+    proposal = governance.propose(
+        kernel,
+        proposal_kind=GovernanceProposalKind.ACT,
+        operation="archive_shared_assumption_actuation",
+        action_class="archive_high_risk_assumption_action",
+        description="Exercise the shared assumption under a governed test.",
+        evidence_refs=(evidence_ref,),
+        relevance=1.0,
+        urgency=0.8,
+        novelty=0.2,
+        predicted_information_gain=0.3,
+        harm_risk=0.95,
+        reversibility=0.10,
+        safe_alternatives=("inspect_archive_shared_assumption",),
+    )
+    report = governance.inspect(kernel, proposal)
+    assert report.disposition == CouncilDisposition.DENY
+    governance.commit(kernel, report)
+
+
+def _paradigm_experiment() -> tuple[
+    VerdantKernel,
+    CounterfactualRuntime,
+    ParadigmChallengeLane,
+    ParadigmChallengeEvidenceLedgerState,
+]:
+    kernel = VerdantKernel(seed=7201, state_dim=16, run_label="paradigm-archive")
+    dependency_root = "archive:lineage:dependency"
+    policy_root = "archive:lineage:policy"
+    kernel.apply_experience(ExperienceCommand(
+        event_key="archive-paradigm-dependency",
+        source_ref=dependency_root,
+        modality="structural_test",
+        payload_sha256=hashlib.sha256(b"archive-paradigm-dependency").hexdigest(),
+        feature_vector=(0.1, 0.2, 0.3),
+        relation_proposals=(RelationProposal(
+            source_label="archive paradigm action",
+            target_label="archive missing paradigm input",
+            relation_type="requires",
+        ),),
+    ))
+    dependency = DependencyGapDetector().detect_and_record(kernel).mutations[0]
+    dependency_retrigger = DependencyGapDetector(
+        policy=DependencyGapDetectionPolicy(
+            policy_version=_ARCHIVE_SHARED_ASSUMPTION
+        )
+    ).detect_and_record(kernel).mutations[0]
+
+    evidence_ref = kernel.apply_experience(ExperienceCommand(
+        event_key="archive-paradigm-policy-evidence",
+        source_ref=policy_root,
+        modality="governance_test",
+        payload_sha256=hashlib.sha256(
+            b"archive-paradigm-policy-evidence"
+        ).hexdigest(),
+        feature_vector=(0.4, 0.5, 0.6),
+    )).observation_evidence_id
+    _archive_denial(kernel, evidence_ref)
+    _archive_denial(kernel, evidence_ref)
+    failed_policy = FailedPolicyDetector().detect_and_record(kernel).mutations[0]
+    policy_retrigger = FailedPolicyDetector(FailedPolicyDetectionPolicy(
+        policy_version=_ARCHIVE_SHARED_ASSUMPTION
+    )).detect_and_record(kernel).mutations[0]
+
+    signals = tuple(ParadigmAnomalySignal.build(
+        obligation_id=mutation.obligation.kernel_id,
+        obligation_family=mutation.obligation.family,
+        history_event_id=mutation.event.event_id,
+        target_assumption_ref=_ARCHIVE_SHARED_ASSUMPTION,
+        provenance_root=mutation.event.source_lineage_roots[0],
+        evidence_refs=(mutation.event.triggering_refs[0],),
+    ) for mutation in (dependency_retrigger, policy_retrigger))
+    decision = AttentionPortfolio().decide(
+        kernel,
+        tuple(AttentionBidInput(
+            obligation_id=obligation_id,
+            action_operator="archive_paradigm_shadow_replay",
+            requested_budget=0.15,
+            estimated_cost=0.08,
+            expected_gain=0.7,
+            uncertainty=0.9,
+            urgency=0.6,
+            novelty=0.8,
+            generator_version="paradigm-archive-generator-v1",
+        ) for obligation_id in sorted((
+            dependency.obligation.kernel_id,
+            failed_policy.obligation.kernel_id,
+        ))),
+        source_event_key="archive:paradigm:attention",
+    ).decision
+    allocations = {
+        item.obligation_id: item.allocation_id for item in decision.allocations
+    }
+    lane = ParadigmChallengeLane(
+        policy=ParadigmChallengePolicy(maximum_signals=9)
+    )
+    challenge = lane.open(
+        kernel,
+        signals=signals,
+        source_event_key="archive:paradigm:open",
+    )
+    runtime = CounterfactualRuntime()
+    trials: list[ParadigmShadowTrial] = []
+    for obligation_index, obligation_id in enumerate(
+        sorted(item.obligation_id for item in signals)
+    ):
+        history = tuple(sorted(
+            item.event_id for item in kernel.state.obligation_history
+            if item.obligation_id == obligation_id
+        ))
+        for seed_index in range(2):
+            seed = f"archive:paradigm:seed:{obligation_index}:{seed_index}"
+            variant = "archive:paradigm:variant:reframe-v1"
+            result = runtime.execute(
+                kernel,
+                allocation_id=allocations[obligation_id],
+                plan=CounterfactualPlan.build(
+                    source_event_key=(
+                        f"archive:paradigm:simulation:{obligation_index}:{seed_index}"
+                    ),
+                    operator_version="paradigm-archive-runtime-v1",
+                    requested_budget=0.02,
+                    consumed_budget=0.01,
+                    result_refs=(challenge.challenge_id, variant, seed, *history),
+                ),
+            )
+            fingerprint = hashlib.sha256(
+                f"archive:orthogonal:{obligation_index}".encode()
+            ).hexdigest()
+            trials.append(ParadigmShadowTrial.build(
+                challenge_id=challenge.challenge_id,
+                obligation_id=obligation_id,
+                seed_ref=seed,
+                proposed_variant_ref=variant,
+                simulation_settlement_id=result.settlement.settlement_id,
+                replayed_history_event_ids=history,
+                outcome_signature=f"archive:outcome:{obligation_index}",
+                improvement_observed=True,
+                evidence_preserved=True,
+                orthogonal_fingerprints=(OrthogonalFingerprintObservation(
+                    context_ref=f"archive:unrelated:{obligation_index}",
+                    before_fingerprint=fingerprint,
+                    after_fingerprint=fingerprint,
+                ),),
+            ))
+    paradigm_decision = lane.decide(
+        kernel,
+        challenge_id=challenge.challenge_id,
+        trials=tuple(trials),
+        simulation_ledger=runtime.ledger,
+        blast_radius_obligation_ids=tuple(kernel.state.obligation_kernels),
+        source_event_key="archive:paradigm:decide",
+    )
+    assert paradigm_decision.disposition == (
+        ParadigmChallengeDisposition.SHADOW_SUPPORTED
+    )
+    paradigm_evidence = ParadigmChallengeEvidenceLedgerState(records=(
+        ParadigmChallengeEvidenceRecord.build(
+            decision=paradigm_decision,
+            trials=tuple(trials),
+        ),
+    ))
+    return kernel, runtime, lane, paradigm_evidence
+
+
+def _v6_archive_bytes(
+    kernel: VerdantKernel,
+    runtime: CounterfactualRuntime,
+    lane: ParadigmChallengeLane,
+    evidence: ParadigmChallengeEvidenceLedgerState,
+) -> bytes:
+    return experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=EquivalenceLensSystem(),
+        diagnostic_engine=DiagnosticEngine(),
+        council_tournament=CouncilLeastRegretTournament(),
+        council_evidence=CouncilEvidenceLedgerState(),
+        paradigm_lane=lane,
+        paradigm_evidence=evidence,
+    )
+
+
+def test_paradigm_archive_replays_complete_shadow_lane_without_authority(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime, lane, evidence = _paradigm_experiment()
+    before = (
+        kernel.fingerprint(),
+        runtime.ledger.fingerprint(),
+        lane.fingerprint(),
+        evidence.fingerprint(),
+    )
+    data = _v6_archive_bytes(kernel, runtime, lane, evidence)
+    assert data == _v6_archive_bytes(kernel, runtime, lane, evidence)
+    assert json.loads(_parts(data)["manifest.json"])["format"] == (
+        EXPERIMENT_ARCHIVE_PARADIGM_FORMAT
+    )
+    path = tmp_path / "paradigm-evidence.vob"
+    path.write_bytes(data)
+    bundle = load_experiment_archive_bundle(path)
+    assert bundle.format_version == EXPERIMENT_ARCHIVE_PARADIGM_FORMAT
+    assert bundle.paradigm_lane is not None
+    assert bundle.paradigm_evidence is not None
+    assert bundle.paradigm_lane.policy.maximum_signals == 9
+    assert (
+        bundle.kernel.fingerprint(),
+        bundle.simulation_ledger.fingerprint(),
+        bundle.paradigm_lane.fingerprint(),
+        bundle.paradigm_evidence.fingerprint(),
+    ) == before
+    challenge = bundle.paradigm_lane.state.challenges[0]
+    restored_challenge = bundle.paradigm_lane.open(
+        bundle.kernel,
+        signals=challenge.signals,
+        source_event_key=challenge.source_event_key,
+    )
+    assert restored_challenge == challenge
+    original_decision = bundle.paradigm_lane.state.decisions[0]
+    record = bundle.paradigm_evidence.records[0]
+    restored_decision = bundle.paradigm_lane.decide(
+        bundle.kernel,
+        challenge_id=challenge.challenge_id,
+        trials=record.trials,
+        simulation_ledger=bundle.simulation_ledger,
+        blast_radius_obligation_ids=original_decision.blast_radius_obligation_ids,
+        source_event_key=original_decision.source_event_key,
+    )
+    assert restored_decision == original_decision
+    assert not restored_decision.promotion_authority_enabled
+    assert not restored_decision.canonical_mutation_permitted
+    assert bundle.kernel.fingerprint() == before[0]
+    assert bundle.simulation_ledger.fingerprint() == before[1]
+
+
+def test_paradigm_archive_requires_complete_pairing() -> None:
+    kernel, runtime, lane, evidence = _paradigm_experiment()
+    empty_lenses = EquivalenceLensSystem()
+    empty_diagnostics = DiagnosticEngine()
+    empty_council = CouncilLeastRegretTournament()
+    empty_council_evidence = CouncilEvidenceLedgerState()
+    with pytest.raises(ExperimentArchiveIntegrityError, match="shadow-trial evidence"):
+        experiment_archive_bytes(
+            kernel,
+            runtime.ledger,
+            lens_system=empty_lenses,
+            diagnostic_engine=empty_diagnostics,
+            council_tournament=empty_council,
+            council_evidence=empty_council_evidence,
+            paradigm_lane=lane,
+        )
+    with pytest.raises(ExperimentArchiveIntegrityError, match="paired shadow lane"):
+        experiment_archive_bytes(
+            kernel,
+            runtime.ledger,
+            lens_system=empty_lenses,
+            diagnostic_engine=empty_diagnostics,
+            council_tournament=empty_council,
+            council_evidence=empty_council_evidence,
+            paradigm_evidence=evidence,
+        )
+    with pytest.raises(ExperimentArchiveIntegrityError, match="paired v5"):
+        experiment_archive_bytes(
+            kernel,
+            runtime.ledger,
+            lens_system=empty_lenses,
+            diagnostic_engine=empty_diagnostics,
+            council_tournament=empty_council,
+            paradigm_lane=lane,
+            paradigm_evidence=evidence,
+        )
+
+
+def test_rehashed_paradigm_anomaly_and_trial_changes_fail_closed(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime, lane, evidence = _paradigm_experiment()
+    data = _v6_archive_bytes(kernel, runtime, lane, evidence)
+
+    challenge = lane.state.challenges[0]
+    original_signal = challenge.signals[0]
+    forged_signal = ParadigmAnomalySignal.build(
+        **original_signal.model_dump(
+            mode="python", exclude={"signal_id", "evidence_refs"}
+        ),
+        evidence_refs=("archive:missing:evidence",),
+    )
+    forged_challenge = ParadigmChallenge.build(
+        **challenge.model_dump(
+            mode="python", exclude={"challenge_id", "signals"}
+        ),
+        signals=(forged_signal, challenge.signals[1]),
+    )
+    forged_lane = ParadigmChallengeLane(
+        policy=lane.policy,
+        state=ParadigmChallengeLedgerState(challenges=(forged_challenge,)),
+    )
+    forged_evidence = ParadigmChallengeEvidenceLedgerState()
+    anomaly_parts = _parts(data)
+    anomaly_parts["paradigm_ledger.json"] = canonical_json_bytes(
+        forged_lane.state.model_dump(mode="json")
+    )
+    anomaly_parts["paradigm_evidence.json"] = canonical_json_bytes(
+        forged_evidence.model_dump(mode="json")
+    )
+    anomaly_path = tmp_path / "forged-paradigm-anomaly.vob"
+    anomaly_path.write_bytes(_repack(
+        anomaly_parts,
+        paradigm=forged_lane,
+        paradigm_evidence=forged_evidence,
+    ))
+    with pytest.raises(
+        ExperimentArchiveIntegrityError,
+        match="shadow-lane replay",
+    ):
+        load_experiment_archive_bundle(anomaly_path)
+
+    record = evidence.records[0]
+    original_trial = record.trials[0]
+    changed_trial = ParadigmShadowTrial.build(
+        **original_trial.model_dump(
+            mode="python", exclude={"trial_id", "outcome_signature"}
+        ),
+        outcome_signature="archive:tampered:outcome",
+    )
+    altered_evidence = ParadigmChallengeEvidenceLedgerState(records=(
+        ParadigmChallengeEvidenceRecord.build(
+            decision=lane.state.decisions[0],
+            trials=(changed_trial, *record.trials[1:]),
+        ),
+    ))
+    trial_parts = _parts(data)
+    trial_parts["paradigm_evidence.json"] = canonical_json_bytes(
+        altered_evidence.model_dump(mode="json")
+    )
+    trial_path = tmp_path / "changed-paradigm-trial.vob"
+    trial_path.write_bytes(_repack(
+        trial_parts,
+        paradigm_evidence=altered_evidence,
+    ))
+    with pytest.raises(
+        ExperimentArchiveIntegrityError,
+        match="disagrees|could not be reproduced|shadow-lane replay",
+    ):
+        load_experiment_archive_bundle(trial_path)
+
+
+def test_rehashed_missing_paradigm_settlement_fails_closed(tmp_path: Path) -> None:
+    kernel, runtime, lane, evidence = _paradigm_experiment()
+    parts = _parts(_v6_archive_bytes(kernel, runtime, lane, evidence))
+    cited = evidence.records[0].trials[0].simulation_settlement_id
+    state = runtime.ledger.snapshot()
+    altered = SimulationLedgerState(
+        reservations=state.reservations,
+        settlements=tuple(
+            item for item in state.settlements if item.settlement_id != cited
+        ),
+    )
+    parts["simulation.json"] = canonical_json_bytes(
+        altered.model_dump(mode="json")
+    )
+    path = tmp_path / "missing-paradigm-settlement.vob"
+    path.write_bytes(_repack(parts))
+    with pytest.raises(
+        ExperimentArchiveIntegrityError,
+        match="shadow-lane replay",
     ):
         load_experiment_archive_bundle(path)

@@ -23,6 +23,9 @@ from .interventions import OrthogonalFingerprintObservation
 
 PARADIGM_CHALLENGE_POLICY_VERSION = "paradigm_challenge_policy_v0.14"
 PARADIGM_CHALLENGE_LEDGER_VERSION = "paradigm_challenge_ledger_v0.14"
+PARADIGM_CHALLENGE_EVIDENCE_LEDGER_VERSION = (
+    "paradigm_challenge_evidence_ledger_v0.20"
+)
 
 
 class ParadigmChallengeIntegrityError(RuntimeError):
@@ -255,6 +258,92 @@ class ParadigmChallengeDecision(FrozenRecord):
         if self.decision_id != stable_id("paradigm_challenge_decision", payload):
             raise ValueError("Paradigm decision checksum mismatch.")
         return self
+
+
+class ParadigmChallengeEvidenceRecord(FrozenRecord):
+    """Complete, content-addressed request evidence for one shadow decision."""
+
+    evidence_record_id: str
+    decision_id: str
+    decision_sequence: int = Field(ge=2)
+    challenge_id: str
+    source_event_key: str
+    trials: tuple[ParadigmShadowTrial, ...] = Field(min_length=1)
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        decision: ParadigmChallengeDecision,
+        trials: Sequence[ParadigmShadowTrial],
+    ) -> "ParadigmChallengeEvidenceRecord":
+        normalized = tuple(sorted(trials, key=lambda item: item.trial_id))
+        values = {
+            "decision_id": decision.decision_id,
+            "decision_sequence": decision.sequence,
+            "challenge_id": decision.challenge_id,
+            "source_event_key": decision.source_event_key,
+            "trials": normalized,
+        }
+        payload = {
+            key: [item.model_dump(mode="json") for item in value]
+            if key == "trials"
+            else value
+            for key, value in values.items()
+        }
+        return cls(
+            evidence_record_id=stable_id("paradigm_challenge_evidence", payload),
+            **values,
+        )
+
+    @model_validator(mode="after")
+    def validate_evidence(self) -> "ParadigmChallengeEvidenceRecord":
+        required = (self.decision_id, self.challenge_id, self.source_event_key)
+        if not all(item.strip() for item in required):
+            raise ValueError("Paradigm evidence identity fields cannot be empty.")
+        trial_ids = tuple(item.trial_id for item in self.trials)
+        if tuple(sorted(set(trial_ids))) != trial_ids:
+            raise ValueError("Paradigm evidence trials must be sorted and unique.")
+        if any(item.challenge_id != self.challenge_id for item in self.trials):
+            raise ValueError("Paradigm evidence crossed a challenge boundary.")
+        payload = self.model_dump(mode="json", exclude={"evidence_record_id"})
+        if self.evidence_record_id != stable_id(
+            "paradigm_challenge_evidence", payload
+        ):
+            raise ValueError("Paradigm evidence checksum mismatch.")
+        return self
+
+
+class ParadigmChallengeEvidenceLedgerState(BaseModel):
+    """Append-only shadow-trial evidence, kept separate from lane decisions."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    schema_version: str = PARADIGM_CHALLENGE_EVIDENCE_LEDGER_VERSION
+    records: tuple[ParadigmChallengeEvidenceRecord, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_ledger(self) -> "ParadigmChallengeEvidenceLedgerState":
+        if self.schema_version != PARADIGM_CHALLENGE_EVIDENCE_LEDGER_VERSION:
+            raise ValueError("Unsupported Paradigm evidence ledger schema.")
+        identities = tuple(item.evidence_record_id for item in self.records)
+        decisions = tuple(item.decision_id for item in self.records)
+        sources = tuple(item.source_event_key for item in self.records)
+        sequences = tuple(item.decision_sequence for item in self.records)
+        if (
+            len(set(identities)) != len(identities)
+            or len(set(decisions)) != len(decisions)
+            or len(set(sources)) != len(sources)
+        ):
+            raise ValueError("Paradigm evidence ledger duplicates a decision.")
+        if tuple(sorted(set(sequences))) != sequences:
+            raise ValueError("Paradigm evidence decision sequence is not increasing.")
+        return self
+
+    def fingerprint(self) -> str:
+        return hashlib.sha256(
+            canonical_json_bytes(self.model_dump(mode="json"))
+        ).hexdigest()
 
 
 class ParadigmChallengeLedgerState(BaseModel):

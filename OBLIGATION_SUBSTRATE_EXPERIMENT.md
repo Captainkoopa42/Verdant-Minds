@@ -1,4 +1,4 @@
-# Obligation Substrate v0.19
+# Obligation Substrate v0.20
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -136,6 +136,17 @@ generation, or safe autonomous policy revision.
   Council candidate bounds. Incomplete decision coverage, changed evidence,
   changed request policy, or any replay result differing from the durable
   decision fails closed. The recovered tournament remains recommendation-only.
+- An explicit v6 `.vob` archive can additionally retain the immutable Paradigm
+  policy, append-only challenge/decision ledger, and one content-addressed
+  shadow-trial evidence record per decision. The v6 envelope is cumulative: it
+  requires the canonical, simulation, Lens, Diagnostic, Council, and Council-
+  evidence layers already validated by v1-v5.
+- v6 loading reconstructs a fresh Paradigm lane from an empty ledger, reopens
+  every challenge from its preserved canonical anomaly signals, and reruns
+  every decision from its exact shadow trials. Admission, complete-history
+  replay, isolated-settlement lineage, cross-seed replication, evidence
+  preservation, orthogonal stability, blast-radius references, and the hard
+  non-promotion flags must reproduce the durable ledger exactly.
 - Evidence distinguishes support, valid nulls, over-smoothing,
   hyper-discrimination, and absent explanatory gain. Valid nulls do not count
   as evaluator failures. A binding suspends atomically when its declared
@@ -405,10 +416,12 @@ generation, or safe autonomous policy revision.
   the observations native: repair-restored flags, blast-radius lists, wave-
   state, `c_memory`, observer-only `T_g`, and orthogonal fingerprints are still
   typed experimental inputs supplied by the harness.
-- The Paradigm Challenge ledger remains outside the paired archive. Its cross-
-  ledger recovery and reference closure remain untested. Archive tests cover
-  Lens bindings for `DependencyGap` and `Contradiction`, not all five
-  obligation families.
+- Paradigm durability remains explicit and sidecar-local. Only a cumulative v6
+  `.vob` call that supplies both the lane and its complete trial-evidence ledger
+  includes it; ordinary `.vdk`, v1-v5 `.vob`, and the backward-compatible two-
+  value loader do not expose it. Archive tests exercise Paradigm signals across
+  `DependencyGap` and `FailedPolicy`; they do not yet cover every family
+  combination or make the lane a canonical scheduler.
 - Candidate interventions and preservation measurements are explicit, typed
   experimental inputs. The Council does not yet generate a complete spanning
   intervention set or execute the standard-load simulations autonomously.
@@ -437,8 +450,8 @@ generation, or safe autonomous policy revision.
   across differently named policies or ontologies.
 - Shadow-trial outcome signatures, improvement flags, evidence-preservation
   observations, and orthogonal fingerprints remain typed experimental inputs.
-  The lane validates their lineage and replication but does not derive all of
-  them automatically from simulated geometry.
+  v6 now preserves and exactly replays them, but persistence does not make the
+  observations native or derive them automatically from simulated geometry.
 - `shadow_supported` is not ontology replacement. No variant promotion,
   canonical replay commit, mass reopening, policy rewrite, or autonomous
   paradigm shift exists in v0.14.
@@ -538,6 +551,28 @@ generation, or safe autonomous policy revision.
   detector-to-simulation path. No canonical diagnosis, intervention,
   resolution, component penalty, promotion, or policy rewrite is established.
 
+## v0.20 claim boundary
+
+- **OBSERVED:** Thirty-three focused Paradigm/archive tests and the 370-test
+  full repository suite pass. A deterministic v6 round trip restores a custom
+  Paradigm policy, two-family challenge, four shadow trials, and supported
+  decision without changing canonical or simulation fingerprints. Rehashed
+  anomaly-evidence substitution, changed trial identity/outcome, and removal of
+  a cited simulation settlement fail closed. All 17 preexisting VDK
+  checkpoints embed and reload through v1-v6 envelopes, including an empty-
+  Paradigm v6 envelope.
+- **IMPLEMENTED-EXPERIMENTAL:** A content-addressed Paradigm trial-evidence
+  ledger and cumulative v6 `.vob` format preserve every decision input
+  represented by the existing shadow-lane schema. Loading rebuilds the lane
+  from an empty ledger and requires exact admission and decision replay against
+  the recovered canonical history and isolated simulation ledger before
+  exposing it through the bundle loader.
+- **PROPOSED:** Process-kill and concurrent-writer durability proofs; deriving
+  shadow outcomes, evidence-preservation checks, and orthogonal observations
+  from actual experiment traces and matched controls; and an explicitly
+  invoked detector-to-simulation integration path. v6 adds no scheduler,
+  canonical resolution, variant promotion, policy rewrite, or semantic claim.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -635,3 +670,8 @@ Council-evidence archive tests additionally target deterministic v5 replay,
 custom policy recovery, complete per-decision evidence coverage, exact request
 and least-regret recomputation, rehashed metric-change rejection, and all 17
 legacy checkpoints embedded in an empty-evidence v5 envelope.
+Paradigm-evidence archive tests additionally target deterministic cumulative v6
+replay, custom policy recovery, complete per-decision trial coverage, exact
+admission and shadow-decision recomputation, rehashed anomaly and trial changes,
+missing settlement rejection, hard non-promotion, and all 17 legacy checkpoints
+embedded in an empty-Paradigm v6 envelope.

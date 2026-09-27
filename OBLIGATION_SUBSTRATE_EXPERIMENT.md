@@ -1,4 +1,4 @@
-# Obligation Substrate v0.24
+# Obligation Substrate v0.25
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -136,6 +136,20 @@ generation, or safe autonomous policy revision.
   the pair against its actual plans, reservations, settlements, runtime
   traces, obligation, Attention decision/allocation, hypothesis, and canonical
   checkpoint before publishing either staged state object.
+- Exactly one content-addressed `TraceResolutionEvidenceReceipt` per matched
+  observation now records the subset of Resolution Contract inputs that the
+  actual structural trace can ground: cue and context, canonical checkpoint,
+  settlement lineage, candidate structure and path provenance, structural
+  delta, protected canonical references, and canonical-record preservation.
+- The same receipt enumerates every input the structural trace does not
+  observe: retrieved and admitted references, outgoing action, executed
+  dependency path, seed, horizon, active Lens binding, slot budget, and
+  held-out replication. Those absences are immutable and make
+  `resolution_trial_ready` constitutionally false.
+- Coverage is reconstructed from the actual paired simulation ledger and
+  embedded one-for-one in the integration trace. Foreign-ledger substitution,
+  missing coverage, changed requirement sets, and attempts to grant observed-
+  outcome, resolution, or canonical-commit authority fail validation.
 - Underfunded allocations, absent projected interventions, altered receipts,
   canonical-record mutation, supplied outcome refs in a matched arm, and
   missing per-allocation receipts fail the whole staged invocation. A valid
@@ -359,10 +373,10 @@ generation, or safe autonomous policy revision.
 - Attention metrics, trial count, budget, and representative-arm ordering are
   visible supplied policy values. Verdant has not learned their calibration or
   chosen the integration request endogenously.
-- Integrated trace objects, including their matched structural receipts, are
-  transient and reconstructable rather than
-  a new archive member. Existing `.vob` canonical and simulation state can
-  regenerate an identical receipt under the same code and policies, but v0.24
+- Integrated trace objects, including their matched structural and Resolution-
+  evidence coverage receipts, are transient and reconstructable rather than a
+  new archive member. Existing `.vob` canonical and simulation state can
+  regenerate an identical receipt under the same code and policies, but v0.25
   does not claim independent long-term schema durability for the trace itself.
 - Coordinator atomicity is bounded to staged in-process validation before its
   two supplied Python objects are published. It adds no cross-thread or cross-
@@ -373,10 +387,11 @@ generation, or safe autonomous policy revision.
   coordinator does not move a `MayWake` obligation into `Recheck_Pending`,
   append an `AttemptRecord`, classify an arm as actually observed, or alter
   obligation status from the simulation result.
-- v0.24 execution traces and matched structural observations are transient,
-  deterministically reconstructable receipts. The simulation reservation and
-  settlement remain durable in `.vob`, but the materialized collection deltas
-  and matched receipt are not new archive members or canonical VDK records.
+- v0.25 execution traces, matched structural observations, and Resolution-
+  evidence coverage receipts are transient, deterministically reconstructable
+  receipts. The simulation reservation and settlement remain durable in
+  `.vob`, but the materialized collection deltas and derived receipts are not
+  new archive members or canonical VDK records.
 - The matched observer supports only a zero-applied-patch baseline against the
   full declared patch sequence under one canonical checkpoint and one
   Attention allocation. It does not model stochastic seeds, temporal horizons,
@@ -387,12 +402,14 @@ generation, or safe autonomous policy revision.
   `canonical_record_mutation` means the simulated overlay removed or changed a
   pre-existing record. Neither result establishes causal sufficiency, semantic
   correctness, predictive improvement, real-world success, or truth.
-- v0.24 does not infer retrieved/admitted reference sets, an outgoing action,
-  a dependency path, or an actually occurring preregistered `OutcomeKind`.
-  It therefore does not automatically construct a `ResolutionTrialObservation`
-  or feed the Resolution Contract, Diagnostic, Council, or Paradigm ledgers.
+- v0.25 does not infer retrieved/admitted reference sets, an outgoing action,
+  an executed dependency path, or an actually occurring preregistered
+  `OutcomeKind`. Candidate path IDs remain hypothesis provenance, not execution
+  evidence. The coverage gate therefore cannot construct a
+  `ResolutionTrialObservation` or feed the Resolution Contract, Diagnostic,
+  Council, or Paradigm ledgers.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.24 does not claim Verdant has learned their
+  provenance-visible bids, but v0.25 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -771,6 +788,32 @@ generation, or safe autonomous policy revision.
   canonical `Resolved` transition, policy rewrite, `T_g` control, or
   thermodynamic behavior.
 
+## v0.25 claim boundary
+
+- **OBSERVED:** Forty focused counterfactual, hypothesis, integrated-
+  inquiry, matched-trace, and Resolution-Contract tests and the 391-test full
+  repository suite pass. An explicit inquiry reconstructs one exact Resolution-
+  evidence coverage receipt from its real zero/full matched traces and paired
+  simulation ledger. Archive reload replay reproduces the receipt without new
+  canonical or simulation cost. Dropped coverage, foreign-ledger substitution,
+  hidden missing requirements, and forged readiness all fail closed. The full
+  suite still embeds and reloads all 17 legacy VDK checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** A content-addressed coverage gate now separates
+  fields grounded by the actual matched structural trace from fields that still
+  require an operational probe. It binds cue, context, checkpoint, settlements,
+  protected evidence, candidate lineage, structural delta, and preservation to
+  the integrated trace while hard-coding simulated-only, non-authoritative,
+  non-committing status.
+- **PROPOSED:** Add a versioned overlay-aware operational probe that records
+  retrieval, workspace admission, outgoing action, and executed dependency
+  path under replicated held-out matched controls, together with explicit seed,
+  horizon, Lens binding, and slot budget. Only complete trace-grounded coverage
+  may construct a non-authoritative `ResolutionTrialObservation`. Family-local
+  protocols for the other obligation families remain downstream. v0.25 does
+  not establish an observed functional outcome, causal sufficiency, resolution,
+  promotion, autonomous inquiry, semantic understanding, `T_g` control, or
+  thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -881,4 +924,6 @@ Integrated-inquiry tests additionally target detector-to-settlement provenance,
 mandatory hypothesis counterweights, functional-class trial selection, bounded
 Attention funding, copy-on-write non-leakage, exact zero-cost replay after
 archive reload, mixed-scope transactional rejection, injected-leak rollback,
-and rehashed internal-provenance deletion.
+rehashed internal-provenance deletion, one-for-one Resolution-evidence coverage,
+foreign simulation-ledger rejection, immutable missing-field disclosure, and
+the hard absence of trial-readiness or resolution authority.

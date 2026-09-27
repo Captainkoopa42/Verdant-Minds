@@ -107,6 +107,15 @@ from .trace_observations import (
     TraceObservationIntegrityError,
     build_matched_counterfactual_plans,
 )
+from .resolution_evidence import (
+    GROUNDED_TRACE_REQUIREMENTS,
+    MISSING_OPERATIONAL_REQUIREMENTS,
+    TRACE_RESOLUTION_EVIDENCE_VERSION,
+    ResolutionEvidenceRequirement,
+    TraceResolutionEvidenceDeriver,
+    TraceResolutionEvidenceIntegrityError,
+    TraceResolutionEvidenceReceipt,
+)
 from .equivalence import (
     EQUIVALENCE_LENS_IR_VERSION,
     LENS_LEDGER_SCHEMA_VERSION,
@@ -309,6 +318,13 @@ __all__ = [
     "StructuralTraceEffect",
     "TraceObservationIntegrityError",
     "build_matched_counterfactual_plans",
+    "GROUNDED_TRACE_REQUIREMENTS",
+    "MISSING_OPERATIONAL_REQUIREMENTS",
+    "TRACE_RESOLUTION_EVIDENCE_VERSION",
+    "ResolutionEvidenceRequirement",
+    "TraceResolutionEvidenceDeriver",
+    "TraceResolutionEvidenceIntegrityError",
+    "TraceResolutionEvidenceReceipt",
     "EQUIVALENCE_LENS_IR_VERSION",
     "LENS_LEDGER_SCHEMA_VERSION",
     "EquivalenceLensDefinition",

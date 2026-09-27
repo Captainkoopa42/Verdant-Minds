@@ -19,14 +19,21 @@ from verdant_obligations import (
     CounterfactualRuntime,
     DependencyGapInquiryCoordinator,
     DependencyGapPipeline,
+    GROUNDED_TRACE_REQUIREMENTS,
     HypothesisOperator,
     IntegratedInquiryError,
     IntegratedInquiryPolicy,
     IntegratedInquiryTrace,
     MatchedCounterfactualObserver,
     MatchedCounterfactualPlans,
+    MISSING_OPERATIONAL_REQUIREMENTS,
     OutcomeKind,
+    ResolutionEvidenceRequirement,
+    SimulationLedger,
     StructuralTraceEffect,
+    TraceResolutionEvidenceDeriver,
+    TraceResolutionEvidenceIntegrityError,
+    TraceResolutionEvidenceReceipt,
     experiment_archive_bytes,
     load_experiment_archive,
     save_experiment_archive,
@@ -115,6 +122,9 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     assert len(result.matched_pairs) == 1
     matched = result.matched_pairs[0]
     assert result.trace.matched_observations == (matched.observation,)
+    assert result.trace.resolution_evidence_receipts == (
+        matched.resolution_evidence,
+    )
     assert matched.obligation_id == result.detection.mutations[0].obligation.kernel_id
     assert matched.hypothesis_id == matched.observation.hypothesis_ref
     assert matched.observation.effect == StructuralTraceEffect.ADDITIVE_OVERLAY_EFFECT
@@ -169,6 +179,27 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     assert completion_hypothesis.patches
     assert completion_hypothesis.patches[0].record_key not in kernel.state.relations
 
+    coverage = matched.resolution_evidence
+    assert coverage.matched_observation_ref == matched.observation.observation_id
+    assert coverage.candidate_path_relation_refs == (
+        completion_hypothesis.derivation_path_relation_ids
+    )
+    assert coverage.structural_added_refs == matched.observation.added_record_refs
+    assert coverage.grounded_requirements == GROUNDED_TRACE_REQUIREMENTS
+    assert coverage.missing_requirements == MISSING_OPERATIONAL_REQUIREMENTS
+    assert {
+        ResolutionEvidenceRequirement.RETRIEVED_REFS,
+        ResolutionEvidenceRequirement.ADMITTED_REFS,
+        ResolutionEvidenceRequirement.OUTGOING_ACTION,
+        ResolutionEvidenceRequirement.EXECUTED_DEPENDENCY_PATH,
+        ResolutionEvidenceRequirement.HELD_OUT_REPLICATION,
+    }.issubset(coverage.missing_requirements)
+    assert not coverage.resolution_trial_ready
+    assert coverage.simulated_only
+    assert not coverage.observed_outcome_authority_enabled
+    assert not coverage.resolution_authority_enabled
+    assert not coverage.canonical_commit_permitted
+
     bid = result.attention.decision.bids[0]
     assert bid.requested_budget == pytest.approx(0.05)
     assert set(bid.metric_provenance_refs) >= {
@@ -215,6 +246,9 @@ def test_trace_reconstructs_exactly_after_archive_reload(tmp_path: Path) -> None
     )
     assert tuple(item.observation for item in replay.matched_pairs) == tuple(
         item.observation for item in first.matched_pairs
+    )
+    assert tuple(item.resolution_evidence for item in replay.matched_pairs) == tuple(
+        item.resolution_evidence for item in first.matched_pairs
     )
     assert tuple(
         (item.baseline.reservation, item.treatment.reservation)
@@ -446,3 +480,60 @@ def test_rehashed_trace_cannot_drop_matched_receipt() -> None:
 
     with pytest.raises(ValueError):
         IntegratedInquiryTrace.build(**payload)
+
+
+def test_rehashed_trace_cannot_drop_resolution_coverage_receipt() -> None:
+    result = DependencyGapInquiryCoordinator().run(
+        _kernel(),
+        CounterfactualRuntime(),
+        source_event_key="integrated-inquiry:drop-resolution-coverage",
+    )
+    payload = result.trace.model_dump(mode="python", exclude={"trace_id"})
+    payload["resolution_evidence_receipts"] = ()
+
+    with pytest.raises(ValueError):
+        IntegratedInquiryTrace.build(**payload)
+
+
+def test_resolution_coverage_rejects_foreign_simulation_ledger() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    result = DependencyGapInquiryCoordinator().run(
+        kernel,
+        runtime,
+        source_event_key="integrated-inquiry:foreign-resolution-ledger",
+    )
+    pair = result.matched_pairs[0]
+    hypothesis = next(
+        item for item in result.hypotheses if item.hypothesis_id == pair.hypothesis_id
+    )
+
+    with pytest.raises(TraceResolutionEvidenceIntegrityError):
+        TraceResolutionEvidenceDeriver().derive(
+            kernel,
+            SimulationLedger(),
+            obligation_event_ref=pair.resolution_evidence.obligation_event_ref,
+            hypothesis=hypothesis,
+            plans=pair.plans,
+            baseline_result=pair.baseline,
+            treatment_result=pair.treatment,
+            observation=pair.observation,
+        )
+
+
+def test_resolution_coverage_cannot_claim_readiness_or_hide_missing_fields() -> None:
+    result = DependencyGapInquiryCoordinator().run(
+        _kernel(),
+        CounterfactualRuntime(),
+        source_event_key="integrated-inquiry:resolution-coverage-authority",
+    )
+    receipt = result.matched_pairs[0].resolution_evidence
+    ready_payload = receipt.model_dump(mode="python")
+    ready_payload["resolution_trial_ready"] = True
+    with pytest.raises(ValueError, match="cannot claim"):
+        TraceResolutionEvidenceReceipt.model_validate(ready_payload)
+
+    hidden_payload = receipt.model_dump(mode="python")
+    hidden_payload["missing_requirements"] = ()
+    with pytest.raises(ValueError, match="Missing operational"):
+        TraceResolutionEvidenceReceipt.model_validate(hidden_payload)

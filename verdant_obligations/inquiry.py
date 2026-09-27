@@ -45,6 +45,11 @@ from .hypotheses import (
     build_hypothesis_plan,
 )
 from .pipeline import ObligationMutationResult, derive_obligation_view
+from .resolution_evidence import (
+    TraceResolutionEvidenceDeriver,
+    TraceResolutionEvidenceIntegrityError,
+    TraceResolutionEvidenceReceipt,
+)
 from .trace_observations import (
     MatchedCounterfactualObserver,
     MatchedCounterfactualPlans,
@@ -54,7 +59,7 @@ from .trace_observations import (
 )
 
 
-INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.24"
+INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.25"
 MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION = 2
 
 
@@ -216,6 +221,9 @@ class IntegratedInquiryTrace(FrozenRecord):
     matched_observations: tuple[MatchedStructuralObservation, ...] = Field(
         min_length=1
     )
+    resolution_evidence_receipts: tuple[
+        TraceResolutionEvidenceReceipt, ...
+    ] = Field(min_length=1)
     canonical_checkpoint_fingerprint: str
     simulation_ledger_fingerprint: str
     canonical_simulation_leakage_detected: bool = False
@@ -250,6 +258,15 @@ class IntegratedInquiryTrace(FrozenRecord):
         )
         values["matched_observations"] = tuple(
             sorted(observations, key=lambda item: item.observation_id)
+        )
+        receipts = tuple(
+            item
+            if isinstance(item, TraceResolutionEvidenceReceipt)
+            else TraceResolutionEvidenceReceipt.model_validate(item)
+            for item in values["resolution_evidence_receipts"]
+        )
+        values["resolution_evidence_receipts"] = tuple(
+            sorted(receipts, key=lambda item: item.receipt_id)
         )
         values.setdefault("canonical_simulation_leakage_detected", False)
         values.setdefault("canonical_resolution_permitted", False)
@@ -305,6 +322,13 @@ class IntegratedInquiryTrace(FrozenRecord):
         if tuple(sorted(set(observation_ids))) != observation_ids:
             raise ValueError(
                 "Integrated inquiry matched observations must be sorted and unique."
+            )
+        receipt_ids = tuple(
+            item.receipt_id for item in self.resolution_evidence_receipts
+        )
+        if tuple(sorted(set(receipt_ids))) != receipt_ids:
+            raise ValueError(
+                "Integrated resolution evidence receipts must be sorted and unique."
             )
         if (
             self.canonical_simulation_leakage_detected
@@ -371,6 +395,40 @@ class IntegratedInquiryTrace(FrozenRecord):
             raise ValueError(
                 "Every integrated Attention allocation requires one matched receipt."
             )
+        observations_by_id = {
+            item.observation_id: item for item in self.matched_observations
+        }
+        receipt_observation_refs: list[str] = []
+        for receipt in self.resolution_evidence_receipts:
+            observation = observations_by_id.get(receipt.matched_observation_ref)
+            if observation is None:
+                raise ValueError(
+                    "Resolution evidence receipt lost its matched observation."
+                )
+            if (
+                receipt.obligation_id != observation.baseline.obligation_id
+                or receipt.hypothesis_ref != observation.hypothesis_ref
+                or receipt.canonical_checkpoint_fingerprint
+                != self.canonical_checkpoint_fingerprint
+                or receipt.baseline_trace_ref != observation.baseline.trace_id
+                or receipt.treatment_trace_ref != observation.treatment.trace_id
+                or receipt.baseline_settlement_ref
+                != observation.baseline.settlement_id
+                or receipt.treatment_settlement_ref
+                != observation.treatment.settlement_id
+            ):
+                raise ValueError(
+                    "Resolution evidence receipt crossed its matched lineage."
+                )
+            if receipt.obligation_event_ref not in self.obligation_event_ids:
+                raise ValueError(
+                    "Resolution evidence receipt lost its obligation event."
+                )
+            receipt_observation_refs.append(receipt.matched_observation_ref)
+        if tuple(sorted(receipt_observation_refs)) != observation_ids:
+            raise ValueError(
+                "Every matched observation requires one resolution coverage receipt."
+            )
         expected = stable_id(
             "integrated_inquiry_trace",
             self.model_dump(mode="json", exclude={"trace_id"}),
@@ -390,6 +448,7 @@ class IntegratedMatchedInquiryPair:
     baseline: CounterfactualRunResult
     treatment: CounterfactualRunResult
     observation: MatchedStructuralObservation
+    resolution_evidence: TraceResolutionEvidenceReceipt
 
     @property
     def replayed(self) -> bool:
@@ -774,6 +833,23 @@ class DependencyGapInquiryCoordinator:
                 raise IntegratedInquiryError(
                     "Matched treatment changed a pre-existing canonical record."
                 )
+            try:
+                resolution_evidence = TraceResolutionEvidenceDeriver().derive(
+                    working_kernel,
+                    working_runtime.ledger,
+                    obligation_event_ref=(
+                        mutation_by_obligation[obligation_id].event.event_id
+                    ),
+                    hypothesis=matched_hypothesis,
+                    plans=matched_plans,
+                    baseline_result=matched_baseline,
+                    treatment_result=matched_treatment,
+                    observation=observation,
+                )
+            except TraceResolutionEvidenceIntegrityError as exc:
+                raise IntegratedInquiryError(
+                    f"Resolution evidence coverage failed validation: {exc}"
+                ) from exc
             matched_pairs.append(
                 IntegratedMatchedInquiryPair(
                     obligation_id=obligation_id,
@@ -782,6 +858,7 @@ class DependencyGapInquiryCoordinator:
                     baseline=matched_baseline,
                     treatment=matched_treatment,
                     observation=observation,
+                    resolution_evidence=resolution_evidence,
                 )
             )
             for outcome in representatives[:trial_count]:
@@ -903,6 +980,9 @@ class DependencyGapInquiryCoordinator:
             trials=tuple(trials),
             matched_observations=tuple(
                 item.observation for item in matched_pairs
+            ),
+            resolution_evidence_receipts=tuple(
+                item.resolution_evidence for item in matched_pairs
             ),
             canonical_checkpoint_fingerprint=canonical_checkpoint,
             simulation_ledger_fingerprint=working_runtime.ledger.fingerprint(),

@@ -418,10 +418,10 @@ class OverlayOperationalProbe:
             )
         if (
             trace.disposition != SimulationDisposition.DISCARDED
-            or trace.result_refs != (hypothesis_ref,)
+            or hypothesis_ref not in trace.result_refs
         ):
             raise OperationalProbeIntegrityError(
-                "Operational probe requires one completed hypothesis-only run."
+                "Operational probe requires a completed run with hypothesis lineage."
             )
         obligation = kernel.state.obligation_kernels.get(trace.obligation_id)
         if obligation is None:

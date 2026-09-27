@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Sequence
 
 from pydantic import ConfigDict, Field, model_validator
 
@@ -54,8 +55,9 @@ def build_matched_counterfactual_plans(
     source_event_key: str,
     requested_budget: float,
     consumed_budget: float,
+    additional_result_refs: Sequence[str] = (),
 ) -> MatchedCounterfactualPlans:
-    """Build a zero-patch baseline and full-patch treatment without outcome labels."""
+    """Build matched arms with optional predeclared result-lineage controls."""
 
     hypothesis = StructuralHypothesis.model_validate(
         hypothesis.model_dump(mode="json")
@@ -64,13 +66,17 @@ def build_matched_counterfactual_plans(
         raise ValueError("Matched counterfactual plans require a source event key.")
     if not hypothesis.patches:
         raise ValueError("Matched counterfactual treatment requires a declared patch.")
+    raw_result_refs = (hypothesis.hypothesis_id, *additional_result_refs)
+    if not all(isinstance(item, str) and item.strip() for item in raw_result_refs):
+        raise ValueError("Matched counterfactual result refs cannot be empty.")
+    normalized_result_refs = tuple(sorted(set(raw_result_refs)))
     shared = {
         "operator_version": hypothesis.grammar_version,
         "requested_budget": requested_budget,
         "consumed_budget": consumed_budget,
         "patches": hypothesis.patches,
         "disposition": SimulationDisposition.DISCARDED,
-        "result_refs": (hypothesis.hypothesis_id,),
+        "result_refs": normalized_result_refs,
     }
     baseline = CounterfactualPlan.build(
         source_event_key=stable_id(

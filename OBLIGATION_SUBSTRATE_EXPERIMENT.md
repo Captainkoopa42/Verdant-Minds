@@ -1,4 +1,4 @@
-# Obligation Substrate v0.20
+# Obligation Substrate v0.21
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -64,6 +64,15 @@ generation, or safe autonomous policy revision.
   file, a synced replace, and a POSIX directory sync where available. Loading
   validates member hashes, both rebuilt fingerprints, and the reservation-to-
   canonical-Attention links before returning either reconstructed ledger.
+- Controlled POSIX child termination now exercises the archive write boundary
+  after temporary-file sync but before replacement, and after replacement but
+  before directory sync. The visible path remains the complete prior archive
+  in the first case and the complete candidate archive in the second.
+- Six coordinated process writers and a live reader exercise whole-file atomic
+  visibility. Every sampled byte sequence is one complete known archive, the
+  final file reloads and serializes exactly, and successful writers leave no
+  temporary member. This is last-successful-replace behavior, not writer
+  ordering, locking, or merge semantics.
 - The paired-archive test exercises `DependencyGap` and `Contradiction` in the
   same snapshot, then applies the same future canonical event to original and
   restored kernels. Both retain equal fingerprints and obligation Views while
@@ -314,11 +323,16 @@ generation, or safe autonomous policy revision.
   reservation; v0.4 does not yet meter physical CPU, memory, or wall-clock use.
 - The simulation ledger is packaged only by explicit `.vob` save/load calls;
   ordinary `.vdk` checkpoints and runtime scheduling do not automatically
-  include it. The atomic replace failure test and sync path support paired
-  durability, but process-kill recovery and concurrent writers have not been
-  exercised. Archive hashes detect accidental or non-rehashed alteration;
-  they are not signatures or an authenticity boundary against an adversary
-  able to rewrite every member and the manifest.
+  include it. Process-kill and competing-writer tests cover only local POSIX
+  fork/filesystem behavior at controlled userspace boundaries. They do not
+  establish Windows/NTFS, network-filesystem, kernel-crash, power-loss,
+  controller-cache, or hardware-failure durability. Writers have no lock,
+  ordering, arbitration, or merge protocol: the last successful replace wins.
+  A pre-replace kill can leave a fully written hidden temporary file, and no
+  automatic stale-temp cleanup is attempted because it could delete a live
+  concurrent writer's file. Archive hashes detect accidental or non-rehashed
+  alteration; they are not signatures or an authenticity boundary against an
+  adversary able to rewrite every member and the manifest.
 - The overlay supports a deliberately bounded set of canonical mapping
   collections and JSON hypothesis values. It does not validate those values as
   promotable canonical records and exposes no commit path.
@@ -573,6 +587,25 @@ generation, or safe autonomous policy revision.
   invoked detector-to-simulation integration path. v6 adds no scheduler,
   canonical resolution, variant promotion, policy rewrite, or semantic claim.
 
+## v0.21 claim boundary
+
+- **OBSERVED:** Twenty-six focused archive/durability tests and the 372-test
+  full repository suite pass. Controlled POSIX child termination before
+  replacement leaves the prior archive byte-identical and readable;
+  termination after replacement exposes the complete new archive. Six
+  coordinated process writers with a live reader expose only complete known
+  archives. The existing archive suite still embeds and reloads all 17 legacy
+  VDK checkpoints through v1-v6.
+- **IMPLEMENTED-EXPERIMENTAL:** The existing unique-temporary-file, file-fsync,
+  atomic-replace, and POSIX-directory-fsync write path now has direct process-
+  boundary and concurrent-writer falsification coverage. No archive format or
+  cognitive authority changed.
+- **PROPOSED:** An explicitly invoked detector-to-Attention-to-hypothesis-to-
+  isolated-simulation integration path with complete provenance and zero
+  canonical leakage. Windows and power-loss durability and writer arbitration
+  remain excluded. No canonical resolution, promotion, policy rewrite, or
+  semantic claim is established.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -675,3 +708,7 @@ replay, custom policy recovery, complete per-decision trial coverage, exact
 admission and shadow-decision recomputation, rehashed anomaly and trial changes,
 missing settlement rejection, hard non-promotion, and all 17 legacy checkpoints
 embedded in an empty-Paradigm v6 envelope.
+Archive-durability tests additionally target controlled pre/post-replace
+process termination, old-or-new visibility, subsequent-save recovery, six
+competing process writers, live-reader whole-file atomicity, final archive
+validation, and successful-writer temporary-file cleanup.

@@ -1,4 +1,4 @@
-# Obligation Substrate v0.18
+# Obligation Substrate v0.19
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -124,6 +124,18 @@ generation, or safe autonomous policy revision.
   settlement reserved for that same obligation. Rehashed foreign Council
   substitution and removal of candidate simulation lineage therefore fail
   closed before the bundle is returned.
+- An explicit v5 `.vob` archive can additionally retain one content-addressed
+  Council evidence record per decision sequence. Each record preserves the
+  exact typed candidates and `EpistemicPreservationObservation` inputs used by
+  the tournament. Loading rebuilds a fresh tournament from an empty ledger,
+  reruns every decision in order against the recovered canonical, simulation,
+  Lens, and Diagnostic state, and requires byte-model equality with the stored
+  decision ledger—including its request hash, Pareto frontier, assessments,
+  and selected candidate.
+- Complete v5 evidence permits deterministic replay of explicitly configured
+  Council candidate bounds. Incomplete decision coverage, changed evidence,
+  changed request policy, or any replay result differing from the durable
+  decision fails closed. The recovered tournament remains recommendation-only.
 - Evidence distinguishes support, valid nulls, over-smoothing,
   hyper-discrimination, and absent explanatory gain. Valid nulls do not count
   as evaluator failures. A binding suspends atomically when its declared
@@ -387,12 +399,12 @@ generation, or safe autonomous policy revision.
   expose the recovered tournament. The bundle loader is required, and archive
   recovery grants no intervention or canonical-write authority.
 - `CouncilInterventionCandidate` and `EpistemicPreservationObservation`
-  objects remain transient tournament inputs. v4 proves that every durable
-  candidate ID has parent-local isolated simulation lineage, but the current
-  Council ledger does not preserve enough of those inputs to recompute the
-  request hash, preservation vector, orthogonal contexts, or assessment from
-  first principles after reload. v4 therefore fails closed on non-default
-  Council policy parameters rather than pretending it can prove their pairing.
+  objects remain transient in v4, which therefore still fails closed on non-
+  default Council policy parameters. An explicitly supplied v5 evidence ledger
+  preserves them and permits full decision recomputation, but it does not make
+  the observations native: repair-restored flags, blast-radius lists, wave-
+  state, `c_memory`, observer-only `T_g`, and orthogonal fingerprints are still
+  typed experimental inputs supplied by the harness.
 - The Paradigm Challenge ledger remains outside the paired archive. Its cross-
   ledger recovery and reference closure remain untested. Archive tests cover
   Lens bindings for `DependencyGap` and `Contradiction`, not all five
@@ -506,6 +518,26 @@ generation, or safe autonomous policy revision.
   simulation path. No canonical diagnosis, intervention, resolution,
   component penalty, promotion, or policy rewrite is established.
 
+## v0.19 claim boundary
+
+- **OBSERVED:** Twenty focused archive tests and the 366-test full repository
+  suite pass. A deterministic v5 round trip restores a Council tournament with
+  non-default candidate bounds, then reproduces its request hash, assessments,
+  frontier, and recommendation from the durable candidate and preservation
+  records. Incomplete evidence coverage and a rehashed one-unit preservation-
+  metric change fail closed. All 17 preexisting VDK checkpoints embed and
+  reload through v1-v5 envelopes, including an empty-evidence v5 envelope.
+- **IMPLEMENTED-EXPERIMENTAL:** A content-addressed Council evidence ledger and
+  explicit v5 `.vob` format preserve every request input represented by the
+  existing tournament schema. Archive loading reruns the non-executing Council
+  algorithm from an empty decision ledger and requires exact equality with the
+  paired durable decisions before exposing the bundle.
+- **PROPOSED:** Paradigm Challenge sidecar pairing; deriving preservation and
+  orthogonal observations from actual experiment traces and matched controls;
+  real process-kill and concurrent-writer proofs; and an opt-in integrated
+  detector-to-simulation path. No canonical diagnosis, intervention,
+  resolution, component penalty, promotion, or policy rewrite is established.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -599,3 +631,7 @@ six-part fingerprint restoration, mandatory Diagnostic pairing, exact decision
 replay without authority, rehashed foreign-ledger rejection, missing candidate-
 simulation rejection, and all 17 legacy checkpoints embedded in an empty-
 Council v4 envelope.
+Council-evidence archive tests additionally target deterministic v5 replay,
+custom policy recovery, complete per-decision evidence coverage, exact request
+and least-regret recomputation, rehashed metric-change rejection, and all 17
+legacy checkpoints embedded in an empty-evidence v5 envelope.

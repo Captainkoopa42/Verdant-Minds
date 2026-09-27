@@ -3,9 +3,10 @@
 The archive has no path that commits an overlay or changes the ordinary .vdk
 format. Legacy v1 holds canonical plus simulation state; v2 may additionally
 hold the Equivalence Lens registry and ledger; v3 may also hold the terminal
-Diagnostic ledger; v4 may also hold the non-executing Council tournament.
-A complete archive is one atomic file, not independently timed checkpoint
-writes.
+Diagnostic ledger; v4 may also hold the non-executing Council tournament; v5
+may additionally retain the evidence required to recompute every Council
+decision. A complete archive is one atomic file, not independently timed
+checkpoint writes.
 """
 from __future__ import annotations
 
@@ -39,7 +40,9 @@ from .equivalence import (
     LensIntegrityError,
 )
 from .interventions import (
+    CouncilEvidenceLedgerState,
     CouncilInterventionLedgerState,
+    CouncilInterventionIntegrityError,
     CouncilInterventionPolicy,
     CouncilLeastRegretTournament,
 )
@@ -49,6 +52,7 @@ EXPERIMENT_ARCHIVE_LEGACY_FORMAT = "verdant-obligation-experiment-v1"
 EXPERIMENT_ARCHIVE_FORMAT = "verdant-obligation-experiment-v2"
 EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT = "verdant-obligation-experiment-v3"
 EXPERIMENT_ARCHIVE_COUNCIL_FORMAT = "verdant-obligation-experiment-v4"
+EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT = "verdant-obligation-experiment-v5"
 _CANONICAL = "canonical.vdk"
 _SIMULATION = "simulation.json"
 _LENS_REGISTRY = "lens_registry.json"
@@ -56,11 +60,13 @@ _LENS_LEDGER = "lens_ledger.json"
 _DIAGNOSTIC_LEDGER = "diagnostic_ledger.json"
 _COUNCIL_POLICY = "council_policy.json"
 _COUNCIL_LEDGER = "council_ledger.json"
+_COUNCIL_EVIDENCE = "council_evidence.json"
 _MANIFEST = "manifest.json"
 _V1_FILES = (_CANONICAL, _SIMULATION)
 _V2_FILES = (*_V1_FILES, _LENS_REGISTRY, _LENS_LEDGER)
 _V3_FILES = (*_V2_FILES, _DIAGNOSTIC_LEDGER)
 _V4_FILES = (*_V3_FILES, _COUNCIL_POLICY, _COUNCIL_LEDGER)
+_V5_FILES = (*_V4_FILES, _COUNCIL_EVIDENCE)
 _MAX_MEMBER_BYTES = 128 * 1024 * 1024
 _FIXED_ZIP_TIME = (2026, 1, 1, 0, 0, 0)
 
@@ -76,6 +82,7 @@ class ExperimentArchiveBundle:
     lens_system: EquivalenceLensSystem | None
     diagnostic_engine: DiagnosticEngine | None
     council_tournament: CouncilLeastRegretTournament | None
+    council_evidence: CouncilEvidenceLedgerState | None
     format_version: str
 
 
@@ -360,9 +367,11 @@ def _validate_council_links(
     ledger: SimulationLedger,
     diagnostics: DiagnosticEngine,
     council: CouncilLeastRegretTournament,
+    *,
+    complete_evidence: bool = False,
 ) -> None:
     """Close the durable Council edges represented by the v0.9 ledger."""
-    if council.policy != CouncilInterventionPolicy():
+    if not complete_evidence and council.policy != CouncilInterventionPolicy():
         raise ExperimentArchiveIntegrityError(
             "Council archive cannot prove a non-default policy without durable "
             "candidate observations."
@@ -418,6 +427,58 @@ def _validate_council_links(
                 )
 
 
+def _validate_council_evidence(
+    kernel: VerdantKernel,
+    ledger: SimulationLedger,
+    lenses: EquivalenceLensSystem,
+    diagnostics: DiagnosticEngine,
+    council: CouncilLeastRegretTournament,
+    evidence: CouncilEvidenceLedgerState,
+) -> None:
+    """Recompute the complete Council decision ledger from durable requests."""
+    decisions = council.state.decisions
+    if len(evidence.records) != len(decisions):
+        raise ExperimentArchiveIntegrityError(
+            "Council evidence does not cover every durable decision."
+        )
+    replay = CouncilLeastRegretTournament(policy=council.policy)
+    try:
+        for decision, record in zip(decisions, evidence.records, strict=True):
+            if (
+                record.decision_id != decision.decision_id
+                or record.decision_sequence != decision.sequence
+                or record.source_event_key != decision.source_event_key
+                or record.diagnostic_result_id != decision.diagnostic_result_id
+                or tuple(item.candidate_id for item in record.candidates)
+                != decision.candidate_ids
+            ):
+                raise ExperimentArchiveIntegrityError(
+                    "Council evidence disagrees with its durable decision."
+                )
+            recomputed = replay.decide(
+                kernel,
+                diagnostic_result_id=record.diagnostic_result_id,
+                candidates=record.candidates,
+                evaluations=record.evaluations,
+                diagnostics=diagnostics,
+                simulation_ledger=ledger,
+                lens_system=lenses,
+                source_event_key=record.source_event_key,
+            )
+            if recomputed != decision:
+                raise ExperimentArchiveIntegrityError(
+                    "Council decision could not be reproduced from durable evidence."
+                )
+    except CouncilInterventionIntegrityError as error:
+        raise ExperimentArchiveIntegrityError(
+            "Council evidence failed deterministic tournament replay."
+        ) from error
+    if replay.state != council.state:
+        raise ExperimentArchiveIntegrityError(
+            "Council evidence replay produced a different ledger."
+        )
+
+
 def experiment_archive_bytes(
     kernel: VerdantKernel,
     ledger: SimulationLedger,
@@ -425,6 +486,7 @@ def experiment_archive_bytes(
     lens_system: EquivalenceLensSystem | None = None,
     diagnostic_engine: DiagnosticEngine | None = None,
     council_tournament: CouncilLeastRegretTournament | None = None,
+    council_evidence: CouncilEvidenceLedgerState | None = None,
 ) -> bytes:
     """Build a deterministic, non-mutating experimental snapshot."""
     canonical = VerdantKernel.from_state(kernel.snapshot())
@@ -476,7 +538,13 @@ def experiment_archive_bytes(
                 council_tournament.snapshot()
             ),
         )
-        _validate_council_links(canonical, simulation, diagnostics, council)
+        _validate_council_links(
+            canonical,
+            simulation,
+            diagnostics,
+            council,
+            complete_evidence=council_evidence is not None,
+        )
         files[_COUNCIL_POLICY] = canonical_json_bytes(
             council.policy.model_dump(mode="json")
         )
@@ -485,6 +553,27 @@ def experiment_archive_bytes(
         )
         fingerprints["council_fingerprint"] = _council_fingerprint(council)
         format_version = EXPERIMENT_ARCHIVE_COUNCIL_FORMAT
+    if council_evidence is not None:
+        if council_tournament is None:
+            raise ExperimentArchiveIntegrityError(
+                "Council evidence archives require their paired tournament."
+            )
+        evidence = CouncilEvidenceLedgerState.model_validate(
+            council_evidence.model_dump(mode="json")
+        )
+        _validate_council_evidence(
+            canonical,
+            simulation,
+            lenses,
+            diagnostics,
+            council,
+            evidence,
+        )
+        files[_COUNCIL_EVIDENCE] = canonical_json_bytes(
+            evidence.model_dump(mode="json")
+        )
+        fingerprints["council_evidence_fingerprint"] = evidence.fingerprint()
+        format_version = EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT
     manifest = canonical_json_bytes({
         "format": format_version,
         **fingerprints,
@@ -510,6 +599,7 @@ def save_experiment_archive(
     lens_system: EquivalenceLensSystem | None = None,
     diagnostic_engine: DiagnosticEngine | None = None,
     council_tournament: CouncilLeastRegretTournament | None = None,
+    council_evidence: CouncilEvidenceLedgerState | None = None,
 ) -> str:
     """Replace one archive after syncing its bytes, then its POSIX directory."""
     data = experiment_archive_bytes(
@@ -518,6 +608,7 @@ def save_experiment_archive(
         lens_system=lens_system,
         diagnostic_engine=diagnostic_engine,
         council_tournament=council_tournament,
+        council_evidence=council_evidence,
     )
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -588,6 +679,13 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
                 "lens_fingerprint", "diagnostic_fingerprint",
                 "council_fingerprint", "files",
             }
+        elif format_version == EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT:
+            expected_files = _V5_FILES
+            expected_manifest_keys = {
+                "format", "canonical_fingerprint", "simulation_fingerprint",
+                "lens_fingerprint", "diagnostic_fingerprint",
+                "council_fingerprint", "council_evidence_fingerprint", "files",
+            }
         else:
             raise ExperimentArchiveIntegrityError("Archive manifest is invalid.")
         if (
@@ -620,6 +718,7 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
             EXPERIMENT_ARCHIVE_FORMAT,
             EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT,
             EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
+            EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
         }:
             registry_bytes = files[_LENS_REGISTRY]
             ledger_bytes = files[_LENS_LEDGER]
@@ -639,6 +738,7 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
         if format_version in {
             EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT,
             EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
+            EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
         }:
             diagnostic_bytes = files[_DIAGNOSTIC_LEDGER]
             diagnostic_state = DiagnosticLedgerState.model_validate_json(
@@ -658,7 +758,10 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
                 raise ExperimentArchiveIntegrityError("Archive fingerprint mismatch.")
             _validate_diagnostic_links(kernel, ledger, lenses, diagnostics)
         council = None
-        if format_version == EXPERIMENT_ARCHIVE_COUNCIL_FORMAT:
+        if format_version in {
+            EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
+            EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
+        }:
             policy_bytes = files[_COUNCIL_POLICY]
             council_bytes = files[_COUNCIL_LEDGER]
             policy = CouncilInterventionPolicy.model_validate_json(policy_bytes)
@@ -680,13 +783,48 @@ def load_experiment_archive_bundle(path: Path) -> ExperimentArchiveBundle:
             )
             if manifest["council_fingerprint"] != _council_fingerprint(council):
                 raise ExperimentArchiveIntegrityError("Archive fingerprint mismatch.")
-            _validate_council_links(kernel, ledger, diagnostics, council)
+            _validate_council_links(
+                kernel,
+                ledger,
+                diagnostics,
+                council,
+                complete_evidence=(
+                    format_version == EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT
+                ),
+            )
+        evidence = None
+        if format_version == EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT:
+            evidence_bytes = files[_COUNCIL_EVIDENCE]
+            evidence = CouncilEvidenceLedgerState.model_validate_json(
+                evidence_bytes
+            )
+            if (
+                canonical_json_bytes(evidence.model_dump(mode="json"))
+                != evidence_bytes
+            ):
+                raise ExperimentArchiveIntegrityError(
+                    "Council evidence JSON is not canonical."
+                )
+            if (
+                manifest["council_evidence_fingerprint"]
+                != evidence.fingerprint()
+            ):
+                raise ExperimentArchiveIntegrityError("Archive fingerprint mismatch.")
+            _validate_council_evidence(
+                kernel,
+                ledger,
+                lenses,
+                diagnostics,
+                council,
+                evidence,
+            )
         return ExperimentArchiveBundle(
             kernel=kernel,
             simulation_ledger=ledger,
             lens_system=lenses,
             diagnostic_engine=diagnostics,
             council_tournament=council,
+            council_evidence=evidence,
             format_version=format_version,
         )
     except (

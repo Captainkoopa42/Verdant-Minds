@@ -27,6 +27,7 @@ from .equivalence import EquivalenceLensSystem
 
 COUNCIL_INTERVENTION_POLICY_VERSION = "council_least_regret_policy_v0.9"
 COUNCIL_INTERVENTION_LEDGER_VERSION = "council_intervention_ledger_v0.9"
+COUNCIL_EVIDENCE_LEDGER_VERSION = "council_evidence_ledger_v0.19"
 
 
 class CouncilInterventionIntegrityError(RuntimeError):
@@ -333,6 +334,108 @@ class CouncilTournamentDecision(FrozenRecord):
         if self.decision_id != stable_id("council_tournament_decision", payload):
             raise ValueError("Council tournament decision checksum mismatch.")
         return self
+
+
+class CouncilTournamentEvidenceRecord(FrozenRecord):
+    evidence_record_id: str
+    decision_id: str
+    decision_sequence: int = Field(ge=1)
+    source_event_key: str
+    diagnostic_result_id: str
+    candidates: tuple[CouncilInterventionCandidate, ...] = Field(min_length=2)
+    evaluations: tuple[EpistemicPreservationObservation, ...] = Field(min_length=2)
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        decision: CouncilTournamentDecision,
+        candidates: Sequence[CouncilInterventionCandidate],
+        evaluations: Sequence[EpistemicPreservationObservation],
+    ) -> "CouncilTournamentEvidenceRecord":
+        normalized_candidates = tuple(
+            sorted(candidates, key=lambda item: item.candidate_id)
+        )
+        normalized_evaluations = tuple(
+            sorted(evaluations, key=lambda item: item.candidate_id)
+        )
+        values = {
+            "decision_id": decision.decision_id,
+            "decision_sequence": decision.sequence,
+            "source_event_key": decision.source_event_key,
+            "diagnostic_result_id": decision.diagnostic_result_id,
+            "candidates": normalized_candidates,
+            "evaluations": normalized_evaluations,
+        }
+        payload = {
+            key: [item.model_dump(mode="json") for item in value]
+            if key in {"candidates", "evaluations"}
+            else value
+            for key, value in values.items()
+        }
+        return cls(
+            evidence_record_id=stable_id("council_tournament_evidence", payload),
+            **values,
+        )
+
+    @model_validator(mode="after")
+    def validate_evidence(self) -> "CouncilTournamentEvidenceRecord":
+        required = (
+            self.decision_id,
+            self.source_event_key,
+            self.diagnostic_result_id,
+        )
+        if not all(item.strip() for item in required):
+            raise ValueError("Council evidence identity fields cannot be empty.")
+        candidate_ids = tuple(item.candidate_id for item in self.candidates)
+        evaluation_ids = tuple(item.candidate_id for item in self.evaluations)
+        if tuple(sorted(set(candidate_ids))) != candidate_ids:
+            raise ValueError("Council evidence candidates must be sorted and unique.")
+        if evaluation_ids != candidate_ids:
+            raise ValueError(
+                "Council evidence requires one sorted evaluation per candidate."
+            )
+        if any(
+            item.diagnostic_result_id != self.diagnostic_result_id
+            for item in self.candidates
+        ):
+            raise ValueError("Council evidence crossed a Diagnostic Result boundary.")
+        payload = self.model_dump(mode="json", exclude={"evidence_record_id"})
+        if self.evidence_record_id != stable_id(
+            "council_tournament_evidence", payload
+        ):
+            raise ValueError("Council evidence checksum mismatch.")
+        return self
+
+
+class CouncilEvidenceLedgerState(BaseModel):
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    schema_version: str = COUNCIL_EVIDENCE_LEDGER_VERSION
+    records: tuple[CouncilTournamentEvidenceRecord, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_ledger(self) -> "CouncilEvidenceLedgerState":
+        if self.schema_version != COUNCIL_EVIDENCE_LEDGER_VERSION:
+            raise ValueError("Unsupported Council evidence ledger schema.")
+        ids = tuple(item.evidence_record_id for item in self.records)
+        decisions = tuple(item.decision_id for item in self.records)
+        sources = tuple(item.source_event_key for item in self.records)
+        if (
+            len(set(ids)) != len(ids)
+            or len(set(decisions)) != len(decisions)
+            or len(set(sources)) != len(sources)
+        ):
+            raise ValueError("Council evidence ledger duplicates a decision.")
+        for expected, record in enumerate(self.records, start=1):
+            if record.decision_sequence != expected:
+                raise ValueError("Council evidence sequence is not contiguous.")
+        return self
+
+    def fingerprint(self) -> str:
+        return hashlib.sha256(
+            canonical_json_bytes(self.model_dump(mode="json"))
+        ).hexdigest()
 
 
 class CouncilInterventionLedgerState(BaseModel):

@@ -17,14 +17,17 @@ from verdant_kernel.models import canonical_json_bytes
 from verdant_obligations import (
     AttentionBidInput, AttentionPortfolio, ContradictionObligationDetector,
     CounterfactualPatch, CounterfactualPlan, CounterfactualRuntime,
-    CouncilInterventionCandidate, CouncilInterventionPolicy,
+    CouncilEvidenceLedgerState, CouncilInterventionCandidate,
+    CouncilInterventionPolicy,
     CouncilLeastRegretTournament,
-    CouncilTournamentDisposition,
+    CouncilTournamentDisposition, CouncilTournamentEvidenceRecord,
     DependencyGapPipeline, DiagnosticConclusion, DiagnosticEngine,
     DiagnosticLedgerState, DiagnosticProbeFinding, DiagnosticProbeKind,
     DiagnosticProbeObservation, DiagnosticResult, DiagnosticTriggerKind,
     EpistemicPreservationObservation, EquivalenceLensSystem,
-    ExperimentArchiveIntegrityError, EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
+    ExperimentArchiveIntegrityError,
+    EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT,
+    EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
     EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT, EXPERIMENT_ARCHIVE_FORMAT,
     EXPERIMENT_ARCHIVE_LEGACY_FORMAT, InquiryFailureEvidence, LensEvidenceResult,
     InterventionKind, LensOpcode, OrthogonalFingerprintObservation,
@@ -95,6 +98,7 @@ def _repack(
     lenses: EquivalenceLensSystem | None = None,
     diagnostics: DiagnosticEngine | None = None,
     council: CouncilLeastRegretTournament | None = None,
+    council_evidence: CouncilEvidenceLedgerState | None = None,
 ) -> bytes:
     manifest = json.loads(parts["manifest.json"])
     for name in manifest["files"]:
@@ -120,6 +124,10 @@ def _repack(
         manifest["council_fingerprint"] = hashlib.sha256(
             canonical_json_bytes(council_payload)
         ).hexdigest()
+    if council_evidence is not None:
+        manifest["council_evidence_fingerprint"] = (
+            council_evidence.fingerprint()
+        )
     parts["manifest.json"] = canonical_json_bytes(manifest)
     output = io.BytesIO()
     with zipfile.ZipFile(output, "w") as archive:
@@ -274,6 +282,24 @@ def test_all_17_legacy_checkpoints_load_and_embed(tmp_path: Path) -> None:
             council_bundle.council_tournament.fingerprint()
             == empty_council.fingerprint()
         )
+        evidence_path = tmp_path / f"{original.stem}-v5.vob"
+        empty_evidence = CouncilEvidenceLedgerState()
+        save_experiment_archive(
+            evidence_path,
+            kernel,
+            SimulationLedger(),
+            lens_system=empty_lenses,
+            diagnostic_engine=empty_diagnostics,
+            council_tournament=empty_council,
+            council_evidence=empty_evidence,
+        )
+        evidence_bundle = load_experiment_archive_bundle(evidence_path)
+        assert evidence_bundle.kernel.fingerprint() == kernel.fingerprint()
+        assert evidence_bundle.council_evidence is not None
+        assert (
+            evidence_bundle.council_evidence.fingerprint()
+            == empty_evidence.fingerprint()
+        )
 
 
 def _lenses(
@@ -411,6 +437,7 @@ def _council(
     diagnostics: DiagnosticEngine,
     *,
     suffix: str = "primary",
+    policy: CouncilInterventionPolicy | None = None,
 ) -> tuple[
     CouncilLeastRegretTournament,
     tuple[CouncilInterventionCandidate, ...],
@@ -484,7 +511,7 @@ def _council(
             ),),
             basis_refs=(basis_ref,),
         ))
-    tournament = CouncilLeastRegretTournament()
+    tournament = CouncilLeastRegretTournament(policy=policy)
     council_decision = tournament.decide(
         kernel,
         diagnostic_result_id=result.result_id,
@@ -497,6 +524,20 @@ def _council(
     )
     assert council_decision.disposition == CouncilTournamentDisposition.RECOMMEND
     return tournament, candidates, tuple(evaluations)
+
+
+def _council_evidence(
+    council: CouncilLeastRegretTournament,
+    candidates: tuple[CouncilInterventionCandidate, ...],
+    evaluations: tuple[EpistemicPreservationObservation, ...],
+) -> CouncilEvidenceLedgerState:
+    return CouncilEvidenceLedgerState(records=(
+        CouncilTournamentEvidenceRecord.build(
+            decision=council.state.decisions[0],
+            candidates=candidates,
+            evaluations=evaluations,
+        ),
+    ))
 
 
 def test_lens_archive_replays_both_sidecars_without_canonical_leakage(
@@ -984,5 +1025,139 @@ def test_rehashed_missing_council_candidate_simulation_fails_closed(
     with pytest.raises(
         ExperimentArchiveIntegrityError,
         match="candidate's isolated simulation lineage",
+    ):
+        load_experiment_archive_bundle(path)
+
+
+def test_council_evidence_archive_recomputes_custom_policy_decision(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime, suffix="evidence")
+    diagnostics = _diagnostics(kernel, runtime, lenses, suffix="evidence")
+    policy = CouncilInterventionPolicy(maximum_candidates=7)
+    council, candidates, evaluations = _council(
+        kernel,
+        runtime,
+        lenses,
+        diagnostics,
+        suffix="evidence",
+        policy=policy,
+    )
+    evidence = _council_evidence(council, candidates, evaluations)
+    before = (
+        kernel.fingerprint(),
+        runtime.ledger.fingerprint(),
+        lenses.fingerprint(),
+        diagnostics.fingerprint(),
+        council.fingerprint(),
+        evidence.fingerprint(),
+    )
+    data = experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+        council_evidence=evidence,
+    )
+    assert data == experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+        council_evidence=evidence,
+    )
+    assert json.loads(_parts(data)["manifest.json"])["format"] == (
+        EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT
+    )
+    path = tmp_path / "council-evidence.vob"
+    save_experiment_archive(
+        path,
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+        council_evidence=evidence,
+    )
+    bundle = load_experiment_archive_bundle(path)
+    assert bundle.council_tournament is not None
+    assert bundle.council_evidence is not None
+    assert bundle.council_tournament.policy == policy
+    assert (
+        bundle.kernel.fingerprint(),
+        bundle.simulation_ledger.fingerprint(),
+        bundle.lens_system.fingerprint(),
+        bundle.diagnostic_engine.fingerprint(),
+        bundle.council_tournament.fingerprint(),
+        bundle.council_evidence.fingerprint(),
+    ) == before
+    decision = bundle.council_tournament.state.decisions[0]
+    assert decision.request_sha256 == council.state.decisions[0].request_sha256
+    assert not decision.intervention_authority_enabled
+
+
+def test_council_evidence_archive_requires_complete_pairing() -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+    council, _, _ = _council(kernel, runtime, lenses, diagnostics)
+    with pytest.raises(ExperimentArchiveIntegrityError, match="cover every"):
+        experiment_archive_bytes(
+            kernel,
+            runtime.ledger,
+            lens_system=lenses,
+            diagnostic_engine=diagnostics,
+            council_tournament=council,
+            council_evidence=CouncilEvidenceLedgerState(),
+        )
+    with pytest.raises(ExperimentArchiveIntegrityError, match="paired tournament"):
+        experiment_archive_bytes(
+            kernel,
+            runtime.ledger,
+            lens_system=lenses,
+            diagnostic_engine=diagnostics,
+            council_evidence=CouncilEvidenceLedgerState(),
+        )
+
+
+def test_rehashed_council_evidence_change_fails_full_recomputation(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+    council, candidates, evaluations = _council(
+        kernel, runtime, lenses, diagnostics
+    )
+    evidence = _council_evidence(council, candidates, evaluations)
+    parts = _parts(experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+        council_evidence=evidence,
+    ))
+    original = evaluations[0]
+    values = original.model_dump(mode="python", exclude={"evaluation_id"})
+    values["wave_state_deviation_ppm"] += 1
+    changed = EpistemicPreservationObservation.build(**values)
+    changed_evaluations = (changed, *evaluations[1:])
+    altered_evidence = _council_evidence(
+        council,
+        candidates,
+        changed_evaluations,
+    )
+    parts["council_evidence.json"] = canonical_json_bytes(
+        altered_evidence.model_dump(mode="json")
+    )
+    path = tmp_path / "changed-council-evidence.vob"
+    path.write_bytes(_repack(parts, council_evidence=altered_evidence))
+    with pytest.raises(
+        ExperimentArchiveIntegrityError,
+        match="could not be reproduced",
     ):
         load_experiment_archive_bundle(path)

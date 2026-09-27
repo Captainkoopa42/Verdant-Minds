@@ -1,4 +1,4 @@
-# Obligation Substrate v0.22
+# Obligation Substrate v0.23
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -54,6 +54,11 @@ generation, or safe autonomous policy revision.
 - Every settlement requires exact equality of the complete canonical kernel
   fingerprint before and after the dry run. Discarded, cancelled, and failed
   runs all remain non-authoritative and cannot commit their overlay.
+- Every executed or replayed settlement now returns a content-addressed
+  `CounterfactualExecutionTrace` reconstructed from the actual plan, canonical
+  checkpoint, reservation, settlement, and materialized copy-on-write overlay.
+  It covers every authorized overlay collection and records complete before/
+  after collection hashes plus added, removed, and changed record keys.
 - A paired-checkpoint test executes 100 mixed discarded/cancelled/failed
   simulations on one arm, then applies the same canonical event to both arms.
   Canonical fingerprints and obligation histories remain identical while only
@@ -110,6 +115,17 @@ generation, or safe autonomous policy revision.
   state in an existing `.vob`, reloading it, and explicitly rerunning the same
   request reconstructs the identical trace at zero additional canonical or
   simulation cost.
+- An explicitly invoked `MatchedCounterfactualObserver` compares a real
+  zero-intervention baseline and full-patch treatment only when their canonical
+  checkpoint, Attention decision/allocation, operator, budgets, declared
+  patches, disposition, and result lineage share the same derived match
+  signature. It derives additive, valid-null, or canonical-record-mutation
+  structural effects from the materialized traces rather than accepting an
+  outcome label from the caller.
+- The matched structural receipt reports whether any pre-existing canonical
+  overlay record was removed or changed. Both arms remain discarded
+  simulations, and the receipt hard-codes simulated-only status with no
+  observed-outcome, resolution, promotion, or commit authority.
 - Immutable `EquivalenceLensDefinition` records now hold a deterministic,
   side-effect-free operator IR in a content-addressed registry. Definitions
   preserve provenance and optional parent lineage; duplicate content reuses the
@@ -341,6 +357,24 @@ generation, or safe autonomous policy revision.
   coordinator does not move a `MayWake` obligation into `Recheck_Pending`,
   append an `AttemptRecord`, classify an arm as actually observed, or alter
   obligation status from the simulation result.
+- v0.23 execution traces and matched structural observations are transient,
+  deterministically reconstructable receipts. The simulation reservation and
+  settlement remain durable in `.vob`, but the materialized collection deltas
+  and matched receipt are not new archive members or canonical VDK records.
+- The matched observer supports only a zero-applied-patch baseline against the
+  full declared patch sequence under one canonical checkpoint and one
+  Attention allocation. It does not model stochastic seeds, temporal horizons,
+  partial interventions, external environments, physical outcomes, or
+  concurrent world changes.
+- A derived `additive_overlay_effect` means only that the treatment materialized
+  additional JSON records relative to its matched baseline. A
+  `canonical_record_mutation` means the simulated overlay removed or changed a
+  pre-existing record. Neither result establishes causal sufficiency, semantic
+  correctness, predictive improvement, real-world success, or truth.
+- v0.23 does not infer retrieved/admitted reference sets, an outgoing action,
+  a dependency path, or an actually occurring preregistered `OutcomeKind`.
+  It therefore does not automatically construct a `ResolutionTrialObservation`
+  or feed the Resolution Contract, Diagnostic, Council, or Paradigm ledgers.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
   provenance-visible bids, but v0.14 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
@@ -375,8 +409,9 @@ generation, or safe autonomous policy revision.
   evidence kinds, traversable relation statuses, path-depth bound, and candidate
   cap remain explicit policy machinery; Verdant has not learned that grammar.
 - The prospective arms are preregistered structural possibilities, not observed
-  simulation results. No outcome evaluator yet selects which arm occurred, and
-  no canonical `AttemptRecord` or obligation status transition is appended.
+  world results. v0.23 derives only a matched structural overlay delta; no
+  outcome evaluator selects which functional arm occurred, and no canonical
+  `AttemptRecord` or obligation status transition is appended.
 - Lens operators are typed, deterministic, provenance-visible selectors, but
   Verdant does not yet synthesize or revise them. Approval and evidence-result
   classification are explicit experimental inputs rather than an implemented
@@ -662,6 +697,33 @@ generation, or safe autonomous policy revision.
   adds no autonomous scheduler, observed-outcome evaluator, `Resolved` path,
   structure promotion, policy rewrite, thermodynamic control, or semantic
   claim.
+
+## v0.23 claim boundary
+
+- **OBSERVED:** Twenty-four focused counterfactual, hypothesis, integrated-
+  inquiry, and matched-trace tests and the 383-test full repository suite pass.
+  A zero-patch baseline and full-patch treatment derived from the same
+  `DependencyGap` hypothesis produce an additive relation delta without any
+  supplied `OutcomeKind`. Exact archive reload replay adds no simulation cost.
+  Different consumed budgets fail matching, a substituted in-memory trace is
+  rejected by reconstruction from the actual ledger, deletion of an existing
+  relation is classified as non-preserving, and an exact-value upsert is a
+  valid structural null. The full suite still embeds and reloads all 17 legacy
+  VDK checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** Every counterfactual run now returns a
+  deterministic structural trace covering all authorized overlay collections.
+  The opt-in matched observer accepts only a verified zero/full intervention
+  pair with identical causal controls, then derives record additions, removals,
+  changes, and canonical-record preservation from materialized overlay state.
+  Its receipt is simulated-only and carries no observed-outcome, resolution,
+  promotion, or commit authority.
+- **PROPOSED:** Connect matched structural receipts to the v0.22 coordinator
+  without weakening its transaction boundary, then derive the additional
+  retrieved/admitted/action/path observations required by the existing
+  Resolution Contract using held-out matched controls. Family-local protocols
+  for other obligation families remain downstream. v0.23 does not establish an
+  actually occurring functional outcome, causal sufficiency, semantic truth,
+  autonomous inquiry, `T_g` control, or thermodynamic behavior.
 
 ## Access-pressure integration
 

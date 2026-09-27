@@ -52,8 +52,11 @@ from .attention import (
     AttentionPortfolioResult,
 )
 from .counterfactual import (
+    COUNTERFACTUAL_EXECUTION_TRACE_VERSION,
     COUNTERFACTUAL_RUNTIME_VERSION,
     SIMULATION_LEDGER_SCHEMA_VERSION,
+    CounterfactualCollectionDelta,
+    CounterfactualExecutionTrace,
     CounterfactualLeakError,
     CounterfactualOverlay,
     CounterfactualPatch,
@@ -67,6 +70,7 @@ from .counterfactual import (
     SimulationLedgerState,
     SimulationReservation,
     SimulationSettlement,
+    derive_counterfactual_execution_trace,
 )
 from .hypotheses import (
     FUNCTIONAL_PARTITION_VERSION,
@@ -92,6 +96,15 @@ from .inquiry import (
     IntegratedInquiryResult,
     IntegratedInquiryTrace,
     IntegratedInquiryTrial,
+)
+from .trace_observations import (
+    MATCHED_TRACE_OBSERVER_VERSION,
+    MatchedCounterfactualObserver,
+    MatchedCounterfactualPlans,
+    MatchedStructuralObservation,
+    StructuralTraceEffect,
+    TraceObservationIntegrityError,
+    build_matched_counterfactual_plans,
 )
 from .equivalence import (
     EQUIVALENCE_LENS_IR_VERSION,
@@ -235,8 +248,11 @@ __all__ = [
     "AttentionPortfolio",
     "AttentionPortfolioPolicy",
     "AttentionPortfolioResult",
+    "COUNTERFACTUAL_EXECUTION_TRACE_VERSION",
     "COUNTERFACTUAL_RUNTIME_VERSION",
     "SIMULATION_LEDGER_SCHEMA_VERSION",
+    "CounterfactualCollectionDelta",
+    "CounterfactualExecutionTrace",
     "CounterfactualLeakError",
     "CounterfactualOverlay",
     "CounterfactualPatch",
@@ -250,6 +266,7 @@ __all__ = [
     "SimulationLedgerState",
     "SimulationReservation",
     "SimulationSettlement",
+    "derive_counterfactual_execution_trace",
     "EXPERIMENT_ARCHIVE_COUNCIL_EVIDENCE_FORMAT",
     "EXPERIMENT_ARCHIVE_COUNCIL_FORMAT",
     "EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT",
@@ -283,6 +300,13 @@ __all__ = [
     "IntegratedInquiryResult",
     "IntegratedInquiryTrace",
     "IntegratedInquiryTrial",
+    "MATCHED_TRACE_OBSERVER_VERSION",
+    "MatchedCounterfactualObserver",
+    "MatchedCounterfactualPlans",
+    "MatchedStructuralObservation",
+    "StructuralTraceEffect",
+    "TraceObservationIntegrityError",
+    "build_matched_counterfactual_plans",
     "EQUIVALENCE_LENS_IR_VERSION",
     "LENS_LEDGER_SCHEMA_VERSION",
     "EquivalenceLensDefinition",

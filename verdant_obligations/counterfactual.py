@@ -29,6 +29,7 @@ from verdant_kernel.models import FrozenRecord, canonical_json_bytes, stable_id
 
 COUNTERFACTUAL_RUNTIME_VERSION = "counterfactual_runtime_v0.4"
 SIMULATION_LEDGER_SCHEMA_VERSION = "simulation_ledger_v0.4"
+COUNTERFACTUAL_EXECUTION_TRACE_VERSION = "counterfactual_execution_trace_v0.23"
 COUNTERFACTUAL_COLLECTIONS = frozenset(
     {
         "evidence",
@@ -374,6 +375,219 @@ class SimulationSettlement(FrozenRecord):
         return self
 
 
+def _execution_match_signature(
+    *,
+    operator_version: str,
+    obligation_id: str,
+    attention_decision_id: str,
+    allocation_id: str,
+    canonical_fingerprint: str,
+    requested_budget: float,
+    consumed_budget: float,
+    disposition: SimulationDisposition,
+    termination_code: str | None,
+    declared_patch_ids: tuple[str, ...],
+    result_refs: tuple[str, ...],
+) -> str:
+    return stable_id(
+        "counterfactual_match_signature",
+        COUNTERFACTUAL_EXECUTION_TRACE_VERSION,
+        {
+            "operator_version": operator_version,
+            "obligation_id": obligation_id,
+            "attention_decision_id": attention_decision_id,
+            "allocation_id": allocation_id,
+            "canonical_fingerprint": canonical_fingerprint,
+            "requested_budget": requested_budget,
+            "consumed_budget": consumed_budget,
+            "disposition": disposition.value,
+            "termination_code": termination_code,
+            "declared_patch_ids": declared_patch_ids,
+            "result_refs": result_refs,
+        },
+    )
+
+
+class CounterfactualCollectionDelta(FrozenRecord):
+    """Complete record-key delta for one materialized overlay collection."""
+
+    collection: str
+    before_sha256: str
+    after_sha256: str
+    before_record_count: int = Field(ge=0)
+    after_record_count: int = Field(ge=0)
+    added_record_keys: tuple[str, ...] = ()
+    removed_record_keys: tuple[str, ...] = ()
+    changed_record_keys: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_delta(self) -> "CounterfactualCollectionDelta":
+        if self.collection not in COUNTERFACTUAL_COLLECTIONS:
+            raise ValueError("Counterfactual trace contains an unknown collection.")
+        for digest in (self.before_sha256, self.after_sha256):
+            if len(digest) != 64 or any(
+                ch not in "0123456789abcdef" for ch in digest
+            ):
+                raise ValueError(
+                    "Counterfactual collection fingerprints must be lowercase SHA-256."
+                )
+        groups = (
+            self.added_record_keys,
+            self.removed_record_keys,
+            self.changed_record_keys,
+        )
+        if any(tuple(sorted(set(values))) != values for values in groups):
+            raise ValueError(
+                "Counterfactual collection delta keys must be sorted and unique."
+            )
+        added, removed, changed = (set(values) for values in groups)
+        if added & removed or added & changed or removed & changed:
+            raise ValueError("Counterfactual collection delta classes must be disjoint.")
+        if self.after_record_count != (
+            self.before_record_count + len(added) - len(removed)
+        ):
+            raise ValueError("Counterfactual collection delta record counts disagree.")
+        has_delta = bool(added or removed or changed)
+        if has_delta == (self.before_sha256 == self.after_sha256):
+            raise ValueError(
+                "Counterfactual collection delta disagrees with its fingerprints."
+            )
+        return self
+
+
+class CounterfactualExecutionTrace(FrozenRecord):
+    """Reconstructable structural receipt derived from an executed overlay."""
+
+    trace_id: str
+    trace_version: str = COUNTERFACTUAL_EXECUTION_TRACE_VERSION
+    match_signature: str
+    source_event_key: str
+    operator_version: str
+    obligation_id: str
+    attention_decision_id: str
+    allocation_id: str
+    plan_id: str
+    reservation_id: str
+    settlement_id: str
+    canonical_fingerprint: str
+    overlay_fingerprint: str
+    requested_budget: float = Field(gt=0.0)
+    consumed_budget: float = Field(ge=0.0)
+    disposition: SimulationDisposition
+    termination_code: str | None = None
+    declared_patch_ids: tuple[str, ...] = ()
+    applied_patch_ids: tuple[str, ...] = ()
+    result_refs: tuple[str, ...] = ()
+    collection_deltas: tuple[CounterfactualCollectionDelta, ...]
+    canonical_unchanged: bool = True
+    canonical_commit_permitted: bool = False
+    epistemic_authority_enabled: bool = False
+
+    @classmethod
+    def build(cls, **values: Any) -> "CounterfactualExecutionTrace":
+        deltas = tuple(
+            item
+            if isinstance(item, CounterfactualCollectionDelta)
+            else CounterfactualCollectionDelta.model_validate(item)
+            for item in values["collection_deltas"]
+        )
+        values["collection_deltas"] = tuple(
+            sorted(deltas, key=lambda item: item.collection)
+        )
+        values.setdefault("trace_version", COUNTERFACTUAL_EXECUTION_TRACE_VERSION)
+        values.setdefault("canonical_unchanged", True)
+        values.setdefault("canonical_commit_permitted", False)
+        values.setdefault("epistemic_authority_enabled", False)
+        values["trace_id"] = stable_id(
+            "counterfactual_execution_trace",
+            _model_payload(
+                {
+                    key: value
+                    for key, value in values.items()
+                    if key != "trace_id"
+                }
+            ),
+        )
+        return cls(**values)
+
+    @model_validator(mode="after")
+    def validate_trace(self) -> "CounterfactualExecutionTrace":
+        if self.trace_version != COUNTERFACTUAL_EXECUTION_TRACE_VERSION:
+            raise ValueError("Unsupported counterfactual execution trace version.")
+        identifiers = (
+            self.match_signature,
+            self.source_event_key,
+            self.operator_version,
+            self.obligation_id,
+            self.attention_decision_id,
+            self.allocation_id,
+            self.plan_id,
+            self.reservation_id,
+            self.settlement_id,
+        )
+        if not all(item.strip() for item in identifiers):
+            raise ValueError("Counterfactual execution trace identifiers cannot be empty.")
+        for digest in (
+            self.canonical_fingerprint,
+            self.overlay_fingerprint,
+        ):
+            if len(digest) != 64 or any(
+                ch not in "0123456789abcdef" for ch in digest
+            ):
+                raise ValueError(
+                    "Counterfactual execution trace digests must be lowercase SHA-256."
+                )
+        if self.consumed_budget > self.requested_budget + 1e-12:
+            raise ValueError("Counterfactual execution trace exceeds its reservation.")
+        if self.disposition == SimulationDisposition.DISCARDED:
+            if self.termination_code is not None:
+                raise ValueError("Discarded execution trace cannot have a termination code.")
+        elif self.termination_code is None or not self.termination_code.strip():
+            raise ValueError(
+                "Cancelled and failed execution traces require a termination code."
+            )
+        if len(set(self.declared_patch_ids)) != len(self.declared_patch_ids):
+            raise ValueError("Counterfactual trace repeats a declared patch.")
+        if self.applied_patch_ids != self.declared_patch_ids[
+            : len(self.applied_patch_ids)
+        ]:
+            raise ValueError("Counterfactual trace applied a non-prefix patch set.")
+        if tuple(sorted(set(self.result_refs))) != self.result_refs:
+            raise ValueError("Counterfactual trace result refs must be sorted and unique.")
+        collections = tuple(item.collection for item in self.collection_deltas)
+        if collections != tuple(sorted(COUNTERFACTUAL_COLLECTIONS)):
+            raise ValueError(
+                "Counterfactual execution trace must cover every overlay collection."
+            )
+        if (
+            not self.canonical_unchanged
+            or self.canonical_commit_permitted
+            or self.epistemic_authority_enabled
+        ):
+            raise ValueError(
+                "Counterfactual execution traces cannot mutate or assert authority."
+            )
+        expected_match = _execution_match_signature(
+            operator_version=self.operator_version,
+            obligation_id=self.obligation_id,
+            attention_decision_id=self.attention_decision_id,
+            allocation_id=self.allocation_id,
+            canonical_fingerprint=self.canonical_fingerprint,
+            requested_budget=self.requested_budget,
+            consumed_budget=self.consumed_budget,
+            disposition=self.disposition,
+            termination_code=self.termination_code,
+            declared_patch_ids=self.declared_patch_ids,
+            result_refs=self.result_refs,
+        )
+        if self.match_signature != expected_match:
+            raise ValueError("Counterfactual execution match signature was altered.")
+        payload = self.model_dump(mode="json", exclude={"trace_id"})
+        if self.trace_id != stable_id("counterfactual_execution_trace", payload):
+            raise ValueError("Counterfactual execution trace checksum mismatch.")
+        return self
+
+
 class SimulationLedgerState(BaseModel):
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
@@ -508,6 +722,131 @@ class CounterfactualOverlay:
                 "patches": [item.model_dump(mode="json") for item in self._patches],
             }
         )
+
+
+def derive_counterfactual_execution_trace(
+    kernel: VerdantKernel,
+    ledger: "SimulationLedger",
+    *,
+    plan: CounterfactualPlan,
+    reservation: SimulationReservation,
+    settlement: SimulationSettlement,
+) -> CounterfactualExecutionTrace:
+    """Reconstruct and validate the materialized overlay for one real settlement."""
+
+    plan = CounterfactualPlan.model_validate(plan.model_dump(mode="json"))
+    reservation = SimulationReservation.model_validate(
+        reservation.model_dump(mode="json")
+    )
+    settlement = SimulationSettlement.model_validate(
+        settlement.model_dump(mode="json")
+    )
+    canonical_reservation = next(
+        (
+            item
+            for item in ledger.state.reservations
+            if item.reservation_id == reservation.reservation_id
+        ),
+        None,
+    )
+    canonical_settlement = next(
+        (
+            item
+            for item in ledger.state.settlements
+            if item.settlement_id == settlement.settlement_id
+        ),
+        None,
+    )
+    if canonical_reservation != reservation or canonical_settlement != settlement:
+        raise SimulationIntegrityError(
+            "Counterfactual trace cites a foreign or altered simulation record."
+        )
+    if (
+        reservation.plan_id != plan.plan_id
+        or reservation.source_event_key != plan.source_event_key
+        or reservation.canonical_fingerprint != kernel.fingerprint()
+        or settlement.reservation_id != reservation.reservation_id
+        or settlement.disposition != plan.disposition
+        or abs(settlement.consumed_budget - plan.consumed_budget) > 1e-12
+        or settlement.result_refs != plan.result_refs
+    ):
+        raise SimulationIntegrityError(
+            "Counterfactual trace lost its plan, checkpoint, or settlement lineage."
+        )
+    expected_applied = tuple(
+        item.patch_id for item in plan.patches[: plan.apply_patch_count]
+    )
+    if settlement.applied_patch_ids != expected_applied:
+        raise SimulationIntegrityError(
+            "Counterfactual trace patch application differs from its plan."
+        )
+
+    baseline = CounterfactualOverlay(kernel)
+    overlay = CounterfactualOverlay(kernel)
+    for patch in plan.patches[: plan.apply_patch_count]:
+        overlay.apply(patch)
+    if overlay.fingerprint() != settlement.overlay_fingerprint:
+        raise SimulationIntegrityError(
+            "Counterfactual trace overlay fingerprint differs from its settlement."
+        )
+
+    deltas = []
+    for collection in sorted(COUNTERFACTUAL_COLLECTIONS):
+        before = baseline.materialize_collection(collection)
+        after = overlay.materialize_collection(collection)
+        before_keys = set(before)
+        after_keys = set(after)
+        common = before_keys & after_keys
+        deltas.append(
+            CounterfactualCollectionDelta(
+                collection=collection,
+                before_sha256=_digest(before),
+                after_sha256=_digest(after),
+                before_record_count=len(before),
+                after_record_count=len(after),
+                added_record_keys=tuple(sorted(after_keys - before_keys)),
+                removed_record_keys=tuple(sorted(before_keys - after_keys)),
+                changed_record_keys=tuple(
+                    sorted(key for key in common if before[key] != after[key])
+                ),
+            )
+        )
+
+    declared_patch_ids = tuple(item.patch_id for item in plan.patches)
+    match_signature = _execution_match_signature(
+        operator_version=plan.operator_version,
+        obligation_id=reservation.obligation_id,
+        attention_decision_id=reservation.attention_decision_id,
+        allocation_id=reservation.allocation_id,
+        canonical_fingerprint=reservation.canonical_fingerprint,
+        requested_budget=plan.requested_budget,
+        consumed_budget=plan.consumed_budget,
+        disposition=plan.disposition,
+        termination_code=plan.termination_code,
+        declared_patch_ids=declared_patch_ids,
+        result_refs=plan.result_refs,
+    )
+    return CounterfactualExecutionTrace.build(
+        match_signature=match_signature,
+        source_event_key=plan.source_event_key,
+        operator_version=plan.operator_version,
+        obligation_id=reservation.obligation_id,
+        attention_decision_id=reservation.attention_decision_id,
+        allocation_id=reservation.allocation_id,
+        plan_id=plan.plan_id,
+        reservation_id=reservation.reservation_id,
+        settlement_id=settlement.settlement_id,
+        canonical_fingerprint=reservation.canonical_fingerprint,
+        overlay_fingerprint=settlement.overlay_fingerprint,
+        requested_budget=plan.requested_budget,
+        consumed_budget=plan.consumed_budget,
+        disposition=plan.disposition,
+        termination_code=plan.termination_code,
+        declared_patch_ids=declared_patch_ids,
+        applied_patch_ids=settlement.applied_patch_ids,
+        result_refs=settlement.result_refs,
+        collection_deltas=tuple(deltas),
+    )
 
 
 class SimulationLedger:
@@ -663,6 +1002,7 @@ class SimulationLedger:
 class CounterfactualRunResult:
     reservation: SimulationReservation
     settlement: SimulationSettlement
+    trace: CounterfactualExecutionTrace
     replayed: bool
 
 
@@ -699,7 +1039,19 @@ class CounterfactualRuntime:
         )
         prior = self.ledger._settlement_for(reservation.reservation_id)
         if replayed and prior is not None:
-            return CounterfactualRunResult(reservation, prior, replayed=True)
+            trace = derive_counterfactual_execution_trace(
+                kernel,
+                self.ledger,
+                plan=plan,
+                reservation=reservation,
+                settlement=prior,
+            )
+            return CounterfactualRunResult(
+                reservation=reservation,
+                settlement=prior,
+                trace=trace,
+                replayed=True,
+            )
         overlay = CounterfactualOverlay(kernel)
         for patch in plan.patches[: plan.apply_patch_count]:
             overlay.apply(patch)
@@ -709,4 +1061,16 @@ class CounterfactualRuntime:
             overlay=overlay,
             kernel=kernel,
         )
-        return CounterfactualRunResult(reservation, settlement, replayed=replayed)
+        trace = derive_counterfactual_execution_trace(
+            kernel,
+            self.ledger,
+            plan=plan,
+            reservation=reservation,
+            settlement=settlement,
+        )
+        return CounterfactualRunResult(
+            reservation=reservation,
+            settlement=settlement,
+            trace=trace,
+            replayed=replayed,
+        )

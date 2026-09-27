@@ -17,13 +17,18 @@ from verdant_kernel.models import canonical_json_bytes
 from verdant_obligations import (
     AttentionBidInput, AttentionPortfolio, ContradictionObligationDetector,
     CounterfactualPatch, CounterfactualPlan, CounterfactualRuntime,
+    CouncilInterventionCandidate, CouncilInterventionPolicy,
+    CouncilLeastRegretTournament,
+    CouncilTournamentDisposition,
     DependencyGapPipeline, DiagnosticConclusion, DiagnosticEngine,
     DiagnosticLedgerState, DiagnosticProbeFinding, DiagnosticProbeKind,
     DiagnosticProbeObservation, DiagnosticResult, DiagnosticTriggerKind,
-    EquivalenceLensSystem, ExperimentArchiveIntegrityError,
+    EpistemicPreservationObservation, EquivalenceLensSystem,
+    ExperimentArchiveIntegrityError, EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
     EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT, EXPERIMENT_ARCHIVE_FORMAT,
     EXPERIMENT_ARCHIVE_LEGACY_FORMAT, InquiryFailureEvidence, LensEvidenceResult,
-    LensOpcode, SimulationLedger, SimulationLedgerState, SimulationSettlement,
+    InterventionKind, LensOpcode, OrthogonalFingerprintObservation,
+    SimulationLedger, SimulationLedgerState, SimulationSettlement,
     derive_obligation_view, experiment_archive_bytes, load_experiment_archive,
     load_experiment_archive_bundle, save_experiment_archive,
 )
@@ -89,6 +94,7 @@ def _repack(
     canonical: VerdantKernel | None = None,
     lenses: EquivalenceLensSystem | None = None,
     diagnostics: DiagnosticEngine | None = None,
+    council: CouncilLeastRegretTournament | None = None,
 ) -> bytes:
     manifest = json.loads(parts["manifest.json"])
     for name in manifest["files"]:
@@ -106,6 +112,14 @@ def _repack(
         manifest["lens_fingerprint"] = lenses.fingerprint()
     if diagnostics is not None:
         manifest["diagnostic_fingerprint"] = diagnostics.fingerprint()
+    if council is not None:
+        council_payload = {
+            "policy": council.policy.model_dump(mode="json"),
+            "ledger": council.state.model_dump(mode="json"),
+        }
+        manifest["council_fingerprint"] = hashlib.sha256(
+            canonical_json_bytes(council_payload)
+        ).hexdigest()
     parts["manifest.json"] = canonical_json_bytes(manifest)
     output = io.BytesIO()
     with zipfile.ZipFile(output, "w") as archive:
@@ -243,6 +257,23 @@ def test_all_17_legacy_checkpoints_load_and_embed(tmp_path: Path) -> None:
             diagnostic_bundle.diagnostic_engine.fingerprint()
             == empty_diagnostics.fingerprint()
         )
+        council_path = tmp_path / f"{original.stem}-v4.vob"
+        empty_council = CouncilLeastRegretTournament()
+        save_experiment_archive(
+            council_path,
+            kernel,
+            SimulationLedger(),
+            lens_system=empty_lenses,
+            diagnostic_engine=empty_diagnostics,
+            council_tournament=empty_council,
+        )
+        council_bundle = load_experiment_archive_bundle(council_path)
+        assert council_bundle.kernel.fingerprint() == kernel.fingerprint()
+        assert council_bundle.council_tournament is not None
+        assert (
+            council_bundle.council_tournament.fingerprint()
+            == empty_council.fingerprint()
+        )
 
 
 def _lenses(
@@ -371,6 +402,101 @@ def _diagnostics(
         source_event_key=f"archive:diagnostic:{suffix}:conclude",
     )
     return diagnostics
+
+
+def _council(
+    kernel: VerdantKernel,
+    runtime: CounterfactualRuntime,
+    lenses: EquivalenceLensSystem,
+    diagnostics: DiagnosticEngine,
+    *,
+    suffix: str = "primary",
+) -> tuple[
+    CouncilLeastRegretTournament,
+    tuple[CouncilInterventionCandidate, ...],
+    tuple[EpistemicPreservationObservation, ...],
+]:
+    result = diagnostics.state.results[0]
+    diagnostic = diagnostics.state.obligations[0]
+    trigger = diagnostic.trigger
+    decision = next(
+        item for item in kernel.state.obligation_attention_decisions
+        if item.decision_id == trigger.attention_decision_id
+    )
+    allocation = next(
+        item for item in decision.allocations
+        if item.obligation_id == trigger.obligation_id
+    )
+    candidates = (
+        CouncilInterventionCandidate.build(
+            diagnostic_result_id=result.result_id,
+            kind=InterventionKind.DEMOTE_LENS,
+            target_component_refs=(trigger.lens_definition_id,),
+            proposed_variant_ref=f"archive:council:{suffix}:lens-variant",
+            basis_refs=(
+                result.result_id,
+                f"archive:council:{suffix}:lens-basis",
+            ),
+        ),
+        CouncilInterventionCandidate.build(
+            diagnostic_result_id=result.result_id,
+            kind=InterventionKind.ADJUST_ATTENTION_POLICY,
+            target_component_refs=(trigger.attention_decision_id,),
+            proposed_variant_ref=f"archive:council:{suffix}:attention-variant",
+            basis_refs=(
+                result.result_id,
+                f"archive:council:{suffix}:attention-basis",
+            ),
+        ),
+    )
+    evaluations = []
+    for index, candidate in enumerate(candidates):
+        basis_ref = f"archive:council:{suffix}:evaluation:{index}"
+        settlement = runtime.execute(
+            kernel,
+            allocation_id=allocation.allocation_id,
+            plan=CounterfactualPlan.build(
+                source_event_key=f"archive:council:{suffix}:simulation:{index}",
+                operator_version="archive-council-v1",
+                requested_budget=0.01,
+                consumed_budget=0.005,
+                result_refs=(candidate.candidate_id, basis_ref),
+            ),
+        ).settlement
+        orthogonal = hashlib.sha256(
+            f"archive:council:{suffix}:orthogonal:{index}".encode()
+        ).hexdigest()
+        evaluations.append(EpistemicPreservationObservation.build(
+            candidate_id=candidate.candidate_id,
+            simulation_settlement_id=settlement.settlement_id,
+            checkpoint_fingerprint=kernel.fingerprint(),
+            repair_restored=True,
+            would_reopen_obligation_ids=(
+                () if index == 0 else (trigger.obligation_id,)
+            ),
+            wave_state_deviation_ppm=10 + index * 10,
+            c_memory_deviation_units=10 + index * 10,
+            tg_observer_deviation_ppm=10 + index * 10,
+            orthogonal_fingerprints=(OrthogonalFingerprintObservation(
+                context_ref="archive:council:orthogonal-suite",
+                before_fingerprint=orthogonal,
+                after_fingerprint=orthogonal,
+            ),),
+            basis_refs=(basis_ref,),
+        ))
+    tournament = CouncilLeastRegretTournament()
+    council_decision = tournament.decide(
+        kernel,
+        diagnostic_result_id=result.result_id,
+        candidates=candidates,
+        evaluations=tuple(evaluations),
+        diagnostics=diagnostics,
+        simulation_ledger=runtime.ledger,
+        lens_system=lenses,
+        source_event_key=f"archive:council:{suffix}:decision",
+    )
+    assert council_decision.disposition == CouncilTournamentDisposition.RECOMMEND
+    return tournament, candidates, tuple(evaluations)
 
 
 def test_lens_archive_replays_both_sidecars_without_canonical_leakage(
@@ -663,3 +789,200 @@ def test_rehashed_diagnostic_attribution_and_missing_probe_fail_closed(
     probe_path.write_bytes(_repack(probe_parts))
     with pytest.raises(ExperimentArchiveIntegrityError, match="probe settlements"):
         load_experiment_archive_bundle(probe_path)
+
+
+def test_council_archive_replays_four_sidecars_without_canonical_leakage(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+    council, candidates, evaluations = _council(
+        kernel, runtime, lenses, diagnostics
+    )
+    before = (
+        kernel.fingerprint(),
+        runtime.ledger.fingerprint(),
+        lenses.fingerprint(),
+        diagnostics.fingerprint(),
+        council.fingerprint(),
+    )
+    data = experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+    )
+    assert data == experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+    )
+    assert json.loads(_parts(data)["manifest.json"])["format"] == (
+        EXPERIMENT_ARCHIVE_COUNCIL_FORMAT
+    )
+    path = tmp_path / "council-paired.vob"
+    save_experiment_archive(
+        path,
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+    )
+    bundle = load_experiment_archive_bundle(path)
+    assert bundle.format_version == EXPERIMENT_ARCHIVE_COUNCIL_FORMAT
+    assert bundle.lens_system is not None
+    assert bundle.diagnostic_engine is not None
+    assert bundle.council_tournament is not None
+    assert bundle.council_tournament.policy == council.policy
+    assert (
+        bundle.kernel.fingerprint(),
+        bundle.simulation_ledger.fingerprint(),
+        bundle.lens_system.fingerprint(),
+        bundle.diagnostic_engine.fingerprint(),
+        bundle.council_tournament.fingerprint(),
+    ) == before
+    original = council.state.decisions[0]
+    replay = bundle.council_tournament.decide(
+        bundle.kernel,
+        diagnostic_result_id=original.diagnostic_result_id,
+        candidates=candidates,
+        evaluations=evaluations,
+        diagnostics=bundle.diagnostic_engine,
+        simulation_ledger=bundle.simulation_ledger,
+        lens_system=bundle.lens_system,
+        source_event_key="archive:council:primary:decision",
+    )
+    assert replay == original
+    assert not replay.intervention_authority_enabled
+    assert (
+        bundle.kernel.fingerprint(),
+        bundle.simulation_ledger.fingerprint(),
+        bundle.lens_system.fingerprint(),
+        bundle.diagnostic_engine.fingerprint(),
+        bundle.council_tournament.fingerprint(),
+    ) == before
+
+
+def test_council_archive_requires_diagnostic_sidecar() -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+    council, _, _ = _council(kernel, runtime, lenses, diagnostics)
+    with pytest.raises(ExperimentArchiveIntegrityError, match="require.*Diagnostic"):
+        experiment_archive_bytes(
+            kernel,
+            runtime.ledger,
+            lens_system=lenses,
+            council_tournament=council,
+        )
+
+
+def test_rehashed_foreign_council_ledger_fails_cross_ledger_closure(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime, suffix="primary-council")
+    diagnostics = _diagnostics(
+        kernel, runtime, lenses, suffix="primary-council"
+    )
+    council, _, _ = _council(
+        kernel, runtime, lenses, diagnostics, suffix="primary-council"
+    )
+    parts = _parts(experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+    ))
+
+    foreign_kernel, foreign_runtime = _experiment()
+    foreign_lenses = _lenses(
+        foreign_kernel, foreign_runtime, suffix="foreign-council"
+    )
+    foreign_diagnostics = _diagnostics(
+        foreign_kernel,
+        foreign_runtime,
+        foreign_lenses,
+        suffix="foreign-council",
+    )
+    foreign_council, _, _ = _council(
+        foreign_kernel,
+        foreign_runtime,
+        foreign_lenses,
+        foreign_diagnostics,
+        suffix="foreign-council",
+    )
+    foreign_parts = _parts(experiment_archive_bytes(
+        foreign_kernel,
+        foreign_runtime.ledger,
+        lens_system=foreign_lenses,
+        diagnostic_engine=foreign_diagnostics,
+        council_tournament=foreign_council,
+    ))
+    parts["council_policy.json"] = foreign_parts["council_policy.json"]
+    parts["council_ledger.json"] = foreign_parts["council_ledger.json"]
+    path = tmp_path / "mixed-council.vob"
+    path.write_bytes(_repack(parts, council=foreign_council))
+    with pytest.raises(ExperimentArchiveIntegrityError, match="Diagnostic Result"):
+        load_experiment_archive_bundle(path)
+
+    policy_parts = _parts(experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+    ))
+    changed_policy = CouncilInterventionPolicy(maximum_candidates=7)
+    changed_council = CouncilLeastRegretTournament(
+        policy=changed_policy,
+        state=council.state,
+    )
+    policy_parts["council_policy.json"] = canonical_json_bytes(
+        changed_policy.model_dump(mode="json")
+    )
+    policy_path = tmp_path / "changed-council-policy.vob"
+    policy_path.write_bytes(_repack(policy_parts, council=changed_council))
+    with pytest.raises(ExperimentArchiveIntegrityError, match="non-default policy"):
+        load_experiment_archive_bundle(policy_path)
+
+
+def test_rehashed_missing_council_candidate_simulation_fails_closed(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime = _experiment()
+    lenses = _lenses(kernel, runtime)
+    diagnostics = _diagnostics(kernel, runtime, lenses)
+    council, candidates, _ = _council(kernel, runtime, lenses, diagnostics)
+    parts = _parts(experiment_archive_bytes(
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+        diagnostic_engine=diagnostics,
+        council_tournament=council,
+    ))
+    state = runtime.ledger.snapshot()
+    missing_candidate = candidates[0].candidate_id
+    altered = SimulationLedgerState(
+        reservations=state.reservations,
+        settlements=tuple(
+            item for item in state.settlements
+            if missing_candidate not in item.result_refs
+        ),
+    )
+    parts["simulation.json"] = canonical_json_bytes(
+        altered.model_dump(mode="json")
+    )
+    path = tmp_path / "missing-council-simulation.vob"
+    path.write_bytes(_repack(parts))
+    with pytest.raises(
+        ExperimentArchiveIntegrityError,
+        match="candidate's isolated simulation lineage",
+    ):
+        load_experiment_archive_bundle(path)

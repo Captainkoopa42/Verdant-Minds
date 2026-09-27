@@ -1,4 +1,4 @@
-# Obligation Substrate v0.17
+# Obligation Substrate v0.18
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -113,6 +113,17 @@ generation, or safe autonomous policy revision.
 - Diagnostic archive loading rebuilds an independent `DiagnosticEngine` with
   the same fingerprint. v1 and v2 archive layouts remain readable and keep
   `diagnostic_engine=None`; ordinary VDK checkpoints remain unchanged.
+- An explicit v4 `.vob` archive can additionally persist the Council
+  intervention policy and append-only least-regret decision ledger. A Council
+  archive requires the Diagnostic, Lens, simulation, and canonical layers it
+  cites; loading reconstructs an independent, non-executing
+  `CouncilLeastRegretTournament` with the same policy and ledger fingerprint.
+- Each durable Council decision is rechecked against its exact terminal,
+  actionable Diagnostic result and parent obligation. Every assessed candidate
+  ID must remain present in a discarded, canonical-unchanged simulation
+  settlement reserved for that same obligation. Rehashed foreign Council
+  substitution and removal of candidate simulation lineage therefore fail
+  closed before the bundle is returned.
 - Evidence distinguishes support, valid nulls, over-smoothing,
   hyper-discrimination, and absent explanatory gain. Valid nulls do not count
   as evaluator failures. A binding suspends atomically when its declared
@@ -371,10 +382,21 @@ generation, or safe autonomous policy revision.
   reconstruct each probe's finding, basis refs, or exact settlement mapping.
   Custom numeric `DiagnosticPolicy` limits are likewise not serialized beyond
   the policy version carried by durable records.
-- Council tournament and Paradigm Challenge ledgers are likewise outside the
-  paired archive. Their cross-ledger recovery and reference closure remain
-  untested. The archive tests cover Lens bindings for `DependencyGap` and
-  `Contradiction`, not all five obligation families.
+- Council durability remains explicitly opt-in sidecar state: v1-v3 `.vob`,
+  ordinary `.vdk`, and the backward-compatible two-value archive loader do not
+  expose the recovered tournament. The bundle loader is required, and archive
+  recovery grants no intervention or canonical-write authority.
+- `CouncilInterventionCandidate` and `EpistemicPreservationObservation`
+  objects remain transient tournament inputs. v4 proves that every durable
+  candidate ID has parent-local isolated simulation lineage, but the current
+  Council ledger does not preserve enough of those inputs to recompute the
+  request hash, preservation vector, orthogonal contexts, or assessment from
+  first principles after reload. v4 therefore fails closed on non-default
+  Council policy parameters rather than pretending it can prove their pairing.
+- The Paradigm Challenge ledger remains outside the paired archive. Its cross-
+  ledger recovery and reference closure remain untested. Archive tests cover
+  Lens bindings for `DependencyGap` and `Contradiction`, not all five
+  obligation families.
 - Candidate interventions and preservation measurements are explicit, typed
   experimental inputs. The Council does not yet generate a complete spanning
   intervention set or execute the standard-load simulations autonomously.
@@ -461,6 +483,28 @@ generation, or safe autonomous policy revision.
   proofs; and an opt-in integrated detector-to-simulation path. No canonical
   diagnosis, resolution, component penalty, promotion, or policy rewrite is
   established.
+
+## v0.18 claim boundary
+
+- **OBSERVED:** Seventeen focused archive tests and the 363-test full repository
+  suite pass. A deterministic v4 round trip restores a non-executing Council
+  recommendation across canonical, simulation, Lens, Diagnostic, policy, and
+  Council-ledger state with unchanged fingerprints and exact request replay.
+  Rehashed foreign Council substitution and removal of a cited candidate's
+  isolated settlement fail closed; a rehashed non-default policy is also
+  rejected because its original request cannot yet be recomputed. All 17
+  preexisting VDK checkpoints embed and reload through v1, v2, v3, and empty-
+  Council v4 envelopes.
+- **IMPLEMENTED-EXPERIMENTAL:** Explicit v4 `.vob` save/load durably pairs the
+  Council policy and decision ledger after their Diagnostic prerequisites,
+  validates the durable diagnostic-to-candidate-simulation closure represented
+  by the current schema, and exposes a reconstructed recommendation-only
+  tournament through the bundle loader.
+- **PROPOSED:** Durable candidate and preservation-observation records that
+  permit full decision recomputation; Paradigm sidecar pairing; real process-
+  kill and concurrent-writer proofs; and an opt-in integrated detector-to-
+  simulation path. No canonical diagnosis, intervention, resolution,
+  component penalty, promotion, or policy rewrite is established.
 
 ## Access-pressure integration
 
@@ -550,3 +594,8 @@ four-ledger fingerprint restoration, mandatory Lens pairing, v1/v2
 compatibility, rehashed foreign-ledger substitution, causal-attribution
 forgery, missing probe-settlement rejection, terminal non-authority, and all 17
 legacy checkpoints embedded in an empty-Diagnostic v3 envelope.
+Council-archive tests additionally target deterministic v4 byte replay,
+six-part fingerprint restoration, mandatory Diagnostic pairing, exact decision
+replay without authority, rehashed foreign-ledger rejection, missing candidate-
+simulation rejection, and all 17 legacy checkpoints embedded in an empty-
+Council v4 envelope.

@@ -106,6 +106,7 @@ from .equivalence import (
     LensUnavailableError,
 )
 from .experiment_archive import (
+    EXPERIMENT_ARCHIVE_COUNCIL_FORMAT,
     EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT,
     EXPERIMENT_ARCHIVE_FORMAT,
     EXPERIMENT_ARCHIVE_LEGACY_FORMAT,
@@ -232,6 +233,7 @@ __all__ = [
     "SimulationLedgerState",
     "SimulationReservation",
     "SimulationSettlement",
+    "EXPERIMENT_ARCHIVE_COUNCIL_FORMAT",
     "EXPERIMENT_ARCHIVE_DIAGNOSTIC_FORMAT",
     "EXPERIMENT_ARCHIVE_FORMAT",
     "EXPERIMENT_ARCHIVE_LEGACY_FORMAT",

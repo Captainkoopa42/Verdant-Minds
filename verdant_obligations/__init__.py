@@ -132,6 +132,18 @@ from .trial_controls import (
     OperationalTrialSplit,
     build_operational_trial_context,
 )
+from .workspace_admission import (
+    HELD_OUT_WORKSPACE_ADMISSION_REPLICATION_VERSION,
+    NATIVE_WORKSPACE_ADMISSION_PROBE_VERSION,
+    HeldOutWorkspaceAdmissionReplicationObserver,
+    HeldOutWorkspaceAdmissionReplicationReceipt,
+    MatchedWorkspaceAdmissionObservation,
+    NativeWorkspaceAdmissionObserver,
+    NativeWorkspaceAdmissionProbePolicy,
+    WorkspaceAdmissionArmObservation,
+    WorkspaceAdmissionEffect,
+    WorkspaceAdmissionProbeIntegrityError,
+)
 from .resolution_evidence import (
     GROUNDED_TRACE_REQUIREMENTS,
     MISSING_OPERATIONAL_REQUIREMENTS,

@@ -78,6 +78,13 @@ from .trial_controls import (
     OperationalTrialSplit,
     build_operational_trial_context,
 )
+from .workspace_admission import (
+    HeldOutWorkspaceAdmissionReplicationObserver,
+    HeldOutWorkspaceAdmissionReplicationReceipt,
+    MatchedWorkspaceAdmissionObservation,
+    NativeWorkspaceAdmissionObserver,
+    WorkspaceAdmissionProbeIntegrityError,
+)
 
 
 INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.26"
@@ -376,6 +383,12 @@ class IntegratedInquiryTrace(FrozenRecord):
     held_out_replication_receipts: tuple[
         HeldOutOperationalReplicationReceipt, ...
     ] = ()
+    workspace_admission_observations: tuple[
+        MatchedWorkspaceAdmissionObservation, ...
+    ] = ()
+    held_out_workspace_admission_receipts: tuple[
+        HeldOutWorkspaceAdmissionReplicationReceipt, ...
+    ] = ()
     canonical_simulation_leakage_detected: bool = False
     canonical_resolution_permitted: bool = False
     epistemic_authority_enabled: bool = False
@@ -451,6 +464,24 @@ class IntegratedInquiryTrace(FrozenRecord):
         )
         values["held_out_replication_receipts"] = tuple(
             sorted(replications, key=lambda item: item.receipt_id)
+        )
+        workspace_observations = tuple(
+            item
+            if isinstance(item, MatchedWorkspaceAdmissionObservation)
+            else MatchedWorkspaceAdmissionObservation.model_validate(item)
+            for item in values.get("workspace_admission_observations", ())
+        )
+        values["workspace_admission_observations"] = tuple(
+            sorted(workspace_observations, key=lambda item: item.match_id)
+        )
+        workspace_replications = tuple(
+            item
+            if isinstance(item, HeldOutWorkspaceAdmissionReplicationReceipt)
+            else HeldOutWorkspaceAdmissionReplicationReceipt.model_validate(item)
+            for item in values.get("held_out_workspace_admission_receipts", ())
+        )
+        values["held_out_workspace_admission_receipts"] = tuple(
+            sorted(workspace_replications, key=lambda item: item.receipt_id)
         )
         values.setdefault("canonical_simulation_leakage_detected", False)
         values.setdefault("canonical_resolution_permitted", False)
@@ -535,14 +566,39 @@ class IntegratedInquiryTrace(FrozenRecord):
             raise ValueError(
                 "Integrated held-out receipts must be sorted and unique."
             )
+        workspace_observation_ids = tuple(
+            item.match_id for item in self.workspace_admission_observations
+        )
+        if tuple(sorted(set(workspace_observation_ids))) != workspace_observation_ids:
+            raise ValueError(
+                "Integrated workspace observations must be sorted and unique."
+            )
+        workspace_replication_ids = tuple(
+            item.receipt_id
+            for item in self.held_out_workspace_admission_receipts
+        )
+        if (
+            tuple(sorted(set(workspace_replication_ids)))
+            != workspace_replication_ids
+        ):
+            raise ValueError(
+                "Integrated workspace replications must be sorted and unique."
+            )
         if self.trial_control_request is None:
-            if self.controlled_trial_observations or self.held_out_replication_receipts:
+            if (
+                self.controlled_trial_observations
+                or self.held_out_replication_receipts
+                or self.workspace_admission_observations
+                or self.held_out_workspace_admission_receipts
+            ):
                 raise ValueError(
                     "Integrated controlled evidence requires a predeclared request."
                 )
         elif (
             not self.controlled_trial_observations
             or not self.held_out_replication_receipts
+            or not self.workspace_admission_observations
+            or not self.held_out_workspace_admission_receipts
         ):
             raise ValueError(
                 "Integrated trial controls require complete controlled evidence."
@@ -787,6 +843,102 @@ class IntegratedInquiryTrace(FrozenRecord):
                 raise ValueError(
                     "Every controlled allocation requires one held-out receipt."
                 )
+            controlled_by_id = {
+                item.observation_id: item
+                for item in self.controlled_trial_observations
+            }
+            workspace_by_controlled: dict[
+                str, MatchedWorkspaceAdmissionObservation
+            ] = {}
+            for workspace in self.workspace_admission_observations:
+                controlled = controlled_by_id.get(workspace.controlled_trial_ref)
+                if controlled is None:
+                    raise ValueError(
+                        "Workspace admission lost its controlled trial."
+                    )
+                if workspace.controlled_trial_ref in workspace_by_controlled:
+                    raise ValueError(
+                        "Controlled trial has multiple workspace observations."
+                    )
+                operational = controlled.operational_observation
+                structural = controlled.structural_observation
+                if (
+                    workspace.context != controlled.context
+                    or workspace.baseline.operational_probe_ref
+                    != operational.baseline.observation_id
+                    or workspace.treatment.operational_probe_ref
+                    != operational.treatment.observation_id
+                    or workspace.baseline.plan_id != structural.baseline.plan_id
+                    or workspace.treatment.plan_id != structural.treatment.plan_id
+                    or workspace.baseline.settlement_id
+                    != structural.baseline.settlement_id
+                    or workspace.treatment.settlement_id
+                    != structural.treatment.settlement_id
+                    or workspace.baseline.canonical_checkpoint_fingerprint
+                    != self.canonical_checkpoint_fingerprint
+                    or workspace.treatment.canonical_checkpoint_fingerprint
+                    != self.canonical_checkpoint_fingerprint
+                ):
+                    raise ValueError(
+                        "Workspace admission crossed controlled execution lineage."
+                    )
+                workspace_by_controlled[workspace.controlled_trial_ref] = workspace
+            if set(workspace_by_controlled) != set(controlled_by_id):
+                raise ValueError(
+                    "Every controlled trial requires one workspace observation."
+                )
+
+            operational_replications_by_id = {
+                item.receipt_id: item
+                for item in self.held_out_replication_receipts
+            }
+            workspace_replication_refs: set[str] = set()
+            for workspace_replication in (
+                self.held_out_workspace_admission_receipts
+            ):
+                operational_replication = operational_replications_by_id.get(
+                    workspace_replication.operational_replication_ref
+                )
+                if operational_replication is None:
+                    raise ValueError(
+                        "Workspace replication lost its operational receipt."
+                    )
+                if (
+                    workspace_replication.operational_replication_ref
+                    in workspace_replication_refs
+                ):
+                    raise ValueError(
+                        "Operational receipt has multiple workspace replications."
+                    )
+                expected_workspace = tuple(
+                    sorted(
+                        (
+                            workspace_by_controlled[item.observation_id]
+                            for item in operational_replication.trials
+                        ),
+                        key=lambda item: (
+                            0
+                            if item.context.split
+                            == OperationalTrialSplit.CALIBRATION
+                            else 1,
+                            item.context.seed,
+                            item.match_id,
+                        ),
+                    )
+                )
+                if workspace_replication.observations != expected_workspace:
+                    raise ValueError(
+                        "Workspace replication lost its controlled observation set."
+                    )
+                workspace_replication_refs.add(
+                    workspace_replication.operational_replication_ref
+                )
+            if workspace_replication_refs != set(
+                operational_replications_by_id
+            ):
+                raise ValueError(
+                    "Every held-out receipt requires one workspace replication."
+                )
         receipt_observation_refs: list[str] = []
         for receipt in self.resolution_evidence_receipts:
             observation = observations_by_id.get(receipt.matched_observation_ref)
@@ -856,6 +1008,9 @@ class IntegratedMatchedInquiryPair:
     resolution_evidence: TraceResolutionEvidenceReceipt
     context: OperationalTrialContext | None = None
     controlled_observation: ControlledOperationalTrialObservation | None = None
+    workspace_admission_observation: (
+        MatchedWorkspaceAdmissionObservation | None
+    ) = None
 
     @property
     def replayed(self) -> bool:
@@ -873,6 +1028,9 @@ class IntegratedInquiryResult:
     simulations: tuple[CounterfactualRunResult, ...]
     matched_pairs: tuple[IntegratedMatchedInquiryPair, ...]
     held_out_replications: tuple[HeldOutOperationalReplicationReceipt, ...]
+    held_out_workspace_admission_replications: tuple[
+        HeldOutWorkspaceAdmissionReplicationReceipt, ...
+    ]
     replayed: bool
 
 
@@ -900,6 +1058,11 @@ class DependencyGapInquiryCoordinator:
         controlled_trial_observer: ControlledOperationalTrialObserver | None = None,
         held_out_replication_observer: HeldOutOperationalReplicationObserver
         | None = None,
+        workspace_admission_observer: NativeWorkspaceAdmissionObserver
+        | None = None,
+        held_out_workspace_admission_observer: (
+            HeldOutWorkspaceAdmissionReplicationObserver | None
+        ) = None,
     ) -> None:
         self.policy = policy or IntegratedInquiryPolicy()
         self.detector = detector or DependencyGapDetector()
@@ -913,6 +1076,13 @@ class DependencyGapInquiryCoordinator:
         self.held_out_replication_observer = (
             held_out_replication_observer
             or HeldOutOperationalReplicationObserver()
+        )
+        self.workspace_admission_observer = (
+            workspace_admission_observer or NativeWorkspaceAdmissionObserver()
+        )
+        self.held_out_workspace_admission_observer = (
+            held_out_workspace_admission_observer
+            or HeldOutWorkspaceAdmissionReplicationObserver()
         )
         if (
             self.policy.simulation_requested_budget
@@ -1177,6 +1347,9 @@ class DependencyGapInquiryCoordinator:
         trials: list[IntegratedInquiryTrial] = []
         matched_pairs: list[IntegratedMatchedInquiryPair] = []
         held_out_replications: list[HeldOutOperationalReplicationReceipt] = []
+        held_out_workspace_replications: list[
+            HeldOutWorkspaceAdmissionReplicationReceipt
+        ] = []
         for allocation in decision.allocations:
             obligation_id = allocation.obligation_id
             hypotheses = hypotheses_by_obligation[obligation_id]
@@ -1259,6 +1432,9 @@ class DependencyGapInquiryCoordinator:
 
             allocation_controlled: list[
                 ControlledOperationalTrialObservation
+            ] = []
+            allocation_workspace_observations: list[
+                MatchedWorkspaceAdmissionObservation
             ] = []
             for context in controlled_contexts:
                 pair_source_key = (
@@ -1348,6 +1524,9 @@ class DependencyGapInquiryCoordinator:
                 controlled_observation: (
                     ControlledOperationalTrialObservation | None
                 ) = None
+                workspace_admission_observation: (
+                    MatchedWorkspaceAdmissionObservation | None
+                ) = None
                 if context is not None:
                     if working_lenses is None:
                         raise IntegratedInquiryError(
@@ -1402,6 +1581,62 @@ class DependencyGapInquiryCoordinator:
                         controlled_observation.operational_observation
                     )
                     allocation_controlled.append(controlled_observation)
+                    try:
+                        workspace_admission_observation = (
+                            self.workspace_admission_observer.observe(
+                                working_kernel,
+                                working_runtime.ledger,
+                                working_lenses,
+                                context=context,
+                                hypothesis=matched_hypothesis,
+                                baseline_plan=matched_plans.baseline,
+                                baseline_result=matched_baseline,
+                                treatment_plan=matched_plans.treatment,
+                                treatment_result=matched_treatment,
+                                controlled_observation=controlled_observation,
+                            )
+                        )
+                        workspace_admission_observation = (
+                            MatchedWorkspaceAdmissionObservation.model_validate(
+                                workspace_admission_observation.model_dump(
+                                    mode="json"
+                                )
+                            )
+                        )
+                        expected_workspace_admission = (
+                            NativeWorkspaceAdmissionObserver().observe(
+                                working_kernel,
+                                working_runtime.ledger,
+                                working_lenses,
+                                context=context,
+                                hypothesis=matched_hypothesis,
+                                baseline_plan=matched_plans.baseline,
+                                baseline_result=matched_baseline,
+                                treatment_plan=matched_plans.treatment,
+                                treatment_result=matched_treatment,
+                                controlled_observation=controlled_observation,
+                            )
+                        )
+                    except (
+                        WorkspaceAdmissionProbeIntegrityError,
+                        ValueError,
+                        TypeError,
+                    ) as exc:
+                        raise IntegratedInquiryError(
+                            "Native workspace-admission observation failed "
+                            f"validation: {exc}"
+                        ) from exc
+                    if (
+                        workspace_admission_observation
+                        != expected_workspace_admission
+                    ):
+                        raise IntegratedInquiryError(
+                            "Workspace-admission observer disagrees with the "
+                            "controlled execution."
+                        )
+                    allocation_workspace_observations.append(
+                        workspace_admission_observation
+                    )
                 else:
                     try:
                         observation = self.matched_observer.observe(
@@ -1539,6 +1774,9 @@ class DependencyGapInquiryCoordinator:
                         resolution_evidence=resolution_evidence,
                         context=context,
                         controlled_observation=controlled_observation,
+                        workspace_admission_observation=(
+                            workspace_admission_observation
+                        ),
                     )
                 )
 
@@ -1570,6 +1808,39 @@ class DependencyGapInquiryCoordinator:
                         "Held-out observer disagrees with controlled trials."
                     )
                 held_out_replications.append(replication)
+                try:
+                    workspace_replication = (
+                        self.held_out_workspace_admission_observer.observe(
+                            replication,
+                            tuple(allocation_workspace_observations),
+                        )
+                    )
+                    workspace_replication = (
+                        HeldOutWorkspaceAdmissionReplicationReceipt.model_validate(
+                            workspace_replication.model_dump(mode="json")
+                        )
+                    )
+                    expected_workspace_replication = (
+                        HeldOutWorkspaceAdmissionReplicationObserver().observe(
+                            replication,
+                            tuple(allocation_workspace_observations),
+                        )
+                    )
+                except (
+                    WorkspaceAdmissionProbeIntegrityError,
+                    ValueError,
+                    TypeError,
+                ) as exc:
+                    raise IntegratedInquiryError(
+                        "Held-out workspace-admission replication failed "
+                        f"validation: {exc}"
+                    ) from exc
+                if workspace_replication != expected_workspace_replication:
+                    raise IntegratedInquiryError(
+                        "Workspace replication observer disagrees with the "
+                        "controlled trials."
+                    )
+                held_out_workspace_replications.append(workspace_replication)
             for outcome in representatives[:trial_count]:
                 hypothesis = hypothesis_by_id[outcome.hypothesis_id]
                 plan = build_hypothesis_plan(
@@ -1719,6 +1990,14 @@ class DependencyGapInquiryCoordinator:
                 if item.controlled_observation is not None
             ),
             held_out_replication_receipts=tuple(held_out_replications),
+            workspace_admission_observations=tuple(
+                item.workspace_admission_observation
+                for item in matched_pairs
+                if item.workspace_admission_observation is not None
+            ),
+            held_out_workspace_admission_receipts=tuple(
+                held_out_workspace_replications
+            ),
         )
 
         replayed = (
@@ -1739,5 +2018,8 @@ class DependencyGapInquiryCoordinator:
             simulations=tuple(simulations),
             matched_pairs=tuple(matched_pairs),
             held_out_replications=tuple(held_out_replications),
+            held_out_workspace_admission_replications=tuple(
+                held_out_workspace_replications
+            ),
             replayed=replayed,
         )

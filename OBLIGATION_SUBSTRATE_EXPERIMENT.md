@@ -1,4 +1,4 @@
-# Obligation Substrate v0.28
+# Obligation Substrate v0.29
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -223,6 +223,30 @@ generation, or safe autonomous policy revision.
   missing per-allocation receipts fail the whole staged invocation. A valid
   receipt remains a structural simulation result rather than evidence that a
   preregistered outcome occurred.
+- A versioned `NativeWorkspaceAdmissionObserver` now revalidates each
+  controlled observation against its actual simulation ledger and active Lens
+  state, then maps only the canonical evidence references actually retrieved
+  by that arm into native `RECALLED_EVIDENCE` workspace candidates.
+- Each arm runs one real `VerdantWorkspacePipeline` cycle on an isolated clone
+  of the post-Attention canonical checkpoint. The declared slot budget may
+  tighten but never relax the canonical workspace maximum; the native report,
+  committed shadow event, candidate dispositions, policy hashes, and complete
+  shadow input/output fingerprints are retained in a content-addressed arm
+  observation.
+- A matched workspace observation distinguishes admission gain, loss, change,
+  and valid null from the two native reports. An ID-independent effect
+  signature must reproduce across the predeclared calibration and held-out
+  seeds before a held-out workspace-admission receipt is accepted.
+- Workspace observations and their held-out receipt are linked one-for-one to
+  controlled trials and operational replication in the integrated trace.
+  Missing receipts, foreign simulation ledgers, relaxed slot caps, rehashed
+  authority claims, injected observer changes, or lineage substitution fail
+  the staged transaction.
+- Native workspace execution remains shadow-only: no workspace item, cycle,
+  policy revision, semantic record, or action is published to the canonical
+  kernel. Archive reload reconstructs the identical native workspace receipts
+  from the already durable canonical, simulation, and Lens sidecars without
+  another reservation or settlement.
 - Immutable `EquivalenceLensDefinition` records now hold a deterministic,
   side-effect-free operator IR in a content-addressed registry. Definitions
   preserve provenance and optional parent lineage; duplicate content reuses the
@@ -442,12 +466,12 @@ generation, or safe autonomous policy revision.
   visible supplied policy values. Verdant has not learned their calibration or
   chosen the integration request endogenously.
 - Integrated trace objects, including their matched structural, overlay-
-  operational, and Resolution-evidence coverage receipts, and v0.28 controlled
-  trial and held-out-replication receipts are transient and reconstructable
-  rather than new archive members. Existing `.vob` canonical, simulation, and
-  Lens state can regenerate identical receipts under the same code and
-  policies, but v0.28 does not claim independent long-term schema durability
-  for the receipts themselves. Simulation reservations and settlements remain
+  operational, Resolution-evidence coverage, v0.28 controlled-trial, and v0.29
+  workspace-admission receipts are transient and reconstructable rather than
+  new archive members. Existing `.vob` canonical, simulation, and Lens state
+  can regenerate identical receipts under the same code and policies, but
+  v0.29 does not claim independent long-term schema durability for the
+  receipts themselves. Simulation reservations and settlements remain
   durable, while materialized collection deltas and derived receipts are not
   new archive members or canonical VDK records.
 - Coordinator atomicity is bounded to staged in-process validation before its
@@ -477,22 +501,23 @@ generation, or safe autonomous policy revision.
   `canonical_record_mutation` means the simulated overlay removed or changed a
   pre-existing record. Neither result establishes causal sufficiency, semantic
   correctness, predictive improvement, real-world success, or truth.
-- v0.28 still observes only whether its supplied, versioned overlay-local walk
-  can reach canonical evidence through an actually materialized hypothetical
-  relation. This is not native Workbench retrieval or admission, an outgoing
+- v0.29 observes whether evidence reached by the supplied, versioned overlay-
+  local walk is admitted by Verdant's native workspace pipeline on an isolated
+  clone. This is not canonical Workbench retrieval or admission, an outgoing
   action, execution of the canonical dependency path, or an actually occurring
   preregistered `OutcomeKind`. The overlay path is not accepted as a
-  `DependencyPathObservation`; neither the controlled receipt nor the
-  coordinator coverage gate can construct a `ResolutionTrialObservation` or
-  feed the Resolution Contract, Diagnostic, Council, or Paradigm ledgers.
+  `DependencyPathObservation`; neither the controlled nor workspace receipt
+  can construct a `ResolutionTrialObservation` or feed the Resolution
+  Contract, Diagnostic, Council, or Paradigm ledgers.
 - The probe's start node, traversable relation grammar, evidence kinds, and hop
-  limit remain supplied experimental policy. It does not run the native
-  workspace, choose an action, interact with an external environment, or prove
-  causal sufficiency. v0.28 verifies that the named Lens binding is active but
-  does not use that Lens to change trial behavior. The slot budget is immutable
-  provenance only because no native workspace exists, and distinct declared
-  seeds demonstrate exact deterministic replay rather than stochastic or
-  external held-out generalization.
+  limit remain supplied experimental policy. The mapping of retrieved evidence
+  into workspace candidates, relevance signal, resource fraction, and one-
+  cycle persistence are also fixed v0.29 policy rather than learned values.
+  The native workspace cycle enforces the declared slot cap only on a shadow
+  clone and cannot choose or emit an action. v0.29 verifies that the named Lens
+  binding is active but does not use that Lens to change trial behavior.
+  Distinct declared seeds demonstrate exact deterministic replay rather than
+  stochastic or external held-out generalization.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
   provenance-visible bids, but v0.28 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
@@ -500,9 +525,11 @@ generation, or safe autonomous policy revision.
   typed stall API. Automatic cut derivation is not a v0.2 claim.
 - No scheduler loop or background clock yet; probes, audit pings, and graph
   deltas are explicitly submitted through the experimental pipeline.
-- The Resolution Contract accepts explicitly supplied, typed trial observations;
-  the counterfactual runtime does not yet derive retrieved/admitted sets,
-  outgoing actions, or dependency paths from overlay execution automatically.
+- The Resolution Contract accepts explicitly supplied, typed trial
+  observations. v0.29 derives retrieved and shadow-admitted sets for its
+  controlled workspace receipt, but the Resolution-evidence coverage receipt
+  does not yet consume that new evidence. No outgoing action or executed
+  dependency path is derived automatically.
 - No canonical `Resolved` API or earned-structure promotion exists. A passing
   verdict supplies bounded evidence for a later governor but grants no
   resolution authority itself.
@@ -994,6 +1021,39 @@ generation, or safe autonomous policy revision.
   inquiry, real-world outcome, resolution or promotion authority, policy
   rewrite, semantic understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.29 claim boundary
+
+- **OBSERVED:** Seventy-five focused counterfactual, hypothesis, integrated-
+  inquiry, matched-trace, operational-probe, trial-control, and Resolution-
+  Contract tests and the 426-test full repository suite pass. The controlled
+  baseline submits no retrieved evidence while the treatment submits the
+  canonical `OUTCOME` evidence actually reached through its materialized
+  overlay; a real native workspace cycle admits it on each shadow arm. With
+  two retrieved evidence records and a declared one-slot budget, the native
+  report admits exactly one and suppresses one. Archive reload reconstructs
+  byte-equivalent workspace observations and held-out replication without new
+  simulation cost. Foreign ledgers, relaxed slot caps, missing trace receipts,
+  rehashed authority, and injected observer tampering fail atomically. All 17
+  legacy VDK checkpoints still load and embed successfully.
+- **IMPLEMENTED-EXPERIMENTAL:** A versioned observer now bridges actual
+  controlled overlay retrieval into Verdant's native workspace pipeline under
+  the predeclared slot cap. It records content-addressed arm reports, matched
+  effects, and held-out exact-replay evidence, and closes their complete
+  lineage in the integrated trace. Each native workspace cycle runs only on a
+  fresh canonical clone; the canonical workspace, semantic records, simulation
+  ledger boundary, and Lens sidecar remain unchanged.
+- **PROPOSED:** Derive an outgoing-action signature from Verdant's existing
+  native Council-authorized action pathway under the same matched controls and
+  isolated accounting. Only then attempt an actually executed canonical
+  dependency path, and only after every Resolution Contract input is grounded
+  construct a non-authoritative `ResolutionTrialObservation`. The workspace
+  candidate mapping remains supplied policy, the seed remains unconsumed by
+  the deterministic runtime, the horizon is not temporal experience, and the
+  workspace cycle is shadow rather than canonical admission. v0.29 establishes
+  no real-world outcome, causal sufficiency, autonomous inquiry, resolution or
+  promotion authority, policy rewrite, semantic understanding, `T_g` control,
+  or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1112,4 +1172,10 @@ canonical evidence retrieval instead of patch-carried labels, visible traversal
 grammar, additive structural valid nulls, noncanonical endpoint rejection,
 one-for-one trace embedding, exact replay, coverage cross-linking, staged
 transaction rollback, and unforgeable workspace, action, path, resolution, and
-commit authority boundaries.
+commit authority boundaries. Native workspace-admission tests additionally
+target mapping only actually retrieved canonical evidence, real native report
+and event reconstruction, declared slot-cap suppression, semantic-record and
+canonical-workspace isolation, exact held-out effect replay, zero-cost archive
+reconstruction, foreign-ledger rejection, complete controlled-trace coverage,
+observer tampering, and the hard absence of action, dependency-path,
+resolution, or canonical-commit authority.

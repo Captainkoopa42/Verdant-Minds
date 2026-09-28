@@ -9,21 +9,26 @@ import verdant_obligations.inquiry as inquiry_module
 from verdant_kernel import (
     EvidenceKind,
     ExperienceCommand,
+    ObligationFamily,
     RelationProposal,
     VerdantKernel,
 )
 from verdant_obligations import (
     AttentionPortfolio,
     AttentionPortfolioPolicy,
+    ControlledOperationalTrialObserver,
     CounterfactualPatch,
     CounterfactualRuntime,
     DependencyGapInquiryCoordinator,
     DependencyGapPipeline,
+    EquivalenceLensSystem,
     GROUNDED_TRACE_REQUIREMENTS,
     HypothesisOperator,
     IntegratedInquiryError,
     IntegratedInquiryPolicy,
     IntegratedInquiryTrace,
+    IntegratedInquiryTrialControlRequest,
+    LensOpcode,
     MatchedCounterfactualObserver,
     MatchedCounterfactualPlans,
     MISSING_OPERATIONAL_REQUIREMENTS,
@@ -39,6 +44,7 @@ from verdant_obligations import (
     TraceResolutionEvidenceReceipt,
     experiment_archive_bytes,
     load_experiment_archive,
+    load_experiment_archive_bundle,
     save_experiment_archive,
 )
 
@@ -102,6 +108,43 @@ def _kernel() -> VerdantKernel:
         )
     )
     return kernel
+
+
+def _lenses(kernel: VerdantKernel) -> EquivalenceLensSystem:
+    lenses = EquivalenceLensSystem()
+    definition = lenses.register_definition(
+        operators=(
+            LensOpcode.SELECT_ACTION,
+            LensOpcode.SELECT_ACTIVATED_REFS,
+            LensOpcode.SELECT_EDGE_ENDPOINTS,
+            LensOpcode.SELECT_EDGE_TYPES,
+        ),
+        provenance_refs=("integrated-controls:matched-suite",),
+    )
+    lenses.approve_binding(
+        definition_id=definition.definition_id,
+        obligation_family=ObligationFamily.DEPENDENCY_GAP,
+        failure_tripwire_count=3,
+        calibration_refs=(
+            "integrated-controls:calibration",
+            "integrated-controls:held-out",
+        ),
+        source_event_key="lens:integrated-controls:v0.28",
+        cycle=kernel.state.cycle,
+    )
+    return lenses
+
+
+def _trial_controls(
+    lenses: EquivalenceLensSystem,
+) -> IntegratedInquiryTrialControlRequest:
+    return IntegratedInquiryTrialControlRequest.build(
+        lenses,
+        calibration_seed=101,
+        held_out_seed=211,
+        horizon=4,
+        slot_budget=2,
+    )
 
 
 def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> None:
@@ -246,6 +289,134 @@ def test_opt_in_path_links_detection_attention_hypotheses_and_simulation() -> No
     assert not result.trace.epistemic_authority_enabled
 
 
+def test_controlled_opt_in_path_funds_and_traces_both_predeclared_pairs() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    controls = _trial_controls(lenses)
+    canonical_before = kernel.fingerprint()
+    lens_before = lenses.fingerprint()
+
+    result = DependencyGapInquiryCoordinator().run(
+        kernel,
+        runtime,
+        source_event_key="integrated-inquiry:controlled",
+        lenses=lenses,
+        trial_controls=controls,
+    )
+
+    assert not result.replayed
+    assert kernel.fingerprint() != canonical_before
+    assert lenses.fingerprint() == lens_before
+    assert result.trace.trial_control_request == controls
+    assert len(result.matched_pairs) == 2
+    assert len(result.trace.controlled_trial_observations) == 2
+    assert len(result.held_out_replications) == 1
+    assert result.trace.held_out_replication_receipts == (
+        result.held_out_replications[0],
+    )
+    assert len(runtime.ledger.state.reservations) == 5
+    assert len(runtime.ledger.state.settlements) == 5
+    assert len(result.simulations) == 1
+
+    allocation = result.attention.decision.allocations[0]
+    bid = result.attention.decision.bids[0]
+    assert bid.requested_budget == pytest.approx(0.07)
+    assert allocation.granted_budget == pytest.approx(0.05)
+    assert controls.request_id in bid.metric_provenance_refs
+    assert controls.lens_binding_id in bid.metric_provenance_refs
+    assert controls.lens_definition_id in bid.metric_provenance_refs
+    assert controls.lens_state_fingerprint in bid.metric_provenance_refs
+
+    controlled = tuple(
+        item.controlled_observation for item in result.matched_pairs
+    )
+    assert all(item is not None for item in controlled)
+    assert {item.context.split for item in controlled if item is not None} == {
+        item.context.split for item in result.held_out_replications[0].trials
+    }
+    assert {
+        item.context.seed for item in controlled if item is not None
+    } == {101, 211}
+    assert all(
+        pair.context is not None
+        and pair.context.context_id in pair.baseline.settlement.result_refs
+        and pair.context.context_id in pair.treatment.settlement.result_refs
+        and pair.baseline.reservation.allocation_id == allocation.allocation_id
+        and pair.treatment.reservation.allocation_id == allocation.allocation_id
+        and pair.resolution_evidence.missing_requirements
+        == MISSING_OPERATIONAL_REQUIREMENTS
+        for pair in result.matched_pairs
+    )
+    replication = result.held_out_replications[0]
+    assert replication.seeds == (101, 211)
+    assert replication.declared_seed_replay_observed
+    assert not replication.stochastic_generalization_established
+    assert not replication.native_workspace_admission_observed
+    assert not replication.outgoing_action_observed
+    assert not replication.canonical_dependency_path_established
+    assert not replication.resolution_authority_enabled
+    assert not replication.canonical_commit_permitted
+    assert not result.trace.canonical_simulation_leakage_detected
+    assert not result.trace.canonical_resolution_permitted
+    assert not result.trace.epistemic_authority_enabled
+
+
+def test_controlled_trace_reconstructs_exactly_after_archive_reload(
+    tmp_path: Path,
+) -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    controls = _trial_controls(lenses)
+    coordinator = DependencyGapInquiryCoordinator()
+    first = coordinator.run(
+        kernel,
+        runtime,
+        source_event_key="integrated-inquiry:controlled-replay",
+        lenses=lenses,
+        trial_controls=controls,
+    )
+    path = tmp_path / "integrated-controlled.vob"
+    save_experiment_archive(
+        path,
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+    )
+    bundle = load_experiment_archive_bundle(path)
+    assert bundle.lens_system is not None
+    restored_runtime = CounterfactualRuntime(bundle.simulation_ledger)
+    restored_controls = _trial_controls(bundle.lens_system)
+    assert restored_controls == controls
+    canonical_before = bundle.kernel.fingerprint()
+    simulation_before = restored_runtime.ledger.fingerprint()
+
+    replay = coordinator.run(
+        bundle.kernel,
+        restored_runtime,
+        source_event_key="integrated-inquiry:controlled-replay",
+        lenses=bundle.lens_system,
+        trial_controls=restored_controls,
+    )
+
+    assert replay.replayed
+    assert replay.trace == first.trace
+    assert tuple(item.plans for item in replay.matched_pairs) == tuple(
+        item.plans for item in first.matched_pairs
+    )
+    assert tuple(item.observation for item in replay.matched_pairs) == tuple(
+        item.observation for item in first.matched_pairs
+    )
+    assert tuple(
+        item.controlled_observation for item in replay.matched_pairs
+    ) == tuple(item.controlled_observation for item in first.matched_pairs)
+    assert replay.held_out_replications == first.held_out_replications
+    assert all(item.replayed for item in replay.matched_pairs)
+    assert bundle.kernel.fingerprint() == canonical_before
+    assert restored_runtime.ledger.fingerprint() == simulation_before
+
+
 def test_trace_reconstructs_exactly_after_archive_reload(tmp_path: Path) -> None:
     kernel = _kernel()
     runtime = CounterfactualRuntime()
@@ -329,6 +500,138 @@ def test_allocation_must_fund_matched_pair_and_one_labeled_arm() -> None:
 
     assert kernel.fingerprint() == canonical_before
     assert runtime.ledger.fingerprint() == simulation_before
+
+
+def test_controlled_allocation_must_fund_two_pairs_and_one_labeled_arm() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    controls = _trial_controls(lenses)
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+    attention = AttentionPortfolio(
+        AttentionPortfolioPolicy(
+            micro_probe_budget=0.04,
+            maximum_grant=0.04,
+        )
+    )
+
+    with pytest.raises(IntegratedInquiryError, match="matched control pair"):
+        DependencyGapInquiryCoordinator(attention=attention).run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:controlled-underfunded",
+            lenses=lenses,
+            trial_controls=controls,
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    (
+        ({"held_out_seed": 101}, "distinct"),
+        ({"lens_state_fingerprint": "0" * 64}, "checksum"),
+        ({"counterfactual_arm_count": 2}, "exactly two"),
+        ({"canonical_commit_permitted": True}, "claim boundary"),
+    ),
+)
+def test_controlled_request_tampering_fails_before_partial_publication(
+    change: dict[str, object],
+    message: str,
+) -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    forged = _trial_controls(lenses).model_copy(update=change)
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+    lens_before = lenses.fingerprint()
+
+    with pytest.raises(IntegratedInquiryError, match=message):
+        DependencyGapInquiryCoordinator().run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:controlled-forged-request",
+            lenses=lenses,
+            trial_controls=forged,
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+    assert lenses.fingerprint() == lens_before
+
+
+def test_controlled_request_rejects_post_declaration_lens_replacement() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    controls = _trial_controls(lenses)
+    replacement = lenses.register_definition(
+        operators=(LensOpcode.SELECT_ACTION,),
+        provenance_refs=("integrated-controls:replacement",),
+    )
+    lenses.approve_binding(
+        definition_id=replacement.definition_id,
+        obligation_family=ObligationFamily.DEPENDENCY_GAP,
+        failure_tripwire_count=3,
+        calibration_refs=("integrated-controls:replacement-calibration",),
+        source_event_key="lens:integrated-controls:replacement",
+        cycle=kernel.state.cycle,
+    )
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+
+    with pytest.raises(IntegratedInquiryError, match="active Lens state"):
+        DependencyGapInquiryCoordinator().run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:changed-lens",
+            lenses=lenses,
+            trial_controls=controls,
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+
+
+def test_controlled_observation_tamper_rejects_entire_transaction() -> None:
+    class TamperingControlledObserver:
+        def observe(self, *args, **kwargs):
+            observation = ControlledOperationalTrialObserver().observe(
+                *args, **kwargs
+            )
+            return observation.model_copy(
+                update={"canonical_commit_permitted": True}
+            )
+
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    controls = _trial_controls(lenses)
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+    lens_before = lenses.fingerprint()
+
+    with pytest.raises(
+        IntegratedInquiryError,
+        match="Controlled matched observation failed validation",
+    ):
+        DependencyGapInquiryCoordinator(
+            controlled_trial_observer=TamperingControlledObserver()
+        ).run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:controlled-tamper",
+            lenses=lenses,
+            trial_controls=controls,
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+    assert lenses.fingerprint() == lens_before
 
 
 def test_matched_receipt_tamper_rejects_entire_staged_transaction() -> None:
@@ -589,6 +892,29 @@ def test_rehashed_trace_cannot_drop_operational_probe() -> None:
     )
     payload = result.trace.model_dump(mode="python", exclude={"trace_id"})
     payload["operational_probe_observations"] = ()
+
+    with pytest.raises(ValueError):
+        IntegratedInquiryTrace.build(**payload)
+
+
+@pytest.mark.parametrize(
+    "field",
+    ("controlled_trial_observations", "held_out_replication_receipts"),
+)
+def test_rehashed_controlled_trace_cannot_drop_control_evidence(
+    field: str,
+) -> None:
+    kernel = _kernel()
+    lenses = _lenses(kernel)
+    result = DependencyGapInquiryCoordinator().run(
+        kernel,
+        CounterfactualRuntime(),
+        source_event_key="integrated-inquiry:drop-controlled-evidence",
+        lenses=lenses,
+        trial_controls=_trial_controls(lenses),
+    )
+    payload = result.trace.model_dump(mode="python", exclude={"trace_id"})
+    payload[field] = ()
 
     with pytest.raises(ValueError):
         IntegratedInquiryTrace.build(**payload)

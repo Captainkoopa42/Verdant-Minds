@@ -22,6 +22,7 @@ from .operational_probe import (
     OperationalProbeIntegrityError,
     OverlayAccessEffect,
     OverlayOperationalProbe,
+    OverlayOperationalProbePolicy,
 )
 from .trace_observations import (
     MatchedCounterfactualObserver,
@@ -311,6 +312,7 @@ class TraceResolutionEvidenceDeriver:
         treatment_result: CounterfactualRunResult,
         observation: MatchedStructuralObservation,
         operational_observation: MatchedOverlayOperationalObservation,
+        operational_probe_policy: OverlayOperationalProbePolicy | None = None,
     ) -> TraceResolutionEvidenceReceipt:
         try:
             hypothesis = StructuralHypothesis.model_validate(
@@ -393,7 +395,9 @@ class TraceResolutionEvidenceDeriver:
                 raise TraceResolutionEvidenceIntegrityError(
                     "Matched structural observation differs from actual lineage."
                 )
-            verified_operational = OverlayOperationalProbe().observe(
+            verified_operational = OverlayOperationalProbe(
+                operational_probe_policy
+            ).observe(
                 kernel,
                 ledger,
                 hypothesis_ref=hypothesis.hypothesis_id,

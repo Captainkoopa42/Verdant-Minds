@@ -35,6 +35,11 @@ from .detection import (
     DependencyGapDetectionReport,
     DependencyGapDetector,
 )
+from .equivalence import (
+    EquivalenceLensSystem,
+    LensIntegrityError,
+    LensUnavailableError,
+)
 from .hypotheses import (
     DependencyGapHypothesisGenerator,
     FunctionalOutcome,
@@ -48,6 +53,7 @@ from .operational_probe import (
     MatchedOverlayOperationalObservation,
     OperationalProbeIntegrityError,
     OverlayOperationalProbe,
+    OverlayOperationalProbePolicy,
 )
 from .pipeline import ObligationMutationResult, derive_obligation_view
 from .resolution_evidence import (
@@ -62,10 +68,24 @@ from .trace_observations import (
     TraceObservationIntegrityError,
     build_matched_counterfactual_plans,
 )
+from .trial_controls import (
+    ControlledOperationalTrialObservation,
+    ControlledOperationalTrialObserver,
+    HeldOutOperationalReplicationObserver,
+    HeldOutOperationalReplicationReceipt,
+    OperationalTrialContext,
+    OperationalTrialControlIntegrityError,
+    OperationalTrialSplit,
+    build_operational_trial_context,
+)
 
 
 INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.26"
+INTEGRATED_CONTROLLED_INQUIRY_VERSION = (
+    "dependency_gap_integrated_trial_controls_v0.28"
+)
 MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION = 2
+CONTROLLED_MATCHED_SIMULATIONS_PER_OBLIGATION = 4
 
 
 class IntegratedInquiryError(RuntimeError):
@@ -113,6 +133,121 @@ class IntegratedInquiryPolicy(BaseModel):
             )
             * self.simulation_consumed_budget
         )
+
+
+class IntegratedInquiryTrialControlRequest(FrozenRecord):
+    """Pre-Attention commitment to one calibration and one held-out pair."""
+
+    request_id: str
+    policy_version: str = INTEGRATED_CONTROLLED_INQUIRY_VERSION
+    calibration_seed: int = Field(ge=0)
+    held_out_seed: int = Field(ge=0)
+    horizon: int = Field(ge=1, le=32)
+    slot_budget: int = Field(ge=1, le=4096)
+    obligation_family: ObligationFamily = ObligationFamily.DEPENDENCY_GAP
+    lens_binding_id: str
+    lens_definition_id: str
+    lens_policy_version: str
+    lens_state_fingerprint: str
+    matched_pair_count: int = 2
+    counterfactual_arm_count: int = 4
+    predeclared: bool = True
+    seed_consumed_by_runtime: bool = False
+    native_workspace_budget_enforced: bool = False
+    observed_outcome_authority_enabled: bool = False
+    resolution_authority_enabled: bool = False
+    canonical_commit_permitted: bool = False
+
+    @classmethod
+    def build(
+        cls,
+        lenses: EquivalenceLensSystem,
+        *,
+        calibration_seed: int,
+        held_out_seed: int,
+        horizon: int,
+        slot_budget: int,
+    ) -> "IntegratedInquiryTrialControlRequest":
+        try:
+            active = lenses.active_binding(
+                ObligationFamily.DEPENDENCY_GAP
+            ).binding
+        except (LensIntegrityError, LensUnavailableError) as exc:
+            raise IntegratedInquiryError(str(exc)) from exc
+        values = {
+            "policy_version": INTEGRATED_CONTROLLED_INQUIRY_VERSION,
+            "calibration_seed": calibration_seed,
+            "held_out_seed": held_out_seed,
+            "horizon": horizon,
+            "slot_budget": slot_budget,
+            "obligation_family": ObligationFamily.DEPENDENCY_GAP,
+            "lens_binding_id": active.binding_id,
+            "lens_definition_id": active.definition_id,
+            "lens_policy_version": active.policy_version,
+            "lens_state_fingerprint": lenses.fingerprint(),
+            "matched_pair_count": 2,
+            "counterfactual_arm_count": 4,
+            "predeclared": True,
+            "seed_consumed_by_runtime": False,
+            "native_workspace_budget_enforced": False,
+            "observed_outcome_authority_enabled": False,
+            "resolution_authority_enabled": False,
+            "canonical_commit_permitted": False,
+        }
+        values["request_id"] = stable_id(
+            "integrated_inquiry_trial_control_request",
+            _identity_payload(values, "request_id"),
+        )
+        return cls(**values)
+
+    @model_validator(mode="after")
+    def validate_request(self) -> "IntegratedInquiryTrialControlRequest":
+        if self.policy_version != INTEGRATED_CONTROLLED_INQUIRY_VERSION:
+            raise ValueError("Unsupported integrated trial-control version.")
+        if self.calibration_seed == self.held_out_seed:
+            raise ValueError(
+                "Integrated calibration and held-out seeds must be distinct."
+            )
+        if self.obligation_family != ObligationFamily.DEPENDENCY_GAP:
+            raise ValueError(
+                "Integrated trial controls currently support only DependencyGap."
+            )
+        if not all(
+            item.strip()
+            for item in (
+                self.lens_binding_id,
+                self.lens_definition_id,
+                self.lens_policy_version,
+            )
+        ):
+            raise ValueError("Integrated trial-control Lens refs cannot be empty.")
+        if len(self.lens_state_fingerprint) != 64 or any(
+            character not in "0123456789abcdef"
+            for character in self.lens_state_fingerprint
+        ):
+            raise ValueError(
+                "Integrated trial-control Lens fingerprint must be SHA-256."
+            )
+        if self.matched_pair_count != 2 or self.counterfactual_arm_count != 4:
+            raise ValueError(
+                "Integrated controls require exactly two zero/full matched pairs."
+            )
+        if (
+            not self.predeclared
+            or self.seed_consumed_by_runtime
+            or self.native_workspace_budget_enforced
+            or self.observed_outcome_authority_enabled
+            or self.resolution_authority_enabled
+            or self.canonical_commit_permitted
+        ):
+            raise ValueError("Integrated trial controls crossed their claim boundary.")
+        expected = stable_id(
+            "integrated_inquiry_trial_control_request",
+            self.model_dump(mode="json", exclude={"request_id"}),
+        )
+        if self.request_id != expected:
+            raise ValueError("Integrated trial-control request checksum mismatch.")
+        return self
 
 
 def _digest(value: Any) -> str:
@@ -234,6 +369,13 @@ class IntegratedInquiryTrace(FrozenRecord):
     ] = Field(min_length=1)
     canonical_checkpoint_fingerprint: str
     simulation_ledger_fingerprint: str
+    trial_control_request: IntegratedInquiryTrialControlRequest | None = None
+    controlled_trial_observations: tuple[
+        ControlledOperationalTrialObservation, ...
+    ] = ()
+    held_out_replication_receipts: tuple[
+        HeldOutOperationalReplicationReceipt, ...
+    ] = ()
     canonical_simulation_leakage_detected: bool = False
     canonical_resolution_permitted: bool = False
     epistemic_authority_enabled: bool = False
@@ -284,6 +426,31 @@ class IntegratedInquiryTrace(FrozenRecord):
         )
         values["resolution_evidence_receipts"] = tuple(
             sorted(receipts, key=lambda item: item.receipt_id)
+        )
+        if values.get("trial_control_request") is not None:
+            request = values["trial_control_request"]
+            values["trial_control_request"] = (
+                request
+                if isinstance(request, IntegratedInquiryTrialControlRequest)
+                else IntegratedInquiryTrialControlRequest.model_validate(request)
+            )
+        controlled = tuple(
+            item
+            if isinstance(item, ControlledOperationalTrialObservation)
+            else ControlledOperationalTrialObservation.model_validate(item)
+            for item in values.get("controlled_trial_observations", ())
+        )
+        values["controlled_trial_observations"] = tuple(
+            sorted(controlled, key=lambda item: item.observation_id)
+        )
+        replications = tuple(
+            item
+            if isinstance(item, HeldOutOperationalReplicationReceipt)
+            else HeldOutOperationalReplicationReceipt.model_validate(item)
+            for item in values.get("held_out_replication_receipts", ())
+        )
+        values["held_out_replication_receipts"] = tuple(
+            sorted(replications, key=lambda item: item.receipt_id)
         )
         values.setdefault("canonical_simulation_leakage_detected", False)
         values.setdefault("canonical_resolution_permitted", False)
@@ -354,6 +521,32 @@ class IntegratedInquiryTrace(FrozenRecord):
             raise ValueError(
                 "Integrated resolution evidence receipts must be sorted and unique."
             )
+        controlled_ids = tuple(
+            item.observation_id for item in self.controlled_trial_observations
+        )
+        if tuple(sorted(set(controlled_ids))) != controlled_ids:
+            raise ValueError(
+                "Integrated controlled observations must be sorted and unique."
+            )
+        replication_ids = tuple(
+            item.receipt_id for item in self.held_out_replication_receipts
+        )
+        if tuple(sorted(set(replication_ids))) != replication_ids:
+            raise ValueError(
+                "Integrated held-out receipts must be sorted and unique."
+            )
+        if self.trial_control_request is None:
+            if self.controlled_trial_observations or self.held_out_replication_receipts:
+                raise ValueError(
+                    "Integrated controlled evidence requires a predeclared request."
+                )
+        elif (
+            not self.controlled_trial_observations
+            or not self.held_out_replication_receipts
+        ):
+            raise ValueError(
+                "Integrated trial controls require complete controlled evidence."
+            )
         if (
             self.canonical_simulation_leakage_detected
             or self.canonical_resolution_permitted
@@ -375,6 +568,17 @@ class IntegratedInquiryTrace(FrozenRecord):
                 raise ValueError("Integrated trial crossed an Attention decision.")
             if trial.attention_allocation_id not in self.attention_allocation_ids:
                 raise ValueError("Integrated trial lost its Attention allocation.")
+        controlled_by_structural_ref: dict[
+            str, ControlledOperationalTrialObservation
+        ] = {}
+        for controlled in self.controlled_trial_observations:
+            structural_ref = controlled.structural_observation.observation_id
+            if structural_ref in controlled_by_structural_ref:
+                raise ValueError(
+                    "Matched structural observation has multiple controlled receipts."
+                )
+            controlled_by_structural_ref[structural_ref] = controlled
+
         observed_allocations: list[str] = []
         for observation in self.matched_observations:
             baseline = observation.baseline
@@ -396,9 +600,24 @@ class IntegratedInquiryTrace(FrozenRecord):
                 raise ValueError("Matched observation lost its Attention allocation.")
             if observation.hypothesis_ref not in self.hypothesis_ids:
                 raise ValueError("Matched observation lost its hypothesis.")
+            controlled = controlled_by_structural_ref.get(
+                observation.observation_id
+            )
+            expected_result_refs = (
+                tuple(
+                    sorted(
+                        (
+                            observation.hypothesis_ref,
+                            controlled.context.context_id,
+                        )
+                    )
+                )
+                if controlled is not None
+                else (observation.hypothesis_ref,)
+            )
             if (
-                baseline.result_refs != (observation.hypothesis_ref,)
-                or treatment.result_refs != (observation.hypothesis_ref,)
+                baseline.result_refs != expected_result_refs
+                or treatment.result_refs != expected_result_refs
             ):
                 raise ValueError(
                     "Matched observation acquired supplied outcome authority."
@@ -415,9 +634,25 @@ class IntegratedInquiryTrace(FrozenRecord):
                     "Integrated inquiry cannot publish a mutating matched treatment."
                 )
             observed_allocations.append(baseline.allocation_id)
-        if tuple(sorted(observed_allocations)) != self.attention_allocation_ids:
+        expected_matches_per_allocation = (
+            2 if self.trial_control_request is not None else 1
+        )
+        observed_allocation_ids = set(observed_allocations)
+        if observed_allocation_ids != set(self.attention_allocation_ids) or any(
+            observed_allocations.count(allocation_id)
+            != expected_matches_per_allocation
+            for allocation_id in self.attention_allocation_ids
+        ):
             raise ValueError(
-                "Every integrated Attention allocation requires one matched receipt."
+                "Every integrated Attention allocation requires its declared matched receipts."
+            )
+        if set(controlled_by_structural_ref) != (
+            set(observation_ids)
+            if self.trial_control_request is not None
+            else set()
+        ):
+            raise ValueError(
+                "Integrated controlled receipts do not cover the matched observations."
             )
         observations_by_id = {
             item.observation_id: item for item in self.matched_observations
@@ -469,6 +704,89 @@ class IntegratedInquiryTrace(FrozenRecord):
             raise ValueError(
                 "Every matched observation requires one operational probe."
             )
+        request = self.trial_control_request
+        if request is not None:
+            controlled_by_allocation: dict[
+                str, list[ControlledOperationalTrialObservation]
+            ] = {}
+            for structural_ref, controlled in controlled_by_structural_ref.items():
+                structural = observations_by_id[structural_ref]
+                operational = operational_by_structural_ref[structural_ref]
+                context = controlled.context
+                if (
+                    controlled.structural_observation != structural
+                    or controlled.operational_observation != operational
+                    or context.obligation_id != structural.baseline.obligation_id
+                    or context.hypothesis_ref != structural.hypothesis_ref
+                    or context.canonical_checkpoint_fingerprint
+                    != self.canonical_checkpoint_fingerprint
+                    or context.obligation_family != request.obligation_family
+                    or context.lens_binding_id != request.lens_binding_id
+                    or context.lens_definition_id != request.lens_definition_id
+                    or context.lens_policy_version != request.lens_policy_version
+                    or context.lens_state_fingerprint
+                    != request.lens_state_fingerprint
+                    or context.horizon != request.horizon
+                    or context.slot_budget != request.slot_budget
+                ):
+                    raise ValueError(
+                        "Controlled trial crossed its integrated request lineage."
+                    )
+                expected_seed = (
+                    request.calibration_seed
+                    if context.split == OperationalTrialSplit.CALIBRATION
+                    else request.held_out_seed
+                )
+                if context.seed != expected_seed:
+                    raise ValueError(
+                        "Controlled trial crossed its predeclared split seed."
+                    )
+                allocation_id = structural.baseline.allocation_id
+                controlled_by_allocation.setdefault(allocation_id, []).append(
+                    controlled
+                )
+
+            replication_by_allocation: dict[
+                str, HeldOutOperationalReplicationReceipt
+            ] = {}
+            for replication in self.held_out_replication_receipts:
+                allocation_ids = {
+                    item.structural_observation.baseline.allocation_id
+                    for item in replication.trials
+                }
+                if len(allocation_ids) != 1:
+                    raise ValueError(
+                        "Held-out replication crossed an Attention allocation."
+                    )
+                allocation_id = next(iter(allocation_ids))
+                if allocation_id in replication_by_allocation:
+                    raise ValueError(
+                        "Attention allocation has multiple held-out receipts."
+                    )
+                expected_trials = tuple(
+                    sorted(
+                        controlled_by_allocation.get(allocation_id, ()),
+                        key=lambda item: (
+                            0
+                            if item.context.split
+                            == OperationalTrialSplit.CALIBRATION
+                            else 1,
+                            item.context.seed,
+                            item.observation_id,
+                        ),
+                    )
+                )
+                if replication.trials != expected_trials:
+                    raise ValueError(
+                        "Held-out replication lost its controlled trial set."
+                    )
+                replication_by_allocation[allocation_id] = replication
+            if set(replication_by_allocation) != set(
+                self.attention_allocation_ids
+            ):
+                raise ValueError(
+                    "Every controlled allocation requires one held-out receipt."
+                )
         receipt_observation_refs: list[str] = []
         for receipt in self.resolution_evidence_receipts:
             observation = observations_by_id.get(receipt.matched_observation_ref)
@@ -536,6 +854,8 @@ class IntegratedMatchedInquiryPair:
     observation: MatchedStructuralObservation
     operational_observation: MatchedOverlayOperationalObservation
     resolution_evidence: TraceResolutionEvidenceReceipt
+    context: OperationalTrialContext | None = None
+    controlled_observation: ControlledOperationalTrialObservation | None = None
 
     @property
     def replayed(self) -> bool:
@@ -552,6 +872,7 @@ class IntegratedInquiryResult:
     plans: tuple[CounterfactualPlan, ...]
     simulations: tuple[CounterfactualRunResult, ...]
     matched_pairs: tuple[IntegratedMatchedInquiryPair, ...]
+    held_out_replications: tuple[HeldOutOperationalReplicationReceipt, ...]
     replayed: bool
 
 
@@ -576,6 +897,9 @@ class DependencyGapInquiryCoordinator:
         generator: DependencyGapHypothesisGenerator | None = None,
         matched_observer: MatchedCounterfactualObserver | None = None,
         operational_probe: OverlayOperationalProbe | None = None,
+        controlled_trial_observer: ControlledOperationalTrialObserver | None = None,
+        held_out_replication_observer: HeldOutOperationalReplicationObserver
+        | None = None,
     ) -> None:
         self.policy = policy or IntegratedInquiryPolicy()
         self.detector = detector or DependencyGapDetector()
@@ -583,6 +907,13 @@ class DependencyGapInquiryCoordinator:
         self.generator = generator or DependencyGapHypothesisGenerator()
         self.matched_observer = matched_observer or MatchedCounterfactualObserver()
         self.operational_probe = operational_probe or OverlayOperationalProbe()
+        self.controlled_trial_observer = (
+            controlled_trial_observer or ControlledOperationalTrialObserver()
+        )
+        self.held_out_replication_observer = (
+            held_out_replication_observer
+            or HeldOutOperationalReplicationObserver()
+        )
         if (
             self.policy.simulation_requested_budget
             > self.attention.policy.micro_probe_budget + 1e-12
@@ -644,16 +975,59 @@ class DependencyGapInquiryCoordinator:
         runtime: CounterfactualRuntime,
         *,
         source_event_key: str,
+        lenses: EquivalenceLensSystem | None = None,
+        trial_controls: IntegratedInquiryTrialControlRequest | None = None,
     ) -> IntegratedInquiryResult:
         """Stage and publish one bounded invocation, or leave both inputs unchanged."""
 
         if not source_event_key.strip():
             raise IntegratedInquiryError("Integrated inquiry requires a source event key.")
 
+        if (lenses is None) != (trial_controls is None):
+            raise IntegratedInquiryError(
+                "Controlled integrated inquiry requires both Lens state and a "
+                "predeclared trial-control request."
+            )
+        lens_checkpoint: str | None = None
+        if trial_controls is not None and lenses is not None:
+            try:
+                trial_controls = IntegratedInquiryTrialControlRequest.model_validate(
+                    trial_controls.model_dump(mode="json")
+                )
+                lens_checkpoint = lenses.fingerprint()
+                active = lenses.active_binding(
+                    trial_controls.obligation_family
+                ).binding
+            except (
+                LensIntegrityError,
+                LensUnavailableError,
+                ValueError,
+                TypeError,
+            ) as exc:
+                raise IntegratedInquiryError(
+                    f"Integrated trial controls failed validation: {exc}"
+                ) from exc
+            if (
+                lens_checkpoint != trial_controls.lens_state_fingerprint
+                or active.binding_id != trial_controls.lens_binding_id
+                or active.definition_id != trial_controls.lens_definition_id
+                or active.policy_version != trial_controls.lens_policy_version
+            ):
+                raise IntegratedInquiryError(
+                    "Integrated trial controls do not name the active Lens state."
+                )
+
         working_kernel = VerdantKernel.from_state(kernel.snapshot())
         working_runtime = CounterfactualRuntime(
             ledger=SimulationLedger.from_state(runtime.ledger.snapshot())
         )
+        working_lenses: EquivalenceLensSystem | None = None
+        if lenses is not None:
+            lens_registry, lens_ledger = lenses.snapshot()
+            working_lenses = EquivalenceLensSystem(
+                registry=lens_registry,
+                ledger=lens_ledger,
+            )
         detection = self.detector.detect_and_record(working_kernel)
         if not detection.candidates:
             raise IntegratedInquiryError(
@@ -704,6 +1078,29 @@ class DependencyGapInquiryCoordinator:
         hypotheses_by_obligation: dict[str, tuple[StructuralHypothesis, ...]] = {}
         partitions_by_obligation: dict[str, FunctionalPartitionIndex] = {}
         bid_inputs: list[AttentionBidInput] = []
+        matched_simulation_count = (
+            CONTROLLED_MATCHED_SIMULATIONS_PER_OBLIGATION
+            if trial_controls is not None
+            else MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION
+        )
+        control_provenance = (
+            (
+                trial_controls.request_id,
+                trial_controls.lens_binding_id,
+                trial_controls.lens_definition_id,
+                trial_controls.lens_state_fingerprint,
+            )
+            if trial_controls is not None
+            else ()
+        )
+        attention_requested_budget = (
+            self.policy.maximum_simulations_per_obligation
+            + matched_simulation_count
+        ) * self.policy.simulation_requested_budget
+        attention_estimated_cost = (
+            self.policy.maximum_simulations_per_obligation
+            + matched_simulation_count
+        ) * self.policy.simulation_consumed_budget
         for obligation_id in eligible_ids:
             hypotheses = self.generator.generate(working_kernel, obligation_id)
             if not hypotheses or any(
@@ -723,6 +1120,7 @@ class DependencyGapInquiryCoordinator:
                         candidate.candidate_id,
                         mutation.event.event_id,
                         partition.partition_id,
+                        *control_provenance,
                         *(item.hypothesis_id for item in hypotheses),
                     }
                 )
@@ -730,9 +1128,13 @@ class DependencyGapInquiryCoordinator:
             bid_inputs.append(
                 AttentionBidInput(
                     obligation_id=obligation_id,
-                    action_operator="integrated_dependency_gap_probe",
-                    requested_budget=self.policy.attention_requested_budget,
-                    estimated_cost=self.policy.attention_estimated_cost,
+                    action_operator=(
+                        "integrated_dependency_gap_controlled_probe"
+                        if trial_controls is not None
+                        else "integrated_dependency_gap_probe"
+                    ),
+                    requested_budget=attention_requested_budget,
+                    estimated_cost=attention_estimated_cost,
                     expected_gain=self.policy.expected_gain,
                     uncertainty=self.policy.uncertainty,
                     urgency=self.policy.urgency,
@@ -742,13 +1144,20 @@ class DependencyGapInquiryCoordinator:
                 )
             )
 
-        attention_source_key = stable_id(
-            "integrated_inquiry_attention",
+        attention_source_parts = [
             source_event_key,
             self.policy.policy_version,
             self.detector.policy.policy_version,
             self.attention.policy.policy_version,
             self.generator.policy.policy_version,
+        ]
+        if trial_controls is not None:
+            attention_source_parts.extend(
+                (trial_controls.policy_version, trial_controls.request_id)
+            )
+        attention_source_key = stable_id(
+            "integrated_inquiry_attention",
+            *attention_source_parts,
         )
         attention = self.attention.decide(
             working_kernel,
@@ -767,6 +1176,7 @@ class DependencyGapInquiryCoordinator:
         simulations: list[CounterfactualRunResult] = []
         trials: list[IntegratedInquiryTrial] = []
         matched_pairs: list[IntegratedMatchedInquiryPair] = []
+        held_out_replications: list[HeldOutOperationalReplicationReceipt] = []
         for allocation in decision.allocations:
             obligation_id = allocation.obligation_id
             hypotheses = hypotheses_by_obligation[obligation_id]
@@ -776,7 +1186,7 @@ class DependencyGapInquiryCoordinator:
                 (allocation.granted_budget + 1e-12)
                 / self.policy.simulation_requested_budget
             )
-            arm_capacity = affordable - MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION
+            arm_capacity = affordable - matched_simulation_count
             trial_count = min(
                 self.policy.maximum_simulations_per_obligation,
                 arm_capacity,
@@ -805,7 +1215,7 @@ class DependencyGapInquiryCoordinator:
                     "hypothesis."
                 )
             requested = (
-                trial_count + MATCHED_CONTROL_SIMULATIONS_PER_OBLIGATION
+                trial_count + matched_simulation_count
             ) * self.policy.simulation_requested_budget
             if requested > allocation.granted_budget + 1e-12:
                 raise IntegratedInquiryError(
@@ -813,183 +1223,353 @@ class DependencyGapInquiryCoordinator:
                 )
 
             matched_hypothesis = projected[0]
-            matched_plans = build_matched_counterfactual_plans(
-                matched_hypothesis,
-                source_event_key=stable_id(
-                    "integrated_inquiry_matched_pair",
-                    source_event_key,
-                    obligation_id,
-                    matched_hypothesis.hypothesis_id,
-                    self.policy.policy_version,
-                ),
-                requested_budget=self.policy.simulation_requested_budget,
-                consumed_budget=self.policy.simulation_consumed_budget,
-            )
-            if any(
-                (
-                    plan.operator_version != matched_hypothesis.grammar_version
-                    or plan.patches != matched_hypothesis.patches
-                    or abs(
-                        plan.requested_budget
-                        - self.policy.simulation_requested_budget
+            controlled_contexts: tuple[OperationalTrialContext | None, ...]
+            if trial_controls is not None:
+                if working_lenses is None:
+                    raise IntegratedInquiryError(
+                        "Controlled inquiry lost its staged Lens state."
                     )
-                    > 1e-12
-                    or abs(
-                        plan.consumed_budget
-                        - self.policy.simulation_consumed_budget
+                try:
+                    controlled_contexts = (
+                        build_operational_trial_context(
+                            working_kernel,
+                            working_lenses,
+                            hypothesis=matched_hypothesis,
+                            split=OperationalTrialSplit.CALIBRATION,
+                            seed=trial_controls.calibration_seed,
+                            horizon=trial_controls.horizon,
+                            slot_budget=trial_controls.slot_budget,
+                        ),
+                        build_operational_trial_context(
+                            working_kernel,
+                            working_lenses,
+                            hypothesis=matched_hypothesis,
+                            split=OperationalTrialSplit.HELD_OUT,
+                            seed=trial_controls.held_out_seed,
+                            horizon=trial_controls.horizon,
+                            slot_budget=trial_controls.slot_budget,
+                        ),
                     )
-                    > 1e-12
-                    or plan.disposition != SimulationDisposition.DISCARDED
-                    or plan.result_refs != (matched_hypothesis.hypothesis_id,)
+                except OperationalTrialControlIntegrityError as exc:
+                    raise IntegratedInquiryError(
+                        f"Integrated trial context failed validation: {exc}"
+                    ) from exc
+            else:
+                controlled_contexts = (None,)
+
+            allocation_controlled: list[
+                ControlledOperationalTrialObservation
+            ] = []
+            for context in controlled_contexts:
+                pair_source_key = (
+                    stable_id(
+                        "integrated_inquiry_matched_pair",
+                        source_event_key,
+                        obligation_id,
+                        matched_hypothesis.hypothesis_id,
+                        self.policy.policy_version,
+                    )
+                    if context is None
+                    else stable_id(
+                        "integrated_inquiry_controlled_matched_pair",
+                        source_event_key,
+                        obligation_id,
+                        matched_hypothesis.hypothesis_id,
+                        self.policy.policy_version,
+                        trial_controls.request_id,
+                        context.context_id,
+                    )
                 )
-                for plan in (
-                    matched_plans.baseline,
-                    matched_plans.treatment,
+                expected_result_refs = tuple(
+                    sorted(
+                        (
+                            matched_hypothesis.hypothesis_id,
+                            *((context.context_id,) if context is not None else ()),
+                        )
+                    )
                 )
-            ) or (
-                matched_plans.baseline.apply_patch_count != 0
-                or matched_plans.treatment.apply_patch_count
-                != len(matched_hypothesis.patches)
-            ):
-                raise IntegratedInquiryError(
-                    "Matched plans differ from their declared hypothesis or policy."
+                matched_plans = build_matched_counterfactual_plans(
+                    matched_hypothesis,
+                    source_event_key=pair_source_key,
+                    requested_budget=self.policy.simulation_requested_budget,
+                    consumed_budget=self.policy.simulation_consumed_budget,
+                    additional_result_refs=(
+                        (context.context_id,) if context is not None else ()
+                    ),
                 )
-            matched_baseline = working_runtime.execute(
-                working_kernel,
-                allocation_id=allocation.allocation_id,
-                plan=matched_plans.baseline,
-            )
-            if working_kernel.fingerprint() != canonical_checkpoint:
-                raise IntegratedInquiryError(
-                    "Counterfactual execution changed canonical state."
-                )
-            matched_treatment = working_runtime.execute(
-                working_kernel,
-                allocation_id=allocation.allocation_id,
-                plan=matched_plans.treatment,
-            )
-            if working_kernel.fingerprint() != canonical_checkpoint:
-                raise IntegratedInquiryError(
-                    "Counterfactual execution changed canonical state."
-                )
-            try:
-                observation = self.matched_observer.observe(
-                    working_kernel,
-                    working_runtime.ledger,
-                    hypothesis_ref=matched_hypothesis.hypothesis_id,
-                    baseline_plan=matched_plans.baseline,
-                    baseline_result=matched_baseline,
-                    treatment_plan=matched_plans.treatment,
-                    treatment_result=matched_treatment,
-                )
-                observation = MatchedStructuralObservation.model_validate(
-                    observation.model_dump(mode="json")
-                )
-            except (TraceObservationIntegrityError, ValueError, TypeError) as exc:
-                raise IntegratedInquiryError(
-                    f"Matched structural observation failed validation: {exc}"
-                ) from exc
-            expected_observation = MatchedStructuralObservation.build(
-                hypothesis_ref=matched_hypothesis.hypothesis_id,
-                baseline=matched_baseline.trace,
-                treatment=matched_treatment.trace,
-            )
-            if observation != expected_observation:
-                raise IntegratedInquiryError(
-                    "Matched structural observation disagrees with executed traces."
-                )
-            for matched_plan, matched_simulation in (
-                (matched_plans.baseline, matched_baseline),
-                (matched_plans.treatment, matched_treatment),
-            ):
-                if (
-                    matched_simulation.reservation.plan_id != matched_plan.plan_id
-                    or matched_simulation.reservation.attention_decision_id
-                    != decision.decision_id
-                    or matched_simulation.reservation.allocation_id
-                    != allocation.allocation_id
-                    or matched_simulation.reservation.obligation_id != obligation_id
-                    or matched_simulation.settlement.result_refs
-                    != (matched_hypothesis.hypothesis_id,)
-                    or not matched_simulation.settlement.canonical_unchanged
-                    or matched_simulation.settlement.canonical_commit_permitted
-                    or matched_simulation.settlement.epistemic_authority_enabled
+                if any(
+                    (
+                        plan.operator_version != matched_hypothesis.grammar_version
+                        or plan.patches != matched_hypothesis.patches
+                        or abs(
+                            plan.requested_budget
+                            - self.policy.simulation_requested_budget
+                        )
+                        > 1e-12
+                        or abs(
+                            plan.consumed_budget
+                            - self.policy.simulation_consumed_budget
+                        )
+                        > 1e-12
+                        or plan.disposition != SimulationDisposition.DISCARDED
+                        or plan.result_refs != expected_result_refs
+                    )
+                    for plan in (
+                        matched_plans.baseline,
+                        matched_plans.treatment,
+                    )
+                ) or (
+                    matched_plans.baseline.apply_patch_count != 0
+                    or matched_plans.treatment.apply_patch_count
+                    != len(matched_hypothesis.patches)
                 ):
                     raise IntegratedInquiryError(
-                        "Matched simulation lost provenance or authority isolation."
+                        "Matched plans differ from their declared hypothesis or policy."
                     )
-            if not observation.canonical_records_preserved:
-                raise IntegratedInquiryError(
-                    "Matched treatment changed a pre-existing canonical record."
-                )
-            try:
-                operational_observation = self.operational_probe.observe(
+                matched_baseline = working_runtime.execute(
                     working_kernel,
-                    working_runtime.ledger,
-                    hypothesis_ref=matched_hypothesis.hypothesis_id,
-                    baseline_plan=matched_plans.baseline,
-                    baseline_result=matched_baseline,
-                    treatment_plan=matched_plans.treatment,
-                    treatment_result=matched_treatment,
-                    structural_observation=observation,
+                    allocation_id=allocation.allocation_id,
+                    plan=matched_plans.baseline,
                 )
-                operational_observation = (
-                    MatchedOverlayOperationalObservation.model_validate(
-                        operational_observation.model_dump(mode="json")
+                if working_kernel.fingerprint() != canonical_checkpoint:
+                    raise IntegratedInquiryError(
+                        "Counterfactual execution changed canonical state."
+                    )
+                matched_treatment = working_runtime.execute(
+                    working_kernel,
+                    allocation_id=allocation.allocation_id,
+                    plan=matched_plans.treatment,
+                )
+                if working_kernel.fingerprint() != canonical_checkpoint:
+                    raise IntegratedInquiryError(
+                        "Counterfactual execution changed canonical state."
+                    )
+
+                controlled_observation: (
+                    ControlledOperationalTrialObservation | None
+                ) = None
+                if context is not None:
+                    if working_lenses is None:
+                        raise IntegratedInquiryError(
+                            "Controlled inquiry lost its staged Lens state."
+                        )
+                    try:
+                        controlled_observation = (
+                            self.controlled_trial_observer.observe(
+                                working_kernel,
+                                working_runtime.ledger,
+                                working_lenses,
+                                context=context,
+                                hypothesis=matched_hypothesis,
+                                baseline_plan=matched_plans.baseline,
+                                baseline_result=matched_baseline,
+                                treatment_plan=matched_plans.treatment,
+                                treatment_result=matched_treatment,
+                            )
+                        )
+                        controlled_observation = (
+                            ControlledOperationalTrialObservation.model_validate(
+                                controlled_observation.model_dump(mode="json")
+                            )
+                        )
+                        expected_controlled = (
+                            ControlledOperationalTrialObserver().observe(
+                                working_kernel,
+                                working_runtime.ledger,
+                                working_lenses,
+                                context=context,
+                                hypothesis=matched_hypothesis,
+                                baseline_plan=matched_plans.baseline,
+                                baseline_result=matched_baseline,
+                                treatment_plan=matched_plans.treatment,
+                                treatment_result=matched_treatment,
+                            )
+                        )
+                    except (
+                        OperationalTrialControlIntegrityError,
+                        ValueError,
+                        TypeError,
+                    ) as exc:
+                        raise IntegratedInquiryError(
+                            f"Controlled matched observation failed validation: {exc}"
+                        ) from exc
+                    if controlled_observation != expected_controlled:
+                        raise IntegratedInquiryError(
+                            "Controlled observer disagrees with executed lineage."
+                        )
+                    observation = controlled_observation.structural_observation
+                    operational_observation = (
+                        controlled_observation.operational_observation
+                    )
+                    allocation_controlled.append(controlled_observation)
+                else:
+                    try:
+                        observation = self.matched_observer.observe(
+                            working_kernel,
+                            working_runtime.ledger,
+                            hypothesis_ref=matched_hypothesis.hypothesis_id,
+                            baseline_plan=matched_plans.baseline,
+                            baseline_result=matched_baseline,
+                            treatment_plan=matched_plans.treatment,
+                            treatment_result=matched_treatment,
+                        )
+                        observation = MatchedStructuralObservation.model_validate(
+                            observation.model_dump(mode="json")
+                        )
+                    except (
+                        TraceObservationIntegrityError,
+                        ValueError,
+                        TypeError,
+                    ) as exc:
+                        raise IntegratedInquiryError(
+                            "Matched structural observation failed validation: "
+                            f"{exc}"
+                        ) from exc
+                    expected_observation = MatchedStructuralObservation.build(
+                        hypothesis_ref=matched_hypothesis.hypothesis_id,
+                        baseline=matched_baseline.trace,
+                        treatment=matched_treatment.trace,
+                    )
+                    if observation != expected_observation:
+                        raise IntegratedInquiryError(
+                            "Matched structural observation disagrees with executed traces."
+                        )
+                    try:
+                        operational_observation = self.operational_probe.observe(
+                            working_kernel,
+                            working_runtime.ledger,
+                            hypothesis_ref=matched_hypothesis.hypothesis_id,
+                            baseline_plan=matched_plans.baseline,
+                            baseline_result=matched_baseline,
+                            treatment_plan=matched_plans.treatment,
+                            treatment_result=matched_treatment,
+                            structural_observation=observation,
+                        )
+                        operational_observation = (
+                            MatchedOverlayOperationalObservation.model_validate(
+                                operational_observation.model_dump(mode="json")
+                            )
+                        )
+                    except (
+                        OperationalProbeIntegrityError,
+                        ValueError,
+                        TypeError,
+                    ) as exc:
+                        raise IntegratedInquiryError(
+                            f"Operational probe failed validation: {exc}"
+                        ) from exc
+                    expected_operational_observation = (
+                        OverlayOperationalProbe().observe(
+                            working_kernel,
+                            working_runtime.ledger,
+                            hypothesis_ref=matched_hypothesis.hypothesis_id,
+                            baseline_plan=matched_plans.baseline,
+                            baseline_result=matched_baseline,
+                            treatment_plan=matched_plans.treatment,
+                            treatment_result=matched_treatment,
+                            structural_observation=observation,
+                        )
+                    )
+                    if operational_observation != expected_operational_observation:
+                        raise IntegratedInquiryError(
+                            "Operational probe disagrees with executed overlays."
+                        )
+
+                for matched_plan, matched_simulation in (
+                    (matched_plans.baseline, matched_baseline),
+                    (matched_plans.treatment, matched_treatment),
+                ):
+                    if (
+                        matched_simulation.reservation.plan_id
+                        != matched_plan.plan_id
+                        or matched_simulation.reservation.attention_decision_id
+                        != decision.decision_id
+                        or matched_simulation.reservation.allocation_id
+                        != allocation.allocation_id
+                        or matched_simulation.reservation.obligation_id
+                        != obligation_id
+                        or matched_simulation.settlement.result_refs
+                        != expected_result_refs
+                        or not matched_simulation.settlement.canonical_unchanged
+                        or matched_simulation.settlement.canonical_commit_permitted
+                        or matched_simulation.settlement.epistemic_authority_enabled
+                    ):
+                        raise IntegratedInquiryError(
+                            "Matched simulation lost provenance or authority isolation."
+                        )
+                if not observation.canonical_records_preserved:
+                    raise IntegratedInquiryError(
+                        "Matched treatment changed a pre-existing canonical record."
+                    )
+                probe_policy = (
+                    OverlayOperationalProbePolicy(
+                        maximum_relation_hops=context.horizon
+                    )
+                    if context is not None
+                    else None
+                )
+                try:
+                    resolution_evidence = TraceResolutionEvidenceDeriver().derive(
+                        working_kernel,
+                        working_runtime.ledger,
+                        obligation_event_ref=(
+                            mutation_by_obligation[obligation_id].event.event_id
+                        ),
+                        hypothesis=matched_hypothesis,
+                        plans=matched_plans,
+                        baseline_result=matched_baseline,
+                        treatment_result=matched_treatment,
+                        observation=observation,
+                        operational_observation=operational_observation,
+                        operational_probe_policy=probe_policy,
+                    )
+                except TraceResolutionEvidenceIntegrityError as exc:
+                    raise IntegratedInquiryError(
+                        f"Resolution evidence coverage failed validation: {exc}"
+                    ) from exc
+                matched_pairs.append(
+                    IntegratedMatchedInquiryPair(
+                        obligation_id=obligation_id,
+                        hypothesis_id=matched_hypothesis.hypothesis_id,
+                        plans=matched_plans,
+                        baseline=matched_baseline,
+                        treatment=matched_treatment,
+                        observation=observation,
+                        operational_observation=operational_observation,
+                        resolution_evidence=resolution_evidence,
+                        context=context,
+                        controlled_observation=controlled_observation,
                     )
                 )
-            except (
-                OperationalProbeIntegrityError,
-                ValueError,
-                TypeError,
-            ) as exc:
-                raise IntegratedInquiryError(
-                    f"Operational probe failed validation: {exc}"
-                ) from exc
-            expected_operational_observation = OverlayOperationalProbe().observe(
-                working_kernel,
-                working_runtime.ledger,
-                hypothesis_ref=matched_hypothesis.hypothesis_id,
-                baseline_plan=matched_plans.baseline,
-                baseline_result=matched_baseline,
-                treatment_plan=matched_plans.treatment,
-                treatment_result=matched_treatment,
-                structural_observation=observation,
-            )
-            if operational_observation != expected_operational_observation:
-                raise IntegratedInquiryError(
-                    "Operational probe disagrees with executed overlays."
-                )
-            try:
-                resolution_evidence = TraceResolutionEvidenceDeriver().derive(
-                    working_kernel,
-                    working_runtime.ledger,
-                    obligation_event_ref=(
-                        mutation_by_obligation[obligation_id].event.event_id
-                    ),
-                    hypothesis=matched_hypothesis,
-                    plans=matched_plans,
-                    baseline_result=matched_baseline,
-                    treatment_result=matched_treatment,
-                    observation=observation,
-                    operational_observation=operational_observation,
-                )
-            except TraceResolutionEvidenceIntegrityError as exc:
-                raise IntegratedInquiryError(
-                    f"Resolution evidence coverage failed validation: {exc}"
-                ) from exc
-            matched_pairs.append(
-                IntegratedMatchedInquiryPair(
-                    obligation_id=obligation_id,
-                    hypothesis_id=matched_hypothesis.hypothesis_id,
-                    plans=matched_plans,
-                    baseline=matched_baseline,
-                    treatment=matched_treatment,
-                    observation=observation,
-                    operational_observation=operational_observation,
-                    resolution_evidence=resolution_evidence,
-                )
-            )
+
+            if trial_controls is not None:
+                try:
+                    replication = self.held_out_replication_observer.observe(
+                        tuple(allocation_controlled)
+                    )
+                    replication = (
+                        HeldOutOperationalReplicationReceipt.model_validate(
+                            replication.model_dump(mode="json")
+                        )
+                    )
+                    expected_replication = (
+                        HeldOutOperationalReplicationObserver().observe(
+                            tuple(allocation_controlled)
+                        )
+                    )
+                except (
+                    OperationalTrialControlIntegrityError,
+                    ValueError,
+                    TypeError,
+                ) as exc:
+                    raise IntegratedInquiryError(
+                        f"Held-out replication failed validation: {exc}"
+                    ) from exc
+                if replication != expected_replication:
+                    raise IntegratedInquiryError(
+                        "Held-out observer disagrees with controlled trials."
+                    )
+                held_out_replications.append(replication)
             for outcome in representatives[:trial_count]:
                 hypothesis = hypothesis_by_id[outcome.hypothesis_id]
                 plan = build_hypothesis_plan(
@@ -1001,6 +1581,11 @@ class DependencyGapInquiryCoordinator:
                         obligation_id,
                         outcome.outcome_id,
                         self.policy.policy_version,
+                        *(
+                            (trial_controls.request_id,)
+                            if trial_controls is not None
+                            else ()
+                        ),
                     ),
                     requested_budget=self.policy.simulation_requested_budget,
                     consumed_budget=self.policy.simulation_consumed_budget,
@@ -1065,6 +1650,15 @@ class DependencyGapInquiryCoordinator:
             )
         if working_kernel.fingerprint() != canonical_checkpoint:
             raise IntegratedInquiryError("Integrated inquiry leaked into canonical state.")
+        if lens_checkpoint is not None and (
+            working_lenses is None
+            or working_lenses.fingerprint() != lens_checkpoint
+            or lenses is None
+            or lenses.fingerprint() != lens_checkpoint
+        ):
+            raise IntegratedInquiryError(
+                "Integrated inquiry changed its predeclared Lens state."
+            )
 
         hypotheses = tuple(
             sorted(hypothesis_by_id.values(), key=lambda item: item.hypothesis_id)
@@ -1118,6 +1712,13 @@ class DependencyGapInquiryCoordinator:
             ),
             canonical_checkpoint_fingerprint=canonical_checkpoint,
             simulation_ledger_fingerprint=working_runtime.ledger.fingerprint(),
+            trial_control_request=trial_controls,
+            controlled_trial_observations=tuple(
+                item.controlled_observation
+                for item in matched_pairs
+                if item.controlled_observation is not None
+            ),
+            held_out_replication_receipts=tuple(held_out_replications),
         )
 
         replayed = (
@@ -1137,5 +1738,6 @@ class DependencyGapInquiryCoordinator:
             plans=tuple(plans),
             simulations=tuple(simulations),
             matched_pairs=tuple(matched_pairs),
+            held_out_replications=tuple(held_out_replications),
             replayed=replayed,
         )

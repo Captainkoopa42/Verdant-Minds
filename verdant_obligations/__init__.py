@@ -100,6 +100,7 @@ from .operational_probe import (
     OverlayOperationalProbePolicy,
 )
 from .inquiry import (
+    INTEGRATED_CONTROLLED_INQUIRY_VERSION,
     INTEGRATED_INQUIRY_POLICY_VERSION,
     DependencyGapInquiryCoordinator,
     IntegratedInquiryError,
@@ -107,6 +108,7 @@ from .inquiry import (
     IntegratedInquiryPolicy,
     IntegratedInquiryResult,
     IntegratedInquiryTrace,
+    IntegratedInquiryTrialControlRequest,
     IntegratedInquiryTrial,
 )
 from .trace_observations import (
@@ -335,6 +337,7 @@ __all__ = [
     "OverlayOperationalProbe",
     "OverlayOperationalProbeObservation",
     "OverlayOperationalProbePolicy",
+    "INTEGRATED_CONTROLLED_INQUIRY_VERSION",
     "INTEGRATED_INQUIRY_POLICY_VERSION",
     "DependencyGapInquiryCoordinator",
     "IntegratedInquiryError",
@@ -342,6 +345,7 @@ __all__ = [
     "IntegratedInquiryPolicy",
     "IntegratedInquiryResult",
     "IntegratedInquiryTrace",
+    "IntegratedInquiryTrialControlRequest",
     "IntegratedInquiryTrial",
     "MATCHED_TRACE_OBSERVER_VERSION",
     "MatchedCounterfactualObserver",

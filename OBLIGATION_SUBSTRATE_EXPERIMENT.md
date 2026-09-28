@@ -1,4 +1,4 @@
-# Obligation Substrate v0.27
+# Obligation Substrate v0.28
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -194,6 +194,30 @@ generation, or safe autonomous policy revision.
   held-out replication receipt without new reservations or settlements. The
   contexts and derived receipts remain reconstructable artifacts, not new
   canonical records or archive members.
+- An `IntegratedInquiryTrialControlRequest` now commits one calibration seed,
+  one distinct held-out seed, relation-hop horizon, supplied slot budget, and
+  the exact active `DependencyGap` Lens state before Attention runs. Its
+  content-addressed ID and Lens lineage are carried by the bid's metric
+  provenance and by the Attention source identity, so changing a control
+  cannot reuse the prior allocation.
+- The explicitly invoked `DependencyGapInquiryCoordinator` now requests budget
+  for four matched-control simulations plus its bounded preregistered outcome
+  arms. Under the default Attention micro-grant it executes exactly one
+  preregistered representative and both predeclared zero/full pairs; it cannot
+  spend beyond that one allocation.
+- After Attention fixes the canonical checkpoint, the coordinator derives the
+  calibration and held-out contexts before either pair executes, commits each
+  context ID into both plans, and reconstructs every controlled structural and
+  overlay-operational observation from the isolated simulation ledger. One
+  held-out replication receipt per allocation must exactly cover those two
+  pairs.
+- The integrated trace now content-addresses the pre-Attention request, both
+  controlled observations, and the held-out receipt. Dropped receipts,
+  post-declaration Lens replacement, reused seeds, altered controls, observer
+  tampering, or insufficient Attention fail the staged transaction without
+  publishing canonical or simulation changes. Explicit archive reload replays
+  the same allocation, contexts, settlements, and integrated trace at zero new
+  cost.
 - Underfunded allocations, absent projected interventions, altered receipts,
   canonical-record mutation, supplied outcome refs in a matched arm, and
   missing per-allocation receipts fail the whole staged invocation. A valid
@@ -418,11 +442,11 @@ generation, or safe autonomous policy revision.
   visible supplied policy values. Verdant has not learned their calibration or
   chosen the integration request endogenously.
 - Integrated trace objects, including their matched structural, overlay-
-  operational, and Resolution-evidence coverage receipts, and v0.27 controlled
+  operational, and Resolution-evidence coverage receipts, and v0.28 controlled
   trial and held-out-replication receipts are transient and reconstructable
   rather than new archive members. Existing `.vob` canonical, simulation, and
   Lens state can regenerate identical receipts under the same code and
-  policies, but v0.27 does not claim independent long-term schema durability
+  policies, but v0.28 does not claim independent long-term schema durability
   for the receipts themselves. Simulation reservations and settlements remain
   durable, while materialized collection deltas and derived receipts are not
   new archive members or canonical VDK records.
@@ -435,19 +459,25 @@ generation, or safe autonomous policy revision.
   coordinator does not move a `MayWake` obligation into `Recheck_Pending`,
   append an `AttemptRecord`, classify an arm as actually observed, or alter
   obligation status from the simulation result.
+- The v0.28 control request is an explicit caller-supplied experiment input,
+  not an endogenous trial-design decision. The default Attention policy grants
+  its bounded `0.05` micro-probe rather than the request's `0.07` maximum, so
+  one obligation runs four controlled arms and one preregistered representative
+  rather than all three representatives. This is complete execution of the
+  granted allocation, not evidence that the scheduler learned the budget.
 - The matched observer supports only a zero-applied-patch baseline against the
   full declared patch sequence under one canonical checkpoint and one
-  Attention allocation. The v0.27 wrapper records distinct declared seeds but
-  the deterministic overlay runtime does not consume randomness; its `horizon`
-  controls only the overlay relation-hop bound, not elapsed or environmental
-  time. It does not model partial interventions, external environments,
-  physical outcomes, or concurrent world changes.
+  Attention allocation. The v0.28 integrated path records distinct declared
+  seeds but the deterministic overlay runtime does not consume randomness; its
+  `horizon` controls only the overlay relation-hop bound, not elapsed or
+  environmental time. It does not model partial interventions, external
+  environments, physical outcomes, or concurrent world changes.
 - A derived `additive_overlay_effect` means only that the treatment materialized
   additional JSON records relative to its matched baseline. A
   `canonical_record_mutation` means the simulated overlay removed or changed a
   pre-existing record. Neither result establishes causal sufficiency, semantic
   correctness, predictive improvement, real-world success, or truth.
-- v0.27 still observes only whether its supplied, versioned overlay-local walk
+- v0.28 still observes only whether its supplied, versioned overlay-local walk
   can reach canonical evidence through an actually materialized hypothetical
   relation. This is not native Workbench retrieval or admission, an outgoing
   action, execution of the canonical dependency path, or an actually occurring
@@ -458,13 +488,13 @@ generation, or safe autonomous policy revision.
 - The probe's start node, traversable relation grammar, evidence kinds, and hop
   limit remain supplied experimental policy. It does not run the native
   workspace, choose an action, interact with an external environment, or prove
-  causal sufficiency. v0.27 verifies that the named Lens binding is active but
+  causal sufficiency. v0.28 verifies that the named Lens binding is active but
   does not use that Lens to change trial behavior. The slot budget is immutable
   provenance only because no native workspace exists, and distinct declared
   seeds demonstrate exact deterministic replay rather than stochastic or
   external held-out generalization.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
-  provenance-visible bids, but v0.27 does not claim Verdant has learned their
+  provenance-visible bids, but v0.28 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
 - Cut partitions and initial reopen predicates are still supplied through the
   typed stall API. Automatic cut derivation is not a v0.2 claim.
@@ -930,6 +960,39 @@ generation, or safe autonomous policy revision.
   establishes no causal sufficiency, real-world outcome, autonomous inquiry,
   resolution or promotion authority, policy rewrite, semantic understanding,
   `T_g` control, or thermodynamic behavior.
+
+## v0.28 claim boundary
+
+- **OBSERVED:** Sixty-eight focused counterfactual, hypothesis, integrated-
+  inquiry, matched-trace, operational-probe, trial-control, and Resolution-
+  Contract tests and the 419-test full repository suite pass. One opt-in
+  coordinator invocation uses a single bounded Attention allocation to settle
+  a calibration zero/full pair, a held-out zero/full pair, and one
+  preregistered representative. Both context IDs occur in their plans,
+  reservations, settlements, and execution traces before observation. Archive
+  reload reproduces the exact request, allocation, contexts, controlled
+  receipts, held-out receipt, and integrated trace without new canonical or
+  simulation cost. Underfunding, request tampering, post-declaration Lens
+  replacement, dropped controlled evidence, forged observer authority, and
+  canonical leakage fail without partial publication. All 17 legacy VDK
+  checkpoints remain compatible.
+- **IMPLEMENTED-EXPERIMENTAL:** The predeclared two-pair control protocol is now
+  part of the explicitly invoked `DependencyGapInquiryCoordinator`. Attention
+  provenance contains the immutable control request and active Lens lineage;
+  each allocation is checked against its exact four controlled arms and one
+  held-out-replication receipt. Integrated trace validation closes every
+  request/context/observation/allocation edge while the simulation ledger
+  remains separate and all receipts remain non-authoritative.
+- **PROPOSED:** Derive a native workspace-admission signature from actual
+  controlled executions, then derive outgoing-action signatures and finally an
+  actually executed canonical dependency path. Only after those operational
+  prerequisites and every Resolution Contract input are trace-grounded may a
+  non-authoritative `ResolutionTrialObservation` be constructed. The seed is
+  still unconsumed provenance, the slot budget is not native enforcement, the
+  horizon is not temporal experience, and exact deterministic held-out replay
+  is not stochastic or external generalization. v0.28 adds no autonomous
+  inquiry, real-world outcome, resolution or promotion authority, policy
+  rewrite, semantic understanding, `T_g` control, or thermodynamic behavior.
 
 ## Access-pressure integration
 

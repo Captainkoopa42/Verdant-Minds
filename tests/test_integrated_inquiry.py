@@ -7,10 +7,13 @@ import pytest
 
 import verdant_obligations.inquiry as inquiry_module
 from verdant_kernel import (
+    CouncilDisposition,
     EvidenceKind,
     ExperienceCommand,
     ObligationFamily,
     RelationProposal,
+    WorkspaceDisposition,
+    WorkspaceSourceKind,
     VerdantKernel,
 )
 from verdant_obligations import (
@@ -31,11 +34,17 @@ from verdant_obligations import (
     LensOpcode,
     MatchedCounterfactualObserver,
     MatchedCounterfactualPlans,
+    MatchedOutgoingActionObservation,
     MatchedWorkspaceAdmissionObservation,
     MISSING_OPERATIONAL_REQUIREMENTS,
     NativeWorkspaceAdmissionObserver,
+    NativeOutgoingActionObserver,
+    NativeOutgoingActionProbePolicy,
     OutcomeKind,
     OperationalProbeDisposition,
+    OutgoingActionDisposition,
+    OutgoingActionEffect,
+    OutgoingActionProbeIntegrityError,
     OverlayAccessEffect,
     OverlayOperationalProbe,
     ResolutionEvidenceRequirement,
@@ -326,6 +335,11 @@ def test_controlled_opt_in_path_funds_and_traces_both_predeclared_pairs() -> Non
     assert result.trace.held_out_workspace_admission_receipts == (
         result.held_out_workspace_admission_replications[0],
     )
+    assert len(result.trace.outgoing_action_observations) == 2
+    assert len(result.held_out_outgoing_action_replications) == 1
+    assert result.trace.held_out_outgoing_action_receipts == (
+        result.held_out_outgoing_action_replications[0],
+    )
     assert len(runtime.ledger.state.reservations) == 5
     assert len(runtime.ledger.state.settlements) == 5
     assert len(result.simulations) == 1
@@ -382,6 +396,44 @@ def test_controlled_opt_in_path_funds_and_traces_both_predeclared_pairs() -> Non
         assert not workspace.treatment.canonical_workspace_mutated
         assert not workspace.treatment.outgoing_action_observed
         assert not workspace.treatment.canonical_dependency_path_established
+        action = pair.outgoing_action_observation
+        assert action is not None
+        assert action.workspace_admission == workspace
+        assert action.effect == OutgoingActionEffect.ACTION_GAIN
+        assert (
+            action.baseline.action_disposition
+            == OutgoingActionDisposition.NO_ADMITTED_EVIDENCE
+        )
+        treatment_action = action.treatment
+        assert (
+            treatment_action.action_disposition
+            == OutgoingActionDisposition.AUTHORIZED_AND_ADMITTED
+        )
+        assert treatment_action.council_report is not None
+        assert treatment_action.council_decision is not None
+        assert treatment_action.action_workspace_report is not None
+        assert treatment_action.action_workspace_event is not None
+        assert treatment_action.council_report.disposition == CouncilDisposition.APPROVE
+        assert treatment_action.operation in (
+            treatment_action.council_report.authorized_operations
+        )
+        action_assessment = next(
+            item
+            for item in treatment_action.action_workspace_report.assessments
+            if item.candidate.metadata.get("outgoing_action_probe_version")
+        )
+        assert action_assessment.disposition == WorkspaceDisposition.ADMIT
+        assert (
+            action_assessment.candidate.source_kind
+            == WorkspaceSourceKind.AUTHORIZED_ACTION
+        )
+        assert action_assessment.candidate.source_ref == (
+            treatment_action.council_decision.decision_event_id
+        )
+        assert action_assessment.candidate.operation == treatment_action.operation
+        assert treatment_action.outgoing_action_signature_observed
+        assert not treatment_action.external_action_executed
+        assert not treatment_action.canonical_dependency_path_established
     replication = result.held_out_replications[0]
     assert replication.seeds == (101, 211)
     assert replication.declared_seed_replay_observed
@@ -400,8 +452,18 @@ def test_controlled_opt_in_path_funds_and_traces_both_predeclared_pairs() -> Non
     assert not workspace_replication.canonical_workspace_commit_performed
     assert not workspace_replication.outgoing_action_observed
     assert not workspace_replication.canonical_dependency_path_established
+    action_replication = result.held_out_outgoing_action_replications[0]
+    assert action_replication.operational_replication_ref == replication.receipt_id
+    assert action_replication.workspace_replication_ref == (
+        workspace_replication.receipt_id
+    )
+    assert action_replication.seeds == (101, 211)
+    assert action_replication.native_outgoing_action_signature_observed
+    assert not action_replication.external_action_executed
+    assert not action_replication.canonical_dependency_path_established
     assert len(kernel.state.workspace_items) == 0
     assert len(kernel.state.workspace_cycle_events) == 0
+    assert len(kernel.state.council_decisions) == 0
     assert not result.trace.canonical_simulation_leakage_detected
     assert not result.trace.canonical_resolution_permitted
     assert not result.trace.epistemic_authority_enabled
@@ -466,11 +528,21 @@ def test_controlled_trace_reconstructs_exactly_after_archive_reload(
         replay.held_out_workspace_admission_replications
         == first.held_out_workspace_admission_replications
     )
+    assert tuple(
+        item.outgoing_action_observation for item in replay.matched_pairs
+    ) == tuple(
+        item.outgoing_action_observation for item in first.matched_pairs
+    )
+    assert (
+        replay.held_out_outgoing_action_replications
+        == first.held_out_outgoing_action_replications
+    )
     assert all(item.replayed for item in replay.matched_pairs)
     assert bundle.kernel.fingerprint() == canonical_before
     assert restored_runtime.ledger.fingerprint() == simulation_before
     assert len(bundle.kernel.state.workspace_items) == 0
     assert len(bundle.kernel.state.workspace_cycle_events) == 0
+    assert len(bundle.kernel.state.council_decisions) == 0
 
 
 def test_trace_reconstructs_exactly_after_archive_reload(tmp_path: Path) -> None:
@@ -960,6 +1032,8 @@ def test_rehashed_trace_cannot_drop_operational_probe() -> None:
         "held_out_replication_receipts",
         "workspace_admission_observations",
         "held_out_workspace_admission_receipts",
+        "outgoing_action_observations",
+        "held_out_outgoing_action_receipts",
     ),
 )
 def test_rehashed_controlled_trace_cannot_drop_control_evidence(
@@ -1018,6 +1092,11 @@ def test_native_workspace_slot_cap_suppresses_excess_retrieved_evidence() -> Non
         assert treatment.declared_slot_budget == 1
         assert len(treatment.workspace_event.active_item_ids) == 1
         assert treatment.declared_slot_budget_enforced
+        action = pair.outgoing_action_observation
+        assert action is not None
+        assert action.treatment.action_workspace_event is not None
+        assert len(action.treatment.action_workspace_event.active_item_ids) == 1
+        assert action.treatment.outgoing_action_signature_observed
     assert (
         dict(kernel.state.workspace_items),
         tuple(kernel.state.workspace_cycle_events),
@@ -1144,6 +1223,136 @@ def test_workspace_observer_rejects_foreign_simulation_ledger() -> None:
             treatment_plan=pair.plans.treatment,
             treatment_result=pair.treatment,
             controlled_observation=pair.controlled_observation,
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert lenses.fingerprint() == lens_before
+
+
+def test_outgoing_action_observer_tamper_rejects_entire_staged_transaction() -> None:
+    class TamperingActionObserver:
+        def observe(self, *args, **kwargs):
+            observation = NativeOutgoingActionObserver().observe(*args, **kwargs)
+            return observation.model_copy(
+                update={"canonical_commit_permitted": True}
+            )
+
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+    lens_before = lenses.fingerprint()
+
+    with pytest.raises(
+        IntegratedInquiryError,
+        match="Native outgoing-action observation failed validation",
+    ):
+        DependencyGapInquiryCoordinator(
+            outgoing_action_observer=TamperingActionObserver()
+        ).run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:action-tamper",
+            lenses=lenses,
+            trial_controls=_trial_controls(lenses),
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+    assert lenses.fingerprint() == lens_before
+
+
+def test_outgoing_action_policy_substitution_is_recomputed_and_rejected() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+    lens_before = lenses.fingerprint()
+    substituted = NativeOutgoingActionObserver(
+        NativeOutgoingActionProbePolicy(urgency=0.60)
+    )
+
+    with pytest.raises(
+        IntegratedInquiryError,
+        match="Outgoing-action observer disagrees",
+    ):
+        DependencyGapInquiryCoordinator(
+            outgoing_action_observer=substituted
+        ).run(
+            kernel,
+            runtime,
+            source_event_key="integrated-inquiry:action-policy-substitution",
+            lenses=lenses,
+            trial_controls=_trial_controls(lenses),
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == simulation_before
+    assert lenses.fingerprint() == lens_before
+
+
+def test_outgoing_action_receipt_cannot_claim_execution_or_authority() -> None:
+    kernel = _kernel()
+    lenses = _lenses(kernel)
+    result = DependencyGapInquiryCoordinator().run(
+        kernel,
+        CounterfactualRuntime(),
+        source_event_key="integrated-inquiry:action-authority",
+        lenses=lenses,
+        trial_controls=_trial_controls(lenses),
+    )
+    receipt = result.matched_pairs[0].outgoing_action_observation
+    assert receipt is not None
+
+    for field in (
+        "external_action_executed",
+        "canonical_dependency_path_established",
+        "observed_outcome_authority_enabled",
+        "resolution_authority_enabled",
+        "canonical_commit_permitted",
+    ):
+        payload = receipt.model_dump(mode="python")
+        payload[field] = True
+        with pytest.raises(ValueError, match="authority boundary"):
+            MatchedOutgoingActionObservation.model_validate(payload)
+
+
+def test_outgoing_action_observer_rejects_foreign_simulation_ledger() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    result = DependencyGapInquiryCoordinator().run(
+        kernel,
+        runtime,
+        source_event_key="integrated-inquiry:action-foreign-ledger",
+        lenses=lenses,
+        trial_controls=_trial_controls(lenses),
+    )
+    pair = result.matched_pairs[0]
+    assert pair.context is not None
+    assert pair.controlled_observation is not None
+    assert pair.workspace_admission_observation is not None
+    hypothesis = next(
+        item for item in result.hypotheses if item.hypothesis_id == pair.hypothesis_id
+    )
+    canonical_before = kernel.fingerprint()
+    lens_before = lenses.fingerprint()
+
+    with pytest.raises(OutgoingActionProbeIntegrityError):
+        NativeOutgoingActionObserver().observe(
+            kernel,
+            SimulationLedger(),
+            lenses,
+            context=pair.context,
+            hypothesis=hypothesis,
+            baseline_plan=pair.plans.baseline,
+            baseline_result=pair.baseline,
+            treatment_plan=pair.plans.treatment,
+            treatment_result=pair.treatment,
+            controlled_observation=pair.controlled_observation,
+            workspace_observation=pair.workspace_admission_observation,
         )
 
     assert kernel.fingerprint() == canonical_before

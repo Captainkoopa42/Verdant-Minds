@@ -85,6 +85,13 @@ from .workspace_admission import (
     NativeWorkspaceAdmissionObserver,
     WorkspaceAdmissionProbeIntegrityError,
 )
+from .outgoing_action import (
+    HeldOutOutgoingActionReplicationObserver,
+    HeldOutOutgoingActionReplicationReceipt,
+    MatchedOutgoingActionObservation,
+    NativeOutgoingActionObserver,
+    OutgoingActionProbeIntegrityError,
+)
 
 
 INTEGRATED_INQUIRY_POLICY_VERSION = "dependency_gap_integrated_inquiry_v0.26"
@@ -389,6 +396,12 @@ class IntegratedInquiryTrace(FrozenRecord):
     held_out_workspace_admission_receipts: tuple[
         HeldOutWorkspaceAdmissionReplicationReceipt, ...
     ] = ()
+    outgoing_action_observations: tuple[
+        MatchedOutgoingActionObservation, ...
+    ] = ()
+    held_out_outgoing_action_receipts: tuple[
+        HeldOutOutgoingActionReplicationReceipt, ...
+    ] = ()
     canonical_simulation_leakage_detected: bool = False
     canonical_resolution_permitted: bool = False
     epistemic_authority_enabled: bool = False
@@ -482,6 +495,24 @@ class IntegratedInquiryTrace(FrozenRecord):
         )
         values["held_out_workspace_admission_receipts"] = tuple(
             sorted(workspace_replications, key=lambda item: item.receipt_id)
+        )
+        action_observations = tuple(
+            item
+            if isinstance(item, MatchedOutgoingActionObservation)
+            else MatchedOutgoingActionObservation.model_validate(item)
+            for item in values.get("outgoing_action_observations", ())
+        )
+        values["outgoing_action_observations"] = tuple(
+            sorted(action_observations, key=lambda item: item.match_id)
+        )
+        action_replications = tuple(
+            item
+            if isinstance(item, HeldOutOutgoingActionReplicationReceipt)
+            else HeldOutOutgoingActionReplicationReceipt.model_validate(item)
+            for item in values.get("held_out_outgoing_action_receipts", ())
+        )
+        values["held_out_outgoing_action_receipts"] = tuple(
+            sorted(action_replications, key=lambda item: item.receipt_id)
         )
         values.setdefault("canonical_simulation_leakage_detected", False)
         values.setdefault("canonical_resolution_permitted", False)
@@ -584,12 +615,28 @@ class IntegratedInquiryTrace(FrozenRecord):
             raise ValueError(
                 "Integrated workspace replications must be sorted and unique."
             )
+        action_observation_ids = tuple(
+            item.match_id for item in self.outgoing_action_observations
+        )
+        if tuple(sorted(set(action_observation_ids))) != action_observation_ids:
+            raise ValueError(
+                "Integrated outgoing-action observations must be sorted and unique."
+            )
+        action_replication_ids = tuple(
+            item.receipt_id for item in self.held_out_outgoing_action_receipts
+        )
+        if tuple(sorted(set(action_replication_ids))) != action_replication_ids:
+            raise ValueError(
+                "Integrated outgoing-action replications must be sorted and unique."
+            )
         if self.trial_control_request is None:
             if (
                 self.controlled_trial_observations
                 or self.held_out_replication_receipts
                 or self.workspace_admission_observations
                 or self.held_out_workspace_admission_receipts
+                or self.outgoing_action_observations
+                or self.held_out_outgoing_action_receipts
             ):
                 raise ValueError(
                     "Integrated controlled evidence requires a predeclared request."
@@ -599,6 +646,8 @@ class IntegratedInquiryTrace(FrozenRecord):
             or not self.held_out_replication_receipts
             or not self.workspace_admission_observations
             or not self.held_out_workspace_admission_receipts
+            or not self.outgoing_action_observations
+            or not self.held_out_outgoing_action_receipts
         ):
             raise ValueError(
                 "Integrated trial controls require complete controlled evidence."
@@ -939,6 +988,77 @@ class IntegratedInquiryTrace(FrozenRecord):
                 raise ValueError(
                     "Every held-out receipt requires one workspace replication."
                 )
+
+            action_by_workspace: dict[str, MatchedOutgoingActionObservation] = {}
+            for action in self.outgoing_action_observations:
+                workspace = workspace_by_controlled.get(
+                    action.controlled_trial_ref
+                )
+                if workspace is None or action.workspace_admission != workspace:
+                    raise ValueError(
+                        "Outgoing action lost its exact workspace observation."
+                    )
+                if workspace.match_id in action_by_workspace:
+                    raise ValueError(
+                        "Workspace observation has multiple outgoing-action receipts."
+                    )
+                if (
+                    action.context != workspace.context
+                    or action.baseline.canonical_checkpoint_fingerprint
+                    != self.canonical_checkpoint_fingerprint
+                    or action.treatment.canonical_checkpoint_fingerprint
+                    != self.canonical_checkpoint_fingerprint
+                ):
+                    raise ValueError(
+                        "Outgoing action crossed controlled execution lineage."
+                    )
+                action_by_workspace[workspace.match_id] = action
+            if set(action_by_workspace) != {
+                item.match_id for item in self.workspace_admission_observations
+            }:
+                raise ValueError(
+                    "Every workspace observation requires one outgoing-action receipt."
+                )
+
+            workspace_replications_by_id = {
+                item.receipt_id: item
+                for item in self.held_out_workspace_admission_receipts
+            }
+            action_replication_refs: set[str] = set()
+            for action_replication in self.held_out_outgoing_action_receipts:
+                workspace_replication = workspace_replications_by_id.get(
+                    action_replication.workspace_replication_ref
+                )
+                if workspace_replication is None:
+                    raise ValueError(
+                        "Outgoing-action replication lost its workspace receipt."
+                    )
+                if (
+                    action_replication.workspace_replication_ref
+                    in action_replication_refs
+                ):
+                    raise ValueError(
+                        "Workspace replication has multiple action replications."
+                    )
+                expected_actions = tuple(
+                    action_by_workspace[item.match_id]
+                    for item in workspace_replication.observations
+                )
+                if (
+                    action_replication.operational_replication_ref
+                    != workspace_replication.operational_replication_ref
+                    or action_replication.observations != expected_actions
+                ):
+                    raise ValueError(
+                        "Outgoing-action replication lost its controlled action set."
+                    )
+                action_replication_refs.add(
+                    action_replication.workspace_replication_ref
+                )
+            if action_replication_refs != set(workspace_replications_by_id):
+                raise ValueError(
+                    "Every workspace replication requires one action replication."
+                )
         receipt_observation_refs: list[str] = []
         for receipt in self.resolution_evidence_receipts:
             observation = observations_by_id.get(receipt.matched_observation_ref)
@@ -1011,6 +1131,7 @@ class IntegratedMatchedInquiryPair:
     workspace_admission_observation: (
         MatchedWorkspaceAdmissionObservation | None
     ) = None
+    outgoing_action_observation: MatchedOutgoingActionObservation | None = None
 
     @property
     def replayed(self) -> bool:
@@ -1030,6 +1151,9 @@ class IntegratedInquiryResult:
     held_out_replications: tuple[HeldOutOperationalReplicationReceipt, ...]
     held_out_workspace_admission_replications: tuple[
         HeldOutWorkspaceAdmissionReplicationReceipt, ...
+    ]
+    held_out_outgoing_action_replications: tuple[
+        HeldOutOutgoingActionReplicationReceipt, ...
     ]
     replayed: bool
 
@@ -1063,6 +1187,10 @@ class DependencyGapInquiryCoordinator:
         held_out_workspace_admission_observer: (
             HeldOutWorkspaceAdmissionReplicationObserver | None
         ) = None,
+        outgoing_action_observer: NativeOutgoingActionObserver | None = None,
+        held_out_outgoing_action_observer: (
+            HeldOutOutgoingActionReplicationObserver | None
+        ) = None,
     ) -> None:
         self.policy = policy or IntegratedInquiryPolicy()
         self.detector = detector or DependencyGapDetector()
@@ -1083,6 +1211,13 @@ class DependencyGapInquiryCoordinator:
         self.held_out_workspace_admission_observer = (
             held_out_workspace_admission_observer
             or HeldOutWorkspaceAdmissionReplicationObserver()
+        )
+        self.outgoing_action_observer = (
+            outgoing_action_observer or NativeOutgoingActionObserver()
+        )
+        self.held_out_outgoing_action_observer = (
+            held_out_outgoing_action_observer
+            or HeldOutOutgoingActionReplicationObserver()
         )
         if (
             self.policy.simulation_requested_budget
@@ -1350,6 +1485,9 @@ class DependencyGapInquiryCoordinator:
         held_out_workspace_replications: list[
             HeldOutWorkspaceAdmissionReplicationReceipt
         ] = []
+        held_out_action_replications: list[
+            HeldOutOutgoingActionReplicationReceipt
+        ] = []
         for allocation in decision.allocations:
             obligation_id = allocation.obligation_id
             hypotheses = hypotheses_by_obligation[obligation_id]
@@ -1435,6 +1573,9 @@ class DependencyGapInquiryCoordinator:
             ] = []
             allocation_workspace_observations: list[
                 MatchedWorkspaceAdmissionObservation
+            ] = []
+            allocation_action_observations: list[
+                MatchedOutgoingActionObservation
             ] = []
             for context in controlled_contexts:
                 pair_source_key = (
@@ -1526,6 +1667,9 @@ class DependencyGapInquiryCoordinator:
                 ) = None
                 workspace_admission_observation: (
                     MatchedWorkspaceAdmissionObservation | None
+                ) = None
+                outgoing_action_observation: (
+                    MatchedOutgoingActionObservation | None
                 ) = None
                 if context is not None:
                     if working_lenses is None:
@@ -1636,6 +1780,65 @@ class DependencyGapInquiryCoordinator:
                         )
                     allocation_workspace_observations.append(
                         workspace_admission_observation
+                    )
+                    try:
+                        outgoing_action_observation = (
+                            self.outgoing_action_observer.observe(
+                                working_kernel,
+                                working_runtime.ledger,
+                                working_lenses,
+                                context=context,
+                                hypothesis=matched_hypothesis,
+                                baseline_plan=matched_plans.baseline,
+                                baseline_result=matched_baseline,
+                                treatment_plan=matched_plans.treatment,
+                                treatment_result=matched_treatment,
+                                controlled_observation=controlled_observation,
+                                workspace_observation=(
+                                    workspace_admission_observation
+                                ),
+                            )
+                        )
+                        outgoing_action_observation = (
+                            MatchedOutgoingActionObservation.model_validate(
+                                outgoing_action_observation.model_dump(
+                                    mode="json"
+                                )
+                            )
+                        )
+                        expected_outgoing_action = (
+                            NativeOutgoingActionObserver().observe(
+                                working_kernel,
+                                working_runtime.ledger,
+                                working_lenses,
+                                context=context,
+                                hypothesis=matched_hypothesis,
+                                baseline_plan=matched_plans.baseline,
+                                baseline_result=matched_baseline,
+                                treatment_plan=matched_plans.treatment,
+                                treatment_result=matched_treatment,
+                                controlled_observation=controlled_observation,
+                                workspace_observation=(
+                                    workspace_admission_observation
+                                ),
+                            )
+                        )
+                    except (
+                        OutgoingActionProbeIntegrityError,
+                        ValueError,
+                        TypeError,
+                    ) as exc:
+                        raise IntegratedInquiryError(
+                            "Native outgoing-action observation failed "
+                            f"validation: {exc}"
+                        ) from exc
+                    if outgoing_action_observation != expected_outgoing_action:
+                        raise IntegratedInquiryError(
+                            "Outgoing-action observer disagrees with the "
+                            "controlled execution."
+                        )
+                    allocation_action_observations.append(
+                        outgoing_action_observation
                     )
                 else:
                     try:
@@ -1777,6 +1980,9 @@ class DependencyGapInquiryCoordinator:
                         workspace_admission_observation=(
                             workspace_admission_observation
                         ),
+                        outgoing_action_observation=(
+                            outgoing_action_observation
+                        ),
                     )
                 )
 
@@ -1841,6 +2047,41 @@ class DependencyGapInquiryCoordinator:
                         "controlled trials."
                     )
                 held_out_workspace_replications.append(workspace_replication)
+                try:
+                    action_replication = (
+                        self.held_out_outgoing_action_observer.observe(
+                            replication,
+                            workspace_replication,
+                            tuple(allocation_action_observations),
+                        )
+                    )
+                    action_replication = (
+                        HeldOutOutgoingActionReplicationReceipt.model_validate(
+                            action_replication.model_dump(mode="json")
+                        )
+                    )
+                    expected_action_replication = (
+                        HeldOutOutgoingActionReplicationObserver().observe(
+                            replication,
+                            workspace_replication,
+                            tuple(allocation_action_observations),
+                        )
+                    )
+                except (
+                    OutgoingActionProbeIntegrityError,
+                    ValueError,
+                    TypeError,
+                ) as exc:
+                    raise IntegratedInquiryError(
+                        "Held-out outgoing-action replication failed "
+                        f"validation: {exc}"
+                    ) from exc
+                if action_replication != expected_action_replication:
+                    raise IntegratedInquiryError(
+                        "Action replication observer disagrees with the "
+                        "controlled trials."
+                    )
+                held_out_action_replications.append(action_replication)
             for outcome in representatives[:trial_count]:
                 hypothesis = hypothesis_by_id[outcome.hypothesis_id]
                 plan = build_hypothesis_plan(
@@ -1998,6 +2239,14 @@ class DependencyGapInquiryCoordinator:
             held_out_workspace_admission_receipts=tuple(
                 held_out_workspace_replications
             ),
+            outgoing_action_observations=tuple(
+                item.outgoing_action_observation
+                for item in matched_pairs
+                if item.outgoing_action_observation is not None
+            ),
+            held_out_outgoing_action_receipts=tuple(
+                held_out_action_replications
+            ),
         )
 
         replayed = (
@@ -2020,6 +2269,9 @@ class DependencyGapInquiryCoordinator:
             held_out_replications=tuple(held_out_replications),
             held_out_workspace_admission_replications=tuple(
                 held_out_workspace_replications
+            ),
+            held_out_outgoing_action_replications=tuple(
+                held_out_action_replications
             ),
             replayed=replayed,
         )

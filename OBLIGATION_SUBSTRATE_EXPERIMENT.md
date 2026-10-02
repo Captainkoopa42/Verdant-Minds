@@ -1,4 +1,4 @@
-# Obligation Substrate v0.29
+# Obligation Substrate v0.30
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -247,6 +247,30 @@ generation, or safe autonomous policy revision.
   kernel. Archive reload reconstructs the identical native workspace receipts
   from the already durable canonical, simulation, and Lens sidecars without
   another reservation or settlement.
+- A versioned `NativeOutgoingActionObserver` now revalidates the complete
+  controlled and native-workspace lineage before taking any action-side step.
+  An arm with no admitted evidence records an explicit grounded no-action; an
+  evidence-bearing arm creates a supplied reversible `INVESTIGATE` proposal
+  whose evidence is exactly the arm's shadow-admitted canonical set.
+- Verdant's real `VerdantGovernancePipeline` evaluates and commits that
+  proposal only on the reconstructed workspace clone. The exact authorized
+  operation and Council decision are then submitted as a native
+  `AUTHORIZED_ACTION` workspace candidate, whose native admission report and
+  event are retained with the proposal, three-King assessments, Council
+  report, and decision.
+- Matched action observations distinguish action gain, loss, change, and valid
+  null. Their ID-independent action-effect signature must reproduce across the
+  predeclared calibration and held-out seeds before an outgoing-action
+  replication receipt is accepted.
+- Action observations and held-out receipts are linked one-for-one through the
+  controlled, operational, and workspace receipts in the integrated trace.
+  Default recomputation rejects injected policies, altered authority flags,
+  missing receipts, foreign simulation ledgers, or cross-lineage substitution
+  before staged canonical or simulation state is published.
+- The outgoing action is a shadow signature only. No operation is dispatched,
+  no governance decision or workspace cycle is published to the canonical
+  kernel, no governance outcome is recorded, and no action result is supplied
+  to Resolution, Diagnostic, Council-intervention, or Paradigm ledgers.
 - Immutable `EquivalenceLensDefinition` records now hold a deterministic,
   side-effect-free operator IR in a content-addressed registry. Definitions
   preserve provenance and optional parent lineage; duplicate content reuses the
@@ -466,14 +490,14 @@ generation, or safe autonomous policy revision.
   visible supplied policy values. Verdant has not learned their calibration or
   chosen the integration request endogenously.
 - Integrated trace objects, including their matched structural, overlay-
-  operational, Resolution-evidence coverage, v0.28 controlled-trial, and v0.29
-  workspace-admission receipts are transient and reconstructable rather than
-  new archive members. Existing `.vob` canonical, simulation, and Lens state
-  can regenerate identical receipts under the same code and policies, but
-  v0.29 does not claim independent long-term schema durability for the
-  receipts themselves. Simulation reservations and settlements remain
-  durable, while materialized collection deltas and derived receipts are not
-  new archive members or canonical VDK records.
+  operational, Resolution-evidence coverage, v0.28 controlled-trial, v0.29
+  workspace-admission, and v0.30 outgoing-action receipts are transient and
+  reconstructable rather than new archive members. Existing `.vob` canonical,
+  simulation, and Lens state can regenerate identical receipts under the same
+  code and policies, but v0.30 does not claim independent long-term schema
+  durability for the receipts themselves. Simulation reservations and
+  settlements remain durable, while materialized collection deltas and
+  derived receipts are not new archive members or canonical VDK records.
 - Coordinator atomicity is bounded to staged in-process validation before its
   two supplied Python objects are published. It adds no cross-thread or cross-
   process lock, transaction journal, or automatic archive write; callers must
@@ -518,6 +542,23 @@ generation, or safe autonomous policy revision.
   binding is active but does not use that Lens to change trial behavior.
   Distinct declared seeds demonstrate exact deterministic replay rather than
   stochastic or external held-out generalization.
+- v0.30 observes only whether a supplied reversible investigation is approved
+  by the existing native Council and whether that exact authorized operation
+  is admitted by the native workspace on the reconstructed shadow clone. A
+  Council authorization and an `AUTHORIZED_ACTION` workspace item are not an
+  external action, motor command, environment transition, canonical governance
+  decision, or observed outcome. The clone is discarded after each arm.
+- The operation namespace, action class, description, requested Council
+  resource, priority metrics, harm and reversibility declarations, workspace
+  resource fraction, signals, and one-cycle persistence are visible supplied
+  v0.30 policy. Verdant neither learned these values nor chose to initiate the
+  request. An arm without admitted evidence cannot fabricate a proposal; an
+  evidence-bearing proposal cannot cite evidence outside that arm's admission.
+- Exact action-effect agreement across the two declared seeds establishes
+  deterministic replay only. The runtime still does not consume randomness,
+  the horizon is a graph-hop bound rather than elapsed experience, and the
+  matched treatment does not establish causal sufficiency or external
+  generalization. No governance outcome or action-success label is recorded.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
   provenance-visible bids, but v0.28 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
@@ -526,10 +567,11 @@ generation, or safe autonomous policy revision.
 - No scheduler loop or background clock yet; probes, audit pings, and graph
   deltas are explicitly submitted through the experimental pipeline.
 - The Resolution Contract accepts explicitly supplied, typed trial
-  observations. v0.29 derives retrieved and shadow-admitted sets for its
-  controlled workspace receipt, but the Resolution-evidence coverage receipt
-  does not yet consume that new evidence. No outgoing action or executed
-  dependency path is derived automatically.
+  observations. v0.29 derives retrieved and shadow-admitted sets and v0.30
+  derives a shadow Council/workspace action signature, but the Resolution-
+  evidence coverage receipt does not consume either as an actually executed
+  action. No environment-facing action or executed dependency path is derived
+  automatically.
 - No canonical `Resolved` API or earned-structure promotion exists. A passing
   verdict supplies bounded evidence for a later governor but grants no
   resolution authority itself.
@@ -1054,6 +1096,42 @@ generation, or safe autonomous policy revision.
   promotion authority, policy rewrite, semantic understanding, `T_g` control,
   or thermodynamic behavior.
 
+## v0.30 claim boundary
+
+- **OBSERVED:** Sixty-eight focused integrated-inquiry, trial-control, native-
+  workspace, and native-Council tests and the 432-test full repository suite
+  pass. Under both predeclared split contexts, the baseline's empty admitted-
+  evidence set produces an explicit no-action record while the treatment's
+  native workspace admission produces a reversible investigation proposal.
+  The real three-King Council approves that proposal on the clone, and the
+  native workspace admits the exact `AUTHORIZED_ACTION` candidate linked to
+  the resulting decision. The same ID-independent action-effect signature
+  reproduces across the distinct declared seeds. Archive reload reconstructs
+  byte-equivalent action observations and held-out receipt with zero new
+  reservations or settlements. Foreign ledgers, missing integrated receipts,
+  rehashed authority claims, supplied-policy substitution, and injected
+  observer tampering fail without partial publication. The dedicated legacy
+  compatibility test loads and embeds all 17 preexisting VDK checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** The explicitly invoked
+  `DependencyGapInquiryCoordinator` now carries complete native Council and
+  action-workspace receipts after each v0.29 workspace observation, plus one
+  held-out action replication per Attention allocation. Validation closes the
+  controlled-trial, workspace, Council-decision, authorized-operation, action-
+  candidate, split, and replication edges. All native Council and workspace
+  mutation occurs on discarded clones; canonical semantic, governance, and
+  workspace state, the isolated simulation ledger, and the Lens sidecar remain
+  unchanged by action-signature derivation.
+- **PROPOSED:** Derive an actually executed dependency-path observation from a
+  controlled experiment trace with matched controls and preserved physical
+  evidence; do not infer it from Council authorization or workspace admission.
+  Only after execution, outcomes, admitted/retrieved evidence, controls, and
+  held-out lineage are all grounded may the Resolution-evidence protocol be
+  extended toward a non-authoritative `ResolutionTrialObservation`. Separately
+  durable integrated receipts and family-local hypothesis/evidence protocols
+  remain later work. v0.30 adds no external action, causal success claim,
+  autonomous inquiry, canonical resolution or promotion, policy rewrite,
+  semantic understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1179,3 +1257,11 @@ canonical-workspace isolation, exact held-out effect replay, zero-cost archive
 reconstruction, foreign-ledger rejection, complete controlled-trace coverage,
 observer tampering, and the hard absence of action, dependency-path,
 resolution, or canonical-commit authority.
+Native outgoing-action tests additionally target grounded no-action baselines,
+real three-King authorization, exact decision-to-`AUTHORIZED_ACTION` lineage,
+native action admission under the declared slot cap, ID-independent held-out
+effect replay, zero-cost archive reconstruction, foreign-ledger rejection,
+complete integrated-trace coverage, supplied-policy substitution, observer and
+authority tampering, canonical Council/workspace isolation, and the hard
+absence of external action, dependency-path, outcome, resolution, or commit
+authority.

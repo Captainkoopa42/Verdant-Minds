@@ -1,4 +1,4 @@
-# Obligation Substrate v0.36
+# Obligation Substrate v0.37
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -508,6 +508,31 @@ generation, or safe autonomous policy revision.
   dimensional separation, independent held-out replication, external outcome,
   truth, readiness, resolution, promotion, and canonical commit authority all
   remain explicitly false.
+- A new explicitly invoked `ContradictionLensControlledProbeRunner` requires
+  its caller to build and supply one content-addressed controlled context
+  before either v0.36 simulation arm can run. The context binds the exact
+  functional query and source-event key to a detached snapshot of the complete
+  Lens definition registry and binding/evidence/governance ledger.
+- Context validation reconstructs that sidecar, requires exactly one active
+  `Contradiction` binding, requires a nonempty evidence history for that
+  binding, closes its last governance event, and admits only the typed
+  `SELECT_ACTIVATED_REFS` operator supported by this bounded adapter. A foreign
+  family, unsupported operator, suspended binding, changed sidecar, or omitted
+  evidence fails before any simulation settlement is published.
+- After the ordinary matched pair is reverified against the actual simulation
+  ledger, the active Lens reads each actual treatment route's activated claim
+  references and emits a content-addressed equivalence projection. It is a
+  read-only classification: it neither changes routing nor selects either
+  opposed claim. Wrapper failure leaves both staged arms unpublished and
+  canonical, simulation, and Lens fingerprints protected.
+- A v0.37 coverage receipt embeds the complete v0.36 receipt and Lens
+  observation and moves only `active_family_local_lens` from missing to
+  grounded. The existing `.vob` Lens sidecar is sufficient to reconstruct the
+  identical controlled context, route projections, and coverage on exact
+  replay. Dimensional separation, source independence, predictive
+  discrimination, genuinely independent held-out replication, external
+  outcome, truth, readiness, resolution, promotion, and canonical commit
+  authority remain explicitly false.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -737,11 +762,12 @@ generation, or safe autonomous policy revision.
   interaction attributions.
 - `Contradiction` now has detection, immutable identity, retrigger continuity,
   checkpoint replay, anti-suppression validation, a v0.33 provenance-partition
-  hypothesis/evidence protocol, a v0.34 matched isolated projection probe, and
-  a v0.35 one-for-one resolution-evidence coverage receipt.
-  It does not yet demonstrate a functional consequence of that projection,
-  feed a dimensional-separation Resolution Contract, learn a family-local
-  lens, or carry canonical resolution authority.
+  hypothesis/evidence protocol, a v0.34 matched isolated projection probe, a
+  v0.35 one-for-one resolution-evidence receipt, a v0.36 context-conditioned
+  functional probe, and a v0.37 opt-in active-Lens control. It does not yet run
+  separately declared calibration/held-out contexts, establish dimensional
+  separation or predictive discrimination, learn a Lens, feed a Resolution
+  Contract, or carry canonical resolution authority.
 - Shared or different evidence IDs and source roots are structural ledger
   observations only. They do not establish source independence, causal
   relevance, contextual compatibility, semantic correctness, or which opposed
@@ -749,19 +775,24 @@ generation, or safe autonomous policy revision.
   in an isolated overlay; its `distinct`, `valid_null`, and `inconclusive`
   dispositions do not measure predictive discrimination, behavior, external
   outcome, or dimensional separation. v0.35 makes each of those absences
-  explicit and immutable; it does not supply them. The null and defer
-  hypotheses remain mandatory alternatives, not conclusions selected by the
-  probe.
+  explicit and immutable; v0.36 adds only an internal context-conditioned
+  route effect, and v0.37 adds only an active supplied Lens applied read-only
+  to that same context. None supplies independent prediction. The null and
+  defer hypotheses remain mandatory alternatives, not conclusions selected by
+  the probe.
 - Contradiction hypothesis generation remains explicitly invoked and its
   Attention metrics and `0.05` minimum budget are visible supplied policy. The
-  bundle, probe, observation, and v0.35 coverage receipt are reconstructible
-  non-authoritative objects, not canonical VDK records or new `.vob`, `.viq`,
-  or `.viqh` members. Only the generic reservations and settlements are
-  separately durable. No autonomous family-local scheduler, durable
-  Contradiction receipt format, family-local Lens, truth test, context-
-  conditioned functional probe, held-out replication, predictive
-  discrimination, source-independence proof, dimensional separation, or
-  Resolution Contract is added.
+  bundle, probe, observations, controlled Lens context, and coverage receipts
+  are reconstructible non-authoritative objects, not canonical VDK records or
+  new `.vob`, `.viq`, or `.viqh` members. Generic reservations/settlements and
+  the preexisting Lens registry/ledger are durable only through explicit
+  `.vob` save/load. The v0.37 context is supplied explicitly and reconstructed
+  from those exact sidecars; it is not automatically scheduled or saved as a
+  new receipt. Lens definition, approval, calibration references, and evidence
+  result remain supplied governance inputs. No learned context or Lens,
+  autonomous family-local scheduler, truth test, independent held-out
+  replication, predictive discrimination, source-independence proof,
+  dimensional separation, or Resolution Contract is added.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1464,6 +1495,36 @@ generation, or safe autonomous policy revision.
   resolution or promotion, autonomous scheduling, policy rewrite, semantic
   understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.37 claim boundary
+
+- **OBSERVED:** Fifty-eight focused Lens/Contradiction tests and the 491-test
+  full repository suite pass. All 17 preexisting checkpoints still load and
+  embed. Exact `.vob` replay reconstructs the same controlled context, active
+  Lens lineage, route projections, and coverage without a new reservation or
+  settlement. Wrong-family and suspended bindings, missing Lens evidence,
+  unsupported dimensions, sidecar changes after preregistration, foreign-
+  simulation-ledger substitution, fully rehashed route-projection changes,
+  hidden gaps, forged authority, and an injected wrapper-observer failure all
+  fail closed; the failure leaves both staged arms unpublished.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in wrapper now binds the exact active
+  `Contradiction` Lens definition, binding, evidence history, and governance
+  history into a caller-supplied controlled context before executing the
+  existing matched pair. After revalidating the real settlements, the Lens
+  applies only `SELECT_ACTIVATED_REFS` read-only to each actual treatment
+  route. A nested coverage receipt grounds only the existence and use of that
+  active family-local Lens. It preserves both claims and all evidence and
+  remains simulated-only with `resolution_trial_ready=False`.
+- **PROPOSED:** The next dependency is a separately preregistered calibration
+  context and a genuinely independent held-out context, each with matched
+  controls and identical Lens lineage. Their observations must test whether
+  the selected dimension separates outcomes across sources rather than merely
+  reproducing the same receipt-derived routes. Only such evidence may ground
+  dimensional separation, source independence, predictive discrimination, or
+  held-out replication. v0.37 adds no learned Lens or context, external action
+  or outcome, truth selection, causal-success claim, canonical resolution or
+  promotion, autonomous scheduling, policy rewrite, semantic understanding,
+  `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1543,6 +1604,14 @@ actual-ledger reconstruction, exact archive replay, foreign-ledger rejection,
 fully rehashed context and route tampering, forged prediction/readiness flags,
 atomic observer-failure rollback, and the hard absence of truth, external-
 outcome, resolution, or canonical-commit authority.
+Contradiction-Lens-control tests additionally target explicit predeclared
+invocation, exact definition/binding/evidence/governance closure, active family
+scope, nonempty evidence, suspension and unsupported-operator rejection,
+read-only projection of actual treatment routes, sidecar-staleness rejection,
+cross-ledger archive replay, foreign-simulation-ledger rejection, fully
+rehashed projection/gap/authority tampering, atomic wrapper rollback, and the
+hard absence of dimensional-separation, source-independence, predictive,
+held-out, truth, resolution, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

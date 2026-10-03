@@ -1,4 +1,4 @@
-# Obligation Substrate v0.30
+# Obligation Substrate v0.31
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -271,6 +271,21 @@ generation, or safe autonomous policy revision.
   no governance decision or workspace cycle is published to the canonical
   kernel, no governance outcome is recorded, and no action result is supplied
   to Resolution, Diagnostic, Council-intervention, or Paradigm ledgers.
+- A separately saved, canonical-JSON `.viq` sidecar can now retain the complete
+  v0.30 `IntegratedInquiryTrace`, including controlled structural, operational,
+  workspace-admission, native Council/action, and held-out replication
+  receipts. Its envelope binds the exact canonical, simulation-ledger, and Lens
+  fingerprints plus a hash of the full nested trace.
+- Loading a `.viq` requires the exact paired canonical, simulation, and Lens
+  sidecars. The loader revalidates the canonical Attention decision and
+  obligation events, every representative and matched-arm reservation and
+  settlement, all canonical evidence references, the active family-local Lens,
+  and the absence of embedded shadow Council/workspace records from canonical
+  state before returning the receipt.
+- Receipt writes use a synced temporary file, atomic replacement, and POSIX
+  directory sync where available. Serialization is deterministic and read/write
+  validation cannot reserve simulation budget, rerun an observer, dispatch an
+  action, or mutate any paired state.
 - Immutable `EquivalenceLensDefinition` records now hold a deterministic,
   side-effect-free operator IR in a content-addressed registry. Definitions
   preserve provenance and optional parent lineage; duplicate content reuses the
@@ -489,20 +504,20 @@ generation, or safe autonomous policy revision.
 - Attention metrics, trial count, budget, and representative-arm ordering are
   visible supplied policy values. Verdant has not learned their calibration or
   chosen the integration request endogenously.
-- Integrated trace objects, including their matched structural, overlay-
-  operational, Resolution-evidence coverage, v0.28 controlled-trial, v0.29
-  workspace-admission, and v0.30 outgoing-action receipts are transient and
-  reconstructable rather than new archive members. Existing `.vob` canonical,
-  simulation, and Lens state can regenerate identical receipts under the same
-  code and policies, but v0.30 does not claim independent long-term schema
-  durability for the receipts themselves. Simulation reservations and
-  settlements remain durable, while materialized collection deltas and
-  derived receipts are not new archive members or canonical VDK records.
+- Integrated trace objects are still not canonical VDK records or members of
+  the existing `.vob` formats. v0.31 adds an explicitly saved, separately
+  paired `.viq` receipt for exactly one complete controlled v0.30 invocation;
+  it does not add an append-only multi-invocation ledger, automatic save,
+  cross-version migration, or independent recovery without the exact paired
+  `.vob` canonical/simulation/Lens state. Representative plan bodies,
+  detector-candidate bodies, and hypothesis bodies are not duplicated into the
+  receipt, so `.viq` preserves the integrated evidence object and its durable
+  ledger links rather than promising code-independent semantic re-execution.
 - Coordinator atomicity is bounded to staged in-process validation before its
   two supplied Python objects are published. It adds no cross-thread or cross-
   process lock, transaction journal, or automatic archive write; callers must
-  serialize invocation and explicitly save the resulting `.vob` when durable
-  recovery is required.
+  serialize invocation and explicitly save the resulting `.vob` and `.viq`
+  when durable receipt recovery is required.
 - The runtime consumes separately accounted simulation budget, but the
   coordinator does not move a `MayWake` obligation into `Recheck_Pending`,
   append an `AttemptRecord`, classify an arm as actually observed, or alter
@@ -559,6 +574,14 @@ generation, or safe autonomous policy revision.
   the horizon is a graph-hop bound rather than elapsed experience, and the
   matched treatment does not establish causal sufficiency or external
   generalization. No governance outcome or action-success label is recorded.
+- The `.viq` writer is opt-in and serializes one receipt per path. v0.31 has no
+  writer lock, append arbitration, merge protocol, stale-temporary cleanup, or
+  process-kill/concurrent-writer proof specific to `.viq`; a later replace can
+  overwrite an earlier complete receipt. Atomic-replace failure is tested, but
+  filesystem, power-loss, controller-cache, and hardware-failure guarantees
+  remain outside the claim. SHA-256 detects alteration and mispairing but is
+  not a signature or authenticity boundary against an attacker who can rewrite
+  every paired file.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
   provenance-visible bids, but v0.28 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
@@ -1132,6 +1155,37 @@ generation, or safe autonomous policy revision.
   autonomous inquiry, canonical resolution or promotion, policy rewrite,
   semantic understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.31 claim boundary
+
+- **OBSERVED:** Forty-four focused integrated-inquiry tests and the 437-test
+  full repository suite pass. A complete controlled v0.30 trace serializes to
+  deterministic `.viq` bytes, reloads against its separately restored `.vob`
+  canonical/simulation/Lens state, and reproduces the identical nested receipt
+  without new reservations, settlements, Council decisions, or workspace
+  events. Rehashed external-action authority, removed controlled evidence,
+  foreign canonical/simulation/Lens pairings, uncontrolled pre-v0.30 traces,
+  and an injected atomic-replace failure all fail closed while preserving the
+  prior complete file. The dedicated compatibility test still loads and embeds
+  all 17 preexisting VDK checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** The complete integrated inquiry receipt is now
+  independently durable under a versioned canonical-JSON envelope. Save and
+  load close its canonical Attention/obligation, isolated-simulation,
+  canonical-evidence, active-Lens, controlled-trial, native-workspace, and
+  shadow-Council/action lineage against exact paired sidecars. The API remains
+  explicitly invoked, single-receipt, non-authoritative, and outside canonical
+  VDK state and existing `.vob` schemas.
+- **PROPOSED:** Do not synthesize execution from the durable authorization
+  receipt. An actually executed dependency-path observation still requires an
+  external or hardware-backed command boundary, native result telemetry,
+  synchronized physical evidence, matched controls, and emergency-stop/safety
+  validation that this repository does not implement. Until that prerequisite
+  exists, the next safe durability dependency is cumulative receipt history
+  with process-kill and concurrent-writer tests; family-local hypothesis and
+  evidence protocols remain downstream. v0.31 adds no actuator, environment
+  transition, observed outcome, causal-success claim, autonomous inquiry,
+  resolution or promotion authority, policy rewrite, semantic understanding,
+  `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1265,3 +1319,10 @@ complete integrated-trace coverage, supplied-policy substitution, observer and
 authority tampering, canonical Council/workspace isolation, and the hard
 absence of external action, dependency-path, outcome, resolution, or commit
 authority.
+Integrated-receipt tests additionally target deterministic canonical JSON,
+exact `.vob` pairing, full nested receipt recovery without replay cost,
+canonical Attention and obligation closure, reservation/settlement linkage,
+canonical evidence preservation, active-Lens matching, shadow-record
+non-leakage, rehashed authority and omission attacks, foreign sidecar
+substitution, rejection of incomplete pre-v0.30 traces, and atomic-replace
+failure that leaves the prior receipt intact.

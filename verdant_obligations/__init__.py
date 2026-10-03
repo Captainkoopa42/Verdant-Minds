@@ -111,6 +111,14 @@ from .inquiry import (
     IntegratedInquiryTrialControlRequest,
     IntegratedInquiryTrial,
 )
+from .inquiry_receipts import (
+    INTEGRATED_INQUIRY_RECEIPT_FORMAT,
+    IntegratedInquiryReceiptEnvelope,
+    IntegratedInquiryReceiptIntegrityError,
+    integrated_inquiry_receipt_bytes,
+    load_integrated_inquiry_receipt,
+    save_integrated_inquiry_receipt,
+)
 from .trace_observations import (
     MATCHED_TRACE_OBSERVER_VERSION,
     MatchedCounterfactualObserver,
@@ -372,6 +380,12 @@ __all__ = [
     "IntegratedInquiryTrace",
     "IntegratedInquiryTrialControlRequest",
     "IntegratedInquiryTrial",
+    "INTEGRATED_INQUIRY_RECEIPT_FORMAT",
+    "IntegratedInquiryReceiptEnvelope",
+    "IntegratedInquiryReceiptIntegrityError",
+    "integrated_inquiry_receipt_bytes",
+    "load_integrated_inquiry_receipt",
+    "save_integrated_inquiry_receipt",
     "MATCHED_TRACE_OBSERVER_VERSION",
     "MatchedCounterfactualObserver",
     "MatchedCounterfactualPlans",

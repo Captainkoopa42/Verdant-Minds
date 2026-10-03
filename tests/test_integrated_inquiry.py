@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,7 @@ from verdant_kernel import (
     WorkspaceSourceKind,
     VerdantKernel,
 )
+from verdant_kernel.models import canonical_json_bytes
 from verdant_obligations import (
     AttentionPortfolio,
     AttentionPortfolioPolicy,
@@ -29,6 +31,7 @@ from verdant_obligations import (
     HypothesisOperator,
     IntegratedInquiryError,
     IntegratedInquiryPolicy,
+    IntegratedInquiryReceiptIntegrityError,
     IntegratedInquiryTrace,
     IntegratedInquiryTrialControlRequest,
     LensOpcode,
@@ -56,9 +59,12 @@ from verdant_obligations import (
     WorkspaceAdmissionEffect,
     WorkspaceAdmissionProbeIntegrityError,
     experiment_archive_bytes,
+    integrated_inquiry_receipt_bytes,
     load_experiment_archive,
     load_experiment_archive_bundle,
+    load_integrated_inquiry_receipt,
     save_experiment_archive,
+    save_integrated_inquiry_receipt,
 )
 
 
@@ -1383,3 +1389,233 @@ def test_tampered_operational_probe_rejects_staged_transaction() -> None:
 
     assert kernel.fingerprint() == canonical_before
     assert runtime.ledger.fingerprint() == simulation_before
+
+
+def _controlled_receipt_experiment(
+    source_event_key: str,
+) -> tuple[
+    VerdantKernel,
+    CounterfactualRuntime,
+    EquivalenceLensSystem,
+    object,
+]:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    lenses = _lenses(kernel)
+    result = DependencyGapInquiryCoordinator().run(
+        kernel,
+        runtime,
+        source_event_key=source_event_key,
+        lenses=lenses,
+        trial_controls=_trial_controls(lenses),
+    )
+    return kernel, runtime, lenses, result
+
+
+def test_integrated_receipt_sidecar_round_trips_against_exact_vob_pair(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime, lenses, result = _controlled_receipt_experiment(
+        "integrated-inquiry:durable-receipt"
+    )
+    canonical_before = kernel.fingerprint()
+    simulation_before = runtime.ledger.fingerprint()
+    lens_before = lenses.fingerprint()
+    expected = integrated_inquiry_receipt_bytes(
+        kernel,
+        runtime.ledger,
+        lenses,
+        result.trace,
+    )
+    assert expected == integrated_inquiry_receipt_bytes(
+        kernel,
+        runtime.ledger,
+        lenses,
+        result.trace,
+    )
+
+    archive_path = tmp_path / "controlled.vob"
+    receipt_path = tmp_path / "controlled.viq"
+    save_experiment_archive(
+        archive_path,
+        kernel,
+        runtime.ledger,
+        lens_system=lenses,
+    )
+    receipt_digest = save_integrated_inquiry_receipt(
+        receipt_path,
+        kernel,
+        runtime.ledger,
+        lenses,
+        result.trace,
+    )
+    assert receipt_path.read_bytes() == expected
+    assert receipt_digest == hashlib.sha256(expected).hexdigest()
+
+    bundle = load_experiment_archive_bundle(archive_path)
+    assert bundle.lens_system is not None
+    restored = load_integrated_inquiry_receipt(
+        receipt_path,
+        kernel=bundle.kernel,
+        simulation_ledger=bundle.simulation_ledger,
+        lens_system=bundle.lens_system,
+    )
+    assert restored == result.trace
+    assert restored.outgoing_action_observations
+    assert restored.held_out_outgoing_action_receipts
+    assert bundle.kernel.fingerprint() == canonical_before
+    assert bundle.simulation_ledger.fingerprint() == simulation_before
+    assert bundle.lens_system.fingerprint() == lens_before
+    assert len(bundle.simulation_ledger.state.reservations) == 5
+    assert len(bundle.simulation_ledger.state.settlements) == 5
+
+
+def test_integrated_receipt_rejects_rehashed_authority_and_missing_evidence(
+    tmp_path: Path,
+) -> None:
+    kernel, runtime, lenses, result = _controlled_receipt_experiment(
+        "integrated-inquiry:durable-tamper"
+    )
+    path = tmp_path / "tampered.viq"
+    data = integrated_inquiry_receipt_bytes(
+        kernel,
+        runtime.ledger,
+        lenses,
+        result.trace,
+    )
+
+    authority = json.loads(data)
+    authority["trace"]["outgoing_action_observations"][0]["treatment"][
+        "external_action_executed"
+    ] = True
+    authority["trace_sha256"] = hashlib.sha256(
+        canonical_json_bytes(authority["trace"])
+    ).hexdigest()
+    path.write_bytes(canonical_json_bytes(authority))
+    with pytest.raises(
+        IntegratedInquiryReceiptIntegrityError,
+        match="Invalid integrated inquiry receipt",
+    ):
+        load_integrated_inquiry_receipt(
+            path,
+            kernel=kernel,
+            simulation_ledger=runtime.ledger,
+            lens_system=lenses,
+        )
+
+    missing = json.loads(data)
+    missing["trace"]["outgoing_action_observations"] = []
+    missing["trace_sha256"] = hashlib.sha256(
+        canonical_json_bytes(missing["trace"])
+    ).hexdigest()
+    path.write_bytes(canonical_json_bytes(missing))
+    with pytest.raises(
+        IntegratedInquiryReceiptIntegrityError,
+        match="Invalid integrated inquiry receipt",
+    ):
+        load_integrated_inquiry_receipt(
+            path,
+            kernel=kernel,
+            simulation_ledger=runtime.ledger,
+            lens_system=lenses,
+        )
+
+
+def test_integrated_receipt_rejects_foreign_sidecar_pairing(tmp_path: Path) -> None:
+    kernel, runtime, lenses, result = _controlled_receipt_experiment(
+        "integrated-inquiry:durable-foreign"
+    )
+    path = tmp_path / "paired.viq"
+    save_integrated_inquiry_receipt(
+        path,
+        kernel,
+        runtime.ledger,
+        lenses,
+        result.trace,
+    )
+
+    foreign_kernel = VerdantKernel(
+        seed=7499,
+        state_dim=16,
+        run_label="foreign-integrated-receipt",
+    )
+    for kwargs in (
+        {
+            "kernel": foreign_kernel,
+            "simulation_ledger": runtime.ledger,
+            "lens_system": lenses,
+        },
+        {
+            "kernel": kernel,
+            "simulation_ledger": SimulationLedger(),
+            "lens_system": lenses,
+        },
+        {
+            "kernel": kernel,
+            "simulation_ledger": runtime.ledger,
+            "lens_system": EquivalenceLensSystem(),
+        },
+    ):
+        with pytest.raises(
+            IntegratedInquiryReceiptIntegrityError,
+            match="pairing mismatch",
+        ):
+            load_integrated_inquiry_receipt(path, **kwargs)
+
+
+def test_integrated_receipt_rejects_uncontrolled_pre_v030_trace() -> None:
+    kernel = _kernel()
+    runtime = CounterfactualRuntime()
+    result = DependencyGapInquiryCoordinator().run(
+        kernel,
+        runtime,
+        source_event_key="integrated-inquiry:durable-incomplete",
+    )
+    lenses = _lenses(kernel)
+
+    with pytest.raises(
+        IntegratedInquiryReceiptIntegrityError,
+        match="predeclared controlled-trial lineage",
+    ):
+        integrated_inquiry_receipt_bytes(
+            kernel,
+            runtime.ledger,
+            lenses,
+            result.trace,
+        )
+
+
+def test_integrated_receipt_atomic_replace_preserves_prior_file(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    kernel, runtime, lenses, result = _controlled_receipt_experiment(
+        "integrated-inquiry:durable-atomic"
+    )
+    path = tmp_path / "atomic.viq"
+    save_integrated_inquiry_receipt(
+        path,
+        kernel,
+        runtime.ledger,
+        lenses,
+        result.trace,
+    )
+    before = path.read_bytes()
+
+    def fail_replace(_source: Path, _target: Path) -> None:
+        raise OSError("injected receipt replace failure")
+
+    monkeypatch.setattr(
+        "verdant_obligations.inquiry_receipts.os.replace",
+        fail_replace,
+    )
+    with pytest.raises(OSError, match="injected receipt replace failure"):
+        save_integrated_inquiry_receipt(
+            path,
+            kernel,
+            runtime.ledger,
+            lenses,
+            result.trace,
+        )
+    assert path.read_bytes() == before
+    assert list(tmp_path.glob(".atomic.viq.*.tmp")) == []

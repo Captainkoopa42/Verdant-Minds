@@ -36,6 +36,17 @@ from .contradiction_hypotheses import (
     ContradictionHypothesisPolicy,
     ContradictionHypothesisProtocol,
 )
+from .contradiction_probes import (
+    CONTRADICTION_PROVENANCE_PROBE_VERSION,
+    ContradictionProvenanceDisposition,
+    ContradictionProvenanceObservation,
+    ContradictionProvenanceProbe,
+    ContradictionProvenanceProbeIntegrityError,
+    ContradictionProvenanceProbeObserver,
+    ContradictionProvenanceProbePolicy,
+    ContradictionProvenanceProbeRun,
+    ContradictionProvenanceProbeRunner,
+)
 from .prediction_failures import (
     PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
     PredictionFailureCandidate,
@@ -316,6 +327,15 @@ __all__ = [
     "ContradictionDetectionReport",
     "ContradictionObligationCandidate",
     "ContradictionObligationDetector",
+    "CONTRADICTION_PROVENANCE_PROBE_VERSION",
+    "ContradictionProvenanceDisposition",
+    "ContradictionProvenanceObservation",
+    "ContradictionProvenanceProbe",
+    "ContradictionProvenanceProbeIntegrityError",
+    "ContradictionProvenanceProbeObserver",
+    "ContradictionProvenanceProbePolicy",
+    "ContradictionProvenanceProbeRun",
+    "ContradictionProvenanceProbeRunner",
     "PREDICTION_FAILURE_DETECTOR_POLICY_VERSION",
     "PredictionFailureCandidate",
     "PredictionFailureDetectionPolicy",

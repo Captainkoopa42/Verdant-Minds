@@ -1,4 +1,4 @@
-# Obligation Substrate v0.33
+# Obligation Substrate v0.34
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -445,6 +445,27 @@ generation, or safe autonomous policy revision.
   reconstruction and mapping order. Validation rebuilds the complete expected
   bundle from canonical records, so even a fully rehashed context substitution
   is rejected rather than trusted as family-local evidence.
+- An explicitly invoked `ContradictionProvenanceProbeRunner` now converts one
+  validated bundle into a matched zero-patch baseline and one treatment that
+  adds exactly one typed provenance projection to the copy-on-write
+  `structures` overlay. Both plans retain the complete v0.33 evidence receipt,
+  all three hypothesis references, both protected claims, every protected
+  evidence reference, and the same canonical Attention lineage.
+- The runner stages both reservations and settlements in a copied simulation
+  ledger. It publishes the pair only after the existing matched observer has
+  reconstructed both materialized overlays from their actual settlements and
+  verified the single additive treatment delta. A stale bundle, budget failure,
+  altered trace, or second-arm exception leaves the supplied simulation ledger
+  unchanged; canonical state is fingerprint-invariant in every case.
+- The resulting content-addressed observation classifies only the receipt's
+  preserved source-root structure: disjoint nonempty roots are a distinct
+  partition, identical roots are an explicit valid null, and a mixture of
+  shared and distinct roots is inconclusive. These labels are deterministic
+  structural descriptions rather than caller-supplied outcomes.
+- The ordinary `.vob` simulation ledger is sufficient to replay both plans and
+  reconstruct the identical probe and observation after archive reload. Probe
+  and observation objects remain reconstructible, noncanonical artifacts; no
+  new archive member or automatically saved sidecar is introduced.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -673,21 +694,26 @@ generation, or safe autonomous policy revision.
   failure rates against matched controls, or automatically consume diagnostic
   interaction attributions.
 - `Contradiction` now has detection, immutable identity, retrigger continuity,
-  checkpoint replay, anti-suppression validation, and a v0.33 provenance-
-  partition hypothesis/evidence protocol. It does not yet execute a matched
-  provenance intervention, derive an outcome from settled traces, feed a
-  dimensional-separation Resolution Contract, learn a family-local lens, or
-  carry canonical resolution authority.
+  checkpoint replay, anti-suppression validation, a v0.33 provenance-partition
+  hypothesis/evidence protocol, and a v0.34 matched isolated projection probe.
+  It does not yet demonstrate a functional consequence of that projection,
+  feed a dimensional-separation Resolution Contract, learn a family-local
+  lens, or carry canonical resolution authority.
 - Shared or different evidence IDs and source roots are structural ledger
   observations only. They do not establish source independence, causal
   relevance, contextual compatibility, semantic correctness, or which opposed
-  claim is true. The null and defer arms are mandatory alternatives, not
-  conclusions selected by v0.33.
+  claim is true. v0.34 materializes the already derived source-root partition
+  in an isolated overlay; its `distinct`, `valid_null`, and `inconclusive`
+  dispositions do not measure predictive discrimination, behavior, external
+  outcome, or dimensional separation. The null and defer hypotheses remain
+  mandatory alternatives, not conclusions selected by the probe.
 - Contradiction hypothesis generation remains explicitly invoked and its
   Attention metrics and `0.05` minimum budget are visible supplied policy. The
-  bundle is a reconstructible non-authoritative object, not a canonical VDK
-  record or a new `.vob`, `.viq`, or `.viqh` member; no autonomous family-local
-  scheduler or separately durable contradiction sidecar is added.
+  bundle, probe, and observation are reconstructible non-authoritative objects,
+  not canonical VDK records or new `.vob`, `.viq`, or `.viqh` members. Only the
+  generic reservations and settlements are separately durable. No autonomous
+  family-local scheduler, durable Contradiction receipt format, truth test,
+  held-out functional replication, or Resolution Contract is added.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1302,6 +1328,37 @@ generation, or safe autonomous policy revision.
   autonomous inquiry, canonical resolution or promotion, policy rewrite,
   semantic understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.34 claim boundary
+
+- **OBSERVED:** Thirty-two focused Contradiction tests and the 464-test full
+  repository suite pass. Distinct-root, same-root valid-null, and overlapping-
+  root inconclusive fixtures produce their preregistered structural
+  dispositions from actual matched settlements. Exact `.vob` reload replays
+  both arms and reconstructs the identical observation without a new ledger
+  entry. Replaced traces, foreign-ledger substitution, a fully rehashed
+  evidence-suppressing projection, stale evidence, injected second-arm
+  failure, partial-budget exhaustion, and authority mutation fail closed; the
+  dedicated compatibility test still loads and embeds all 17 preexisting
+  checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** A bounded family-local runner now spends one
+  canonical Contradiction Attention allocation on two discarded, isolated
+  simulations: a zero-patch control and one additive provenance projection.
+  It atomically publishes only a complete verified simulation pair, then
+  derives a content-addressed structural disposition through the existing
+  ledger-backed matched observer. Every arm and observation retains the full
+  v0.33 receipt and carries no truth-selection, observed-outcome, resolution,
+  or canonical-commit authority.
+- **PROPOSED:** Before any Contradiction Resolution Contract, derive an explicit
+  family-local coverage receipt from the actual matched ledger. It should mark
+  source-partition materialization and evidence preservation as grounded while
+  keeping predictive discrimination, context-conditioned compatibility,
+  functional consequence, independent held-out replication, and dimensional-
+  separation evidence missing. `resolution_trial_ready` must therefore remain
+  false. v0.34 adds no external action, source-independence proof, truth test,
+  causal-success claim, autonomous inquiry, canonical resolution or promotion,
+  policy rewrite, semantic understanding, `T_g` control, or thermodynamic
+  behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1361,6 +1418,13 @@ budgeted Attention authorization, triggering-evidence closure, stale-basis and
 cross-obligation rejection, protected-evidence anti-suppression, preferred-
 claim prohibition, missing-counterweight rejection, and fully rehashed context
 substitution.
+Contradiction-probe tests additionally target matched zero/full controls,
+complete receipt lineage in both arms, trace-derived distinct/null/inconclusive
+classification, single-record additive overlay scope, exact archive replay,
+replaced-trace and foreign-ledger rejection, fully rehashed projection
+suppression, stale-bundle rejection, atomic second-arm failure, staged budget
+rollback, and hard absence of truth, observed-outcome, resolution, or commit
+authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

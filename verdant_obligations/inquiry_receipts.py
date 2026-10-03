@@ -17,6 +17,11 @@ import os
 import tempfile
 from pathlib import Path
 
+try:  # POSIX-only writer arbitration; single-receipt files remain portable.
+    import fcntl
+except ImportError:  # pragma: no cover - exercised only on non-POSIX hosts
+    fcntl = None
+
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from verdant_kernel import ObligationFamily, VerdantKernel
@@ -38,7 +43,13 @@ from .inquiry import IntegratedInquiryTrace
 
 
 INTEGRATED_INQUIRY_RECEIPT_FORMAT = "verdant-integrated-inquiry-receipt-v1"
+INTEGRATED_INQUIRY_RECEIPT_HISTORY_FORMAT = (
+    "verdant-integrated-inquiry-receipt-history-v1"
+)
 _MAX_RECEIPT_BYTES = 128 * 1024 * 1024
+_MAX_HISTORY_BYTES = 128 * 1024 * 1024
+_MAX_HISTORY_ENTRIES = 128
+_HISTORY_GENESIS_SHA256 = "0" * 64
 
 
 class IntegratedInquiryReceiptIntegrityError(ValueError):
@@ -82,6 +93,73 @@ class IntegratedInquiryReceiptEnvelope(BaseModel):
         trace_bytes = canonical_json_bytes(self.trace.model_dump(mode="json"))
         if self.trace_sha256 != _digest(trace_bytes):
             raise ValueError("Integrated inquiry trace checksum mismatch.")
+        return self
+
+
+class IntegratedInquiryReceiptHistoryEntry(BaseModel):
+    """One immutable receipt in an ordered, hash-chained history."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    sequence: int
+    previous_entry_sha256: str
+    receipt_sha256: str
+    receipt: IntegratedInquiryReceiptEnvelope
+
+    @model_validator(mode="after")
+    def validate_entry(self) -> "IntegratedInquiryReceiptHistoryEntry":
+        if self.sequence < 1:
+            raise ValueError("Integrated inquiry history sequences start at one.")
+        if not _is_sha256(self.previous_entry_sha256) or not _is_sha256(
+            self.receipt_sha256
+        ):
+            raise ValueError("Integrated inquiry history digests must be SHA-256.")
+        if self.receipt_sha256 != _digest(_receipt_envelope_bytes(self.receipt)):
+            raise ValueError("Integrated inquiry history receipt checksum mismatch.")
+        return self
+
+
+def _receipt_envelope_bytes(envelope: IntegratedInquiryReceiptEnvelope) -> bytes:
+    return canonical_json_bytes(envelope.model_dump(mode="json"))
+
+
+def _history_entry_fingerprint(
+    entry: IntegratedInquiryReceiptHistoryEntry,
+) -> str:
+    return _digest(canonical_json_bytes(entry.model_dump(mode="json")))
+
+
+class IntegratedInquiryReceiptHistoryEnvelope(BaseModel):
+    """Bounded canonical history whose head commits to every prior receipt."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    format_version: str = INTEGRATED_INQUIRY_RECEIPT_HISTORY_FORMAT
+    head_sha256: str = _HISTORY_GENESIS_SHA256
+    entries: tuple[IntegratedInquiryReceiptHistoryEntry, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_history(self) -> "IntegratedInquiryReceiptHistoryEnvelope":
+        if self.format_version != INTEGRATED_INQUIRY_RECEIPT_HISTORY_FORMAT:
+            raise ValueError("Unsupported integrated inquiry history format.")
+        if not _is_sha256(self.head_sha256):
+            raise ValueError("Integrated inquiry history head must be SHA-256.")
+        if len(self.entries) > _MAX_HISTORY_ENTRIES:
+            raise ValueError("Integrated inquiry receipt history exceeds its entry cap.")
+
+        previous = _HISTORY_GENESIS_SHA256
+        receipt_digests: set[str] = set()
+        for expected_sequence, entry in enumerate(self.entries, start=1):
+            if entry.sequence != expected_sequence:
+                raise ValueError("Integrated inquiry history sequence is not contiguous.")
+            if entry.previous_entry_sha256 != previous:
+                raise ValueError("Integrated inquiry history chain is broken.")
+            if entry.receipt_sha256 in receipt_digests:
+                raise ValueError("Integrated inquiry history contains a duplicate receipt.")
+            receipt_digests.add(entry.receipt_sha256)
+            previous = _history_entry_fingerprint(entry)
+        if self.head_sha256 != previous:
+            raise ValueError("Integrated inquiry history head checksum mismatch.")
         return self
 
 
@@ -441,3 +519,199 @@ def load_integrated_inquiry_receipt(
         raise IntegratedInquiryReceiptIntegrityError(
             "Invalid integrated inquiry receipt."
         ) from exc
+
+
+def integrated_inquiry_receipt_history_bytes(
+    history: IntegratedInquiryReceiptHistoryEnvelope,
+) -> bytes:
+    """Return deterministic bytes for an already assembled receipt history."""
+
+    try:
+        validated = IntegratedInquiryReceiptHistoryEnvelope.model_validate(
+            history.model_dump(mode="json")
+        )
+    except (TypeError, ValueError) as exc:
+        raise IntegratedInquiryReceiptIntegrityError(
+            "Invalid integrated inquiry receipt history."
+        ) from exc
+    data = canonical_json_bytes(validated.model_dump(mode="json"))
+    if len(data) > _MAX_HISTORY_BYTES:
+        raise IntegratedInquiryReceiptIntegrityError(
+            "Integrated inquiry receipt history exceeds its size limit."
+        )
+    return data
+
+
+def read_integrated_inquiry_receipt_history(
+    path: Path,
+) -> IntegratedInquiryReceiptHistoryEnvelope:
+    """Read and intrinsically verify a canonical receipt history.
+
+    This verifies the bounded hash chain and every embedded receipt checksum.
+    Full cross-ledger validation of an individual receipt still requires its
+    exact paired sidecars through ``load_integrated_inquiry_receipt_history_entry``.
+    """
+
+    try:
+        data = Path(path).read_bytes()
+        if len(data) > _MAX_HISTORY_BYTES:
+            raise IntegratedInquiryReceiptIntegrityError(
+                "Integrated inquiry receipt history exceeds its size limit."
+            )
+        history = IntegratedInquiryReceiptHistoryEnvelope.model_validate_json(data)
+        if integrated_inquiry_receipt_history_bytes(history) != data:
+            raise IntegratedInquiryReceiptIntegrityError(
+                "Integrated inquiry receipt history JSON is not canonical."
+            )
+        return history
+    except (OSError, TypeError, ValueError) as exc:
+        if isinstance(exc, IntegratedInquiryReceiptIntegrityError):
+            raise
+        raise IntegratedInquiryReceiptIntegrityError(
+            "Invalid integrated inquiry receipt history."
+        ) from exc
+
+
+def _history_lock_path(path: Path) -> Path:
+    return path.with_name(f".{path.name}.lock")
+
+
+def _remove_stale_history_temporaries(path: Path) -> None:
+    for candidate in path.parent.glob(f".{path.name}.*.tmp"):
+        candidate.unlink(missing_ok=True)
+
+
+def append_integrated_inquiry_receipt_history(
+    path: Path,
+    kernel: VerdantKernel,
+    simulation_ledger: SimulationLedger,
+    lens_system: EquivalenceLensSystem,
+    trace: IntegratedInquiryTrace,
+) -> str:
+    """Append one unique receipt under a process-shared POSIX writer lock.
+
+    The returned digest identifies the canonical embedded ``.viq`` receipt and
+    is stable regardless of which competing writer acquires the lock first.
+    Readers need no lock because the complete history is atomically replaced.
+    """
+
+    if os.name != "posix" or fcntl is None:
+        raise IntegratedInquiryReceiptIntegrityError(
+            "Concurrent inquiry history append requires POSIX flock support."
+        )
+    receipt_data = integrated_inquiry_receipt_bytes(
+        kernel,
+        simulation_ledger,
+        lens_system,
+        trace,
+    )
+    receipt = IntegratedInquiryReceiptEnvelope.model_validate_json(receipt_data)
+    receipt_sha256 = _digest(receipt_data)
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock_file_descriptor = os.open(
+        _history_lock_path(path),
+        os.O_RDWR | os.O_CREAT,
+        0o600,
+    )
+    try:
+        fcntl.flock(lock_file_descriptor, fcntl.LOCK_EX)
+        _remove_stale_history_temporaries(path)
+        if path.exists():
+            history = read_integrated_inquiry_receipt_history(path)
+        else:
+            history = IntegratedInquiryReceiptHistoryEnvelope()
+
+        for entry in history.entries:
+            if entry.receipt_sha256 == receipt_sha256:
+                return receipt_sha256
+        if len(history.entries) >= _MAX_HISTORY_ENTRIES:
+            raise IntegratedInquiryReceiptIntegrityError(
+                "Integrated inquiry receipt history reached its entry cap."
+            )
+
+        entry = IntegratedInquiryReceiptHistoryEntry(
+            sequence=len(history.entries) + 1,
+            previous_entry_sha256=history.head_sha256,
+            receipt_sha256=receipt_sha256,
+            receipt=receipt,
+        )
+        updated = IntegratedInquiryReceiptHistoryEnvelope(
+            head_sha256=_history_entry_fingerprint(entry),
+            entries=(*history.entries, entry),
+        )
+        data = integrated_inquiry_receipt_history_bytes(updated)
+        temporary: Path | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="wb",
+                dir=path.parent,
+                prefix=f".{path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as handle:
+                temporary = Path(handle.name)
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, path)
+            directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
+        return receipt_sha256
+    finally:
+        try:
+            fcntl.flock(lock_file_descriptor, fcntl.LOCK_UN)
+        finally:
+            os.close(lock_file_descriptor)
+
+
+def load_integrated_inquiry_receipt_history_entry(
+    path: Path,
+    receipt_sha256: str,
+    *,
+    kernel: VerdantKernel,
+    simulation_ledger: SimulationLedger,
+    lens_system: EquivalenceLensSystem,
+) -> IntegratedInquiryTrace:
+    """Fully validate one history entry against its exact paired sidecars."""
+
+    if not _is_sha256(receipt_sha256):
+        raise IntegratedInquiryReceiptIntegrityError(
+            "Integrated inquiry history receipt identifier must be SHA-256."
+        )
+    history = read_integrated_inquiry_receipt_history(path)
+    entry = next(
+        (
+            candidate
+            for candidate in history.entries
+            if candidate.receipt_sha256 == receipt_sha256
+        ),
+        None,
+    )
+    if entry is None:
+        raise IntegratedInquiryReceiptIntegrityError(
+            "Integrated inquiry receipt is absent from the requested history."
+        )
+    envelope = entry.receipt
+    if (
+        envelope.canonical_fingerprint != kernel.fingerprint()
+        or envelope.simulation_fingerprint != simulation_ledger.fingerprint()
+        or envelope.lens_fingerprint != lens_system.fingerprint()
+    ):
+        raise IntegratedInquiryReceiptIntegrityError(
+            "Integrated inquiry history entry sidecar pairing mismatch."
+        )
+    _validate_integrated_inquiry_receipt(
+        kernel,
+        simulation_ledger,
+        lens_system,
+        envelope.trace,
+    )
+    return envelope.trace

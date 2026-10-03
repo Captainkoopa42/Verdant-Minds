@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import select
+import signal
+import threading
 from pathlib import Path
 
 import pytest
@@ -58,11 +62,15 @@ from verdant_obligations import (
     TraceResolutionEvidenceReceipt,
     WorkspaceAdmissionEffect,
     WorkspaceAdmissionProbeIntegrityError,
+    append_integrated_inquiry_receipt_history,
     experiment_archive_bytes,
     integrated_inquiry_receipt_bytes,
+    integrated_inquiry_receipt_history_bytes,
     load_experiment_archive,
     load_experiment_archive_bundle,
     load_integrated_inquiry_receipt,
+    load_integrated_inquiry_receipt_history_entry,
+    read_integrated_inquiry_receipt_history,
     save_experiment_archive,
     save_integrated_inquiry_receipt,
 )
@@ -1619,3 +1627,455 @@ def test_integrated_receipt_atomic_replace_preserves_prior_file(
         )
     assert path.read_bytes() == before
     assert list(tmp_path.glob(".atomic.viq.*.tmp")) == []
+
+
+requires_posix_history = pytest.mark.skipif(
+    os.name != "posix",
+    reason="receipt-history writer arbitration requires POSIX flock",
+)
+requires_posix_history_fork = pytest.mark.skipif(
+    os.name != "posix" or not hasattr(os, "fork"),
+    reason="controlled receipt-history process tests require POSIX fork",
+)
+
+
+def _receipt_digest(kernel, runtime, lenses, result) -> str:
+    return hashlib.sha256(
+        integrated_inquiry_receipt_bytes(
+            kernel,
+            runtime.ledger,
+            lenses,
+            result.trace,
+        )
+    ).hexdigest()
+
+
+@requires_posix_history
+def test_integrated_receipt_history_is_cumulative_idempotent_and_exactly_paired(
+    tmp_path: Path,
+) -> None:
+    first = _controlled_receipt_experiment("integrated-history:first")
+    second = _controlled_receipt_experiment("integrated-history:second")
+    path = tmp_path / "inquiries.viqh"
+    fingerprints = tuple(
+        (
+            kernel.fingerprint(),
+            runtime.ledger.fingerprint(),
+            lenses.fingerprint(),
+        )
+        for kernel, runtime, lenses, _ in (first, second)
+    )
+
+    receipt_ids = tuple(
+        append_integrated_inquiry_receipt_history(
+            path,
+            kernel,
+            runtime.ledger,
+            lenses,
+            result.trace,
+        )
+        for kernel, runtime, lenses, result in (first, second)
+    )
+    assert receipt_ids == tuple(
+        _receipt_digest(*experiment) for experiment in (first, second)
+    )
+    assert append_integrated_inquiry_receipt_history(
+        path,
+        first[0],
+        first[1].ledger,
+        first[2],
+        first[3].trace,
+    ) == receipt_ids[0]
+
+    history = read_integrated_inquiry_receipt_history(path)
+    assert path.read_bytes() == integrated_inquiry_receipt_history_bytes(history)
+    assert tuple(item.sequence for item in history.entries) == (1, 2)
+    assert tuple(item.receipt_sha256 for item in history.entries) == receipt_ids
+    assert history.entries[0].previous_entry_sha256 == "0" * 64
+    assert history.entries[1].previous_entry_sha256 != "0" * 64
+    assert len(history.entries) == 2
+
+    for receipt_id, experiment in zip(receipt_ids, (first, second), strict=True):
+        kernel, runtime, lenses, result = experiment
+        reservations = len(runtime.ledger.state.reservations)
+        settlements = len(runtime.ledger.state.settlements)
+        restored = load_integrated_inquiry_receipt_history_entry(
+            path,
+            receipt_id,
+            kernel=kernel,
+            simulation_ledger=runtime.ledger,
+            lens_system=lenses,
+        )
+        assert restored == result.trace
+        assert len(runtime.ledger.state.reservations) == reservations
+        assert len(runtime.ledger.state.settlements) == settlements
+
+    with pytest.raises(
+        IntegratedInquiryReceiptIntegrityError,
+        match="pairing mismatch",
+    ):
+        load_integrated_inquiry_receipt_history_entry(
+            path,
+            receipt_ids[0],
+            kernel=second[0],
+            simulation_ledger=second[1].ledger,
+            lens_system=second[2],
+        )
+    assert tuple(
+        (
+            kernel.fingerprint(),
+            runtime.ledger.fingerprint(),
+            lenses.fingerprint(),
+        )
+        for kernel, runtime, lenses, _ in (first, second)
+    ) == fingerprints
+
+
+@requires_posix_history
+def test_integrated_receipt_history_rejects_reorder_truncation_and_rehashed_authority(
+    tmp_path: Path,
+) -> None:
+    experiments = (
+        _controlled_receipt_experiment("integrated-history:tamper:first"),
+        _controlled_receipt_experiment("integrated-history:tamper:second"),
+    )
+    path = tmp_path / "tampered.viqh"
+    for kernel, runtime, lenses, result in experiments:
+        append_integrated_inquiry_receipt_history(
+            path,
+            kernel,
+            runtime.ledger,
+            lenses,
+            result.trace,
+        )
+    original = path.read_bytes()
+
+    reordered = json.loads(original)
+    reordered["entries"] = list(reversed(reordered["entries"]))
+    path.write_bytes(canonical_json_bytes(reordered))
+    with pytest.raises(IntegratedInquiryReceiptIntegrityError):
+        read_integrated_inquiry_receipt_history(path)
+
+    truncated = json.loads(original)
+    truncated["entries"] = truncated["entries"][:-1]
+    path.write_bytes(canonical_json_bytes(truncated))
+    with pytest.raises(IntegratedInquiryReceiptIntegrityError):
+        read_integrated_inquiry_receipt_history(path)
+
+    authority = json.loads(original)
+    authority["entries"][0]["receipt"]["trace"][
+        "outgoing_action_observations"
+    ][0]["treatment"]["external_action_executed"] = True
+    receipt = authority["entries"][0]["receipt"]
+    receipt["trace_sha256"] = hashlib.sha256(
+        canonical_json_bytes(receipt["trace"])
+    ).hexdigest()
+    authority["entries"][0]["receipt_sha256"] = hashlib.sha256(
+        canonical_json_bytes(receipt)
+    ).hexdigest()
+    previous = "0" * 64
+    for entry in authority["entries"]:
+        entry["previous_entry_sha256"] = previous
+        previous = hashlib.sha256(canonical_json_bytes(entry)).hexdigest()
+    authority["head_sha256"] = previous
+    path.write_bytes(canonical_json_bytes(authority))
+    with pytest.raises(
+        IntegratedInquiryReceiptIntegrityError,
+        match="Invalid integrated inquiry receipt history",
+    ):
+        read_integrated_inquiry_receipt_history(path)
+
+
+def _read_history_writer_marker(file_descriptor: int) -> None:
+    readable, _, _ = select.select([file_descriptor], [], [], 10.0)
+    if not readable:
+        pytest.fail("child receipt-history writer did not reach its gate")
+    marker = os.read(file_descriptor, 1)
+    if marker != b"R":
+        pytest.fail(f"child receipt-history writer failed before its gate: {marker!r}")
+
+
+def _phase_paused_history_writer(
+    path: Path,
+    experiment,
+    phase: str,
+    ready_file_descriptor: int,
+) -> None:
+    import verdant_obligations.inquiry_receipts as receipt_module
+
+    try:
+        if phase == "before_replace":
+
+            def pause_before_replace(_source: Path, _target: Path) -> None:
+                os.write(ready_file_descriptor, b"R")
+                while True:
+                    signal.pause()
+
+            receipt_module.os.replace = pause_before_replace
+        elif phase == "after_replace":
+            real_fsync = receipt_module.os.fsync
+            fsync_count = 0
+
+            def pause_before_directory_sync(file_descriptor: int) -> None:
+                nonlocal fsync_count
+                fsync_count += 1
+                if fsync_count == 2:
+                    os.write(ready_file_descriptor, b"R")
+                    while True:
+                        signal.pause()
+                real_fsync(file_descriptor)
+
+            receipt_module.os.fsync = pause_before_directory_sync
+        else:  # pragma: no cover - helper misuse
+            raise AssertionError(f"unknown receipt-history phase: {phase}")
+
+        kernel, runtime, lenses, result = experiment
+        append_integrated_inquiry_receipt_history(
+            path,
+            kernel,
+            runtime.ledger,
+            lenses,
+            result.trace,
+        )
+    except BaseException:
+        try:
+            os.write(ready_file_descriptor, b"E")
+        finally:
+            os._exit(2)
+    os._exit(3)
+
+
+def _kill_history_writer_at_phase(path: Path, experiment, phase: str) -> None:
+    ready_read, ready_write = os.pipe()
+    process_id = os.fork()
+    if process_id == 0:
+        os.close(ready_read)
+        _phase_paused_history_writer(path, experiment, phase, ready_write)
+
+    os.close(ready_write)
+    reaped = False
+    try:
+        _read_history_writer_marker(ready_read)
+        os.kill(process_id, signal.SIGKILL)
+        _, status = os.waitpid(process_id, 0)
+        reaped = True
+        assert os.WIFSIGNALED(status)
+        assert os.WTERMSIG(status) == signal.SIGKILL
+    finally:
+        os.close(ready_read)
+        if not reaped:
+            try:
+                os.kill(process_id, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            os.waitpid(process_id, 0)
+
+
+@requires_posix_history_fork
+def test_integrated_receipt_history_process_kill_exposes_complete_prefix(
+    tmp_path: Path,
+) -> None:
+    for phase, candidate_visible in (
+        ("before_replace", False),
+        ("after_replace", True),
+    ):
+        directory = tmp_path / phase
+        directory.mkdir()
+        path = directory / "inquiries.viqh"
+        expected_path = directory / "expected.viqh"
+        initial = _controlled_receipt_experiment(f"history-kill:{phase}:initial")
+        candidate = _controlled_receipt_experiment(f"history-kill:{phase}:candidate")
+        later = _controlled_receipt_experiment(f"history-kill:{phase}:later")
+
+        initial_id = append_integrated_inquiry_receipt_history(
+            path,
+            initial[0],
+            initial[1].ledger,
+            initial[2],
+            initial[3].trace,
+        )
+        append_integrated_inquiry_receipt_history(
+            expected_path,
+            initial[0],
+            initial[1].ledger,
+            initial[2],
+            initial[3].trace,
+        )
+        candidate_id = append_integrated_inquiry_receipt_history(
+            expected_path,
+            candidate[0],
+            candidate[1].ledger,
+            candidate[2],
+            candidate[3].trace,
+        )
+        initial_bytes = path.read_bytes()
+        candidate_bytes = expected_path.read_bytes()
+
+        _kill_history_writer_at_phase(path, candidate, phase)
+
+        assert path.read_bytes() == (
+            candidate_bytes if candidate_visible else initial_bytes
+        )
+        history = read_integrated_inquiry_receipt_history(path)
+        assert tuple(item.receipt_sha256 for item in history.entries) == (
+            (initial_id, candidate_id) if candidate_visible else (initial_id,)
+        )
+        temporary_paths = list(directory.glob(".inquiries.viqh.*.tmp"))
+        if candidate_visible:
+            assert temporary_paths == []
+        else:
+            assert len(temporary_paths) == 1
+            assert temporary_paths[0].read_bytes() == candidate_bytes
+
+        later_id = append_integrated_inquiry_receipt_history(
+            path,
+            later[0],
+            later[1].ledger,
+            later[2],
+            later[3].trace,
+        )
+        final_history = read_integrated_inquiry_receipt_history(path)
+        expected_ids = (
+            (initial_id, candidate_id, later_id)
+            if candidate_visible
+            else (initial_id, later_id)
+        )
+        assert tuple(
+            item.receipt_sha256 for item in final_history.entries
+        ) == expected_ids
+        assert list(directory.glob(".inquiries.viqh.*.tmp")) == []
+
+
+def _gated_history_writer(
+    path: Path,
+    experiment,
+    ready_file_descriptor: int,
+    go_file_descriptor: int,
+) -> None:
+    try:
+        os.write(ready_file_descriptor, b"R")
+        if os.read(go_file_descriptor, 1) != b"G":
+            raise RuntimeError("parent did not release receipt-history writer")
+        kernel, runtime, lenses, result = experiment
+        append_integrated_inquiry_receipt_history(
+            path,
+            kernel,
+            runtime.ledger,
+            lenses,
+            result.trace,
+        )
+    except BaseException:
+        os._exit(2)
+    os._exit(0)
+
+
+@requires_posix_history_fork
+def test_integrated_receipt_history_concurrent_writers_retain_every_receipt(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "concurrent.viqh"
+    initial = _controlled_receipt_experiment("history-concurrent:initial")
+    initial_id = append_integrated_inquiry_receipt_history(
+        path,
+        initial[0],
+        initial[1].ledger,
+        initial[2],
+        initial[3].trace,
+    )
+    experiments = tuple(
+        _controlled_receipt_experiment(f"history-concurrent:{index}")
+        for index in range(6)
+    )
+    expected_ids = {
+        _receipt_digest(*experiment) for experiment in experiments
+    }
+    children: list[tuple[int, int, int]] = []
+    for experiment in experiments:
+        ready_read, ready_write = os.pipe()
+        go_read, go_write = os.pipe()
+        process_id = os.fork()
+        if process_id == 0:
+            os.close(ready_read)
+            os.close(go_write)
+            _gated_history_writer(
+                path,
+                experiment,
+                ready_write,
+                go_read,
+            )
+        os.close(ready_write)
+        os.close(go_read)
+        children.append((process_id, ready_read, go_write))
+
+    observed: list[tuple[str, ...]] = []
+    reader_errors: list[BaseException] = []
+    stop_reader = threading.Event()
+
+    def sample_history() -> None:
+        try:
+            while not stop_reader.is_set():
+                history = read_integrated_inquiry_receipt_history(path)
+                observed.append(
+                    tuple(item.receipt_sha256 for item in history.entries)
+                )
+        except BaseException as error:  # pragma: no cover - diagnostic guard
+            reader_errors.append(error)
+
+    reader: threading.Thread | None = None
+    reaped_processes: set[int] = set()
+    try:
+        for _, ready_read, _ in children:
+            _read_history_writer_marker(ready_read)
+            os.close(ready_read)
+        reader = threading.Thread(target=sample_history, daemon=True)
+        reader.start()
+        for _, _, go_write in children:
+            os.write(go_write, b"G")
+            os.close(go_write)
+        for process_id, _, _ in children:
+            _, status = os.waitpid(process_id, 0)
+            reaped_processes.add(process_id)
+            assert os.WIFEXITED(status)
+            assert os.WEXITSTATUS(status) == 0
+        children.clear()
+    finally:
+        stop_reader.set()
+        if reader is not None:
+            reader.join(timeout=5.0)
+            assert not reader.is_alive()
+        for process_id, ready_read, go_write in children:
+            for file_descriptor in (ready_read, go_write):
+                try:
+                    os.close(file_descriptor)
+                except OSError:
+                    pass
+            if process_id not in reaped_processes:
+                try:
+                    os.kill(process_id, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                os.waitpid(process_id, 0)
+
+    final_history = read_integrated_inquiry_receipt_history(path)
+    final_ids = tuple(item.receipt_sha256 for item in final_history.entries)
+    assert reader_errors == []
+    assert observed
+    assert final_ids[0] == initial_id
+    assert set(final_ids[1:]) == expected_ids
+    assert len(final_ids) == 7
+    assert all(
+        snapshot == final_ids[: len(snapshot)]
+        and len(snapshot) == len(set(snapshot))
+        for snapshot in observed
+    )
+    assert list(tmp_path.glob(".concurrent.viqh.*.tmp")) == []
+    for experiment in experiments:
+        receipt_id = _receipt_digest(*experiment)
+        restored = load_integrated_inquiry_receipt_history_entry(
+            path,
+            receipt_id,
+            kernel=experiment[0],
+            simulation_ledger=experiment[1].ledger,
+            lens_system=experiment[2],
+        )
+        assert restored == experiment[3].trace

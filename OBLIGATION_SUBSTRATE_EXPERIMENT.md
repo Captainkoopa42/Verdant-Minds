@@ -1,4 +1,4 @@
-# Obligation Substrate v0.31
+# Obligation Substrate v0.32
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -485,6 +485,17 @@ generation, or safe autonomous policy revision.
   automatic veto. Even a `shadow_supported` decision has no promotion or
   canonical-mutation authority; it records bounded evidence for later human or
   separately governed work only.
+- A bounded `.viqh` sidecar now retains up to 128 complete `.viq` receipts in a
+  canonical, hash-chained history. Each append validates the candidate against
+  its exact canonical/simulation/Lens state before entering a process-shared
+  POSIX `flock`, rereads the current head under that lock, removes only stale
+  same-history temporaries, and atomically replaces the complete history after
+  file sync. Duplicate receipt digests are idempotent rather than duplicated.
+- Every history entry records its contiguous sequence, predecessor digest, and
+  canonical receipt digest. Intrinsic loading checks the complete chain and
+  every embedded receipt checksum; full loading of one selected entry then
+  rechecks that receipt against its exact paired sidecars. Readers require no
+  lock and see only complete old or new prefixes across replacement.
 
 ## Explicit exclusions
 
@@ -507,12 +518,14 @@ generation, or safe autonomous policy revision.
 - Integrated trace objects are still not canonical VDK records or members of
   the existing `.vob` formats. v0.31 adds an explicitly saved, separately
   paired `.viq` receipt for exactly one complete controlled v0.30 invocation;
-  it does not add an append-only multi-invocation ledger, automatic save,
-  cross-version migration, or independent recovery without the exact paired
+  v0.32 can explicitly append those immutable receipts to a separate `.viqh`
+  history. Neither format is saved automatically, migrated across schema
+  versions, or independently recoverable without each entry's exact paired
   `.vob` canonical/simulation/Lens state. Representative plan bodies,
-  detector-candidate bodies, and hypothesis bodies are not duplicated into the
-  receipt, so `.viq` preserves the integrated evidence object and its durable
-  ledger links rather than promising code-independent semantic re-execution.
+  detector-candidate bodies, and hypothesis bodies are not duplicated into
+  either receipt format, so they preserve the integrated evidence object and
+  its durable ledger links rather than promising code-independent semantic re-
+  execution.
 - Coordinator atomicity is bounded to staged in-process validation before its
   two supplied Python objects are published. It adds no cross-thread or cross-
   process lock, transaction journal, or automatic archive write; callers must
@@ -574,14 +587,23 @@ generation, or safe autonomous policy revision.
   the horizon is a graph-hop bound rather than elapsed experience, and the
   matched treatment does not establish causal sufficiency or external
   generalization. No governance outcome or action-success label is recorded.
-- The `.viq` writer is opt-in and serializes one receipt per path. v0.31 has no
-  writer lock, append arbitration, merge protocol, stale-temporary cleanup, or
-  process-kill/concurrent-writer proof specific to `.viq`; a later replace can
-  overwrite an earlier complete receipt. Atomic-replace failure is tested, but
-  filesystem, power-loss, controller-cache, and hardware-failure guarantees
-  remain outside the claim. SHA-256 detects alteration and mispairing but is
-  not a signature or authenticity boundary against an attacker who can rewrite
-  every paired file.
+- The `.viq` writer remains an opt-in, unlocked single-receipt replacement API;
+  callers requiring accumulation must explicitly use `.viqh`. The v0.32
+  history arbitrates only cooperating local POSIX processes opening the same
+  persistent lock path. It does not cover Windows/NTFS, network filesystems,
+  lock-hostile storage, hostile symlink/path replacement, kernel crash, power
+  loss, controller caches, or hardware failure. Its total canonical file is
+  capped at 128 MiB and 128 unique receipts; reaching either bound fails rather
+  than pruning evidence.
+- `.viqh` lock acquisition order is the recorded append order, not a claim
+  about causal or wall-clock order. There is no distributed merge, external
+  monotonic counter, signature, trusted timestamp, or remote notarization. The
+  hash chain detects ordinary alteration, reordering, and unrehashed suffix
+  removal, but an adversary able to rewrite the whole history can substitute a
+  rehashed prefix. The lock does not make `.vob` plus `.viqh` a cross-file
+  transaction and does not serialize coordinator execution. Each selected
+  historical entry must still be paired and fully validated separately before
+  its trace is used as experimental evidence.
 - Expected gain, uncertainty, urgency, novelty, and cost arrive through typed,
   provenance-visible bids, but v0.28 does not claim Verdant has learned their
   calibration. The scheduler's ordering policy remains falsifiable machinery.
@@ -1186,6 +1208,43 @@ generation, or safe autonomous policy revision.
   resolution or promotion authority, policy rewrite, semantic understanding,
   `T_g` control, or thermodynamic behavior.
 
+## v0.32 claim boundary
+
+- **OBSERVED:** Forty-eight focused integrated-inquiry tests and the 441-test
+  full repository suite pass. Two receipts produced against distinct exact
+  sidecar triples append cumulatively, duplicate append is a no-op, and either
+  entry reloads with no new reservation or settlement. Reordering, unrehashed
+  truncation, a fully rehashed external-action-authority mutation, and foreign
+  sidecar substitution fail closed. Controlled child death before replacement
+  exposes the prior complete prefix; death after replacement exposes the new
+  complete prefix and releases the writer lock. Six simultaneously released
+  process writers retain all six distinct receipts, while a live reader sees
+  only complete prefixes of the final chain. A later append recovers the lock
+  and removes a killed pre-replace writer's stale temporary. The dedicated
+  compatibility test still loads and embeds all 17 preexisting VDK
+  checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** The separately durable integrated-receipt
+  surface now includes an explicitly invoked, bounded `.viqh` cumulative
+  history. A persistent same-path POSIX advisory lock serializes cooperating
+  read-modify-replace writers, and the canonical chain commits to every prior
+  complete receipt in lock-acquisition order. Intrinsic history reads validate
+  canonical encoding, bounds, contiguous sequences, predecessor links, unique
+  receipt digests, each nested v0.31 envelope, and the head. Loading a selected
+  entry additionally closes its full canonical/simulation/Lens provenance
+  against the exact separately supplied sidecars. Neither append nor load can
+  publish canonical, simulation, Lens, Council, or workspace mutation.
+- **PROPOSED:** The history is durability evidence, not an execution log or
+  authenticity root. Actually executed dependency-path evidence remains
+  blocked on an external or hardware-backed command boundary, native result
+  telemetry, synchronized physical evidence, matched controls, and validated
+  safety stops. With the safe local durability prerequisite now present, the
+  next bounded in-repository dependency is a family-local `Contradiction`
+  hypothesis/evidence protocol grounded only in its preserved opposed claims;
+  it must retain explicit null/inconclusive alternatives and grant no truth,
+  suppression, resolution, or promotion authority. v0.32 adds no actuator,
+  outcome, causal-success claim, autonomous inquiry, policy rewrite, semantic
+  understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1326,3 +1385,9 @@ canonical evidence preservation, active-Lens matching, shadow-record
 non-leakage, rehashed authority and omission attacks, foreign sidecar
 substitution, rejection of incomplete pre-v0.30 traces, and atomic-replace
 failure that leaves the prior receipt intact.
+Cumulative-receipt tests additionally target bounded canonical history,
+idempotent duplicate append, exact per-entry sidecar pairing, predecessor/head
+chain closure, reorder and unrehashed-truncation rejection, fully rehashed
+authority rejection, pre/post-replace process death, stale-temporary recovery,
+lock release on process death, six-way cooperating-writer retention, live-
+reader prefix atomicity, and zero canonical or simulation mutation on reload.

@@ -112,11 +112,18 @@ from .inquiry import (
     IntegratedInquiryTrial,
 )
 from .inquiry_receipts import (
+    INTEGRATED_INQUIRY_RECEIPT_HISTORY_FORMAT,
     INTEGRATED_INQUIRY_RECEIPT_FORMAT,
     IntegratedInquiryReceiptEnvelope,
+    IntegratedInquiryReceiptHistoryEntry,
+    IntegratedInquiryReceiptHistoryEnvelope,
     IntegratedInquiryReceiptIntegrityError,
+    append_integrated_inquiry_receipt_history,
+    integrated_inquiry_receipt_history_bytes,
     integrated_inquiry_receipt_bytes,
     load_integrated_inquiry_receipt,
+    load_integrated_inquiry_receipt_history_entry,
+    read_integrated_inquiry_receipt_history,
     save_integrated_inquiry_receipt,
 )
 from .trace_observations import (

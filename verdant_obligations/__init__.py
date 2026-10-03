@@ -36,6 +36,12 @@ from .contradiction_hypotheses import (
     ContradictionHypothesisPolicy,
     ContradictionHypothesisProtocol,
 )
+from .contradiction_functional_context import (
+    CONTRADICTION_FUNCTIONAL_ALTERNATIVES,
+    CONTRADICTION_FUNCTIONAL_CONTEXT_VERSION,
+    ContradictionFunctionalDisposition,
+    ContradictionFunctionalProbeContext,
+)
 from .contradiction_probes import (
     CONTRADICTION_PROVENANCE_PROBE_VERSION,
     ContradictionProvenanceDisposition,
@@ -46,6 +52,13 @@ from .contradiction_probes import (
     ContradictionProvenanceProbePolicy,
     ContradictionProvenanceProbeRun,
     ContradictionProvenanceProbeRunner,
+)
+from .contradiction_functional_probe import (
+    CONTRADICTION_FUNCTIONAL_PROBE_VERSION,
+    ContradictionFunctionalClaimRoute,
+    ContradictionFunctionalObservation,
+    ContradictionFunctionalProbeIntegrityError,
+    ContradictionFunctionalProbeObserver,
 )
 from .contradiction_resolution_evidence import (
     CONTRADICTION_GROUNDED_REQUIREMENTS,
@@ -336,6 +349,15 @@ __all__ = [
     "ContradictionDetectionReport",
     "ContradictionObligationCandidate",
     "ContradictionObligationDetector",
+    "CONTRADICTION_FUNCTIONAL_ALTERNATIVES",
+    "CONTRADICTION_FUNCTIONAL_CONTEXT_VERSION",
+    "CONTRADICTION_FUNCTIONAL_PROBE_VERSION",
+    "ContradictionFunctionalClaimRoute",
+    "ContradictionFunctionalDisposition",
+    "ContradictionFunctionalObservation",
+    "ContradictionFunctionalProbeContext",
+    "ContradictionFunctionalProbeIntegrityError",
+    "ContradictionFunctionalProbeObserver",
     "CONTRADICTION_PROVENANCE_PROBE_VERSION",
     "ContradictionProvenanceDisposition",
     "ContradictionProvenanceObservation",

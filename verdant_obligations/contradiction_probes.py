@@ -23,6 +23,9 @@ from .contradiction_hypotheses import (
     ContradictionHypothesisIntegrityError,
     ContradictionHypothesisProtocol,
 )
+from .contradiction_functional_context import (
+    ContradictionFunctionalProbeContext,
+)
 from .counterfactual import (
     CounterfactualPatch,
     CounterfactualPlan,
@@ -40,12 +43,16 @@ from .trace_observations import (
 )
 
 if TYPE_CHECKING:
+    from .contradiction_functional_probe import (
+        ContradictionFunctionalObservation,
+        ContradictionFunctionalProbeObserver,
+    )
     from .contradiction_resolution_evidence import (
         ContradictionResolutionEvidenceReceipt,
     )
 
 
-CONTRADICTION_PROVENANCE_PROBE_VERSION = "contradiction_provenance_probe_v0.34"
+CONTRADICTION_PROVENANCE_PROBE_VERSION = "contradiction_provenance_probe_v0.36"
 
 
 class ContradictionProvenanceProbeIntegrityError(RuntimeError):
@@ -78,7 +85,11 @@ class ContradictionProvenanceProbePolicy(BaseModel):
 
 
 def _projection_id(
-    *, source_event_key: str, bundle_ref: str, evidence_receipt_ref: str
+    *,
+    source_event_key: str,
+    bundle_ref: str,
+    evidence_receipt_ref: str,
+    functional_context_ref: str,
 ) -> str:
     return stable_id(
         "contradiction_provenance_projection",
@@ -86,6 +97,7 @@ def _projection_id(
         source_event_key,
         bundle_ref,
         evidence_receipt_ref,
+        functional_context_ref,
     )
 
 
@@ -95,6 +107,7 @@ def _projection_value(
     bundle_ref: str,
     receipt: ContradictionEvidenceReceipt,
     hypothesis_refs: tuple[str, ...],
+    functional_context: ContradictionFunctionalProbeContext,
 ) -> dict[str, Any]:
     return {
         "schema_version": CONTRADICTION_PROVENANCE_PROBE_VERSION,
@@ -102,6 +115,7 @@ def _projection_value(
         "bundle_ref": bundle_ref,
         "evidence_receipt": receipt.model_dump(mode="json"),
         "hypothesis_refs": hypothesis_refs,
+        "functional_context": functional_context.model_dump(mode="json"),
         "protected_claim_refs": receipt.protected_claim_refs,
         "protected_evidence_refs": receipt.protected_evidence_refs,
         "truth_selection_authority_enabled": False,
@@ -117,6 +131,7 @@ def _result_refs(
     bundle_ref: str,
     receipt: ContradictionEvidenceReceipt,
     hypothesis_refs: tuple[str, ...],
+    functional_context_ref: str,
 ) -> tuple[str, ...]:
     return tuple(
         sorted(
@@ -124,6 +139,7 @@ def _result_refs(
                 projection_id,
                 bundle_ref,
                 receipt.receipt_id,
+                functional_context_ref,
                 *hypothesis_refs,
                 *receipt.protected_claim_refs,
                 *receipt.protected_evidence_refs,
@@ -162,6 +178,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
     projection_id: str
     bundle_ref: str
     evidence_receipt: ContradictionEvidenceReceipt
+    functional_context: ContradictionFunctionalProbeContext
     hypothesis_refs: tuple[str, ...] = Field(min_length=3, max_length=3)
     authorized_budget: float = Field(gt=0.0)
     requested_budget_per_arm: float = Field(gt=0.0)
@@ -188,6 +205,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
         if not source_event_key.strip():
             raise ValueError("Contradiction provenance probe requires a source key.")
         receipt = bundle.evidence_receipt
+        functional_context = ContradictionFunctionalProbeContext.build(bundle)
         hypothesis_refs = tuple(
             sorted(item.hypothesis_id for item in bundle.hypotheses)
         )
@@ -195,6 +213,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
             source_event_key=source_event_key,
             bundle_ref=bundle.bundle_id,
             evidence_receipt_ref=receipt.receipt_id,
+            functional_context_ref=functional_context.context_id,
         )
         patch = CounterfactualPatch.upsert(
             "structures",
@@ -204,6 +223,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
                 bundle_ref=bundle.bundle_id,
                 receipt=receipt,
                 hypothesis_refs=hypothesis_refs,
+                functional_context=functional_context,
             ),
         )
         result_refs = _result_refs(
@@ -211,6 +231,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
             bundle_ref=bundle.bundle_id,
             receipt=receipt,
             hypothesis_refs=hypothesis_refs,
+            functional_context_ref=functional_context.context_id,
         )
         shared = {
             "operator_version": policy.probe_version,
@@ -246,6 +267,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
             "projection_id": projection_id,
             "bundle_ref": bundle.bundle_id,
             "evidence_receipt": receipt,
+            "functional_context": functional_context,
             "hypothesis_refs": hypothesis_refs,
             "authorized_budget": receipt.authorized_budget,
             "requested_budget_per_arm": policy.requested_budget_per_arm,
@@ -274,11 +296,34 @@ class ContradictionProvenanceProbe(FrozenRecord):
             source_event_key=self.source_event_key,
             bundle_ref=self.bundle_ref,
             evidence_receipt_ref=self.evidence_receipt.receipt_id,
+            functional_context_ref=self.functional_context.context_id,
         )
         if self.projection_id != expected_projection:
             raise ValueError("Contradiction provenance projection identity drifted.")
         if self.authorized_budget != self.evidence_receipt.authorized_budget:
             raise ValueError("Probe Attention budget lost receipt lineage.")
+        expected_context = ContradictionFunctionalProbeContext.build(
+            self.functional_context.hypothesis_bundle
+        )
+        if (
+            self.functional_context != expected_context
+            or self.functional_context.hypothesis_bundle.bundle_id
+            != self.bundle_ref
+            or self.functional_context.hypothesis_bundle.evidence_receipt
+            != self.evidence_receipt
+            or self.functional_context.evidence_receipt_ref
+            != self.evidence_receipt.receipt_id
+            or tuple(
+                sorted(
+                    item.hypothesis_id
+                    for item in self.functional_context.hypothesis_bundle.hypotheses
+                )
+            )
+            != self.hypothesis_refs
+        ):
+            raise ValueError(
+                "Contradiction probe lost its preregistered functional context."
+            )
         if 2 * self.requested_budget_per_arm > self.authorized_budget + 1e-12:
             raise ValueError("Matched probe reservations exceed Attention budget.")
         if self.consumed_budget_per_arm > self.requested_budget_per_arm + 1e-12:
@@ -291,6 +336,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
                 bundle_ref=self.bundle_ref,
                 receipt=self.evidence_receipt,
                 hypothesis_refs=self.hypothesis_refs,
+                functional_context=self.functional_context,
             ),
         )
         expected_refs = _result_refs(
@@ -298,6 +344,7 @@ class ContradictionProvenanceProbe(FrozenRecord):
             bundle_ref=self.bundle_ref,
             receipt=self.evidence_receipt,
             hypothesis_refs=self.hypothesis_refs,
+            functional_context_ref=self.functional_context.context_id,
         )
         if any(
             plan.operator_version != self.probe_version
@@ -566,6 +613,7 @@ class ContradictionProvenanceProbeRun:
     baseline: CounterfactualRunResult
     treatment: CounterfactualRunResult
     observation: ContradictionProvenanceObservation
+    functional_observation: "ContradictionFunctionalObservation"
     resolution_evidence: "ContradictionResolutionEvidenceReceipt"
 
     @property
@@ -582,6 +630,7 @@ class ContradictionProvenanceProbeRunner:
         policy: ContradictionProvenanceProbePolicy | None = None,
         hypothesis_protocol: ContradictionHypothesisProtocol | None = None,
         observer: ContradictionProvenanceProbeObserver | None = None,
+        functional_observer: "ContradictionFunctionalProbeObserver | None" = None,
     ) -> None:
         self.policy = policy or ContradictionProvenanceProbePolicy()
         self.hypothesis_protocol = (
@@ -590,6 +639,17 @@ class ContradictionProvenanceProbeRunner:
         self.observer = observer or ContradictionProvenanceProbeObserver(
             policy=self.policy,
             hypothesis_protocol=self.hypothesis_protocol,
+        )
+        from .contradiction_functional_probe import (
+            ContradictionFunctionalProbeObserver,
+        )
+
+        self.functional_observer = (
+            functional_observer
+            or ContradictionFunctionalProbeObserver(
+                probe_policy=self.policy,
+                hypothesis_protocol=self.hypothesis_protocol,
+            )
         )
 
     def run(
@@ -634,6 +694,15 @@ class ContradictionProvenanceProbeRunner:
                 baseline_result=baseline,
                 treatment_result=treatment,
             )
+            functional_observation = self.functional_observer.observe(
+                kernel,
+                working_runtime.ledger,
+                bundle=bundle,
+                probe=probe,
+                baseline_result=baseline,
+                treatment_result=treatment,
+                provenance_observation=observation,
+            )
             from .contradiction_resolution_evidence import (
                 ContradictionResolutionEvidenceDeriver,
             )
@@ -648,6 +717,7 @@ class ContradictionProvenanceProbeRunner:
                 baseline_result=baseline,
                 treatment_result=treatment,
                 provenance_observation=observation,
+                functional_observation=functional_observation,
             )
             if kernel.fingerprint() != canonical_before:
                 raise ContradictionProvenanceProbeIntegrityError(
@@ -659,6 +729,7 @@ class ContradictionProvenanceProbeRunner:
                 baseline=baseline,
                 treatment=treatment,
                 observation=observation,
+                functional_observation=functional_observation,
                 resolution_evidence=resolution_evidence,
             )
         except ContradictionProvenanceProbeIntegrityError:

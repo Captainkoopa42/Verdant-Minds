@@ -15,7 +15,13 @@ from verdant_obligations import (
     CONTRADICTION_PROVENANCE_ACTION_OPERATOR,
     AttentionBidInput,
     AttentionPortfolio,
+    CONTRADICTION_FUNCTIONAL_ALTERNATIVES,
     ContradictionHypothesisProtocol,
+    ContradictionFunctionalDisposition,
+    ContradictionFunctionalObservation,
+    ContradictionFunctionalProbeContext,
+    ContradictionFunctionalProbeIntegrityError,
+    ContradictionFunctionalProbeObserver,
     ContradictionObligationDetector,
     ContradictionProvenanceDisposition,
     ContradictionProvenanceObservation,
@@ -42,6 +48,33 @@ def _rehash_resolution_evidence(payload: dict) -> dict:
     values["receipt_id"] = stable_id(
         "contradiction_resolution_evidence_receipt",
         {key: value for key, value in values.items() if key != "receipt_id"},
+    )
+    return values
+
+
+def _rehash_functional_context(payload: dict) -> dict:
+    values = dict(payload)
+    values["context_id"] = stable_id(
+        "contradiction_functional_probe_context",
+        {key: value for key, value in values.items() if key != "context_id"},
+    )
+    return values
+
+
+def _rehash_functional_route(payload: dict) -> dict:
+    values = dict(payload)
+    values["route_id"] = stable_id(
+        "contradiction_functional_claim_route",
+        {key: value for key, value in values.items() if key != "route_id"},
+    )
+    return values
+
+
+def _rehash_functional_observation(payload: dict) -> dict:
+    values = dict(payload)
+    values["observation_id"] = stable_id(
+        "contradiction_functional_observation",
+        {key: value for key, value in values.items() if key != "observation_id"},
     )
     return values
 
@@ -165,6 +198,28 @@ def test_matched_probe_derives_distinct_partition_from_real_traces() -> None:
     assert set(projection["hypothesis_refs"]) == {
         item.hypothesis_id for item in bundle.hypotheses
     }
+    context = run.probe.functional_context
+    assert projection["functional_context"] == context.model_dump(mode="json")
+    assert context.context_id in run.probe.baseline_plan.result_refs
+    assert context.context_id in run.probe.treatment_plan.result_refs
+    assert context.functional_alternatives == CONTRADICTION_FUNCTIONAL_ALTERNATIVES
+    functional = run.functional_observation
+    assert functional.disposition == (
+        ContradictionFunctionalDisposition.DISTINCT_CONTEXTUAL_ROUTING
+    )
+    assert functional.functional_context == context
+    assert functional.provenance_observation == run.observation
+    assert functional.baseline_function_signature != (
+        functional.treatment_function_signature
+    )
+    assert functional.functional_consequence_observed
+    assert functional.context_conditioned_compatibility_observed
+    assert not functional.predictive_discrimination_observed
+    assert not functional.source_independence_observed
+    assert not functional.dimensional_separation_observed
+    assert not functional.independent_held_out_replication_observed
+    assert not functional.external_outcome_observed
+    assert not functional.resolution_trial_ready
     assert not run.observation.truth_selection_authority_enabled
     assert not run.observation.observed_outcome_authority_enabled
     assert not run.observation.resolution_authority_enabled
@@ -172,6 +227,7 @@ def test_matched_probe_derives_distinct_partition_from_real_traces() -> None:
     coverage = run.resolution_evidence
     assert coverage.hypothesis_bundle == bundle
     assert coverage.provenance_observation == run.observation
+    assert coverage.functional_observation == functional
     assert coverage.grounded_requirements == CONTRADICTION_GROUNDED_REQUIREMENTS
     assert coverage.missing_requirements == CONTRADICTION_MISSING_REQUIREMENTS
     assert coverage.structural_added_refs == (
@@ -224,6 +280,20 @@ def test_probe_keeps_valid_null_and_overlap_inconclusive(
     assert run.observation.evidence_preserved
     assert run.resolution_evidence.provenance_disposition == expected
     assert not run.resolution_evidence.resolution_trial_ready
+    functional_expected = {
+        ContradictionProvenanceDisposition.VALID_NULL_SHARED_SOURCES: (
+            ContradictionFunctionalDisposition.VALID_NULL_SHARED_ROUTING
+        ),
+        ContradictionProvenanceDisposition.INCONCLUSIVE_OVERLAPPING_SOURCES: (
+            ContradictionFunctionalDisposition.INCONCLUSIVE_OVERLAPPING_ROUTING
+        ),
+    }[expected]
+    assert run.functional_observation.disposition == functional_expected
+    assert all(
+        route.baseline_routed_claim_refs == ()
+        and route.treatment_routed_claim_refs
+        for route in run.functional_observation.claim_routes
+    )
     if expected == ContradictionProvenanceDisposition.VALID_NULL_SHARED_SOURCES:
         assert not run.observation.symmetric_difference_source_roots
     else:
@@ -265,6 +335,7 @@ def test_archive_replay_rebuilds_identical_probe_and_observation(
     assert replay.replayed
     assert replay.probe == first.probe
     assert replay.observation == first.observation
+    assert replay.functional_observation == first.functional_observation
     assert replay.resolution_evidence == first.resolution_evidence
     assert restored_kernel.fingerprint() == canonical_before
     assert restored_ledger.fingerprint() == ledger_before
@@ -289,6 +360,7 @@ def test_coverage_deriver_reconstructs_exact_receipt_without_mutation() -> None:
         baseline_result=run.baseline,
         treatment_result=run.treatment,
         provenance_observation=run.observation,
+        functional_observation=run.functional_observation,
     )
 
     assert rebuilt == run.resolution_evidence
@@ -319,6 +391,7 @@ def test_coverage_deriver_rejects_foreign_simulation_ledger() -> None:
             baseline_result=run.baseline,
             treatment_result=run.treatment,
             provenance_observation=run.observation,
+            functional_observation=run.functional_observation,
         )
     assert foreign.fingerprint() == foreign_before
 
@@ -344,6 +417,7 @@ def test_coverage_deriver_rejects_mismatched_bundle_and_observation() -> None:
             baseline_result=run.baseline,
             treatment_result=run.treatment,
             provenance_observation=run.observation,
+            functional_observation=run.functional_observation,
         )
     assert kernel.fingerprint() == canonical_before
     assert runtime.ledger.fingerprint() == ledger_before
@@ -605,3 +679,179 @@ def test_observation_authority_tampering_is_rejected() -> None:
 
     with pytest.raises(ValueError, match="authority boundary"):
         ContradictionProvenanceObservation.model_validate(payload)
+
+
+def test_functional_context_is_committed_before_either_arm_executes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    kernel, _, _, bundle = _prepared(seed=6418)
+    expected = ContradictionFunctionalProbeContext.build(bundle)
+    original_execute = CounterfactualRuntime.execute
+    seen: list[str] = []
+
+    def inspect_execute(self, candidate_kernel, *, allocation_id, plan):
+        assert expected.context_id in plan.result_refs
+        assert plan.patches[0].value is not None
+        assert plan.patches[0].value["functional_context"] == (
+            expected.model_dump(mode="json")
+        )
+        seen.append(plan.plan_id)
+        return original_execute(
+            self,
+            candidate_kernel,
+            allocation_id=allocation_id,
+            plan=plan,
+        )
+
+    monkeypatch.setattr(CounterfactualRuntime, "execute", inspect_execute)
+    ContradictionProvenanceProbeRunner().run(
+        kernel,
+        CounterfactualRuntime(),
+        bundle=bundle,
+        source_event_key="contradiction-probe:functional-preregistered",
+    )
+
+    assert len(seen) == 2
+    assert len(set(seen)) == 2
+
+
+def test_functional_observer_rebuilds_exact_result_without_mutation() -> None:
+    kernel, _, _, bundle = _prepared(seed=6419)
+    runtime = CounterfactualRuntime()
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        runtime,
+        bundle=bundle,
+        source_event_key="contradiction-probe:functional-rebuild",
+    )
+    canonical_before = kernel.fingerprint()
+    ledger_before = runtime.ledger.fingerprint()
+
+    rebuilt = ContradictionFunctionalProbeObserver().observe(
+        kernel,
+        runtime.ledger,
+        bundle=bundle,
+        probe=run.probe,
+        baseline_result=run.baseline,
+        treatment_result=run.treatment,
+        provenance_observation=run.observation,
+    )
+
+    assert rebuilt == run.functional_observation
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == ledger_before
+
+
+def test_functional_observer_rejects_foreign_ledger() -> None:
+    kernel, _, _, bundle = _prepared(seed=6420)
+    runtime = CounterfactualRuntime()
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        runtime,
+        bundle=bundle,
+        source_event_key="contradiction-probe:functional-foreign-ledger",
+    )
+    foreign = CounterfactualRuntime().ledger
+    foreign_before = foreign.fingerprint()
+
+    with pytest.raises(
+        ContradictionFunctionalProbeIntegrityError,
+        match="foreign or altered simulation record",
+    ):
+        ContradictionFunctionalProbeObserver().observe(
+            kernel,
+            foreign,
+            bundle=bundle,
+            probe=run.probe,
+            baseline_result=run.baseline,
+            treatment_result=run.treatment,
+            provenance_observation=run.observation,
+        )
+    assert foreign.fingerprint() == foreign_before
+
+
+def test_fully_rehashed_functional_context_cannot_change_query_roots() -> None:
+    _, _, _, bundle = _prepared(seed=6421)
+    context = ContradictionFunctionalProbeContext.build(bundle)
+    payload = context.model_dump(mode="json")
+    payload["query_source_roots"][0] = ["forged-source-root"]
+
+    with pytest.raises(ValueError, match="canonical query roots"):
+        ContradictionFunctionalProbeContext.model_validate(
+            _rehash_functional_context(payload)
+        )
+
+
+def test_fully_rehashed_functional_route_cannot_change_routing() -> None:
+    kernel, _, _, bundle = _prepared(seed=6422)
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        CounterfactualRuntime(),
+        bundle=bundle,
+        source_event_key="contradiction-probe:functional-route-tamper",
+    )
+    payload = run.functional_observation.model_dump(mode="json")
+    route = dict(payload["claim_routes"][0])
+    route["treatment_routed_claim_refs"] = ["forged-claim"]
+    route["treatment_route_signature"] = stable_id(
+        "contradiction_functional_route_state",
+        route["route_version"],
+        route["context_ref"],
+        route["query_claim_ref"],
+        tuple(route["query_source_roots"]),
+        True,
+        ("forged-claim",),
+    )
+    payload["claim_routes"][0] = _rehash_functional_route(route)
+
+    with pytest.raises(ValueError, match="functional routes were altered"):
+        ContradictionFunctionalObservation.model_validate(
+            _rehash_functional_observation(payload)
+        )
+
+
+def test_fully_rehashed_functional_observation_cannot_forge_readiness() -> None:
+    kernel, _, _, bundle = _prepared(seed=6423)
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        CounterfactualRuntime(),
+        bundle=bundle,
+        source_event_key="contradiction-probe:functional-authority-tamper",
+    )
+    payload = run.functional_observation.model_dump(mode="json")
+    payload["predictive_discrimination_observed"] = True
+    payload["resolution_trial_ready"] = True
+
+    with pytest.raises(ValueError, match="evidence boundary"):
+        ContradictionFunctionalObservation.model_validate(
+            _rehash_functional_observation(payload)
+        )
+
+
+def test_functional_observer_failure_rolls_back_both_staged_arms() -> None:
+    kernel, _, _, bundle = _prepared(seed=6424)
+    runtime = CounterfactualRuntime()
+    canonical_before = kernel.fingerprint()
+    ledger_before = runtime.ledger.fingerprint()
+
+    class FailingFunctionalObserver:
+        def observe(self, *args, **kwargs):
+            raise ContradictionFunctionalProbeIntegrityError(
+                "injected functional observer failure"
+            )
+
+    with pytest.raises(
+        ContradictionFunctionalProbeIntegrityError,
+        match="injected functional observer failure",
+    ):
+        ContradictionProvenanceProbeRunner(
+            functional_observer=FailingFunctionalObserver()
+        ).run(
+            kernel,
+            runtime,
+            bundle=bundle,
+            source_event_key="contradiction-probe:functional-atomic-failure",
+        )
+
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == ledger_before

@@ -1,4 +1,4 @@
-# Obligation Substrate v0.35
+# Obligation Substrate v0.36
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -484,6 +484,30 @@ generation, or safe autonomous policy revision.
   staged pair is published. Foreign ledgers, mismatched bundles, protected-
   evidence suppression, hidden missing requirements, or authority escalation
   fail validation. `resolution_trial_ready` remains hard-coded false.
+- Each Contradiction probe now preregisters one immutable, content-addressed
+  functional context before either arm executes. The context embeds the full
+  hypothesis bundle, both canonical claim references, all protected evidence,
+  exactly two claim-local source-root queries, their complete source-root
+  union, and all three admissible distinct, valid-null, and inconclusive
+  routing alternatives.
+- The context ID is committed into both matched plans' result lineage and the
+  complete context is committed into the treatment's typed projection. A new
+  observer reconstructs both overlays from the actual simulation settlements,
+  verifies that the baseline lacks the projection and the treatment contains
+  the exact declared projection, then executes only the two preregistered
+  source-root routes.
+- The functional observation records the two before/after route signatures and
+  classifies disjoint queries as distinct routing, identical queries as an
+  explicit valid null, and partially overlapping queries as inconclusive. The
+  Resolution coverage receipt therefore moves only context-conditioned
+  compatibility and a bounded simulated functional consequence from missing
+  to grounded.
+- Functional contexts and observations remain deterministic reconstructible
+  artifacts backed by the ordinary isolated simulation ledger; v0.36 adds no
+  archive member or durable sidecar for them. Prediction, source independence,
+  dimensional separation, independent held-out replication, external outcome,
+  truth, readiness, resolution, promotion, and canonical commit authority all
+  remain explicitly false.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -1412,6 +1436,34 @@ generation, or safe autonomous policy revision.
   or promotion, policy rewrite, semantic understanding, `T_g` control, or
   thermodynamic behavior.
 
+## v0.36 claim boundary
+
+- **OBSERVED:** Forty-seven focused Contradiction tests and the 479-test full
+  repository suite pass. All 17 preexisting checkpoints still load and embed.
+  Actual settled overlays reconstruct identical context, route, functional,
+  and coverage records across archive replay. Foreign-ledger substitution,
+  fully rehashed query-root changes, fully rehashed route changes, forged
+  prediction/readiness flags, and an injected functional-observer failure all
+  fail closed; the latter leaves both staged arms unpublished.
+- **IMPLEMENTED-EXPERIMENTAL:** One bounded context-conditioned operation now
+  reads the exact preregistered source-partition projection from the treatment
+  overlay and derives a discrete routing change relative to its zero-patch
+  baseline. This grounds only context-conditioned compatibility and functional
+  consequence inside that supplied context. The context is derived from the
+  same canonical evidence receipt, so the result is deterministic internal
+  functional evidence rather than an independent predictor or causal-success
+  test. Every result preserves both claims and all evidence and remains
+  simulated-only with `resolution_trial_ready=False`.
+- **PROPOSED:** The next dependency is an explicitly active, family-local
+  Equivalence Lens bound into a predeclared controlled Contradiction context,
+  with exact Lens definition, binding, evidence, and governance lineage. Only
+  after that lineage exists may separately declared calibration and genuinely
+  independent held-out contexts test dimensional separation, source
+  independence, or predictive discrimination. v0.36 adds no active Lens,
+  external action or outcome, learned context, truth selection, canonical
+  resolution or promotion, autonomous scheduling, policy rewrite, semantic
+  understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1484,6 +1536,13 @@ observation retention, exact requirement partitioning, read-only direct
 reconstruction, archive replay, foreign-ledger and mismatched-bundle rejection,
 fully rehashed protected-evidence suppression, hidden missing requirements,
 and forged readiness or resolution authority.
+Contradiction-functional tests additionally target pre-execution context
+commitment in both plans, exact treatment-only projection access, two-route
+distinct/null/inconclusive classification, immutable query-root provenance,
+actual-ledger reconstruction, exact archive replay, foreign-ledger rejection,
+fully rehashed context and route tampering, forged prediction/readiness flags,
+atomic observer-failure rollback, and the hard absence of truth, external-
+outcome, resolution, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

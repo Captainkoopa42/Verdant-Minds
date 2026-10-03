@@ -1,9 +1,10 @@
 """Resolution-evidence coverage for matched Contradiction probes.
 
-The v0.34 probe establishes a trace-backed structural projection while leaving
-functional, predictive, and held-out evidence unobserved.  This module records
-that boundary as a self-validating receipt.  It cannot turn a simulation into
-an observed outcome, select either opposed claim, or resolve an obligation.
+The v0.36 probe establishes trace-backed structural and context-conditioned
+functional routing while leaving predictive, independent, dimensional, and
+external evidence unobserved.  This module records that boundary as a
+self-validating receipt.  It cannot turn a simulation into an observed
+outcome, select either opposed claim, or resolve an obligation.
 """
 from __future__ import annotations
 
@@ -18,6 +19,12 @@ from .contradiction_hypotheses import (
     ContradictionHypothesisBundle,
     ContradictionHypothesisIntegrityError,
     ContradictionHypothesisProtocol,
+)
+from .contradiction_functional_context import ContradictionFunctionalDisposition
+from .contradiction_functional_probe import (
+    ContradictionFunctionalObservation,
+    ContradictionFunctionalProbeIntegrityError,
+    ContradictionFunctionalProbeObserver,
 )
 from .contradiction_probes import (
     ContradictionProvenanceDisposition,
@@ -34,7 +41,7 @@ from .counterfactual import (
 
 
 CONTRADICTION_RESOLUTION_EVIDENCE_VERSION = (
-    "contradiction_resolution_evidence_coverage_v0.35"
+    "contradiction_resolution_evidence_coverage_v0.36"
 )
 
 
@@ -70,6 +77,8 @@ CONTRADICTION_GROUNDED_REQUIREMENTS = tuple(
             ContradictionResolutionRequirement.CANONICAL_CHECKPOINT,
             ContradictionResolutionRequirement.CANONICAL_RECORD_PRESERVATION,
             ContradictionResolutionRequirement.COMPLETE_EVIDENCE_LEDGER,
+            ContradictionResolutionRequirement.CONTEXT_CONDITIONED_COMPATIBILITY,
+            ContradictionResolutionRequirement.FUNCTIONAL_CONSEQUENCE,
             ContradictionResolutionRequirement.MATCHED_CONTROL,
             ContradictionResolutionRequirement.NULL_INCONCLUSIVE_COUNTERWEIGHTS,
             ContradictionResolutionRequirement.OPPOSED_CLAIM_PRESERVATION,
@@ -85,10 +94,8 @@ CONTRADICTION_MISSING_REQUIREMENTS = tuple(
     sorted(
         (
             ContradictionResolutionRequirement.ACTIVE_FAMILY_LOCAL_LENS,
-            ContradictionResolutionRequirement.CONTEXT_CONDITIONED_COMPATIBILITY,
             ContradictionResolutionRequirement.DIMENSIONAL_SEPARATION,
             ContradictionResolutionRequirement.EXTERNAL_OUTCOME,
-            ContradictionResolutionRequirement.FUNCTIONAL_CONSEQUENCE,
             ContradictionResolutionRequirement.INDEPENDENT_HELD_OUT_REPLICATION,
             ContradictionResolutionRequirement.PREDICTIVE_DISCRIMINATION,
             ContradictionResolutionRequirement.SOURCE_INDEPENDENCE,
@@ -107,12 +114,15 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
     deriver_version: str = CONTRADICTION_RESOLUTION_EVIDENCE_VERSION
     hypothesis_bundle: ContradictionHypothesisBundle
     provenance_observation: ContradictionProvenanceObservation
+    functional_observation: ContradictionFunctionalObservation
     obligation_id: str
     obligation_event_ref: str
     bundle_ref: str
     probe_ref: str
     evidence_receipt_ref: str
     matched_observation_ref: str
+    functional_context_ref: str
+    functional_observation_ref: str
     baseline_trace_ref: str
     treatment_trace_ref: str
     baseline_settlement_ref: str
@@ -123,6 +133,9 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
     shared_support_source_roots: tuple[str, ...] = ()
     symmetric_difference_source_roots: tuple[str, ...] = ()
     provenance_disposition: ContradictionProvenanceDisposition
+    functional_disposition: ContradictionFunctionalDisposition
+    baseline_function_signature: str
+    treatment_function_signature: str
     structural_added_refs: tuple[str, ...] = Field(min_length=1)
     grounded_requirements: tuple[ContradictionResolutionRequirement, ...]
     missing_requirements: tuple[ContradictionResolutionRequirement, ...]
@@ -141,12 +154,16 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
         *,
         hypothesis_bundle: ContradictionHypothesisBundle,
         provenance_observation: ContradictionProvenanceObservation,
+        functional_observation: ContradictionFunctionalObservation,
     ) -> "ContradictionResolutionEvidenceReceipt":
         bundle = ContradictionHypothesisBundle.model_validate(
             hypothesis_bundle.model_dump(mode="json")
         )
         observation = ContradictionProvenanceObservation.model_validate(
             provenance_observation.model_dump(mode="json")
+        )
+        functional = ContradictionFunctionalObservation.model_validate(
+            functional_observation.model_dump(mode="json")
         )
         probe = observation.probe
         evidence = probe.evidence_receipt
@@ -155,12 +172,15 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
             "deriver_version": CONTRADICTION_RESOLUTION_EVIDENCE_VERSION,
             "hypothesis_bundle": bundle,
             "provenance_observation": observation,
+            "functional_observation": functional,
             "obligation_id": evidence.obligation_id,
             "obligation_event_ref": evidence.obligation_event_ref,
             "bundle_ref": bundle.bundle_id,
             "probe_ref": probe.probe_id,
             "evidence_receipt_ref": evidence.receipt_id,
             "matched_observation_ref": observation.observation_id,
+            "functional_context_ref": functional.functional_context.context_id,
+            "functional_observation_ref": functional.observation_id,
             "baseline_trace_ref": matched.baseline.trace_id,
             "treatment_trace_ref": matched.treatment.trace_id,
             "baseline_settlement_ref": matched.baseline.settlement_id,
@@ -175,6 +195,13 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
                 evidence.symmetric_difference_source_roots
             ),
             "provenance_disposition": observation.disposition,
+            "functional_disposition": functional.disposition,
+            "baseline_function_signature": (
+                functional.baseline_function_signature
+            ),
+            "treatment_function_signature": (
+                functional.treatment_function_signature
+            ),
             "structural_added_refs": matched.added_record_refs,
             "grounded_requirements": CONTRADICTION_GROUNDED_REQUIREMENTS,
             "missing_requirements": CONTRADICTION_MISSING_REQUIREMENTS,
@@ -207,6 +234,7 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
             raise ValueError("Unknown Contradiction resolution-evidence version.")
         bundle = self.hypothesis_bundle
         observation = self.provenance_observation
+        functional = self.functional_observation
         probe = observation.probe
         evidence = probe.evidence_receipt
         matched = observation.matched_observation
@@ -217,6 +245,8 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
             bundle.bundle_id != probe.bundle_ref
             or bundle.evidence_receipt != evidence
             or probe.hypothesis_refs != hypothesis_refs
+            or functional.provenance_observation != observation
+            or functional.functional_context != probe.functional_context
         ):
             raise ValueError(
                 "Contradiction coverage lost its complete hypothesis bundle."
@@ -228,6 +258,8 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
             "probe_ref": probe.probe_id,
             "evidence_receipt_ref": evidence.receipt_id,
             "matched_observation_ref": observation.observation_id,
+            "functional_context_ref": functional.functional_context.context_id,
+            "functional_observation_ref": functional.observation_id,
             "baseline_trace_ref": matched.baseline.trace_id,
             "treatment_trace_ref": matched.treatment.trace_id,
             "baseline_settlement_ref": matched.baseline.settlement_id,
@@ -242,6 +274,13 @@ class ContradictionResolutionEvidenceReceipt(FrozenRecord):
                 evidence.symmetric_difference_source_roots
             ),
             "provenance_disposition": observation.disposition,
+            "functional_disposition": functional.disposition,
+            "baseline_function_signature": (
+                functional.baseline_function_signature
+            ),
+            "treatment_function_signature": (
+                functional.treatment_function_signature
+            ),
             "structural_added_refs": matched.added_record_refs,
         }
         if any(getattr(self, key) != value for key, value in expected.items()):
@@ -295,6 +334,10 @@ class ContradictionResolutionEvidenceDeriver:
             policy=probe_policy,
             hypothesis_protocol=self.hypothesis_protocol,
         )
+        self.functional_observer = ContradictionFunctionalProbeObserver(
+            probe_policy=probe_policy,
+            hypothesis_protocol=self.hypothesis_protocol,
+        )
 
     def derive(
         self,
@@ -305,6 +348,7 @@ class ContradictionResolutionEvidenceDeriver:
         baseline_result: CounterfactualRunResult,
         treatment_result: CounterfactualRunResult,
         provenance_observation: ContradictionProvenanceObservation,
+        functional_observation: ContradictionFunctionalObservation,
     ) -> ContradictionResolutionEvidenceReceipt:
         canonical_before = kernel.fingerprint()
         ledger_before = ledger.fingerprint()
@@ -314,6 +358,9 @@ class ContradictionResolutionEvidenceDeriver:
             )
             observation = ContradictionProvenanceObservation.model_validate(
                 provenance_observation.model_dump(mode="json")
+            )
+            functional = ContradictionFunctionalObservation.model_validate(
+                functional_observation.model_dump(mode="json")
             )
             self.hypothesis_protocol.validate(kernel, bundle)
             verified = self.probe_observer.observe(
@@ -327,6 +374,19 @@ class ContradictionResolutionEvidenceDeriver:
             if verified != observation:
                 raise ContradictionResolutionEvidenceIntegrityError(
                     "Contradiction coverage observation differs from actual lineage."
+                )
+            verified_functional = self.functional_observer.observe(
+                kernel,
+                ledger,
+                bundle=bundle,
+                probe=observation.probe,
+                baseline_result=baseline_result,
+                treatment_result=treatment_result,
+                provenance_observation=observation,
+            )
+            if verified_functional != functional:
+                raise ContradictionResolutionEvidenceIntegrityError(
+                    "Contradiction functional coverage differs from actual lineage."
                 )
             evidence = observation.probe.evidence_receipt
             if (
@@ -351,12 +411,14 @@ class ContradictionResolutionEvidenceDeriver:
             return ContradictionResolutionEvidenceReceipt.build(
                 hypothesis_bundle=bundle,
                 provenance_observation=observation,
+                functional_observation=functional,
             )
         except ContradictionResolutionEvidenceIntegrityError:
             raise
         except (
             ContradictionHypothesisIntegrityError,
             ContradictionProvenanceProbeIntegrityError,
+            ContradictionFunctionalProbeIntegrityError,
             SimulationIntegrityError,
             ValueError,
             TypeError,

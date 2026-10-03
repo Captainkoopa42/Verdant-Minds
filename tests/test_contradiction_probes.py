@@ -7,8 +7,11 @@ import pytest
 
 from verdant_claims import ClaimLearningPipeline
 from verdant_kernel import ClaimPolarity, ClaimSourceClass, VerdantKernel
+from verdant_kernel.models import stable_id
 from verdant_obligations import (
+    CONTRADICTION_GROUNDED_REQUIREMENTS,
     CONTRADICTION_HYPOTHESIS_PROTOCOL_VERSION,
+    CONTRADICTION_MISSING_REQUIREMENTS,
     CONTRADICTION_PROVENANCE_ACTION_OPERATOR,
     AttentionBidInput,
     AttentionPortfolio,
@@ -20,6 +23,10 @@ from verdant_obligations import (
     ContradictionProvenanceProbeIntegrityError,
     ContradictionProvenanceProbeObserver,
     ContradictionProvenanceProbeRunner,
+    ContradictionResolutionEvidenceDeriver,
+    ContradictionResolutionEvidenceIntegrityError,
+    ContradictionResolutionEvidenceReceipt,
+    ContradictionResolutionRequirement,
     CounterfactualPatch,
     CounterfactualPlan,
     CounterfactualRuntime,
@@ -28,6 +35,15 @@ from verdant_obligations import (
     load_experiment_archive,
     save_experiment_archive,
 )
+
+
+def _rehash_resolution_evidence(payload: dict) -> dict:
+    values = dict(payload)
+    values["receipt_id"] = stable_id(
+        "contradiction_resolution_evidence_receipt",
+        {key: value for key, value in values.items() if key != "receipt_id"},
+    )
+    return values
 
 
 def _claim(
@@ -153,6 +169,19 @@ def test_matched_probe_derives_distinct_partition_from_real_traces() -> None:
     assert not run.observation.observed_outcome_authority_enabled
     assert not run.observation.resolution_authority_enabled
     assert not run.observation.canonical_commit_permitted
+    coverage = run.resolution_evidence
+    assert coverage.hypothesis_bundle == bundle
+    assert coverage.provenance_observation == run.observation
+    assert coverage.grounded_requirements == CONTRADICTION_GROUNDED_REQUIREMENTS
+    assert coverage.missing_requirements == CONTRADICTION_MISSING_REQUIREMENTS
+    assert coverage.structural_added_refs == (
+        f"structures:{run.probe.projection_id}",
+    )
+    assert not coverage.resolution_trial_ready
+    assert not coverage.truth_selection_authority_enabled
+    assert not coverage.observed_outcome_authority_enabled
+    assert not coverage.resolution_authority_enabled
+    assert not coverage.canonical_commit_permitted
 
 
 @pytest.mark.parametrize(
@@ -193,6 +222,8 @@ def test_probe_keeps_valid_null_and_overlap_inconclusive(
 
     assert run.observation.disposition == expected
     assert run.observation.evidence_preserved
+    assert run.resolution_evidence.provenance_disposition == expected
+    assert not run.resolution_evidence.resolution_trial_ready
     if expected == ContradictionProvenanceDisposition.VALID_NULL_SHARED_SOURCES:
         assert not run.observation.symmetric_difference_source_roots
     else:
@@ -234,8 +265,150 @@ def test_archive_replay_rebuilds_identical_probe_and_observation(
     assert replay.replayed
     assert replay.probe == first.probe
     assert replay.observation == first.observation
+    assert replay.resolution_evidence == first.resolution_evidence
     assert restored_kernel.fingerprint() == canonical_before
     assert restored_ledger.fingerprint() == ledger_before
+
+
+def test_coverage_deriver_reconstructs_exact_receipt_without_mutation() -> None:
+    kernel, _, _, bundle = _prepared(seed=6412)
+    runtime = CounterfactualRuntime()
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        runtime,
+        bundle=bundle,
+        source_event_key="contradiction-probe:coverage-derive",
+    )
+    canonical_before = kernel.fingerprint()
+    ledger_before = runtime.ledger.fingerprint()
+
+    rebuilt = ContradictionResolutionEvidenceDeriver().derive(
+        kernel,
+        runtime.ledger,
+        hypothesis_bundle=bundle,
+        baseline_result=run.baseline,
+        treatment_result=run.treatment,
+        provenance_observation=run.observation,
+    )
+
+    assert rebuilt == run.resolution_evidence
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == ledger_before
+
+
+def test_coverage_deriver_rejects_foreign_simulation_ledger() -> None:
+    kernel, _, _, bundle = _prepared(seed=6413)
+    runtime = CounterfactualRuntime()
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        runtime,
+        bundle=bundle,
+        source_event_key="contradiction-probe:coverage-foreign-ledger",
+    )
+    foreign = CounterfactualRuntime().ledger
+    foreign_before = foreign.fingerprint()
+
+    with pytest.raises(
+        ContradictionResolutionEvidenceIntegrityError,
+        match="foreign or altered simulation record",
+    ):
+        ContradictionResolutionEvidenceDeriver().derive(
+            kernel,
+            foreign,
+            hypothesis_bundle=bundle,
+            baseline_result=run.baseline,
+            treatment_result=run.treatment,
+            provenance_observation=run.observation,
+        )
+    assert foreign.fingerprint() == foreign_before
+
+
+def test_coverage_deriver_rejects_mismatched_bundle_and_observation() -> None:
+    kernel, _, _, bundle = _prepared(seed=6414)
+    runtime = CounterfactualRuntime()
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        runtime,
+        bundle=bundle,
+        source_event_key="contradiction-probe:coverage-mismatch",
+    )
+    _, _, _, foreign_bundle = _prepared(seed=6415)
+    canonical_before = kernel.fingerprint()
+    ledger_before = runtime.ledger.fingerprint()
+
+    with pytest.raises(ContradictionResolutionEvidenceIntegrityError):
+        ContradictionResolutionEvidenceDeriver().derive(
+            kernel,
+            runtime.ledger,
+            hypothesis_bundle=foreign_bundle,
+            baseline_result=run.baseline,
+            treatment_result=run.treatment,
+            provenance_observation=run.observation,
+        )
+    assert kernel.fingerprint() == canonical_before
+    assert runtime.ledger.fingerprint() == ledger_before
+
+
+def test_fully_rehashed_coverage_cannot_suppress_protected_evidence() -> None:
+    kernel, _, _, bundle = _prepared(seed=6416)
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        CounterfactualRuntime(),
+        bundle=bundle,
+        source_event_key="contradiction-probe:coverage-suppression",
+    )
+    payload = run.resolution_evidence.model_dump(mode="json")
+    payload["protected_evidence_refs"] = payload["protected_evidence_refs"][:-1]
+
+    with pytest.raises(ValueError, match="suppressed or altered"):
+        ContradictionResolutionEvidenceReceipt.model_validate(
+            _rehash_resolution_evidence(payload)
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "match"),
+    (
+        ("missing_requirements", (), "missing coverage was hidden or altered"),
+        (
+            "resolution_trial_ready",
+            True,
+            "cannot claim truth, outcome, or resolution",
+        ),
+        (
+            "resolution_authority_enabled",
+            True,
+            "cannot claim truth, outcome, or resolution",
+        ),
+    ),
+)
+def test_fully_rehashed_coverage_cannot_hide_gaps_or_grant_authority(
+    field: str,
+    value: object,
+    match: str,
+) -> None:
+    kernel, _, _, bundle = _prepared(seed=6417)
+    run = ContradictionProvenanceProbeRunner().run(
+        kernel,
+        CounterfactualRuntime(),
+        bundle=bundle,
+        source_event_key="contradiction-probe:coverage-authority",
+    )
+    payload = run.resolution_evidence.model_dump(mode="json")
+    payload[field] = value
+
+    with pytest.raises(ValueError, match=match):
+        ContradictionResolutionEvidenceReceipt.model_validate(
+            _rehash_resolution_evidence(payload)
+        )
+
+
+def test_coverage_accounts_for_every_requirement_exactly_once() -> None:
+    covered = set(CONTRADICTION_GROUNDED_REQUIREMENTS)
+    missing = set(CONTRADICTION_MISSING_REQUIREMENTS)
+
+    assert covered.isdisjoint(missing)
+    assert covered | missing == set(ContradictionResolutionRequirement)
 
 
 def test_observer_rejects_replaced_runtime_trace() -> None:

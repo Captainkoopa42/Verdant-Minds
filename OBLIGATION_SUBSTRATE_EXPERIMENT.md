@@ -1,4 +1,4 @@
-# Obligation Substrate v0.34
+# Obligation Substrate v0.35
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -466,6 +466,24 @@ generation, or safe autonomous policy revision.
   reconstruct the identical probe and observation after archive reload. Probe
   and observation objects remain reconstructible, noncanonical artifacts; no
   new archive member or automatically saved sidecar is introduced.
+- Every successfully published Contradiction probe pair now carries exactly one
+  content-addressed `ContradictionResolutionEvidenceReceipt`. The receipt
+  embeds the complete v0.33 hypothesis bundle and v0.34 matched observation,
+  then duplicates their protected claims, protected evidence, source
+  partitions, structural delta, canonical checkpoint, traces, settlements,
+  and obligation lineage for fail-closed anti-suppression validation.
+- The receipt marks only what those actual matched structural traces ground:
+  canonical and Attention authorization, complete opposed-claim/evidence
+  preservation, matched controls and settlement lineage, source-partition
+  materialization, the structural delta, and the mandatory null/inconclusive
+  alternatives. It explicitly records the absent family-local Lens, context-
+  conditioned compatibility, dimensional separation, external outcome,
+  functional consequence, held-out replication, predictive discrimination,
+  and source independence.
+- Coverage is reconstructed against the actual simulation ledger before the
+  staged pair is published. Foreign ledgers, mismatched bundles, protected-
+  evidence suppression, hidden missing requirements, or authority escalation
+  fail validation. `resolution_trial_ready` remains hard-coded false.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -695,7 +713,8 @@ generation, or safe autonomous policy revision.
   interaction attributions.
 - `Contradiction` now has detection, immutable identity, retrigger continuity,
   checkpoint replay, anti-suppression validation, a v0.33 provenance-partition
-  hypothesis/evidence protocol, and a v0.34 matched isolated projection probe.
+  hypothesis/evidence protocol, a v0.34 matched isolated projection probe, and
+  a v0.35 one-for-one resolution-evidence coverage receipt.
   It does not yet demonstrate a functional consequence of that projection,
   feed a dimensional-separation Resolution Contract, learn a family-local
   lens, or carry canonical resolution authority.
@@ -705,15 +724,20 @@ generation, or safe autonomous policy revision.
   claim is true. v0.34 materializes the already derived source-root partition
   in an isolated overlay; its `distinct`, `valid_null`, and `inconclusive`
   dispositions do not measure predictive discrimination, behavior, external
-  outcome, or dimensional separation. The null and defer hypotheses remain
-  mandatory alternatives, not conclusions selected by the probe.
+  outcome, or dimensional separation. v0.35 makes each of those absences
+  explicit and immutable; it does not supply them. The null and defer
+  hypotheses remain mandatory alternatives, not conclusions selected by the
+  probe.
 - Contradiction hypothesis generation remains explicitly invoked and its
   Attention metrics and `0.05` minimum budget are visible supplied policy. The
-  bundle, probe, and observation are reconstructible non-authoritative objects,
-  not canonical VDK records or new `.vob`, `.viq`, or `.viqh` members. Only the
-  generic reservations and settlements are separately durable. No autonomous
-  family-local scheduler, durable Contradiction receipt format, truth test,
-  held-out functional replication, or Resolution Contract is added.
+  bundle, probe, observation, and v0.35 coverage receipt are reconstructible
+  non-authoritative objects, not canonical VDK records or new `.vob`, `.viq`,
+  or `.viqh` members. Only the generic reservations and settlements are
+  separately durable. No autonomous family-local scheduler, durable
+  Contradiction receipt format, family-local Lens, truth test, context-
+  conditioned functional probe, held-out replication, predictive
+  discrimination, source-independence proof, dimensional separation, or
+  Resolution Contract is added.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1359,6 +1383,35 @@ generation, or safe autonomous policy revision.
   policy rewrite, semantic understanding, `T_g` control, or thermodynamic
   behavior.
 
+## v0.35 claim boundary
+
+- **OBSERVED:** Forty focused Contradiction tests and the 472-test full
+  repository suite pass. Each distinct, valid-null, or inconclusive matched
+  probe produces one exact coverage receipt; archive replay reconstructs it
+  identically. Direct derivation is canonical- and simulation-fingerprint
+  invariant. Foreign-ledger substitution, a mismatched bundle, fully rehashed
+  protected-evidence suppression, fully rehashed missing-requirement removal,
+  and fully rehashed readiness or resolution-authority escalation fail closed.
+  The dedicated compatibility test still loads and embeds all 17 preexisting
+  checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** One self-validating family-local receipt now
+  accounts for every declared Contradiction Resolution requirement exactly
+  once as grounded or missing. It is derived from the complete canonical
+  bundle and actual matched simulation pair before staged settlements are
+  published, preserves the nested records as anti-suppression evidence, and
+  remains simulated-only with `resolution_trial_ready=False` and no truth,
+  outcome, resolution, or canonical-commit authority.
+- **PROPOSED:** The next dependency is a preregistered, context-conditioned
+  matched functional probe that tests whether the source-partition projection
+  changes a bounded trace-derived operation while preserving both claims and
+  all evidence. It must retain valid-null and inconclusive alternatives and
+  cannot mark predictive discrimination, source independence, dimensional
+  separation, or held-out replication grounded until those are separately
+  observed. v0.35 adds no family-local Lens, external action, observed outcome,
+  truth test, causal-success claim, autonomous inquiry, canonical resolution
+  or promotion, policy rewrite, semantic understanding, `T_g` control, or
+  thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1425,6 +1478,12 @@ replaced-trace and foreign-ledger rejection, fully rehashed projection
 suppression, stale-bundle rejection, atomic second-arm failure, staged budget
 rollback, and hard absence of truth, observed-outcome, resolution, or commit
 authority.
+Contradiction-resolution-evidence tests additionally target one-for-one
+coverage for every structural disposition, complete nested hypothesis and
+observation retention, exact requirement partitioning, read-only direct
+reconstruction, archive replay, foreign-ledger and mismatched-bundle rejection,
+fully rehashed protected-evidence suppression, hidden missing requirements,
+and forged readiness or resolution authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

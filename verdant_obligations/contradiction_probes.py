@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -38,6 +38,11 @@ from .trace_observations import (
     StructuralTraceEffect,
     TraceObservationIntegrityError,
 )
+
+if TYPE_CHECKING:
+    from .contradiction_resolution_evidence import (
+        ContradictionResolutionEvidenceReceipt,
+    )
 
 
 CONTRADICTION_PROVENANCE_PROBE_VERSION = "contradiction_provenance_probe_v0.34"
@@ -561,6 +566,7 @@ class ContradictionProvenanceProbeRun:
     baseline: CounterfactualRunResult
     treatment: CounterfactualRunResult
     observation: ContradictionProvenanceObservation
+    resolution_evidence: "ContradictionResolutionEvidenceReceipt"
 
     @property
     def replayed(self) -> bool:
@@ -628,6 +634,21 @@ class ContradictionProvenanceProbeRunner:
                 baseline_result=baseline,
                 treatment_result=treatment,
             )
+            from .contradiction_resolution_evidence import (
+                ContradictionResolutionEvidenceDeriver,
+            )
+
+            resolution_evidence = ContradictionResolutionEvidenceDeriver(
+                probe_policy=self.policy,
+                hypothesis_protocol=self.hypothesis_protocol,
+            ).derive(
+                kernel,
+                working_runtime.ledger,
+                hypothesis_bundle=bundle,
+                baseline_result=baseline,
+                treatment_result=treatment,
+                provenance_observation=observation,
+            )
             if kernel.fingerprint() != canonical_before:
                 raise ContradictionProvenanceProbeIntegrityError(
                     "Contradiction probe leaked into canonical state."
@@ -638,6 +659,7 @@ class ContradictionProvenanceProbeRunner:
                 baseline=baseline,
                 treatment=treatment,
                 observation=observation,
+                resolution_evidence=resolution_evidence,
             )
         except ContradictionProvenanceProbeIntegrityError:
             raise

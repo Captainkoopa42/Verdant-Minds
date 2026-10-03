@@ -47,6 +47,15 @@ from .contradiction_probes import (
     ContradictionProvenanceProbeRun,
     ContradictionProvenanceProbeRunner,
 )
+from .contradiction_resolution_evidence import (
+    CONTRADICTION_GROUNDED_REQUIREMENTS,
+    CONTRADICTION_MISSING_REQUIREMENTS,
+    CONTRADICTION_RESOLUTION_EVIDENCE_VERSION,
+    ContradictionResolutionEvidenceDeriver,
+    ContradictionResolutionEvidenceIntegrityError,
+    ContradictionResolutionEvidenceReceipt,
+    ContradictionResolutionRequirement,
+)
 from .prediction_failures import (
     PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
     PredictionFailureCandidate,

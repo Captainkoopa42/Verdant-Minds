@@ -23,6 +23,19 @@ from .contradictions import (
     ContradictionObligationCandidate,
     ContradictionObligationDetector,
 )
+from .contradiction_hypotheses import (
+    CONTRADICTION_HYPOTHESIS_PROTOCOL_VERSION,
+    CONTRADICTION_PROVENANCE_ACTION_OPERATOR,
+    ContradictionEvidenceCondition,
+    ContradictionEvidenceReceipt,
+    ContradictionEvidenceSide,
+    ContradictionHypothesis,
+    ContradictionHypothesisBundle,
+    ContradictionHypothesisIntegrityError,
+    ContradictionHypothesisKind,
+    ContradictionHypothesisPolicy,
+    ContradictionHypothesisProtocol,
+)
 from .prediction_failures import (
     PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
     PredictionFailureCandidate,

@@ -1,4 +1,4 @@
-# Obligation Substrate v0.32
+# Obligation Substrate v0.33
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -425,6 +425,26 @@ generation, or safe autonomous policy revision.
   Portfolio, whose allocation remains executive-only and cannot change the
   contradiction or mark it resolved. DependencyGap-specific attempt, stall,
   wake, and recheck APIs fail closed on this new family.
+- An explicitly invoked `ContradictionHypothesisProtocol` now requires an
+  active canonical Contradiction obligation and a current canonical Attention
+  allocation whose typed operator, generator version, basis event, budget, and
+  metric provenance authorize this family-local inquiry. Missing, underfunded,
+  stale, foreign, or evidence-suppressing authorizations fail closed.
+- Its content-addressed evidence receipt retains both claim snapshots, both
+  polarities, each support and refutation ledger, every native contradiction
+  evidence reference, and the supporting source roots. Evidence identity and
+  source-root identity remain separate dimensions with explicit shared and
+  symmetric-difference partitions.
+- Every bundle contains exactly three preregistered alternatives: a provenance-
+  partition test, a null encoding-artifact hypothesis, and an insufficient-
+  evidence deferral. Each alternative carries the same complete protected
+  claim/evidence set and canonical/Attention lineage; none may name a preferred
+  claim, suppress evidence, select itself, resolve the obligation, or commit to
+  canonical state.
+- Generation and validation are read-only and deterministic across checkpoint
+  reconstruction and mapping order. Validation rebuilds the complete expected
+  bundle from canonical records, so even a fully rehashed context substitution
+  is rejected rather than trusted as family-local evidence.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -652,11 +672,22 @@ generation, or safe autonomous policy revision.
   failure count. It does not yet learn contextual activation envelopes, compare
   failure rates against matched controls, or automatically consume diagnostic
   interaction attributions.
-- `Contradiction` currently has detection, immutable identity, retrigger
-  continuity, checkpoint replay, and anti-suppression validation only. It does
-  not yet have provenance-symmetric-difference hypothesis generation,
-  dimensional-separation Resolution Contracts, family-local learned lenses, or
-  canonical resolution authority.
+- `Contradiction` now has detection, immutable identity, retrigger continuity,
+  checkpoint replay, anti-suppression validation, and a v0.33 provenance-
+  partition hypothesis/evidence protocol. It does not yet execute a matched
+  provenance intervention, derive an outcome from settled traces, feed a
+  dimensional-separation Resolution Contract, learn a family-local lens, or
+  carry canonical resolution authority.
+- Shared or different evidence IDs and source roots are structural ledger
+  observations only. They do not establish source independence, causal
+  relevance, contextual compatibility, semantic correctness, or which opposed
+  claim is true. The null and defer arms are mandatory alternatives, not
+  conclusions selected by v0.33.
+- Contradiction hypothesis generation remains explicitly invoked and its
+  Attention metrics and `0.05` minimum budget are visible supplied policy. The
+  bundle is a reconstructible non-authoritative object, not a canonical VDK
+  record or a new `.vob`, `.viq`, or `.viqh` member; no autonomous family-local
+  scheduler or separately durable contradiction sidecar is added.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1245,6 +1276,32 @@ generation, or safe autonomous policy revision.
   outcome, causal-success claim, autonomous inquiry, policy rewrite, semantic
   understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.33 claim boundary
+
+- **OBSERVED:** Twenty-one focused Contradiction tests and the 453-test full
+  repository suite pass. The new bundle replays identically after a VDK
+  checkpoint round trip and mapping-order reversal; the dedicated compatibility
+  test still loads and embeds all 17 preexisting checkpoints. Wrong operators
+  and generator versions, missing or underfunded allocations, suppressed bid
+  provenance, stale post-retrigger bases, cross-obligation allocations,
+  protected-evidence removal, missing null/defer arms, preferred-claim
+  injection, and a fully rehashed context forgery all fail closed.
+- **IMPLEMENTED-EXPERIMENTAL:** A bounded family-local Contradiction protocol
+  now derives a complete content-addressed evidence partition and exactly three
+  answer-agnostic hypotheses from native claims, evidence ledgers, obligation
+  history, and canonical Attention lineage. Generation is fingerprint-pure;
+  validation deterministically reconstructs the expected bundle. Every arm
+  protects both claims and all evidence, while typed authority fields prohibit
+  truth selection, evidence suppression, resolution, and canonical commit.
+- **PROPOSED:** The next dependency is a matched, isolated Contradiction
+  provenance probe that preserves the complete receipt in every arm, varies
+  only a typed sidecar-local provenance partition, and derives its observation
+  from actual settled simulation traces. It must admit null and inconclusive
+  outcomes and cannot become a truth test or Resolution Contract until that
+  trace evidence exists. v0.33 adds no external action, causal-success claim,
+  autonomous inquiry, canonical resolution or promotion, policy rewrite,
+  semantic understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1297,6 +1354,13 @@ Contradiction-family tests additionally target fingerprint-pure inspection,
 native-record anchoring, exact replay, evidence-driven retriggering, claim-key
 scope separation, preserved claim/evidence references, checkpoint/View rebuild,
 canonical-claim deletion rejection, and silence when no contradiction exists.
+Contradiction-hypothesis tests additionally target mandatory provenance/null/
+defer arms, complete support/refutation symmetry, evidence-versus-source-root
+partition separation, read-only deterministic checkpoint replay, typed and
+budgeted Attention authorization, triggering-evidence closure, stale-basis and
+cross-obligation rejection, protected-evidence anti-suppression, preferred-
+claim prohibition, missing-counterweight rejection, and fully rehashed context
+substitution.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

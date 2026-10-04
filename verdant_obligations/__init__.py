@@ -124,6 +124,20 @@ from .contradiction_dimension_criterion import (
     load_contradiction_dimension_sidecar,
     save_contradiction_dimension_sidecar,
 )
+from .contradiction_calibration_stage import (
+    CONTRADICTION_CALIBRATION_STAGE_SIDECAR_FORMAT,
+    CONTRADICTION_CALIBRATION_STAGE_VERSION,
+    ContradictionCalibrationStageIntegrityError,
+    ContradictionCalibrationStageReceipt,
+    ContradictionCalibrationStageRun,
+    ContradictionCalibrationStageSidecarEnvelope,
+    ContradictionDurableDimensionTrialRunner,
+    ContradictionResumedDimensionTrialRun,
+    contradiction_calibration_stage_sidecar_bytes,
+    load_contradiction_calibration_stage_sidecar,
+    read_contradiction_calibration_stage_sidecar,
+    save_contradiction_calibration_stage_sidecar,
+)
 from .prediction_failures import (
     PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
     PredictionFailureCandidate,

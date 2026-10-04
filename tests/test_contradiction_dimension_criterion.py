@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import signal
 from pathlib import Path
 
 import pytest
@@ -12,8 +15,9 @@ from verdant_kernel import (
     ObligationFamily,
     VerdantKernel,
 )
-from verdant_kernel.models import stable_id
+from verdant_kernel.models import canonical_json_bytes, stable_id
 from verdant_obligations import (
+    CONTRADICTION_CALIBRATION_STAGE_VERSION,
     CONTRADICTION_HYPOTHESIS_PROTOCOL_VERSION,
     CONTRADICTION_LENS_MISSING_REQUIREMENTS,
     CONTRADICTION_PROVENANCE_ACTION_OPERATOR,
@@ -21,6 +25,8 @@ from verdant_obligations import (
     AttentionPortfolio,
     ContradictionCalibrationCriterionDeriver,
     ContradictionCalibrationDimensionCriterion,
+    ContradictionCalibrationStageIntegrityError,
+    ContradictionDurableDimensionTrialRunner,
     ContradictionDimensionCriterionDeclaration,
     ContradictionDimensionCriterionIntegrityError,
     ContradictionDimensionEvaluationDisposition,
@@ -40,10 +46,12 @@ from verdant_obligations import (
     LensEvidenceResult,
     LensOpcode,
     contradiction_dimension_sidecar_bytes,
+    load_contradiction_calibration_stage_sidecar,
     load_contradiction_dimension_sidecar,
     load_experiment_archive_bundle,
     save_contradiction_dimension_sidecar,
     save_experiment_archive,
+    read_contradiction_calibration_stage_sidecar,
 )
 
 
@@ -582,3 +590,471 @@ def test_dual_archive_replay_reconstructs_criterion_without_new_cost(
     assert replay.evaluation == first.evaluation
     assert restored_calibration.simulation_ledger.fingerprint() == simulation_before[0]
     assert restored_held_out.simulation_ledger.fingerprint() == simulation_before[1]
+
+
+requires_posix_stage = pytest.mark.skipif(
+    os.name != "posix",
+    reason="calibration-stage writer arbitration requires POSIX flock",
+)
+requires_posix_stage_fork = pytest.mark.skipif(
+    os.name != "posix" or not hasattr(os, "fork"),
+    reason="controlled calibration-stage process tests require POSIX fork",
+)
+
+
+def _prepared_stage(path: Path, seed: int = 6900):
+    calibration, held_out, lenses, pair, declaration = _pair_fixture(seed)
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    runner = ContradictionDurableDimensionTrialRunner()
+    stage = runner.prepare_and_persist(
+        path,
+        calibration[0],
+        calibration_runtime,
+        held_out[0],
+        lenses,
+        pair_context=pair,
+        criterion_declaration=declaration,
+    )
+    return (
+        calibration,
+        held_out,
+        lenses,
+        pair,
+        declaration,
+        calibration_runtime,
+        held_out_runtime,
+        runner,
+        stage,
+    )
+
+
+@requires_posix_stage
+def test_calibration_stage_is_durable_before_held_out_and_resumes_exactly(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "calibration-stage.vcs"
+    (
+        calibration,
+        held_out,
+        lenses,
+        pair,
+        _,
+        calibration_runtime,
+        held_out_runtime,
+        runner,
+        stage,
+    ) = _prepared_stage(path)
+
+    receipt = stage.envelope.stage_receipt
+    assert receipt.stage_version == CONTRADICTION_CALIBRATION_STAGE_VERSION
+    assert receipt.pair_context == pair
+    assert receipt.calibration_only
+    assert receipt.matched_controls_unchanged
+    assert receipt.complete_calibration_ledger_embedded
+    assert not receipt.held_out_execution_started
+    assert not receipt.held_out_trace_consulted
+    assert not receipt.predictive_discrimination_observed
+    assert not receipt.resolution_trial_ready
+    assert len(calibration_runtime.ledger.state.settlements) == 2
+    assert held_out_runtime.ledger.state.settlements == ()
+    assert "held_out_observation" not in type(receipt).model_fields
+    assert read_contradiction_calibration_stage_sidecar(path) == stage.envelope
+
+    before_resume = path.read_bytes()
+    result = runner.resume_from_stage(
+        path,
+        calibration[0],
+        held_out[0],
+        held_out_runtime,
+        lenses,
+    )
+
+    assert path.read_bytes() == before_resume
+    assert result.criterion == receipt.criterion
+    assert result.replication_receipt.pair_context == pair
+    assert result.evaluation.criterion == receipt.criterion
+    assert result.evaluation.disposition == (
+        ContradictionDimensionEvaluationDisposition.TRACE_LOCAL_OUTCOME_MATCH
+    )
+    assert not result.evaluation.predictive_discrimination_observed
+    assert not result.evaluation.resolution_trial_ready
+    assert result.calibration_ledger.fingerprint() == (
+        receipt.calibration_simulation_fingerprint
+    )
+    assert len(held_out_runtime.ledger.state.settlements) == 2
+    assert calibration[0].fingerprint() == (
+        pair.calibration.canonical_checkpoint_fingerprint
+    )
+    assert held_out[0].fingerprint() == (
+        pair.held_out.canonical_checkpoint_fingerprint
+    )
+
+
+def _paused_stage_writer(
+    path: Path,
+    fixture,
+    phase: str,
+    ready_file_descriptor: int,
+) -> None:
+    import verdant_obligations.contradiction_calibration_stage as stage_module
+
+    calibration, held_out, lenses, pair, declaration = fixture
+    real_replace = stage_module.os.replace
+
+    def pause_replace(source, destination):
+        if phase == "before_replace":
+            os.write(ready_file_descriptor, b"B")
+            while True:
+                signal.pause()
+        real_replace(source, destination)
+        if phase == "after_replace":
+            os.write(ready_file_descriptor, b"A")
+            while True:
+                signal.pause()
+
+    stage_module.os.replace = pause_replace
+    try:
+        ContradictionDurableDimensionTrialRunner().prepare_and_persist(
+            path,
+            calibration[0],
+            CounterfactualRuntime(),
+            held_out[0],
+            lenses,
+            pair_context=pair,
+            criterion_declaration=declaration,
+        )
+    finally:
+        os._exit(3)
+
+
+def _kill_stage_writer(path: Path, fixture, phase: str) -> None:
+    ready_read, ready_write = os.pipe()
+    process_id = os.fork()
+    if process_id == 0:
+        os.close(ready_read)
+        _paused_stage_writer(path, fixture, phase, ready_write)
+    os.close(ready_write)
+    try:
+        marker = os.read(ready_read, 1)
+        assert marker == (b"B" if phase == "before_replace" else b"A")
+        os.kill(process_id, signal.SIGKILL)
+        _, status = os.waitpid(process_id, 0)
+        assert os.WIFSIGNALED(status)
+        assert os.WTERMSIG(status) == signal.SIGKILL
+    finally:
+        os.close(ready_read)
+        try:
+            os.kill(process_id, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            os.waitpid(process_id, 0)
+        except ChildProcessError:
+            pass
+
+
+@requires_posix_stage_fork
+def test_process_death_handoff_and_stale_temporary_recovery(
+    tmp_path: Path,
+) -> None:
+    before_path = tmp_path / "before-replace.vcs"
+    before_fixture = _pair_fixture(6910)
+    _kill_stage_writer(before_path, before_fixture, "before_replace")
+    assert not before_path.exists()
+    assert len(list(tmp_path.glob(".before-replace.vcs.*.tmp"))) == 1
+
+    before_runtime = CounterfactualRuntime()
+    ContradictionDurableDimensionTrialRunner().prepare_and_persist(
+        before_path,
+        before_fixture[0][0],
+        before_runtime,
+        before_fixture[1][0],
+        before_fixture[2],
+        pair_context=before_fixture[3],
+        criterion_declaration=before_fixture[4],
+    )
+    assert before_path.exists()
+    assert list(tmp_path.glob(".before-replace.vcs.*.tmp")) == []
+    assert len(before_runtime.ledger.state.settlements) == 2
+
+    after_path = tmp_path / "after-replace.vcs"
+    after_fixture = _pair_fixture(6920)
+    _kill_stage_writer(after_path, after_fixture, "after_replace")
+    assert after_path.exists()
+    assert list(tmp_path.glob(".after-replace.vcs.*.tmp")) == []
+    loaded = load_contradiction_calibration_stage_sidecar(
+        after_path,
+        calibration_kernel=after_fixture[0][0],
+        held_out_kernel=after_fixture[1][0],
+        lenses=after_fixture[2],
+    )
+    held_out_runtime = CounterfactualRuntime()
+    resumed = ContradictionDurableDimensionTrialRunner().resume_from_stage(
+        after_path,
+        after_fixture[0][0],
+        after_fixture[1][0],
+        held_out_runtime,
+        after_fixture[2],
+    )
+    assert resumed.criterion == loaded.stage_receipt.criterion
+    assert len(resumed.calibration_ledger.state.settlements) == 2
+    assert len(held_out_runtime.ledger.state.settlements) == 2
+
+
+def _gated_stage_writer(
+    path: Path,
+    fixture,
+    ready_file_descriptor: int,
+    go_file_descriptor: int,
+    result_file_descriptor: int,
+) -> None:
+    calibration, held_out, lenses, pair, declaration = fixture
+    os.write(ready_file_descriptor, b"R")
+    if os.read(go_file_descriptor, 1) != b"G":
+        os._exit(4)
+    try:
+        stage = ContradictionDurableDimensionTrialRunner().prepare_and_persist(
+            path,
+            calibration[0],
+            CounterfactualRuntime(),
+            held_out[0],
+            lenses,
+            pair_context=pair,
+            criterion_declaration=declaration,
+        )
+        result = f"S:{stage.envelope.stage_receipt.pair_context_ref}".encode()
+    except ContradictionCalibrationStageIntegrityError:
+        result = b"C"
+    except Exception as exc:  # pragma: no cover - diagnostic child payload.
+        result = f"E:{type(exc).__name__}:{exc}".encode()
+    os.write(result_file_descriptor, result)
+    os._exit(0)
+
+
+@requires_posix_stage_fork
+def test_concurrent_foreign_writers_are_first_committer_wins(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "arbitrated-stage.vcs"
+    fixtures = (_pair_fixture(6930), _pair_fixture(6940))
+    children = []
+    for fixture in fixtures:
+        ready_read, ready_write = os.pipe()
+        go_read, go_write = os.pipe()
+        result_read, result_write = os.pipe()
+        process_id = os.fork()
+        if process_id == 0:
+            os.close(ready_read)
+            os.close(go_write)
+            os.close(result_read)
+            _gated_stage_writer(
+                path,
+                fixture,
+                ready_write,
+                go_read,
+                result_write,
+            )
+        os.close(ready_write)
+        os.close(go_read)
+        os.close(result_write)
+        children.append(
+            (process_id, ready_read, go_write, result_read)
+        )
+
+    try:
+        for _, ready_read, _, _ in children:
+            assert os.read(ready_read, 1) == b"R"
+        for _, _, go_write, _ in children:
+            os.write(go_write, b"G")
+        statuses = []
+        for process_id, _, _, _ in children:
+            _, status = os.waitpid(process_id, 0)
+            statuses.append(status)
+        assert all(
+            os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0
+            for status in statuses
+        )
+        results = [
+            os.read(result_read, 4096).decode()
+            for _, _, _, result_read in children
+        ]
+    finally:
+        for process_id, ready_read, go_write, result_read in children:
+            for descriptor in (ready_read, go_write, result_read):
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+            try:
+                os.kill(process_id, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                os.waitpid(process_id, 0)
+            except ChildProcessError:
+                pass
+
+    successes = [item for item in results if item.startswith("S:")]
+    assert len(successes) == 1
+    assert results.count("C") == 1
+    winning_pair_ref = successes[0].split(":", 1)[1]
+    winning_fixture = next(
+        fixture for fixture in fixtures if fixture[3].pair_id == winning_pair_ref
+    )
+    loaded = load_contradiction_calibration_stage_sidecar(
+        path,
+        calibration_kernel=winning_fixture[0][0],
+        held_out_kernel=winning_fixture[1][0],
+        lenses=winning_fixture[2],
+    )
+    assert loaded.stage_receipt.pair_context_ref == winning_pair_ref
+    assert list(tmp_path.glob(".arbitrated-stage.vcs.*.tmp")) == []
+
+
+@requires_posix_stage
+def test_stage_rejects_crossed_context_and_fully_rehashed_authority_tamper(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "tamper-stage.vcs"
+    calibration, held_out, lenses, *_ = _prepared_stage(path, 6950)
+
+    with pytest.raises(
+        ContradictionCalibrationStageIntegrityError,
+        match="different protected state|stale or substituted",
+    ):
+        load_contradiction_calibration_stage_sidecar(
+            path,
+            calibration_kernel=held_out[0],
+            held_out_kernel=calibration[0],
+            lenses=lenses,
+        )
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    receipt = payload["stage_receipt"]
+    receipt["resolution_authority_enabled"] = True
+    receipt["stage_receipt_id"] = stable_id(
+        "contradiction_calibration_stage_receipt",
+        {
+            key: value
+            for key, value in receipt.items()
+            if key != "stage_receipt_id"
+        },
+    )
+    payload["stage_receipt_sha256"] = hashlib.sha256(
+        canonical_json_bytes(receipt)
+    ).hexdigest()
+    path.write_bytes(canonical_json_bytes(payload))
+
+    with pytest.raises(
+        ContradictionCalibrationStageIntegrityError,
+        match="Invalid Contradiction calibration-stage sidecar",
+    ):
+        read_contradiction_calibration_stage_sidecar(path)
+
+
+@requires_posix_stage
+def test_failed_resume_rolls_back_and_nonpristine_held_out_is_rejected(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "resume-rollback.vcs"
+    (
+        calibration,
+        held_out,
+        lenses,
+        _,
+        _,
+        _,
+        held_out_runtime,
+        runner,
+        _,
+    ) = _prepared_stage(path, 6960)
+    stage_bytes = path.read_bytes()
+    held_out_before = held_out_runtime.ledger.fingerprint()
+
+    class FailHeldOutRun:
+        def run(self, *args, **kwargs):
+            raise ContradictionLensControlIntegrityError(
+                "injected held-out resume failure"
+            )
+
+    with pytest.raises(
+        ContradictionCalibrationStageIntegrityError,
+        match="injected held-out resume failure",
+    ):
+        ContradictionDurableDimensionTrialRunner(
+            controlled_runner=FailHeldOutRun()
+        ).resume_from_stage(
+            path,
+            calibration[0],
+            held_out[0],
+            held_out_runtime,
+            lenses,
+        )
+    assert held_out_runtime.ledger.fingerprint() == held_out_before
+    assert path.read_bytes() == stage_bytes
+
+    runner.resume_from_stage(
+        path,
+        calibration[0],
+        held_out[0],
+        held_out_runtime,
+        lenses,
+    )
+    with pytest.raises(
+        ContradictionCalibrationStageIntegrityError,
+        match="pristine preregistered ledger",
+    ):
+        runner.resume_from_stage(
+            path,
+            calibration[0],
+            held_out[0],
+            held_out_runtime,
+            lenses,
+        )
+
+
+@requires_posix_stage
+def test_same_stage_write_is_idempotent_but_foreign_stage_cannot_replace_it(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "immutable-stage.vcs"
+    first = _pair_fixture(6970)
+    runner = ContradictionDurableDimensionTrialRunner()
+    original = runner.prepare_and_persist(
+        path,
+        first[0][0],
+        CounterfactualRuntime(),
+        first[1][0],
+        first[2],
+        pair_context=first[3],
+        criterion_declaration=first[4],
+    )
+    first_bytes = path.read_bytes()
+    replay = runner.prepare_and_persist(
+        path,
+        first[0][0],
+        CounterfactualRuntime(),
+        first[1][0],
+        first[2],
+        pair_context=first[3],
+        criterion_declaration=first[4],
+    )
+    assert replay.envelope == original.envelope
+    assert path.read_bytes() == first_bytes
+
+    foreign = _pair_fixture(6980)
+    with pytest.raises(
+        ContradictionCalibrationStageIntegrityError,
+        match="already committed a different receipt",
+    ):
+        runner.prepare_and_persist(
+            path,
+            foreign[0][0],
+            CounterfactualRuntime(),
+            foreign[1][0],
+            foreign[2],
+            pair_context=foreign[3],
+            criterion_declaration=foreign[4],
+        )
+    assert path.read_bytes() == first_bytes

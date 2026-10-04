@@ -1,4 +1,4 @@
-# Obligation Substrate v0.39
+# Obligation Substrate v0.40
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -582,6 +582,25 @@ generation, or safe autonomous policy revision.
   and the frozen Lens lineage. This sidecar is saved only after the atomic run;
   v0.39 does not yet provide a process-restart handoff between calibration and
   held-out execution.
+- An explicitly invoked v0.40 two-phase runner executes only the calibration
+  split from a pristine simulation ledger, derives the same v0.39 criterion,
+  and commits a canonical `.vcs` stage sidecar before its resume API will
+  accept any held-out runtime. The sidecar embeds the complete calibration
+  simulation ledger, observation, criterion, both preregistered contexts,
+  unchanged matched-control signature, and exact frozen Lens lineage.
+- `.vcs` publication uses a path-local POSIX `flock`, removes only stale
+  same-path temporaries while holding that lock, fsyncs the completed file,
+  atomically replaces the target, and syncs its directory. The first complete
+  stage committed to a path wins; an identical write is idempotent and a
+  foreign stage cannot replace it. A killed post-replace process can therefore
+  be resumed from the durable evidence even though its private in-memory
+  calibration runtime disappeared.
+- The v0.40 resume path reloads and revalidates the stage against both
+  canonical checkpoints and the Lens sidecar, reconstructs every calibration
+  reservation/settlement trace, requires an exactly pristine held-out ledger,
+  and only then runs the held-out split and applies the frozen criterion.
+  Failed resume leaves the held-out ledger unchanged. The stage carries no
+  held-out observation and cannot be built from one.
 - The selected cardinality and the bounded functional disposition are both
   derived from the same internal simulated route evidence. Their held-out
   agreement is therefore only a trace-local criterion match. Resolution-level
@@ -821,7 +840,9 @@ generation, or safe autonomous policy revision.
   functional probe, a v0.37 opt-in active-Lens control, v0.38 separately
   preregistered calibration/held-out contexts with disjoint canonical evidence
   and identical Lens lineage, and a v0.39 calibration-frozen internal
-  dimension/outcome criterion. It does not yet derive an outcome through a
+  dimension/outcome criterion. v0.40 durably separates that calibration stage
+  from held-out execution and permits exact process-restart resume. It does
+  not yet derive an outcome through a
   channel independent of the Lens-projected route evidence, establish
   Resolution-level dimensional separation or predictive discrimination, learn
   a Lens, feed a Resolution Contract, or carry canonical resolution authority.
@@ -850,15 +871,24 @@ generation, or safe autonomous policy revision.
   `.viq`, or `.viqh` members. Generic reservations/settlements and the
   preexisting Lens registry/ledger remain durable through explicit `.vob`
   save/load; v0.38 adds an explicitly saved `.vct` preregistration/receipt
-  sidecar, and v0.39 adds a completed `.vdc` criterion/evaluation sidecar,
-  paired back to the same two states. Neither is automatically scheduled,
-  appended, merged, or loaded by VDK/VOB APIs. The v0.39 criterion is not
-  durably published between calibration and held-out execution. Lens
+  sidecar, v0.39 adds a completed `.vdc` criterion/evaluation sidecar, and
+  v0.40 adds a calibration-stage `.vcs` sidecar paired back to both contexts.
+  None is automatically scheduled, appended, merged, or loaded by VDK/VOB
+  APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
+  deliberately accepts only pristine calibration and held-out simulation
+  ledgers; it is not a migration or merge protocol. Lens
   definition, approval, calibration references, and evidence result remain
   supplied governance inputs. No learned context or Lens, autonomous
   family-local scheduler, truth test, Resolution-level independent held-out
   replication, predictive discrimination, source-independence proof,
   dimensional separation, or Resolution Contract is added.
+- `.vcs` writer arbitration covers cooperating local POSIX processes opening
+  one stable path. It does not cover Windows/NTFS, network or lock-hostile
+  filesystems, hostile symlink/path replacement, kernel crash, power loss,
+  controller caches, hardware failure, distributed merge, signatures, trusted
+  timestamps, or remote notarization. Its lock does not create a transaction
+  with `.vob`, `.vct`, or `.vdc`; the stage is immutable first-committer-wins
+  evidence rather than an execution authority or canonical journal.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1664,6 +1694,48 @@ generation, or safe autonomous policy revision.
   resolution or promotion, autonomous scheduling, policy rewrite, semantic
   understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.40 claim boundary
+
+- **OBSERVED:** Eighty-one focused Contradiction tests and the 513-test full
+  repository suite pass. The dedicated compatibility check loads and embeds
+  all 17 preexisting checkpoints. Before resume, the held-out ledger remains
+  empty and the canonical `.vcs` artifact carries no held-out observation.
+  The artifact reconstructs the exact two-settlement calibration ledger and
+  frozen criterion. Killing a writer immediately before replacement leaves no
+  visible stage and its stale temporary is recovered by the next locked
+  writer; killing immediately after replacement leaves a complete stage that
+  a new process validates and resumes. Two simultaneously released foreign
+  writers produce exactly one committed stage and one rejection. Identical
+  publication is idempotent. Crossed canonical contexts, a fully rehashed
+  authority escalation, injected held-out failure, and a nonpristine held-out
+  ledger all fail closed without changing the stage, either canonical kernel,
+  the Lens sidecar, or the supplied held-out ledger.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in POSIX two-phase API now executes the
+  calibration split from a pristine private simulation ledger and atomically
+  commits an immutable, content-addressed `.vcs` sidecar before exposing a
+  held-out resume method. The sidecar embeds the complete calibration ledger
+  and closes its observation and criterion over both preregistered canonical
+  contexts, identical Lens lineage, and unchanged matched-control signature.
+  Its lock gives cooperating local writers first-committer-wins arbitration,
+  same-stage idempotence, and stale-temporary cleanup. Resume accepts only the
+  durable artifact and a pristine held-out ledger, reconstructs every
+  calibration trace, then executes held-out work and applies the criterion
+  unchanged. This is a process-restart evidence boundary only;
+  `resolution_trial_ready=False` and all v0.39 Resolution gaps remain.
+- **PROPOSED:** The next dependency is a causally downstream held-out outcome
+  channel whose observation is derived from actual experiment traces without
+  reusing either the Lens-projected references or the functional-routing
+  disposition that defines the criterion. It must be preregistered before the
+  calibration stage, retain an unchanged matched control and explicit valid
+  null, and preserve its own durable provenance before any claim of predictive
+  discrimination or dimensional separation is tested. Until that independent
+  channel exists, v0.40 does not establish Resolution-level dimensional
+  separation, predictive discrimination, independent held-out replication,
+  real-world source independence, external outcome, learned Lens or context,
+  truth selection, causal success, canonical resolution or promotion,
+  autonomous scheduling, policy rewrite, semantic understanding, `T_g`
+  control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1770,6 +1842,16 @@ dual-archive zero-cost replay. They also enforce the hard absence of
 Resolution-level dimensional separation, predictive discrimination,
 independent held-out replication, source independence, external outcome,
 truth, resolution, or canonical-commit authority.
+Contradiction calibration-stage tests additionally target persistence before
+held-out execution, complete embedded calibration-ledger reconstruction,
+process death immediately before and after atomic replacement, stale-temporary
+recovery under the writer lock, idempotent same-stage publication,
+first-committer-wins arbitration between foreign process writers, exact pairing
+to both preregistered canonical contexts, fully rehashed authority tampering,
+failed-resume rollback, immutable stage bytes during resume, and rejection of
+nonpristine held-out ledgers. They retain the same hard absence of independent
+outcome, predictive, truth, resolution, promotion, policy-rewrite, and
+canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

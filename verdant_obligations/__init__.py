@@ -102,6 +102,28 @@ from .contradiction_trial_controls import (
     load_contradiction_lens_trial_sidecar,
     save_contradiction_lens_trial_sidecar,
 )
+from .contradiction_dimension_criterion import (
+    CONTRADICTION_DIMENSION_CRITERION_VERSION,
+    CONTRADICTION_DIMENSION_DECLARATION_VERSION,
+    CONTRADICTION_DIMENSION_EVALUATION_VERSION,
+    CONTRADICTION_DIMENSION_SIDECAR_FORMAT,
+    CONTRADICTION_PROJECTION_CARDINALITY_PROFILES,
+    ContradictionCalibrationCriterionDeriver,
+    ContradictionCalibrationDimensionCriterion,
+    ContradictionDimensionCriterionDeclaration,
+    ContradictionDimensionCriterionIntegrityError,
+    ContradictionDimensionCriterionObserver,
+    ContradictionDimensionEvaluationDisposition,
+    ContradictionDimensionEvaluationReceipt,
+    ContradictionDimensionSidecarEnvelope,
+    ContradictionDimensionTrialRun,
+    ContradictionDimensionTrialRunner,
+    ContradictionLensOutputDimension,
+    ContradictionProjectionCardinalityProfile,
+    contradiction_dimension_sidecar_bytes,
+    load_contradiction_dimension_sidecar,
+    save_contradiction_dimension_sidecar,
+)
 from .prediction_failures import (
     PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
     PredictionFailureCandidate,

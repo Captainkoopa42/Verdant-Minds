@@ -1,4 +1,4 @@
-# Obligation Substrate v0.38
+# Obligation Substrate v0.39
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -562,6 +562,31 @@ generation, or safe autonomous policy revision.
   fingerprints, every reservation/settlement trace, and the complete frozen
   Lens state before returning the sidecar. Serialization grants no canonical
   or epistemic authority.
+- A v0.39 declaration fixes the exact `SELECT_ACTIVATED_REFS` output dimension,
+  its three ID-independent cardinality profiles, the three existing bounded
+  functional dispositions, and an explicit valid-null branch before either
+  split executes. The concrete criterion is then derived through an API that
+  accepts only the completed calibration observation: it closes the actual
+  baseline/treatment traces, two Lens projections, their cardinalities, and
+  the calibration functional disposition without accepting a held-out
+  observation or simulation ledger.
+- The v0.39 runner constructs that immutable content-addressed criterion after
+  the calibration pair settles and before invoking the held-out pair. It then
+  applies the criterion unchanged. The held-out result is one of a trace-local
+  outcome match, an explicit valid null when the Lens-output cardinality lies
+  outside the calibrated profile, or a trace-local mismatch. A failure after
+  criterion derivation still publishes neither staged simulation ledger.
+- A separately durable `.vdc` completed-evidence sidecar re-closes the v0.38
+  pair and replication receipt, v0.39 declaration, criterion, evaluation,
+  both canonical checkpoints, both simulation ledgers, every nested trace,
+  and the frozen Lens lineage. This sidecar is saved only after the atomic run;
+  v0.39 does not yet provide a process-restart handoff between calibration and
+  held-out execution.
+- The selected cardinality and the bounded functional disposition are both
+  derived from the same internal simulated route evidence. Their held-out
+  agreement is therefore only a trace-local criterion match. Resolution-level
+  dimensional separation, predictive discrimination, independent held-out
+  replication, source independence, and external outcome all remain missing.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -793,12 +818,13 @@ generation, or safe autonomous policy revision.
   checkpoint replay, anti-suppression validation, a v0.33 provenance-partition
   hypothesis/evidence protocol, a v0.34 matched isolated projection probe, a
   v0.35 one-for-one resolution-evidence receipt, a v0.36 context-conditioned
-  functional probe, a v0.37 opt-in active-Lens control, and v0.38 separately
+  functional probe, a v0.37 opt-in active-Lens control, v0.38 separately
   preregistered calibration/held-out contexts with disjoint canonical evidence
-  and identical Lens lineage. It does not yet preregister a dimension-specific
-  prediction or trace-derived outcome criterion, establish dimensional
-  separation or predictive discrimination, learn a Lens, feed a Resolution
-  Contract, or carry canonical resolution authority.
+  and identical Lens lineage, and a v0.39 calibration-frozen internal
+  dimension/outcome criterion. It does not yet derive an outcome through a
+  channel independent of the Lens-projected route evidence, establish
+  Resolution-level dimensional separation or predictive discrimination, learn
+  a Lens, feed a Resolution Contract, or carry canonical resolution authority.
 - Shared or different evidence IDs and source roots are structural ledger
   observations only. They do not establish source independence, causal
   relevance, contextual compatibility, semantic correctness, or which opposed
@@ -811,23 +837,28 @@ generation, or safe autonomous policy revision.
   to that same context. v0.38 applies the unchanged Lens to a second canonical
   evidence context and can observe ID-independent structural agreement, but
   typed source-root labels may be shared across the contexts and disjoint
-  record IDs do not prove that real-world sources are independent. None
-  supplies an independent prediction. The null and defer hypotheses remain
-  mandatory alternatives, not conclusions selected by the probe.
+  record IDs do not prove that real-world sources are independent. v0.39
+  freezes a calibration-derived cardinality/outcome criterion before the
+  held-out run, but its cardinality and outcome still share the same simulated
+  routing substrate; it is not an independent prediction. The null and defer
+  hypotheses remain mandatory alternatives, not conclusions selected by the
+  probe.
 - Contradiction hypothesis generation remains explicitly invoked and its
   Attention metrics and `0.05` minimum budget are visible supplied policy. The
   bundle, probe, observations, controlled Lens context, and coverage receipts
   remain non-authoritative and are not canonical VDK records or new `.vob`,
   `.viq`, or `.viqh` members. Generic reservations/settlements and the
   preexisting Lens registry/ledger remain durable through explicit `.vob`
-  save/load; v0.38 adds only an explicitly saved `.vct` preregistration/receipt
-  sidecar paired back to two such states. It is not automatically scheduled,
-  appended, merged, or loaded by VDK/VOB APIs. Lens definition, approval,
-  calibration references, and evidence result remain supplied governance
-  inputs. No learned context or Lens, autonomous family-local scheduler, truth
-  test, Resolution-level independent held-out replication, predictive
-  discrimination, source-independence proof, dimensional separation, or
-  Resolution Contract is added.
+  save/load; v0.38 adds an explicitly saved `.vct` preregistration/receipt
+  sidecar, and v0.39 adds a completed `.vdc` criterion/evaluation sidecar,
+  paired back to the same two states. Neither is automatically scheduled,
+  appended, merged, or loaded by VDK/VOB APIs. The v0.39 criterion is not
+  durably published between calibration and held-out execution. Lens
+  definition, approval, calibration references, and evidence result remain
+  supplied governance inputs. No learned context or Lens, autonomous
+  family-local scheduler, truth test, Resolution-level independent held-out
+  replication, predictive discrimination, source-independence proof,
+  dimensional separation, or Resolution Contract is added.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1595,6 +1626,44 @@ generation, or safe autonomous policy revision.
   policy rewrite, semantic understanding, `T_g` control, or thermodynamic
   behavior.
 
+## v0.39 claim boundary
+
+- **OBSERVED:** Eighty-three focused Contradiction/Lens tests and the 507-test
+  full repository suite pass. All 17 preexisting checkpoints still load and
+  embed. An instrumented runner observes the immutable criterion before the
+  held-out probe is invoked. The matched fixture produces a trace-local
+  cardinality/outcome match, while a held-out context outside the calibration
+  cardinality profile produces the declared valid null. A held-out
+  observation cannot be supplied to the calibration-only deriver. Fully
+  rehashed declaration-grammar, calibration-outcome, and authority changes,
+  crossed simulation ledgers, completed-sidecar tampering, and an injected
+  post-criterion held-out failure all fail closed; the injected failure
+  publishes neither simulation pair. Dual `.vob` plus `.vdc` replay
+  reconstructs the exact criterion and evaluation at zero additional cost.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in declaration now fixes the typed
+  `SELECT_ACTIVATED_REFS` cardinality profile and bounded functional outcomes
+  before execution. The controller settles the calibration pair in a private
+  ledger, derives a content-addressed criterion solely through the calibration
+  observation API, and only then invokes the held-out pair and applies that
+  criterion unchanged. The evaluation retains match, out-of-profile valid
+  null, and mismatch branches. A completed `.vdc` sidecar atomically preserves
+  the full pair/declaration/criterion/evaluation lineage. This establishes only
+  ordering, replay, and an internal trace-local correspondence; the
+  Resolution coverage remains unchanged and `resolution_trial_ready=False`.
+- **PROPOSED:** The next dependency is a durable two-phase calibration-stage
+  receipt that is atomically persisted before held-out execution and can
+  resume after process death without consulting held-out traces. It needs
+  writer arbitration, stale-temporary recovery, exact pairing back to both
+  preregistered contexts, and unchanged matched controls. Only after that
+  durability boundary should a causally downstream held-out outcome channel
+  that does not reuse Lens-projected references or the functional-routing
+  derivation be tested. Until those layers exist, v0.39 does not establish
+  Resolution-level dimensional separation, predictive discrimination,
+  independent held-out replication, real-world source independence, external
+  outcome, learned Lens or context, truth selection, causal success, canonical
+  resolution or promotion, autonomous scheduling, policy rewrite, semantic
+  understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1691,6 +1760,16 @@ support, dual-ledger atomic rollback, deterministic preregistration/completed
 rehashed context-overlap and authority attacks, and the hard absence of
 dimensional-separation, source-independence, predictive, Resolution-level
 held-out, truth, outcome, resolution, or canonical-commit authority.
+Contradiction dimension-criterion tests additionally target declaration before
+execution, calibration-only derivation from actual settled traces, criterion
+freeze before the held-out runner call, unchanged held-out application,
+cardinality-profile outcome match, an explicit out-of-profile valid null,
+fully rehashed grammar/evidence/authority tampering, post-criterion atomic
+rollback, deterministic completed `.vdc` bytes, crossed-ledger rejection, and
+dual-archive zero-cost replay. They also enforce the hard absence of
+Resolution-level dimensional separation, predictive discrimination,
+independent held-out replication, source independence, external outcome,
+truth, resolution, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

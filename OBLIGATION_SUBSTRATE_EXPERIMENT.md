@@ -1,4 +1,4 @@
-# Obligation Substrate v0.37
+# Obligation Substrate v0.38
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -533,6 +533,35 @@ generation, or safe autonomous policy revision.
   discrimination, genuinely independent held-out replication, external
   outcome, truth, readiness, resolution, promotion, and canonical commit
   authority remain explicitly false.
+- A separately invoked v0.38 trial controller preregisters exactly one
+  calibration context and one held-out context before either matched pair is
+  published. The contexts must name different canonical checkpoints,
+  obligation/history/contradiction records, evidence receipts, source-event
+  keys, protected claims, and protected evidence. They must simultaneously
+  carry byte-identical Lens definition, binding, evidence, and governance
+  histories and the same probe versions, Attention budget, bounded outcome
+  alternatives, route count, and typed Lens operator.
+- Calibration and held-out probes execute against different kernels and
+  different simulation ledgers. Both ordinary v0.37 pairs are staged first;
+  only after their complete nested evidence validates does the controller
+  publish either simulation ledger. A failure in the second context therefore
+  leaves both original ledgers unchanged, as well as both canonical kernels
+  and the shared Lens sidecar.
+- The completed v0.38 receipt compares an ID-independent structural-effect
+  signature derived from the actual matched traces, source-partition and
+  functional dispositions, route shapes, and read-only Lens projections. It
+  records either replicated internal structure or a valid divergent null. Even
+  agreement remains explicitly deterministic and simulation-local: the
+  Resolution requirement named `independent_held_out_replication` stays
+  missing because no dimension-specific prediction or observed outcome was
+  preregistered.
+- A new `.vct` sidecar stores either the preregistered pair alone or that pair
+  plus its completed receipt as deterministic canonical JSON. Atomic replace
+  and directory sync keep this experimental evidence separate from VDK and
+  VOB formats. Loading revalidates both canonical checkpoints, both simulation
+  fingerprints, every reservation/settlement trace, and the complete frozen
+  Lens state before returning the sidecar. Serialization grants no canonical
+  or epistemic authority.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -764,8 +793,10 @@ generation, or safe autonomous policy revision.
   checkpoint replay, anti-suppression validation, a v0.33 provenance-partition
   hypothesis/evidence protocol, a v0.34 matched isolated projection probe, a
   v0.35 one-for-one resolution-evidence receipt, a v0.36 context-conditioned
-  functional probe, and a v0.37 opt-in active-Lens control. It does not yet run
-  separately declared calibration/held-out contexts, establish dimensional
+  functional probe, a v0.37 opt-in active-Lens control, and v0.38 separately
+  preregistered calibration/held-out contexts with disjoint canonical evidence
+  and identical Lens lineage. It does not yet preregister a dimension-specific
+  prediction or trace-derived outcome criterion, establish dimensional
   separation or predictive discrimination, learn a Lens, feed a Resolution
   Contract, or carry canonical resolution authority.
 - Shared or different evidence IDs and source roots are structural ledger
@@ -777,22 +808,26 @@ generation, or safe autonomous policy revision.
   outcome, or dimensional separation. v0.35 makes each of those absences
   explicit and immutable; v0.36 adds only an internal context-conditioned
   route effect, and v0.37 adds only an active supplied Lens applied read-only
-  to that same context. None supplies independent prediction. The null and
-  defer hypotheses remain mandatory alternatives, not conclusions selected by
-  the probe.
+  to that same context. v0.38 applies the unchanged Lens to a second canonical
+  evidence context and can observe ID-independent structural agreement, but
+  typed source-root labels may be shared across the contexts and disjoint
+  record IDs do not prove that real-world sources are independent. None
+  supplies an independent prediction. The null and defer hypotheses remain
+  mandatory alternatives, not conclusions selected by the probe.
 - Contradiction hypothesis generation remains explicitly invoked and its
   Attention metrics and `0.05` minimum budget are visible supplied policy. The
   bundle, probe, observations, controlled Lens context, and coverage receipts
-  are reconstructible non-authoritative objects, not canonical VDK records or
-  new `.vob`, `.viq`, or `.viqh` members. Generic reservations/settlements and
-  the preexisting Lens registry/ledger are durable only through explicit
-  `.vob` save/load. The v0.37 context is supplied explicitly and reconstructed
-  from those exact sidecars; it is not automatically scheduled or saved as a
-  new receipt. Lens definition, approval, calibration references, and evidence
-  result remain supplied governance inputs. No learned context or Lens,
-  autonomous family-local scheduler, truth test, independent held-out
-  replication, predictive discrimination, source-independence proof,
-  dimensional separation, or Resolution Contract is added.
+  remain non-authoritative and are not canonical VDK records or new `.vob`,
+  `.viq`, or `.viqh` members. Generic reservations/settlements and the
+  preexisting Lens registry/ledger remain durable through explicit `.vob`
+  save/load; v0.38 adds only an explicitly saved `.vct` preregistration/receipt
+  sidecar paired back to two such states. It is not automatically scheduled,
+  appended, merged, or loaded by VDK/VOB APIs. Lens definition, approval,
+  calibration references, and evidence result remain supplied governance
+  inputs. No learned context or Lens, autonomous family-local scheduler, truth
+  test, Resolution-level independent held-out replication, predictive
+  discrimination, source-independence proof, dimensional separation, or
+  Resolution Contract is added.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1525,6 +1560,41 @@ generation, or safe autonomous policy revision.
   promotion, autonomous scheduling, policy rewrite, semantic understanding,
   `T_g` control, or thermodynamic behavior.
 
+## v0.38 claim boundary
+
+- **OBSERVED:** Sixty-seven focused Contradiction/Lens tests and the 500-test
+  full repository suite pass. All 17 preexisting checkpoints still load and
+  embed. Dual `.vob` plus `.vct` replay reconstructs the exact calibration and
+  held-out controls, nested observations, structural-effect classification,
+  and receipt at zero additional simulation cost. Reused canonical contexts,
+  mismatched Lens histories, Lens changes after preregistration, fully rehashed
+  checkpoint overlap, forged predictive authority, crossed simulation ledgers,
+  and an injected second-context failure all fail closed; the injected failure
+  publishes neither staged simulation pair.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in controller now runs the existing
+  v0.37 matched probe in two separately preregistered, canonically disjoint
+  evidence contexts under one exact frozen Lens lineage and matched policy
+  controls. A content-addressed receipt classifies equality of an
+  ID-independent, trace-derived structural-effect signature, retaining a valid
+  divergent-null disposition. A separately durable `.vct` sidecar can preserve
+  either the preregistration or completed receipt and re-closes both canonical,
+  simulation, and Lens lineages on load. This establishes only independently
+  constructed canonical contexts and deterministic internal structural
+  replication; every previously missing Resolution requirement remains
+  missing and `resolution_trial_ready=False`.
+- **PROPOSED:** The next dependency is a calibration-only, preregistered
+  dimension/outcome criterion derived from actual experiment traces, frozen
+  before the held-out run, and then applied unchanged to the held-out context
+  alongside an identical matched control. It must admit an explicit valid null
+  and test whether the selected Lens dimension separates a bounded functional
+  outcome without consulting held-out evidence during calibration. Until that
+  exists, v0.38 does not establish dimensional separation, predictive
+  discrimination, Resolution-level held-out replication, real-world source
+  independence, external outcome, learned Lens or context, truth selection,
+  causal success, canonical resolution or promotion, autonomous scheduling,
+  policy rewrite, semantic understanding, `T_g` control, or thermodynamic
+  behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1612,6 +1682,15 @@ cross-ledger archive replay, foreign-simulation-ledger rejection, fully
 rehashed projection/gap/authority tampering, atomic wrapper rollback, and the
 hard absence of dimensional-separation, source-independence, predictive,
 held-out, truth, resolution, or canonical-commit authority.
+Contradiction held-out-control tests additionally target separate canonical
+checkpoints and simulation ledgers, disjoint obligation/claim/evidence
+provenance, identical frozen Lens lineage, matched budgets and bounded outcome
+controls, ID-independent structural-effect comparison, explicit divergent-null
+support, dual-ledger atomic rollback, deterministic preregistration/completed
+`.vct` bytes, dual-archive zero-cost replay, crossed-ledger rejection, fully
+rehashed context-overlap and authority attacks, and the hard absence of
+dimensional-separation, source-independence, predictive, Resolution-level
+held-out, truth, outcome, resolution, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

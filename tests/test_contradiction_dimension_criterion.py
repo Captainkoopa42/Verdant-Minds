@@ -18,6 +18,7 @@ from verdant_kernel import (
 from verdant_kernel.models import canonical_json_bytes, stable_id
 from verdant_obligations import (
     CONTRADICTION_CALIBRATION_STAGE_VERSION,
+    CONTRADICTION_DOWNSTREAM_TRACE_FIELD,
     CONTRADICTION_HYPOTHESIS_PROTOCOL_VERSION,
     CONTRADICTION_LENS_MISSING_REQUIREMENTS,
     CONTRADICTION_PROVENANCE_ACTION_OPERATOR,
@@ -26,7 +27,12 @@ from verdant_obligations import (
     ContradictionCalibrationCriterionDeriver,
     ContradictionCalibrationDimensionCriterion,
     ContradictionCalibrationStageIntegrityError,
+    ContradictionDownstreamOutcomeDisposition,
+    ContradictionDownstreamOutcomeIntegrityError,
+    ContradictionDownstreamOutcomeObserver,
+    ContradictionDownstreamOutcomePolicy,
     ContradictionDurableDimensionTrialRunner,
+    ContradictionDurableDownstreamOutcomeRunner,
     ContradictionDimensionCriterionDeclaration,
     ContradictionDimensionCriterionIntegrityError,
     ContradictionDimensionEvaluationDisposition,
@@ -47,6 +53,7 @@ from verdant_obligations import (
     LensOpcode,
     contradiction_dimension_sidecar_bytes,
     load_contradiction_calibration_stage_sidecar,
+    read_contradiction_downstream_result,
     load_contradiction_dimension_sidecar,
     load_experiment_archive_bundle,
     save_contradiction_dimension_sidecar,
@@ -1058,3 +1065,333 @@ def test_same_stage_write_is_idempotent_but_foreign_stage_cannot_replace_it(
             criterion_declaration=foreign[4],
         )
     assert path.read_bytes() == first_bytes
+
+
+def _downstream_paths(tmp_path: Path, label: str = "outcome"):
+    return (
+        tmp_path / f"{label}.vop",
+        tmp_path / f"{label}.vcs",
+        tmp_path / f"{label}.vor",
+    )
+
+
+def _execute_downstream(
+    tmp_path: Path,
+    *,
+    seed: int = 6990,
+    policy: ContradictionDownstreamOutcomePolicy | None = None,
+    runner: ContradictionDurableDownstreamOutcomeRunner | None = None,
+):
+    calibration, held_out, lenses, pair, declaration = _pair_fixture(seed)
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    paths = _downstream_paths(tmp_path, str(seed))
+    result = (runner or ContradictionDurableDownstreamOutcomeRunner()).run(
+        *paths,
+        calibration[0],
+        calibration_runtime,
+        held_out[0],
+        held_out_runtime,
+        lenses,
+        pair_context=pair,
+        criterion_declaration=declaration,
+        outcome_policy=policy,
+    )
+    return (
+        calibration,
+        held_out,
+        lenses,
+        pair,
+        declaration,
+        calibration_runtime,
+        held_out_runtime,
+        paths,
+        result,
+    )
+
+
+@requires_posix_stage
+def test_downstream_outcome_is_preregistered_and_uses_count_only_native_trace(
+    tmp_path: Path,
+) -> None:
+    pre_path, _, result_path = _downstream_paths(tmp_path, "6990")
+    stage_saw_preregistration: list[bool] = []
+
+    class OrderingRunner(ContradictionDurableDimensionTrialRunner):
+        def prepare_and_persist(self, *args, **kwargs):
+            stage_saw_preregistration.append(
+                pre_path.exists() and not result_path.exists()
+            )
+            return super().prepare_and_persist(*args, **kwargs)
+
+    fixture = _pair_fixture(6990)
+    canonical_before = (fixture[0][0].fingerprint(), fixture[1][0].fingerprint())
+    lens_before = fixture[2].fingerprint()
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    paths = _downstream_paths(tmp_path, "6990")
+    outcome = ContradictionDurableDownstreamOutcomeRunner(
+        dimension_runner=OrderingRunner()
+    ).run(
+        *paths,
+        fixture[0][0],
+        calibration_runtime,
+        fixture[1][0],
+        held_out_runtime,
+        fixture[2],
+        pair_context=fixture[3],
+        criterion_declaration=fixture[4],
+    )
+
+    receipt = outcome.receipt
+    assert stage_saw_preregistration == [True]
+    assert all(path.exists() for path in paths)
+    assert receipt.disposition == (
+        ContradictionDownstreamOutcomeDisposition.ADMISSION_GAIN
+    )
+    assert receipt.baseline.trace_added_structure_count == 0
+    assert receipt.treatment.trace_added_structure_count == 1
+    assert receipt.baseline.trace_field == CONTRADICTION_DOWNSTREAM_TRACE_FIELD
+    assert receipt.treatment.trace_field == CONTRADICTION_DOWNSTREAM_TRACE_FIELD
+    assert receipt.baseline.raw_score == pytest.approx(0.24)
+    assert receipt.baseline.effective_score == pytest.approx(0.232)
+    assert not receipt.baseline.admitted
+    assert receipt.treatment.raw_score == pytest.approx(0.38)
+    assert receipt.treatment.effective_score == pytest.approx(0.372)
+    assert receipt.treatment.admitted
+    assert receipt.baseline.candidate_control_signature == (
+        receipt.treatment.candidate_control_signature
+    )
+    assert receipt.baseline.source_contradiction_ref == (
+        receipt.treatment.source_contradiction_ref
+    )
+    assert receipt.baseline.source_claim_refs == receipt.treatment.source_claim_refs
+    assert receipt.baseline.source_evidence_refs == (
+        receipt.treatment.source_evidence_refs
+    )
+    assert receipt.baseline.candidate.evidence_refs == receipt.source_evidence_refs
+    assert receipt.treatment.candidate.evidence_refs == receipt.source_evidence_refs
+    assert not receipt.baseline.trace_record_identities_consulted
+    assert not receipt.treatment.trace_record_identities_consulted
+    assert not receipt.baseline.lens_projections_consulted
+    assert not receipt.treatment.functional_disposition_consulted
+    assert receipt.outcome_derived_from_actual_experiment_traces
+    assert receipt.identical_matched_workspace_controls_verified
+    assert receipt.evidence_preserved and receipt.anti_suppression_verified
+    assert not receipt.predictive_discrimination_observed
+    assert not receipt.dimensional_separation_observed
+    assert not receipt.external_outcome_observed
+    assert not receipt.resolution_trial_ready
+    assert not receipt.resolution_authority_enabled
+    assert not receipt.policy_rewrite_authority_enabled
+    assert not receipt.canonical_commit_permitted
+    assert len(calibration_runtime.ledger.state.settlements) == 2
+    assert len(held_out_runtime.ledger.state.settlements) == 2
+    assert (fixture[0][0].fingerprint(), fixture[1][0].fingerprint()) == (
+        canonical_before
+    )
+    assert fixture[2].fingerprint() == lens_before
+
+
+@requires_posix_stage
+def test_downstream_outcome_retains_an_explicit_native_valid_null(
+    tmp_path: Path,
+) -> None:
+    *_, result = _execute_downstream(
+        tmp_path,
+        seed=7000,
+        policy=ContradictionDownstreamOutcomePolicy(
+            minimum_admission_score=0.0
+        ),
+    )
+    receipt = result.receipt
+    assert receipt.disposition == ContradictionDownstreamOutcomeDisposition.VALID_NULL
+    assert receipt.baseline.admitted
+    assert receipt.treatment.admitted
+    assert receipt.baseline.trace_added_structure_count == 0
+    assert receipt.treatment.trace_added_structure_count == 1
+    assert receipt.baseline.candidate_control_signature == (
+        receipt.treatment.candidate_control_signature
+    )
+    assert receipt.explicit_valid_null_supported
+    assert not receipt.predictive_discrimination_observed
+
+
+@requires_posix_stage
+def test_downstream_observer_failure_publishes_no_held_out_state_or_result(
+    tmp_path: Path,
+) -> None:
+    paths = _downstream_paths(tmp_path, "7010")
+    fixture = _pair_fixture(7010)
+    canonical_before = (fixture[0][0].fingerprint(), fixture[1][0].fingerprint())
+    lens_before = fixture[2].fingerprint()
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+
+    class FailingObserver(ContradictionDownstreamOutcomeObserver):
+        def observe(self, *args, **kwargs):
+            raise ContradictionDownstreamOutcomeIntegrityError(
+                "injected downstream observer failure"
+            )
+
+    with pytest.raises(
+        ContradictionDownstreamOutcomeIntegrityError,
+        match="injected downstream observer failure",
+    ):
+        ContradictionDurableDownstreamOutcomeRunner(
+            observer=FailingObserver()
+        ).run(
+            *paths,
+            fixture[0][0],
+            calibration_runtime,
+            fixture[1][0],
+            held_out_runtime,
+            fixture[2],
+            pair_context=fixture[3],
+            criterion_declaration=fixture[4],
+        )
+    assert paths[0].exists()
+    assert paths[1].exists()
+    assert not paths[2].exists()
+    assert len(calibration_runtime.ledger.state.settlements) == 2
+    assert held_out_runtime.ledger.state.settlements == ()
+    assert (fixture[0][0].fingerprint(), fixture[1][0].fingerprint()) == (
+        canonical_before
+    )
+    assert fixture[2].fingerprint() == lens_before
+
+
+@requires_posix_stage
+def test_downstream_outcome_rejects_a_foreign_simulation_ledger(
+    tmp_path: Path,
+) -> None:
+    _, held_out, _, _, _, _, _, _, completed = _execute_downstream(
+        tmp_path, seed=7020
+    )
+    receipt = completed.receipt
+    foreign = completed.calibration_ledger
+    foreign_before = foreign.fingerprint()
+    canonical_before = held_out[0].fingerprint()
+    with pytest.raises(
+        ContradictionDownstreamOutcomeIntegrityError,
+        match="ledger|settlement|observation|simulation",
+    ):
+        ContradictionDownstreamOutcomeObserver().observe(
+            held_out[0],
+            foreign,
+            declaration=receipt.declaration,
+            preregistration_sha256=receipt.preregistration_sha256,
+            calibration_stage_sha256=receipt.calibration_stage_sha256,
+            calibration_stage_receipt_ref=receipt.calibration_stage_receipt_ref,
+            held_out_observation=receipt.held_out_observation,
+        )
+    assert foreign.fingerprint() == foreign_before
+    assert held_out[0].fingerprint() == canonical_before
+
+
+@requires_posix_stage
+def test_downstream_result_rejects_fully_rehashed_authority_tamper(
+    tmp_path: Path,
+) -> None:
+    *_, paths, _ = _execute_downstream(tmp_path, seed=7030)
+    result_path = paths[2]
+    payload = json.loads(result_path.read_text(encoding="utf-8"))
+    receipt = payload["receipt"]
+    receipt["predictive_discrimination_observed"] = True
+    receipt["receipt_id"] = stable_id(
+        "contradiction_downstream_outcome_receipt",
+        {key: value for key, value in receipt.items() if key != "receipt_id"},
+    )
+    payload["receipt_sha256"] = hashlib.sha256(
+        canonical_json_bytes(receipt)
+    ).hexdigest()
+    result_path.write_bytes(canonical_json_bytes(payload))
+    with pytest.raises(
+        ContradictionDownstreamOutcomeIntegrityError,
+        match="Invalid downstream result",
+    ):
+        read_contradiction_downstream_result(result_path)
+
+
+@requires_posix_stage
+def test_completed_downstream_sidecar_replays_without_new_simulation_cost(
+    tmp_path: Path,
+) -> None:
+    (
+        calibration,
+        held_out,
+        lenses,
+        pair,
+        declaration,
+        _,
+        _,
+        paths,
+        first,
+    ) = _execute_downstream(tmp_path, seed=7040)
+    before = tuple(path.read_bytes() for path in paths)
+
+    class NoExecutionRunner:
+        def prepare_and_persist(self, *args, **kwargs):
+            raise AssertionError("completed replay reran calibration")
+
+        def resume_from_stage(self, *args, **kwargs):
+            raise AssertionError("completed replay reran held-out simulation")
+
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    replay = ContradictionDurableDownstreamOutcomeRunner(
+        dimension_runner=NoExecutionRunner()
+    ).run(
+        *paths,
+        calibration[0],
+        calibration_runtime,
+        held_out[0],
+        held_out_runtime,
+        lenses,
+        pair_context=pair,
+        criterion_declaration=declaration,
+    )
+    assert replay.replayed
+    assert replay.receipt == first.receipt
+    assert tuple(path.read_bytes() for path in paths) == before
+    assert len(calibration_runtime.ledger.state.settlements) == 2
+    assert len(held_out_runtime.ledger.state.settlements) == 2
+
+
+@requires_posix_stage
+def test_calibration_stage_cannot_precede_downstream_preregistration(
+    tmp_path: Path,
+) -> None:
+    pre_path, stage_path, result_path = _downstream_paths(tmp_path, "7050")
+    calibration, held_out, lenses, pair, declaration = _pair_fixture(7050)
+    ContradictionDurableDimensionTrialRunner().prepare_and_persist(
+        stage_path,
+        calibration[0],
+        CounterfactualRuntime(),
+        held_out[0],
+        lenses,
+        pair_context=pair,
+        criterion_declaration=declaration,
+    )
+    stage_bytes = stage_path.read_bytes()
+    held_out_runtime = CounterfactualRuntime()
+    with pytest.raises(
+        ContradictionDownstreamOutcomeIntegrityError,
+        match="predates downstream preregistration",
+    ):
+        ContradictionDurableDownstreamOutcomeRunner().run(
+            pre_path,
+            stage_path,
+            result_path,
+            calibration[0],
+            CounterfactualRuntime(),
+            held_out[0],
+            held_out_runtime,
+            lenses,
+            pair_context=pair,
+            criterion_declaration=declaration,
+        )
+    assert not pre_path.exists()
+    assert not result_path.exists()
+    assert stage_path.read_bytes() == stage_bytes
+    assert held_out_runtime.ledger.state.settlements == ()

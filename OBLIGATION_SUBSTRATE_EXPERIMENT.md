@@ -1,4 +1,4 @@
-# Obligation Substrate v0.40
+# Obligation Substrate v0.41
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -601,6 +601,25 @@ generation, or safe autonomous policy revision.
   and only then runs the held-out split and applies the frozen criterion.
   Failed resume leaves the held-out ledger unchanged. The stage carries no
   held-out observation and cannot be built from one.
+- A separately durable v0.41 `.vop` preregistration freezes the held-out
+  canonical Contradiction source, complete claim/evidence references, native
+  shadow-workspace policy, resource request, exact
+  `collection_deltas.structures.added_record_keys.count` trace field, count-to-
+  pressure mapping, and bounded admission-gain/valid-null outcome grammar
+  before the v0.40 calibration-stage API can run.
+- The v0.41 observer consumes only the number of added structure keys in each
+  actual held-out execution trace. It never consumes their identities, the
+  Lens-projected claim references, or the functional-routing disposition. The
+  two isolated native `VerdantWorkspacePipeline` cycles share the exact same
+  canonical Contradiction, evidence, resource request, persistence, and frozen
+  workspace policy; contradiction pressure is their sole outcome-relevant
+  difference. Neither workspace cycle can leak into the canonical kernel.
+- A completed `.vor` sidecar closes the immutable `.vop`, exact `.vcs` bytes
+  and stage receipt, full held-out observation, both native workspace reports
+  and events, and the complete two-settlement held-out simulation ledger.
+  Loading reruns the count-only observer deterministically without executing a
+  simulation. Held-out work remains private until the completed sidecar is
+  committed, so observer failure publishes no caller-visible held-out state.
 - The selected cardinality and the bounded functional disposition are both
   derived from the same internal simulated route evidence. Their held-out
   agreement is therefore only a trace-local criterion match. Resolution-level
@@ -1736,6 +1755,43 @@ generation, or safe autonomous policy revision.
   autonomous scheduling, policy rewrite, semantic understanding, `T_g`
   control, or thermodynamic behavior.
 
+## v0.41 claim boundary
+
+- **OBSERVED:** Eighty-eight focused Contradiction tests and the 520-test full
+  repository suite pass. The dedicated compatibility check still loads and
+  embeds all 17 preexisting checkpoints. In the positive fixture the baseline
+  trace adds zero structures and produces native workspace scores
+  `raw=0.24`, `effective=0.232`, and suppression; the treatment adds one and
+  produces `raw=0.38`, `effective=0.372`, and admission. A separately
+  preregistered zero-threshold context admits both arms and records the
+  explicit valid null. A foreign simulation ledger, fully rehashed authority
+  escalation, injected post-execution observer failure, and a calibration
+  stage present before any `.vop` preregistration all fail closed. Completed
+  `.vop`/`.vcs`/`.vor` replay reproduces the receipt without new simulation
+  cost.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in three-artifact runner now persists
+  the downstream declaration before invoking v0.40 calibration, executes the
+  held-out pair privately, and derives a native shadow-workspace admission
+  outcome solely from each settled trace's added-structure count. Exact source
+  Contradiction and evidence lineage, identical arm controls, semantic-record
+  preservation, simulation/canonical/Lens isolation, and hard non-authority
+  flags are revalidated on load. This establishes one internally downstream,
+  trace-derived outcome channel and its valid-null grammar only. It does not
+  newly establish an external outcome, prediction, dimensional meaning,
+  source independence, or any Resolution requirement;
+  `resolution_trial_ready=False`.
+- **PROPOSED:** The next dependency is a calibration-only prediction rule,
+  frozen before any held-out outcome execution, that maps the already selected
+  Lens cardinality to this separately defined workspace-outcome grammar. The
+  rule must be evaluated unchanged across a preregistered positive held-out
+  context and a negative or valid-null matched context, retain separate
+  durable provenance, and accept no held-out trace during calibration. Only
+  then can predictive discrimination or dimensional separation begin to be
+  tested. v0.41 does not establish either claim, independent real-world source
+  provenance, external outcome, truth selection, causal success, canonical
+  resolution or promotion, autonomous scheduling, policy rewrite, semantic
+  understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1852,6 +1908,16 @@ failed-resume rollback, immutable stage bytes during resume, and rejection of
 nonpristine held-out ledgers. They retain the same hard absence of independent
 outcome, predictive, truth, resolution, promotion, policy-rewrite, and
 canonical-commit authority.
+Contradiction downstream-outcome tests additionally target preregistration
+before calibration, count-only use of actual held-out structure deltas, exact
+canonical Contradiction/evidence preservation, identical native workspace
+controls, an admission-gain fixture and explicit valid null, foreign-ledger
+rejection, fully rehashed authority tampering, private held-out rollback after
+observer failure, stage-before-preregistration rejection, and completed
+three-sidecar zero-cost replay. They enforce the hard absence of record-identity,
+Lens-projection, and functional-disposition inputs and of predictive,
+dimensional-separation, source-independence, external-outcome, truth,
+resolution, promotion, policy-rewrite, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

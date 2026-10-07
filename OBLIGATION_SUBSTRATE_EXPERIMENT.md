@@ -1,4 +1,4 @@
-# Obligation Substrate v0.46
+# Obligation Substrate v0.47
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -723,8 +723,28 @@ generation, or safe autonomous policy revision.
   checkpoint replay and mapping-order changes.
 - The target and bundle explicitly record that no matched trial was executed,
   no ablation outcome was observed, and no causal, resolution, or canonical-
-  commit authority exists. They are transient experimental records, not VDK,
-  VOB, or separately durable sidecar members.
+  commit authority exists. They remain noncanonical records; v0.47 embeds one
+  exact bundle only inside an explicitly requested, separately durable `.vfp`
+  preregistration rather than adding it to VDK or VOB persistence.
+- The immutable `.vfp` declaration binds that bundle to its exact canonical
+  checkpoint, complete protected evidence and hypothesis references, one
+  deterministic shared seed, and three fixed future arms: target-present
+  baseline, target-absent ablation, and target-present valid-null no-op. The
+  arms share a matched-control signature and reserve `0.015` each, keeping the
+  declared `0.045` total below the already-authorized `0.05` Attention budget.
+- The preregistration fixes an answer-agnostic outcome grammar before any
+  execution: one `[0, 1]` predicted-harm value must come from each arm's future
+  trace; absolute prediction error is measured against the receipt's frozen
+  physical outcome; target and valid-null error deltas are compared with fixed
+  `0.05` and exact-zero thresholds under explicit disposition precedence.
+  Caller-supplied values, incomplete/nonfinite/out-of-range traces, and post-
+  execution threshold revision are prohibited.
+- `.vfp` registration and loading are fingerprint-pure and fail closed on a
+  foreign or stale checkpoint/bundle, evidence or arm drift, authority
+  forgery, digest or byte tampering, noncanonical or oversized input, and
+  occupied-path replacement. Registration materializes no executable plan,
+  simulation ledger, trace, result, target-specific effect, causal claim,
+  resolution, promotion, policy rewrite, or canonical commit.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -988,7 +1008,9 @@ generation, or safe autonomous policy revision.
   matched-control audit paired back to all upstream bytes.
   v0.43 adds `.vcp`/`.vcr` cohort sidecars, v0.44 adds the immutable `.vrp`
   replication declaration, and v0.45 adds the separately immutable `.vrr`
-  result with its four pairs of complete simulation ledgers.
+  result with its four pairs of complete simulation ledgers. v0.47 adds one
+  separately immutable `.vfp` PredictionFailure trial declaration containing
+  no executable plan, trace, or result.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1006,6 +1028,12 @@ generation, or safe autonomous policy revision.
   with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
   immutable first-committer-wins evidence rather than an execution authority
   or canonical journal.
+- `.vfp` uses the same bounded local POSIX flock/temporary-file/synced-replace
+  assumptions. It does not cover Windows, network or lock-hostile filesystems,
+  hostile path or symlink replacement, hardware failure, distributed merge,
+  signatures, trusted timestamps, or remote notarization. Its lock creates no
+  transaction with VDK, VOB, or any other sidecar; identical bytes replay and
+  different bytes at an occupied path fail rather than merge.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1014,10 +1042,12 @@ generation, or safe autonomous policy revision.
   has not learned, calibrated, or revised this threshold, and an obligation does
   not prove that either the prediction or observation is semantically correct.
 - A target-ablation hypothesis set is now implemented only for the canonical
-  proposal's declared harm-risk field. No matched baseline/ablation trial,
-  separately durable preregistration, trace-derived ablation observation, or
-  PredictionFailure-specific Resolution Contract exists. Naming this field as
-  a candidate target does not identify it, any routing heuristic, or any
+  proposal's declared harm-risk field. v0.47 separately persists its exact
+  three-arm matched-design preregistration, but no typed simulation-only
+  prediction-input projection, executable plan, matched trial, trace-derived
+  ablation observation, result sidecar, or PredictionFailure-specific
+  Resolution Contract exists. Naming or preregistering this field as a
+  candidate target does not identify it, any routing heuristic, or any
   P-structure as causal.
 - `IdentityAmbiguity` currently covers only Verdant's native proto-object
   association competition. It does not cover text aliases, claim-level entity
@@ -2079,6 +2109,45 @@ generation, or safe autonomous policy revision.
   resolution or promotion, autonomous scheduling, policy rewrite, semantic
   understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.47 claim boundary
+
+- **OBSERVED:** Ten new preregistration tests and all 28 focused
+  PredictionFailure tests pass, as does the 574-test full repository suite.
+  The full suite continues to load and embed all 17 legacy checkpoints. In the
+  controlled fixture, canonical bytes and declaration identity replay exactly
+  after VDK restoration and mapping-order reversal, while registration leaves
+  the canonical fingerprint unchanged. Foreign and retriggered checkpoints,
+  foreign bundles, fully rehashed protected-evidence suppression and authority
+  forgery, arm and policy drift, byte tampering, noncanonical and oversized
+  input, and occupied-path replacement all fail closed. These observations
+  establish preregistration durability and validation only; no arm has run and
+  no target-specific outcome has been observed.
+- **IMPLEMENTED-EXPERIMENTAL:** One explicit `.vfp` registrar freezes the exact
+  v0.46 bundle and canonical checkpoint with complete protected evidence,
+  mandatory alternatives, fixed target, deterministic shared seed, matched-
+  control signature, and baseline/target-ablation/valid-null arm declarations.
+  The declared `0.015` per-arm and `0.045` total future budgets stay within the
+  existing `0.05` Attention grant. A fixed trace grammar requires one bounded
+  predicted-harm value per arm, compares absolute error with the receipt's
+  frozen observed harm score, applies a `0.05` target-error-change threshold,
+  requires exact baseline/valid-null equality, and fixes disposition
+  precedence. Canonical JSON, content digests, an 8 MiB cap, local POSIX writer
+  arbitration, synced replacement, exact-checkpoint reload, idempotent
+  identical writes, and first-committer-wins conflict rejection are enforced.
+  The declaration explicitly denies runner, plan, trace, outcome, causality,
+  resolution, promotion, policy-rewrite, and canonical-commit claims.
+- **PROPOSED:** The next dependency is a typed, simulation-only prediction-
+  input projection and plan materializer that consumes `.vfp`, can represent
+  target absence without editing canonical governance records, and produces
+  three exact isolated plans under the frozen seed, evidence, and budget.
+  Only after that representation exists may a later opt-in runner execute the
+  arms in separate simulation ledgers, derive values solely from actual traces,
+  and atomically publish a distinct immutable result sidecar. v0.47 does not
+  establish target-specific effect, causality, threshold calibration, semantic
+  correctness, truth selection, canonical resolution or promotion, autonomous
+  scheduling, policy rewrite, semantic understanding, `T_g` control, or
+  thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2262,6 +2331,15 @@ checkpoint and mapping-order replay, exact typed and budgeted Attention
 authorization, forecast-evidence anti-suppression, stale-basis and cross-
 obligation rejection, protected-evidence and missing-arm rejection, causal and
 selection authority prohibition, and fully rehashed context substitution.
+PredictionFailure-trial preregistration tests additionally target exact bundle
+and canonical-checkpoint pairing, three-arm matched-control modes, complete
+held-constant evidence, shared seed and bounded budget, fixed trace formulas
+and disposition precedence, fingerprint-pure VDK/mapping-order replay,
+idempotent bytes and occupied-path rejection, foreign/stale checkpoint and
+foreign-bundle rejection, fully rehashed evidence suppression and authority
+forgery, arm/policy drift, byte tampering, noncanonical and oversized input,
+and the hard absence of plans, executions, traces, outcomes, causal claims,
+resolution, promotion, policy rewrite, or canonical commit.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

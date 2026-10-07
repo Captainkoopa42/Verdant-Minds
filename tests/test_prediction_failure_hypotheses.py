@@ -23,6 +23,7 @@ from verdant_obligations import (
     PREDICTION_FAILURE_TRIAL_DISPOSITION_PRECEDENCE,
     PREDICTION_FAILURE_TRIAL_ERROR_FORMULA,
     PREDICTION_FAILURE_TRIAL_OBSERVED_VALUE_SOURCE,
+    PREDICTION_FAILURE_TRIAL_PLAN_VERSION,
     PREDICTION_FAILURE_TRIAL_PREREGISTRATION_VERSION,
     PREDICTION_FAILURE_TRIAL_TARGET_DELTA_FORMULA,
     PREDICTION_FAILURE_TRIAL_TRACE_VALUE_FIELD,
@@ -39,14 +40,22 @@ from verdant_obligations import (
     PredictionFailureHypothesisIntegrityError,
     PredictionFailureHypothesisKind,
     PredictionFailureHypothesisProtocol,
+    PredictionFailureSimulationInputProjection,
     PredictionFailureTrialArm,
     PredictionFailureTrialArmDeclaration,
     PredictionFailureTrialDeclaration,
     PredictionFailureTrialOutcomePolicy,
+    PredictionFailureTrialPlanBundle,
+    PredictionFailureTrialPlanIntegrityError,
+    PredictionFailureTrialPlanMaterializer,
     PredictionFailureTrialPreregistrationIntegrityError,
     PredictionFailureTrialPreregistrar,
+    PredictionFailureTrialSimulationPlan,
+    load_prediction_failure_trial_plan,
     load_prediction_failure_trial_preregistration,
+    prediction_failure_trial_plan_bytes,
     prediction_failure_trial_preregistration_bytes,
+    read_prediction_failure_trial_plan,
     read_prediction_failure_trial_preregistration,
 )
 
@@ -860,3 +869,393 @@ def test_trial_preregistration_checks_size_before_json_parse(
         match="exceeds its size limit",
     ):
         read_prediction_failure_trial_preregistration(path)
+
+
+def _trial_plan_fixture(tmp_path: Path, seed: int, stem: str = "trial"):
+    kernel, bundle = _trial_bundle(seed)
+    preregistration_path = tmp_path / f"{stem}.vfp"
+    plan_path = tmp_path / f"{stem}.vpp"
+    preregistration = PredictionFailureTrialPreregistrar().register(
+        preregistration_path,
+        kernel=kernel,
+        hypothesis_bundle=bundle,
+    )
+    plan_envelope = PredictionFailureTrialPlanMaterializer().materialize(
+        plan_path,
+        kernel=kernel,
+        preregistration_path=preregistration_path,
+    )
+    return (
+        kernel,
+        bundle,
+        preregistration_path,
+        preregistration,
+        plan_path,
+        plan_envelope,
+    )
+
+
+def test_trial_plan_materializes_typed_target_absence_without_execution(
+    tmp_path: Path,
+) -> None:
+    kernel, bundle = _trial_bundle(7201)
+    preregistration_path = tmp_path / "typed-target.vfp"
+    plan_path = tmp_path / "typed-target.vpp"
+    before = kernel.fingerprint()
+    preregistration = PredictionFailureTrialPreregistrar().register(
+        preregistration_path,
+        kernel=kernel,
+        hypothesis_bundle=bundle,
+    )
+    preregistration_bytes = preregistration_path.read_bytes()
+
+    envelope = PredictionFailureTrialPlanMaterializer().materialize(
+        plan_path,
+        kernel=kernel,
+        preregistration_path=preregistration_path,
+    )
+
+    package = envelope.plan_bundle
+    plans = {item.arm: item for item in package.plans}
+    baseline = plans[PredictionFailureTrialArm.BASELINE]
+    ablation = plans[PredictionFailureTrialArm.TARGET_ABLATION]
+    valid_null = plans[PredictionFailureTrialArm.VALID_NULL]
+    assert kernel.fingerprint() == before
+    assert preregistration_path.read_bytes() == preregistration_bytes
+    assert package.preregistration == preregistration
+    assert tuple(item.arm for item in package.plans) == (
+        PREDICTION_FAILURE_TRIAL_ARM_ORDER
+    )
+    assert baseline.input_projection.declared_harm_risk == 0.1
+    assert ablation.input_projection.declared_harm_risk is None
+    assert valid_null.input_projection.declared_harm_risk == 0.1
+    assert not ablation.input_projection.missing_target_default_permitted
+    assert {
+        item.input_projection.non_target_input_sha256
+        for item in package.plans
+    } == {package.non_target_input_sha256}
+    assert {item.requested_budget for item in package.plans} == {0.015}
+    assert package.total_requested_budget == 0.045
+    assert package.total_requested_budget <= (
+        bundle.evidence_receipt.authorized_budget
+    )
+    for plan in package.plans:
+        assert set(bundle.evidence_receipt.protected_evidence_refs).issubset(
+            plan.result_refs
+        )
+        assert plan.input_projection.simulation_only
+        assert plan.dedicated_pristine_simulation_ledger_required
+        assert not plan.native_overlay_patches_permitted
+        assert not plan.counterfactual_runtime_plan_materialized
+        assert plan.prediction_operator_ref is None
+        assert not plan.runtime_execution_authorized
+        assert not plan.trace_observed
+        assert not plan.predicted_harm_observed
+        assert not plan.result_observed
+        assert not plan.canonical_commit_permitted
+    assert package.prediction_operator_required
+    assert not package.prediction_operator_materialized
+    assert not package.counterfactual_runtime_plans_materialized
+    assert not package.runner_implemented
+    assert not package.plans_executed
+    assert not package.target_specific_effect_observed
+    assert not package.causal_attribution_enabled
+    assert not package.resolution_authority_enabled
+    assert not package.promotion_authority_enabled
+    assert not package.policy_rewrite_authority_enabled
+    assert not package.canonical_commit_permitted
+    assert plan_path.read_bytes() == prediction_failure_trial_plan_bytes(
+        envelope
+    )
+
+
+def test_trial_plan_checkpoint_replay_is_exact_and_idempotent(
+    tmp_path: Path,
+) -> None:
+    kernel, bundle = _trial_bundle(7202)
+    checkpoint = tmp_path / "trial-plan.vdk"
+    preregistration_path = tmp_path / "trial-plan.vfp"
+    plan_path = tmp_path / "trial-plan.vpp"
+    save_checkpoint(checkpoint, kernel.snapshot())
+    PredictionFailureTrialPreregistrar().register(
+        preregistration_path,
+        kernel=kernel,
+        hypothesis_bundle=bundle,
+    )
+    materializer = PredictionFailureTrialPlanMaterializer()
+    expected = materializer.materialize(
+        plan_path,
+        kernel=kernel,
+        preregistration_path=preregistration_path,
+    )
+    first_bytes = plan_path.read_bytes()
+    assert materializer.materialize(
+        plan_path,
+        kernel=kernel,
+        preregistration_path=preregistration_path,
+    ) == expected
+    assert plan_path.read_bytes() == first_bytes
+
+    state = load_checkpoint(checkpoint)
+    state.evidence = dict(reversed(tuple(state.evidence.items())))
+    state.obligation_kernels = dict(
+        reversed(tuple(state.obligation_kernels.items()))
+    )
+    restored = VerdantKernel.from_state(state)
+    assert restored.fingerprint() == kernel.fingerprint()
+    assert load_prediction_failure_trial_plan(
+        plan_path,
+        kernel=restored,
+        preregistration_path=preregistration_path,
+    ) == expected
+
+
+def test_trial_plan_rejects_foreign_and_stale_checkpoints(
+    tmp_path: Path,
+) -> None:
+    kernel, _, preregistration_path, _, plan_path, _ = _trial_plan_fixture(
+        tmp_path,
+        7203,
+    )
+    foreign, _ = _trial_bundle(7204)
+    with pytest.raises(
+        PredictionFailureTrialPlanIntegrityError,
+        match="exact durable preregistration",
+    ):
+        load_prediction_failure_trial_plan(
+            plan_path,
+            kernel=foreign,
+            preregistration_path=preregistration_path,
+        )
+
+    PredictionFailureDetector(
+        PredictionFailureDetectionPolicy(
+            policy_version="prediction_failure_plan_retrigger_v2",
+            minimum_prediction_error=0.2,
+        )
+    ).detect_and_record(kernel)
+    with pytest.raises(
+        PredictionFailureTrialPlanIntegrityError,
+        match="exact durable preregistration",
+    ):
+        load_prediction_failure_trial_plan(
+            plan_path,
+            kernel=kernel,
+            preregistration_path=preregistration_path,
+        )
+
+
+def test_trial_plan_rejects_substituted_preregistration(
+    tmp_path: Path,
+) -> None:
+    _, _, _, _, first_plan_path, _ = _trial_plan_fixture(
+        tmp_path,
+        7205,
+        "first",
+    )
+    second_kernel, _, second_preregistration_path, _, _, _ = (
+        _trial_plan_fixture(tmp_path, 7206, "second")
+    )
+
+    with pytest.raises(
+        PredictionFailureTrialPlanIntegrityError,
+        match="another preregistration",
+    ):
+        load_prediction_failure_trial_plan(
+            first_plan_path,
+            kernel=second_kernel,
+            preregistration_path=second_preregistration_path,
+        )
+
+
+def test_trial_plan_foreign_preregistration_publishes_no_plan(
+    tmp_path: Path,
+) -> None:
+    kernel, _ = _trial_bundle(7207)
+    foreign_kernel, foreign_bundle = _trial_bundle(7208)
+    foreign_preregistration_path = tmp_path / "foreign.vfp"
+    PredictionFailureTrialPreregistrar().register(
+        foreign_preregistration_path,
+        kernel=foreign_kernel,
+        hypothesis_bundle=foreign_bundle,
+    )
+    plan_path = tmp_path / "must-not-exist.vpp"
+
+    with pytest.raises(PredictionFailureTrialPlanIntegrityError):
+        PredictionFailureTrialPlanMaterializer().materialize(
+            plan_path,
+            kernel=kernel,
+            preregistration_path=foreign_preregistration_path,
+        )
+    assert not plan_path.exists()
+
+
+def test_trial_plan_path_is_first_committer_wins(tmp_path: Path) -> None:
+    first = _trial_plan_fixture(tmp_path, 7209, "first-writer")
+    first_kernel, _, first_preregistration_path, _, first_plan_path, envelope = (
+        first
+    )
+    first_bytes = first_plan_path.read_bytes()
+    second_kernel, second_bundle = _trial_bundle(7210)
+    second_preregistration_path = tmp_path / "second-writer.vfp"
+    PredictionFailureTrialPreregistrar().register(
+        second_preregistration_path,
+        kernel=second_kernel,
+        hypothesis_bundle=second_bundle,
+    )
+
+    with pytest.raises(
+        PredictionFailureTrialPlanIntegrityError,
+        match="different evidence",
+    ):
+        PredictionFailureTrialPlanMaterializer().materialize(
+            first_plan_path,
+            kernel=second_kernel,
+            preregistration_path=second_preregistration_path,
+        )
+    assert first_plan_path.read_bytes() == first_bytes
+    assert load_prediction_failure_trial_plan(
+        first_plan_path,
+        kernel=first_kernel,
+        preregistration_path=first_preregistration_path,
+    ) == envelope
+
+
+def test_trial_plan_tamper_and_noncanonical_bytes_fail(tmp_path: Path) -> None:
+    _, _, _, _, _, envelope = _trial_plan_fixture(tmp_path, 7211)
+    data = prediction_failure_trial_plan_bytes(envelope)
+    changed = bytearray(data)
+    changed[-2] ^= 1
+    tampered_path = tmp_path / "tampered.vpp"
+    tampered_path.write_bytes(changed)
+    with pytest.raises(PredictionFailureTrialPlanIntegrityError):
+        read_prediction_failure_trial_plan(tampered_path)
+
+    noncanonical_path = tmp_path / "noncanonical.vpp"
+    noncanonical_path.write_bytes(data + b"\n")
+    with pytest.raises(
+        PredictionFailureTrialPlanIntegrityError,
+        match="not canonical",
+    ):
+        read_prediction_failure_trial_plan(noncanonical_path)
+
+
+def test_trial_plan_fully_rehashed_authority_forgery_fails(
+    tmp_path: Path,
+) -> None:
+    _, _, _, _, _, envelope = _trial_plan_fixture(tmp_path, 7212)
+    payload = json.loads(prediction_failure_trial_plan_bytes(envelope))
+    package = payload["plan_bundle"]
+    package["plans_executed"] = True
+    package["plan_bundle_id"] = stable_id(
+        "prediction_failure_trial_plan_bundle",
+        {
+            key: value
+            for key, value in package.items()
+            if key != "plan_bundle_id"
+        },
+    )
+    payload["plan_bundle_sha256"] = hashlib.sha256(
+        canonical_json_bytes(package)
+    ).hexdigest()
+    path = tmp_path / "authority-forgery.vpp"
+    path.write_bytes(canonical_json_bytes(payload))
+
+    with pytest.raises(PredictionFailureTrialPlanIntegrityError):
+        read_prediction_failure_trial_plan(path)
+
+
+def test_trial_plan_rejects_target_default_and_cross_arm_input_drift(
+    tmp_path: Path,
+) -> None:
+    kernel, _, _, _, _, envelope = _trial_plan_fixture(tmp_path, 7213)
+    package = envelope.plan_bundle
+    ablation = next(
+        item
+        for item in package.plans
+        if item.arm == PredictionFailureTrialArm.TARGET_ABLATION
+    )
+    target_payload = ablation.input_projection.model_dump(mode="json")
+    target_payload["declared_harm_risk"] = 0.0
+    target_payload["projection_id"] = stable_id(
+        "prediction_failure_simulation_input",
+        {
+            key: value
+            for key, value in target_payload.items()
+            if key != "projection_id"
+        },
+    )
+    with pytest.raises(ValueError, match="simulation-only boundary"):
+        PredictionFailureSimulationInputProjection.model_validate(
+            target_payload
+        )
+
+    baseline_index = next(
+        index
+        for index, item in enumerate(package.plans)
+        if item.arm == PredictionFailureTrialArm.BASELINE
+    )
+    baseline = package.plans[baseline_index]
+    projection_payload = baseline.input_projection.model_dump(mode="json")
+    projection_payload["novelty"] = 0.9
+    proposal = next(
+        item.report.proposal
+        for item in kernel.state.council_decisions
+        if item.report.proposal.proposal_id == package.canonical_proposal_ref
+    )
+    non_target = proposal.model_dump(mode="json")
+    non_target.pop("proposal_id")
+    non_target.pop("harm_risk")
+    non_target["novelty"] = 0.9
+    projection_payload["non_target_input_sha256"] = hashlib.sha256(
+        canonical_json_bytes(non_target)
+    ).hexdigest()
+    projection_payload["projection_id"] = stable_id(
+        "prediction_failure_simulation_input",
+        {
+            key: value
+            for key, value in projection_payload.items()
+            if key != "projection_id"
+        },
+    )
+    changed_projection = (
+        PredictionFailureSimulationInputProjection.model_validate(
+            projection_payload
+        )
+    )
+    changed_plan = PredictionFailureTrialSimulationPlan.build(
+        preregistration=package.preregistration,
+        arm=package.preregistration.declaration.arms[baseline_index],
+        projection=changed_projection,
+    )
+    package_payload = package.model_dump(mode="json")
+    package_payload["plans"][baseline_index] = changed_plan.model_dump(
+        mode="json"
+    )
+    package_payload["plan_refs"][baseline_index] = changed_plan.plan_id
+    package_payload["plan_bundle_id"] = stable_id(
+        "prediction_failure_trial_plan_bundle",
+        {
+            key: value
+            for key, value in package_payload.items()
+            if key != "plan_bundle_id"
+        },
+    )
+    with pytest.raises(ValueError, match="matched-control constant"):
+        PredictionFailureTrialPlanBundle.model_validate(package_payload)
+
+
+def test_trial_plan_checks_size_before_json_parse(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import verdant_obligations.prediction_failure_trial_plans as module
+
+    path = tmp_path / "oversized.vpp"
+    path.write_bytes(b"not-json-but-too-large")
+    monkeypatch.setattr(module, "_MAX_SIDECAR_BYTES", 4)
+    with pytest.raises(
+        PredictionFailureTrialPlanIntegrityError,
+        match="exceeds its size limit",
+    ):
+        read_prediction_failure_trial_plan(path)

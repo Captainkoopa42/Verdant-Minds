@@ -1,4 +1,4 @@
-# Obligation Substrate v0.47
+# Obligation Substrate v0.48
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -745,6 +745,26 @@ generation, or safe autonomous policy revision.
   occupied-path replacement. Registration materializes no executable plan,
   simulation ledger, trace, result, target-specific effect, causal claim,
   resolution, promotion, policy rewrite, or canonical commit.
+- An explicitly requested `.vpp` plan package now consumes one exact durable
+  `.vfp` and its canonical checkpoint. It projects the complete native Council
+  proposal into three typed simulation-only inputs while preserving one shared
+  non-target-input digest. Baseline and valid-null retain the declared harm
+  risk; target ablation represents that field as `None`. Missing target values
+  cannot silently default to zero or reconstruct a canonical proposal.
+- Each `.vpp` arm freezes the exact preregistration arm, obligation, Attention
+  decision/allocation, target, all hypothesis and protected-evidence refs,
+  shared seed, `0.015` requested/maximum budget, discarded disposition, and a
+  distinct future counterfactual source key. It requires a dedicated pristine
+  simulation ledger and exact canonical checkpoint, but deliberately contains
+  no native overlay patch or `CounterfactualPlan` because current overlays do
+  not contain Council proposal fields.
+- `.vpp` materialization is fingerprint-pure, leaves `.vfp` bytes unchanged,
+  and fails closed on checkpoint or preregistration substitution, cross-arm
+  non-target drift, target-default injection, authority forgery, digest or byte
+  tampering, noncanonical or oversized input, and occupied-path replacement.
+  The package records that no prediction operator, runtime plan, execution,
+  trace, predicted-harm value, outcome, target-specific effect, causal claim,
+  resolution, promotion, policy rewrite, or canonical commit exists.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1010,7 +1030,9 @@ generation, or safe autonomous policy revision.
   replication declaration, and v0.45 adds the separately immutable `.vrr`
   result with its four pairs of complete simulation ledgers. v0.47 adds one
   separately immutable `.vfp` PredictionFailure trial declaration containing
-  no executable plan, trace, or result.
+  no executable plan, trace, or result. v0.48 adds a separately immutable
+  `.vpp` typed plan package containing no runtime plan, prediction operator,
+  simulation ledger, trace, or result.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1028,12 +1050,13 @@ generation, or safe autonomous policy revision.
   with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
   immutable first-committer-wins evidence rather than an execution authority
   or canonical journal.
-- `.vfp` uses the same bounded local POSIX flock/temporary-file/synced-replace
-  assumptions. It does not cover Windows, network or lock-hostile filesystems,
-  hostile path or symlink replacement, hardware failure, distributed merge,
-  signatures, trusted timestamps, or remote notarization. Its lock creates no
-  transaction with VDK, VOB, or any other sidecar; identical bytes replay and
-  different bytes at an occupied path fail rather than merge.
+- `.vfp` and `.vpp` use the same bounded local POSIX flock/temporary-file/
+  synced-replace assumptions. They do not cover Windows, network or lock-
+  hostile filesystems, hostile path or symlink replacement, hardware failure,
+  distributed merge, signatures, trusted timestamps, or remote notarization.
+  Their locks create no transaction with VDK, VOB, each other, or any other
+  sidecar; identical bytes replay and different bytes at an occupied path fail
+  rather than merge.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1043,11 +1066,13 @@ generation, or safe autonomous policy revision.
   not prove that either the prediction or observation is semantically correct.
 - A target-ablation hypothesis set is now implemented only for the canonical
   proposal's declared harm-risk field. v0.47 separately persists its exact
-  three-arm matched-design preregistration, but no typed simulation-only
-  prediction-input projection, executable plan, matched trial, trace-derived
-  ablation observation, result sidecar, or PredictionFailure-specific
-  Resolution Contract exists. Naming or preregistering this field as a
-  candidate target does not identify it, any routing heuristic, or any
+  three-arm matched-design preregistration, and v0.48 separately persists its
+  typed simulation-input/plan package. No independently grounded prediction
+  operator currently accepts the optional target, so no native runtime plan,
+  matched trial, trace-derived ablation observation, result sidecar, or
+  PredictionFailure-specific Resolution Contract exists. Target absence is not
+  zero and cannot be supplied a post-hoc default. Naming, preregistering, or
+  projecting this field does not identify it, any routing heuristic, or any
   P-structure as causal.
 - `IdentityAmbiguity` currently covers only Verdant's native proto-object
   association competition. It does not cover text aliases, claim-level entity
@@ -2148,6 +2173,46 @@ generation, or safe autonomous policy revision.
   scheduling, policy rewrite, semantic understanding, `T_g` control, or
   thermodynamic behavior.
 
+## v0.48 claim boundary
+
+- **OBSERVED:** Ten new plan-package tests and all 38 focused
+  PredictionFailure tests pass, as does the 584-test full repository suite.
+  In the controlled fixture, `.vpp` bytes and identity replay exactly after VDK
+  restoration and mapping-order reversal while the canonical fingerprint and
+  source `.vfp` bytes remain unchanged. Baseline and valid-null retain the
+  preregistered `0.1` declaration, target ablation retains explicit absence,
+  and every non-target proposal input has one shared digest. Foreign/stale
+  checkpoints, foreign or substituted preregistrations, fully rehashed
+  authority forgery, target-default injection, cross-arm input drift, byte
+  tampering, noncanonical/oversized input, and occupied-path replacement fail
+  closed. These are projection, pairing, and replay observations only; no
+  simulation trace or target-specific outcome has been observed.
+- **IMPLEMENTED-EXPERIMENTAL:** One explicit `.vpp` materializer requires the
+  exact durable v0.47 `.vfp` and canonical checkpoint, then freezes three typed
+  proposal-input projections and future arm plans. The sole varied field is
+  declared `harm_risk`: present in baseline/valid-null and absent—not zero—in
+  target ablation. Every plan binds the full hypothesis/evidence lineage,
+  shared seed, fixed `0.015` arm budget, discarded-only disposition, exact
+  checkpoint, and dedicated pristine-ledger requirement. Canonical JSON,
+  digests, a 16 MiB cap, local POSIX writer arbitration, synced replacement,
+  idempotent replay, and first-committer-wins conflicts are enforced. Because
+  the existing overlay grammar has no Council-proposal collection, `.vpp`
+  refuses fake native patches and explicitly records that no prediction
+  operator, `CounterfactualPlan`, runner, trace, observation, result, or
+  authority has been materialized.
+- **PROPOSED:** Before execution, define an independently grounded, versioned,
+  pure prediction operator that consumes this optional-target projection and
+  emits the preregistered bounded `predicted_harm_score` observation. It must
+  treat absent target support as insufficient evidence unless an operationally
+  justified value exists; it may not default absence to zero, reuse the frozen
+  physical outcome, or accept caller-supplied arm values. Only then may an
+  opt-in runner translate `.vpp` into three native resource-accounting plans,
+  execute separate ledgers, derive observations from actual traces, and write
+  a distinct immutable result. v0.48 does not establish target-specific effect,
+  causality, threshold calibration, semantic correctness, truth selection,
+  canonical resolution or promotion, autonomous scheduling, policy rewrite,
+  semantic understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2340,6 +2405,16 @@ foreign-bundle rejection, fully rehashed evidence suppression and authority
 forgery, arm/policy drift, byte tampering, noncanonical and oversized input,
 and the hard absence of plans, executions, traces, outcomes, causal claims,
 resolution, promotion, policy rewrite, or canonical commit.
+PredictionFailure plan-package tests additionally target exact `.vfp` and VDK
+pairing, typed target presence/absence without a default, complete non-target
+input equality, protected-evidence and budget closure, dedicated-ledger and
+discarded-disposition declarations, checkpoint/mapping-order replay, immutable
+source and output bytes, foreign/stale checkpoint and preregistration
+substitution, fully rehashed authority forgery, cross-arm input drift, target-
+default injection, byte tampering, noncanonical and oversized input, occupied-
+path rejection, and the hard absence of native overlay patches, runtime plans,
+prediction operators, executions, traces, outcomes, causal claims, resolution,
+promotion, policy rewrite, or canonical commit.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

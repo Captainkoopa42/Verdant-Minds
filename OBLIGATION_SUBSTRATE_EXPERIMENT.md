@@ -1,4 +1,4 @@
-# Obligation Substrate v0.45
+# Obligation Substrate v0.46
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -710,6 +710,21 @@ generation, or safe autonomous policy revision.
 - Prediction-failure anchors are eligible for bounded executive Attention, but
   no allocation can resolve them. DependencyGap-specific lifecycle operations
   continue to reject every other family.
+- An explicitly invoked `PredictionFailureHypothesisProtocol` now requires one
+  current, family-local Attention allocation under an exact action operator,
+  generator version, and `0.05` minimum budget. The bid must retain both the
+  current obligation triggers and the proposal's forecast-basis evidence.
+- The protocol deterministically identifies only the Council proposal's
+  declared `harm_risk` field as a candidate future ablation target. Its receipt
+  preserves the native proposal/report/decision/outcome chain, the separate
+  forecast, decision, and physical-outcome evidence partitions and source
+  roots, and mandatory target-ablation, not-target-specific null, and
+  insufficient-evidence alternatives. Generation is read-only and exact after
+  checkpoint replay and mapping-order changes.
+- The target and bundle explicitly record that no matched trial was executed,
+  no ablation outcome was observed, and no causal, resolution, or canonical-
+  commit authority exists. They are transient experimental records, not VDK,
+  VOB, or separately durable sidecar members.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -998,9 +1013,12 @@ generation, or safe autonomous policy revision.
 - The initial prediction-error threshold is explicit developer policy. Verdant
   has not learned, calibrated, or revised this threshold, and an obligation does
   not prove that either the prediction or observation is semantically correct.
-- Target-ablation hypothesis generation, matched baseline/ablation trials, and
-  PredictionFailure-specific Resolution Contracts remain unimplemented. No
-  routing heuristic or P-structure is identified as causal in this increment.
+- A target-ablation hypothesis set is now implemented only for the canonical
+  proposal's declared harm-risk field. No matched baseline/ablation trial,
+  separately durable preregistration, trace-derived ablation observation, or
+  PredictionFailure-specific Resolution Contract exists. Naming this field as
+  a candidate target does not identify it, any routing heuristic, or any
+  P-structure as causal.
 - `IdentityAmbiguity` currently covers only Verdant's native proto-object
   association competition. It does not cover text aliases, claim-level entity
   resolution, promoted-concept mergers, or arbitrary developer-supplied pairs.
@@ -2029,6 +2047,38 @@ generation, or safe autonomous policy revision.
   autonomous scheduling, policy rewrite, semantic understanding, `T_g`
   control, or thermodynamic behavior.
 
+## v0.46 claim boundary
+
+- **OBSERVED:** Ten new PredictionFailure-hypothesis tests, all 18 focused
+  PredictionFailure tests, and the 564-test full repository suite pass. The
+  full suite still loads and embeds all 17 preexisting checkpoints. In the
+  controlled native fixture, the Council proposal's forecast basis and the
+  later physical outcome retain distinct evidence IDs and source roots. The
+  generated three-arm bundle and complete receipt replay exactly after
+  checkpoint restoration and mapping-order reversal without changing the
+  canonical fingerprint. These are lineage and replay observations only; no
+  ablation has been run and no target-specific effect has been observed.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in family-local protocol requires an
+  exact current Attention authorization and derives the sole candidate target
+  from the native proposal's declared `harm_risk` field. It binds that field to
+  the immutable obligation, proposal/report/decision/outcome records, complete
+  forecast/decision/outcome evidence, source roots, and mandatory
+  target-ablation, not-target-specific null, and insufficient-evidence arms.
+  Stale, foreign, underfunded, wrong-operator, wrong-generator, forecast-
+  suppressing, incomplete, authority-bearing, and fully rehashed context
+  substitutions fail closed. The models prohibit selected hypotheses, trial
+  completion, ablation outcomes, causal attribution, resolution, and canonical
+  commit authority.
+- **PROPOSED:** Before any execution, persist a separate immutable
+  PredictionFailure preregistration that pairs this exact bundle with a fixed
+  matched baseline/ablation design, held-constant canonical evidence, bounded
+  simulation budget, trace-derived outcome criterion, and explicit valid-null
+  control. Only a later isolated runner may populate a separate result. Until
+  then, v0.46 does not establish target-specific effect, causal attribution,
+  threshold calibration, semantic correctness, truth selection, canonical
+  resolution or promotion, autonomous scheduling, policy rewrite, semantic
+  understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2205,6 +2255,13 @@ value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope
 separation, checkpoint/View rebuild, numerical and lineage tamper rejection,
 and executive Attention without resolution authority.
+PredictionFailure-hypothesis tests additionally target complete native
+proposal/report/decision/outcome closure, separate forecast/outcome evidence
+and source partitions, mandatory target/null/defer alternatives, read-only
+checkpoint and mapping-order replay, exact typed and budgeted Attention
+authorization, forecast-evidence anti-suppression, stale-basis and cross-
+obligation rejection, protected-evidence and missing-arm rejection, causal and
+selection authority prohibition, and fully rehashed context substitution.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

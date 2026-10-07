@@ -1,4 +1,4 @@
-# Obligation Substrate v0.42
+# Obligation Substrate v0.43
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -634,6 +634,22 @@ generation, or safe autonomous policy revision.
   is operational evidence that the current cardinality-only rule does **not**
   discriminate these matched outcomes; predictive discrimination and
   dimensional separation remain explicitly false.
+- A v0.43 `.vcp` cohort preregistration commits two canonically disjoint
+  calibration/evaluation pairs, their normal and valid-null outcome grammars,
+  the unchanged v0.42 mapping, the bounded training-profile/otherwise-null
+  rule family, and both leave-one-context-out partitions before either child
+  audit executes. The source-root topology genuinely produces the native
+  `(1, 1)` singleton and `(2, 2)` equal-multi-reference Lens profiles; neither
+  profile is fabricated or relabelled after observation.
+- Each v0.43 context runs through the unchanged v0.42 five-artifact path. The
+  atomic `.vcr` result closes both replayable audits, derives each fold rule
+  from only the other context's normal positive evaluation, withholds both
+  valid-null controls from training, and applies the rule unchanged to the
+  disjoint evaluation context and its same-trace control. Both folds default
+  the unseen profile to `valid_null`, miss the normal `admission_gain`, and
+  match the untouched control. The original singleton false positive is also
+  reproduced unchanged. This falsifies the bounded cohort rule family; it
+  does not rescue or rewrite the v0.42 rule.
 - The selected cardinality and the bounded functional disposition are both
   derived from the same internal simulated route evidence. Their held-out
   agreement is therefore only a trace-local criterion match. Resolution-level
@@ -1850,6 +1866,43 @@ generation, or safe autonomous policy revision.
   promotion, autonomous scheduling, policy rewrite, semantic understanding,
   `T_g` control, or thermodynamic behavior.
 
+## v0.43 claim boundary
+
+- **OBSERVED:** Nine new cohort tests, 104 focused Contradiction tests, and the
+  536-test full repository suite pass. The full suite's dedicated compatibility
+  check still loads and embeds all 17 preexisting checkpoints. The two
+  preregistered, canonically disjoint contexts produce two actual
+  `SELECT_ACTIVATED_REFS` profiles: singleton `(1, 1)` when the opposed claims
+  have disjoint source roots, and equal-multi-reference `(2, 2)` when they
+  share a source root. Under the same normal `0.28` threshold,
+  both actual held-out traces produce `admission_gain`; each byte-matched
+  `0.0` control produces `valid_null`. Each leave-one-context-out fold learns
+  only the training profile's normal outcome, defaults the unseen evaluation
+  profile to `valid_null`, misses the normal result, and matches its untouched
+  control. The singleton context separately reproduces v0.42's unchanged
+  false positive. Thus neither the frozen v0.42 mapping nor the bounded v0.43
+  rule family discriminates these outcomes.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in coordinator persists an immutable
+  `.vcp` before any child artifact, executes or zero-cost replays two unchanged
+  v0.42 five-artifact audits, and atomically stores their exact evidence plus
+  two training-only fold rules and evaluations in `.vcr`. It rejects duplicate
+  or overlapping context provenance, backdated completed results, nonpristine
+  ledgers, changed preregistration, sidecar tampering, control/evaluation
+  leakage into rule derivation, and authority escalation. A failed second
+  context publishes no caller-visible simulation state. Canonical kernels and
+  Lens sidecars remain unchanged.
+- **PROPOSED:** Do not tune another rule against this completed cohort. The
+  next dependency is a newly preregistered fixed-policy replication cohort
+  with at least two disjoint contexts per actually observed Lens profile and a
+  nontrivial downstream outcome difference derived from actual trace variation
+  rather than from changing the workspace admission threshold. Group-held-out
+  evaluation and an untouched negative control must remain frozen before
+  execution. Until such independent variation exists and a rule survives it,
+  v0.43 does not establish predictive discrimination, dimensional separation,
+  independent real-world sources, external outcome, truth selection, causal
+  success, canonical resolution or promotion, autonomous scheduling, policy
+  rewrite, semantic understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1985,6 +2038,17 @@ outcome inputs, fully rehashed leakage and authority forgeries, foreign durable
 lineage, injected second-observer rollback, stage-before-context rejection,
 and completed zero-simulation replay. They preserve the falsifying control and
 enforce the hard absence of predictive-discrimination, dimensional-separation,
+independent-source, external-outcome, truth, resolution, promotion,
+policy-rewrite, or canonical-commit authority.
+Contradiction prediction-cohort tests additionally require the `.vcp` before
+either child audit, native `(1, 1)` and `(2, 2)` profiles, four disjoint
+canonical checkpoints, normal/control declarations frozen together, and two
+leave-one-context-out folds. They target duplicate-context rejection,
+training-API control/evaluation exclusion, fully rehashed authority forgery,
+completed-sidecar tampering, completed-result backdating, second-context
+caller-ledger rollback, canonical byte determinism, and zero-simulation replay
+of both source audits. They preserve the v0.42 false positive and enforce the
+hard absence of predictive discrimination, dimensional separation,
 independent-source, external-outcome, truth, resolution, promotion,
 policy-rewrite, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed

@@ -21,11 +21,13 @@ from verdant_obligations import (
     CONTRADICTION_DOWNSTREAM_TRACE_FIELD,
     CONTRADICTION_HYPOTHESIS_PROTOCOL_VERSION,
     CONTRADICTION_LENS_MISSING_REQUIREMENTS,
+    CONTRADICTION_PREDICTION_AUDIT_VERSION,
     CONTRADICTION_PROVENANCE_ACTION_OPERATOR,
     AttentionBidInput,
     AttentionPortfolio,
     ContradictionCalibrationCriterionDeriver,
     ContradictionCalibrationDimensionCriterion,
+    ContradictionCalibrationPredictionRule,
     ContradictionCalibrationStageIntegrityError,
     ContradictionDownstreamOutcomeDisposition,
     ContradictionDownstreamOutcomeIntegrityError,
@@ -33,6 +35,7 @@ from verdant_obligations import (
     ContradictionDownstreamOutcomePolicy,
     ContradictionDurableDimensionTrialRunner,
     ContradictionDurableDownstreamOutcomeRunner,
+    ContradictionDurablePredictionAuditRunner,
     ContradictionDimensionCriterionDeclaration,
     ContradictionDimensionCriterionIntegrityError,
     ContradictionDimensionEvaluationDisposition,
@@ -46,6 +49,8 @@ from verdant_obligations import (
     ContradictionLensTrialSplit,
     ContradictionObligationDetector,
     ContradictionProjectionCardinalityProfile,
+    ContradictionPredictionAuditDisposition,
+    ContradictionPredictionAuditIntegrityError,
     ContradictionResolutionRequirement,
     CounterfactualRuntime,
     EquivalenceLensSystem,
@@ -53,12 +58,15 @@ from verdant_obligations import (
     LensOpcode,
     contradiction_dimension_sidecar_bytes,
     load_contradiction_calibration_stage_sidecar,
+    load_contradiction_prediction_audit,
     read_contradiction_downstream_result,
     load_contradiction_dimension_sidecar,
     load_experiment_archive_bundle,
     save_contradiction_dimension_sidecar,
     save_experiment_archive,
     read_contradiction_calibration_stage_sidecar,
+    read_contradiction_prediction_audit,
+    read_contradiction_prediction_rule,
 )
 
 
@@ -1394,4 +1402,359 @@ def test_calibration_stage_cannot_precede_downstream_preregistration(
     assert not pre_path.exists()
     assert not result_path.exists()
     assert stage_path.read_bytes() == stage_bytes
+    assert held_out_runtime.ledger.state.settlements == ()
+
+
+def _prediction_paths(tmp_path: Path, label: str = "prediction"):
+    return (
+        tmp_path / f"{label}-positive.vop",
+        tmp_path / f"{label}-control.vop",
+        tmp_path / f"{label}.vcs",
+        tmp_path / f"{label}.vpr",
+        tmp_path / f"{label}.vpa",
+    )
+
+
+def _execute_prediction_audit(
+    tmp_path: Path,
+    *,
+    seed: int = 7060,
+    label: str | None = None,
+    runner: ContradictionDurablePredictionAuditRunner | None = None,
+):
+    calibration, held_out, lenses, pair, declaration = _pair_fixture(seed)
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    paths = _prediction_paths(tmp_path, label or str(seed))
+    result = (runner or ContradictionDurablePredictionAuditRunner()).run(
+        *paths,
+        calibration[0],
+        calibration_runtime,
+        held_out[0],
+        held_out_runtime,
+        lenses,
+        pair_context=pair,
+        criterion_declaration=declaration,
+    )
+    return (
+        calibration,
+        held_out,
+        lenses,
+        pair,
+        declaration,
+        calibration_runtime,
+        held_out_runtime,
+        paths,
+        result,
+    )
+
+
+@requires_posix_stage
+def test_prediction_rule_is_frozen_before_shared_held_out_control_audit(
+    tmp_path: Path,
+) -> None:
+    paths = _prediction_paths(tmp_path, "7060")
+    ordering: list[bool] = []
+
+    class OrderingRunner(ContradictionDurableDimensionTrialRunner):
+        def resume_from_stage(self, *args, **kwargs):
+            ordering.append(
+                all(path.exists() for path in paths[:4])
+                and not paths[4].exists()
+            )
+            return super().resume_from_stage(*args, **kwargs)
+
+    fixture = _pair_fixture(7060)
+    canonical_before = (fixture[0][0].fingerprint(), fixture[1][0].fingerprint())
+    lens_before = fixture[2].fingerprint()
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    result = ContradictionDurablePredictionAuditRunner(
+        dimension_runner=OrderingRunner()
+    ).run(
+        *paths,
+        fixture[0][0],
+        calibration_runtime,
+        fixture[1][0],
+        held_out_runtime,
+        fixture[2],
+        pair_context=fixture[3],
+        criterion_declaration=fixture[4],
+    )
+
+    rule = result.rule.rule
+    receipt = result.receipt
+    assert ordering == [True]
+    assert all(path.exists() for path in paths)
+    assert rule.rule_version == CONTRADICTION_PREDICTION_AUDIT_VERSION
+    assert rule.calibration_cardinalities == (1, 1)
+    assert rule.calibration_profile == (
+        ContradictionProjectionCardinalityProfile.SINGLETON_PER_ROUTE
+    )
+    assert rule.predicted_outcome == (
+        ContradictionDownstreamOutcomeDisposition.ADMISSION_GAIN
+    )
+    assert rule.derived_from_calibration_only
+    assert rule.frozen_before_held_out_execution
+    assert not rule.held_out_execution_started
+    assert not rule.held_out_trace_consulted
+    assert not rule.outcome_receipt_consulted
+    assert not rule.downstream_policy_consulted_for_prediction
+    assert "held_out_observation" not in (
+        ContradictionCalibrationPredictionRule.model_fields
+    )
+    assert receipt.positive_evaluation.predicted_outcome == (
+        ContradictionDownstreamOutcomeDisposition.ADMISSION_GAIN
+    )
+    assert receipt.positive_evaluation.observed_outcome == (
+        ContradictionDownstreamOutcomeDisposition.ADMISSION_GAIN
+    )
+    assert receipt.positive_evaluation.prediction_matches_observation
+    assert receipt.control_evaluation.predicted_outcome == (
+        ContradictionDownstreamOutcomeDisposition.ADMISSION_GAIN
+    )
+    assert receipt.control_evaluation.observed_outcome == (
+        ContradictionDownstreamOutcomeDisposition.VALID_NULL
+    )
+    assert receipt.control_evaluation.false_positive_observed
+    assert receipt.disposition == (
+        ContradictionPredictionAuditDisposition.CARDINALITY_ONLY_FALSE_POSITIVE
+    )
+    assert receipt.positive_association_observed
+    assert receipt.valid_null_false_positive_observed
+    assert receipt.cardinality_only_rule_falsified
+    assert receipt.same_held_out_observation_verified
+    assert receipt.same_cardinality_input_verified
+    assert receipt.same_simulation_ledger_verified
+    assert result.audit.positive_result.held_out_simulation_state == (
+        result.audit.control_result.held_out_simulation_state
+    )
+    assert result.audit.positive_result.receipt.held_out_observation == (
+        result.audit.control_result.receipt.held_out_observation
+    )
+    assert not receipt.predictive_discrimination_observed
+    assert not receipt.dimensional_separation_observed
+    assert not receipt.resolution_trial_ready
+    assert not receipt.resolution_authority_enabled
+    assert not receipt.policy_rewrite_authority_enabled
+    assert not receipt.canonical_commit_permitted
+    assert len(calibration_runtime.ledger.state.settlements) == 2
+    assert len(held_out_runtime.ledger.state.settlements) == 2
+    assert (fixture[0][0].fingerprint(), fixture[1][0].fingerprint()) == (
+        canonical_before
+    )
+    assert fixture[2].fingerprint() == lens_before
+
+
+@requires_posix_stage
+def test_prediction_observer_failure_keeps_caller_ledgers_pristine(
+    tmp_path: Path,
+) -> None:
+    paths = _prediction_paths(tmp_path, "7070")
+    fixture = _pair_fixture(7070)
+    canonical_before = (fixture[0][0].fingerprint(), fixture[1][0].fingerprint())
+    lens_before = fixture[2].fingerprint()
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+
+    class FailingSecondObserver(ContradictionDownstreamOutcomeObserver):
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def observe(self, *args, **kwargs):
+            self.calls += 1
+            if self.calls == 2:
+                raise ContradictionDownstreamOutcomeIntegrityError(
+                    "injected prediction-control observer failure"
+                )
+            return super().observe(*args, **kwargs)
+
+    with pytest.raises(
+        ContradictionPredictionAuditIntegrityError,
+        match="injected prediction-control observer failure",
+    ):
+        ContradictionDurablePredictionAuditRunner(
+            observer=FailingSecondObserver()
+        ).run(
+            *paths,
+            fixture[0][0],
+            calibration_runtime,
+            fixture[1][0],
+            held_out_runtime,
+            fixture[2],
+            pair_context=fixture[3],
+            criterion_declaration=fixture[4],
+        )
+    assert all(path.exists() for path in paths[:4])
+    assert not paths[4].exists()
+    assert calibration_runtime.ledger.state.settlements == ()
+    assert held_out_runtime.ledger.state.settlements == ()
+    assert (fixture[0][0].fingerprint(), fixture[1][0].fingerprint()) == (
+        canonical_before
+    )
+    assert fixture[2].fingerprint() == lens_before
+
+
+@requires_posix_stage
+def test_prediction_rule_rejects_fully_rehashed_held_out_leakage(
+    tmp_path: Path,
+) -> None:
+    *_, paths, _ = _execute_prediction_audit(tmp_path, seed=7080)
+    rule_path = paths[3]
+    payload = json.loads(rule_path.read_text(encoding="utf-8"))
+    rule = payload["rule"]
+    rule["held_out_trace_consulted"] = True
+    rule["rule_id"] = stable_id(
+        "contradiction_calibration_prediction_rule",
+        {key: value for key, value in rule.items() if key != "rule_id"},
+    )
+    payload["rule_sha256"] = hashlib.sha256(
+        canonical_json_bytes(rule)
+    ).hexdigest()
+    rule_path.write_bytes(canonical_json_bytes(payload))
+
+    with pytest.raises(
+        ContradictionPredictionAuditIntegrityError,
+        match="Invalid Contradiction prediction-rule",
+    ):
+        read_contradiction_prediction_rule(rule_path)
+
+
+@requires_posix_stage
+def test_prediction_audit_rejects_fully_rehashed_authority_tamper(
+    tmp_path: Path,
+) -> None:
+    *_, paths, _ = _execute_prediction_audit(tmp_path, seed=7090)
+    audit_path = paths[4]
+    payload = json.loads(audit_path.read_text(encoding="utf-8"))
+    receipt = payload["receipt"]
+    receipt["predictive_discrimination_observed"] = True
+    receipt["receipt_id"] = stable_id(
+        "contradiction_prediction_audit_receipt",
+        {key: value for key, value in receipt.items() if key != "receipt_id"},
+    )
+    payload["receipt_sha256"] = hashlib.sha256(
+        canonical_json_bytes(receipt)
+    ).hexdigest()
+    audit_path.write_bytes(canonical_json_bytes(payload))
+
+    with pytest.raises(
+        ContradictionPredictionAuditIntegrityError,
+        match="Invalid Contradiction prediction-audit",
+    ):
+        read_contradiction_prediction_audit(audit_path)
+
+
+@requires_posix_stage
+def test_prediction_audit_rejects_foreign_durable_lineage(
+    tmp_path: Path,
+) -> None:
+    first = _execute_prediction_audit(
+        tmp_path,
+        seed=7100,
+        label="first",
+    )
+    second = _execute_prediction_audit(
+        tmp_path,
+        seed=7110,
+        label="second",
+    )
+    first_audit = first[7][4]
+    second_paths = second[7]
+    with pytest.raises(ContradictionPredictionAuditIntegrityError):
+        load_contradiction_prediction_audit(
+            first_audit,
+            second_paths[3],
+            second_paths[0],
+            second_paths[1],
+            second_paths[2],
+            calibration_kernel=second[0][0],
+            held_out_kernel=second[1][0],
+            lenses=second[2],
+        )
+
+
+@requires_posix_stage
+def test_completed_prediction_audit_replays_without_simulation(
+    tmp_path: Path,
+) -> None:
+    (
+        calibration,
+        held_out,
+        lenses,
+        pair,
+        declaration,
+        _,
+        _,
+        paths,
+        first,
+    ) = _execute_prediction_audit(tmp_path, seed=7120)
+    before = tuple(path.read_bytes() for path in paths)
+
+    class NoExecutionRunner:
+        def prepare_and_persist(self, *args, **kwargs):
+            raise AssertionError("completed prediction replay reran calibration")
+
+        def resume_from_stage(self, *args, **kwargs):
+            raise AssertionError("completed prediction replay reran held-out work")
+
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    replay = ContradictionDurablePredictionAuditRunner(
+        dimension_runner=NoExecutionRunner()
+    ).run(
+        *paths,
+        calibration[0],
+        calibration_runtime,
+        held_out[0],
+        held_out_runtime,
+        lenses,
+        pair_context=pair,
+        criterion_declaration=declaration,
+    )
+    assert replay.replayed
+    assert replay.receipt == first.receipt
+    assert tuple(path.read_bytes() for path in paths) == before
+    assert len(calibration_runtime.ledger.state.settlements) == 2
+    assert len(held_out_runtime.ledger.state.settlements) == 2
+
+
+@requires_posix_stage
+def test_prediction_contexts_must_both_precede_calibration_stage(
+    tmp_path: Path,
+) -> None:
+    paths = _prediction_paths(tmp_path, "7130")
+    calibration, held_out, lenses, pair, declaration = _pair_fixture(7130)
+    ContradictionDurableDimensionTrialRunner().prepare_and_persist(
+        paths[2],
+        calibration[0],
+        CounterfactualRuntime(),
+        held_out[0],
+        lenses,
+        pair_context=pair,
+        criterion_declaration=declaration,
+    )
+    stage_bytes = paths[2].read_bytes()
+    calibration_runtime = CounterfactualRuntime()
+    held_out_runtime = CounterfactualRuntime()
+    with pytest.raises(
+        ContradictionPredictionAuditIntegrityError,
+        match="predates both prediction contexts",
+    ):
+        ContradictionDurablePredictionAuditRunner().run(
+            *paths,
+            calibration[0],
+            calibration_runtime,
+            held_out[0],
+            held_out_runtime,
+            lenses,
+            pair_context=pair,
+            criterion_declaration=declaration,
+        )
+    assert not paths[0].exists()
+    assert not paths[1].exists()
+    assert not paths[3].exists()
+    assert not paths[4].exists()
+    assert paths[2].read_bytes() == stage_bytes
+    assert calibration_runtime.ledger.state.settlements == ()
     assert held_out_runtime.ledger.state.settlements == ()

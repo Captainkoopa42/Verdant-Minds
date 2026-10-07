@@ -1,4 +1,4 @@
-# Obligation Substrate v0.41
+# Obligation Substrate v0.42
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -620,6 +620,20 @@ generation, or safe autonomous policy revision.
   Loading reruns the count-only observer deterministically without executing a
   simulation. Held-out work remains private until the completed sidecar is
   committed, so observer failure publishes no caller-visible held-out state.
+- The v0.42 audit preregisters two v0.41 outcome contexts before calibration:
+  a `0.28` admission-threshold context and an otherwise byte-matched `0.0`
+  valid-null control. After `.vcs` calibration, a separate `.vpr` sidecar
+  freezes the versioned cardinality-to-outcome mapping before the one shared
+  held-out trace executes. The rule-building API accepts no held-out
+  observation, outcome receipt, or outcome ledger and does not inspect either
+  downstream policy when selecting its prediction.
+- One atomic `.vpa` audit sidecar embeds both count-only workspace outcomes and
+  the same complete held-out simulation ledger. The calibrated `(1, 1)`
+  singleton profile predicts `admission_gain` in both contexts. It matches the
+  normal context but is a false positive against the valid-null control. This
+  is operational evidence that the current cardinality-only rule does **not**
+  discriminate these matched outcomes; predictive discrimination and
+  dimensional separation remain explicitly false.
 - The selected cardinality and the bounded functional disposition are both
   derived from the same internal simulated route evidence. Their held-out
   agreement is therefore only a trace-local criterion match. Resolution-level
@@ -860,11 +874,13 @@ generation, or safe autonomous policy revision.
   preregistered calibration/held-out contexts with disjoint canonical evidence
   and identical Lens lineage, and a v0.39 calibration-frozen internal
   dimension/outcome criterion. v0.40 durably separates that calibration stage
-  from held-out execution and permits exact process-restart resume. It does
-  not yet derive an outcome through a
-  channel independent of the Lens-projected route evidence, establish
-  Resolution-level dimensional separation or predictive discrimination, learn
-  a Lens, feed a Resolution Contract, or carry canonical resolution authority.
+  from held-out execution and permits exact process-restart resume. v0.41 adds
+  a separately preregistered, trace-count-derived native workspace outcome that
+  consumes neither Lens projections nor functional disposition. v0.42 freezes
+  a cardinality-only prediction before held-out execution and observes that it
+  fails its matched valid-null control. This does not establish Resolution-
+  level dimensional separation or predictive discrimination, learn a Lens,
+  feed a Resolution Contract, or carry canonical resolution authority.
 - Shared or different evidence IDs and source roots are structural ledger
   observations only. They do not establish source independence, causal
   relevance, contextual compatibility, semantic correctness, or which opposed
@@ -880,9 +896,11 @@ generation, or safe autonomous policy revision.
   record IDs do not prove that real-world sources are independent. v0.39
   freezes a calibration-derived cardinality/outcome criterion before the
   held-out run, but its cardinality and outcome still share the same simulated
-  routing substrate; it is not an independent prediction. The null and defer
-  hypotheses remain mandatory alternatives, not conclusions selected by the
-  probe.
+  routing substrate; it is not an independent prediction. v0.41 separates the
+  downstream workspace observer from those two inputs, while v0.42 tests the
+  resulting cardinality-only prediction unchanged against an exact valid-null
+  control and records a false positive. The null and defer hypotheses remain
+  mandatory alternatives, not conclusions selected by the probe.
 - Contradiction hypothesis generation remains explicitly invoked and its
   Attention metrics and `0.05` minimum budget are visible supplied policy. The
   bundle, probe, observations, controlled Lens context, and coverage receipts
@@ -890,8 +908,10 @@ generation, or safe autonomous policy revision.
   `.viq`, or `.viqh` members. Generic reservations/settlements and the
   preexisting Lens registry/ledger remain durable through explicit `.vob`
   save/load; v0.38 adds an explicitly saved `.vct` preregistration/receipt
-  sidecar, v0.39 adds a completed `.vdc` criterion/evaluation sidecar, and
-  v0.40 adds a calibration-stage `.vcs` sidecar paired back to both contexts.
+  sidecar, v0.39 adds a completed `.vdc` criterion/evaluation sidecar, v0.40
+  adds a calibration-stage `.vcs` sidecar, v0.41 adds `.vop`/`.vor` downstream
+  sidecars, and v0.42 adds a pre-held-out `.vpr` rule plus completed `.vpa`
+  matched-control audit paired back to all upstream bytes.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -906,8 +926,9 @@ generation, or safe autonomous policy revision.
   filesystems, hostile symlink/path replacement, kernel crash, power loss,
   controller caches, hardware failure, distributed merge, signatures, trusted
   timestamps, or remote notarization. Its lock does not create a transaction
-  with `.vob`, `.vct`, or `.vdc`; the stage is immutable first-committer-wins
-  evidence rather than an execution authority or canonical journal.
+  with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
+  immutable first-committer-wins evidence rather than an execution authority
+  or canonical journal.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1792,6 +1813,43 @@ generation, or safe autonomous policy revision.
   resolution or promotion, autonomous scheduling, policy rewrite, semantic
   understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.42 claim boundary
+
+- **OBSERVED:** Ninety-five focused Contradiction tests and the 527-test full
+  repository suite pass. The dedicated compatibility check still loads and
+  embeds all 17 preexisting checkpoints. The calibration-only `.vpr` records
+  the actual `(1, 1)` singleton Lens-cardinality profile and, under its
+  preregistered mapping, predicts `admission_gain`. That unchanged prediction
+  matches the normal `0.28` workspace-threshold context. The exact same
+  held-out observation, simulation ledger, cardinality input, canonical
+  Contradiction, evidence, resource request, and non-threshold workspace
+  controls produce `valid_null` under the preregistered `0.0` threshold, so the
+  same prediction is a false positive. Fully rehashed held-out-input and
+  authority forgeries, foreign durable lineage, a stage that predates either
+  context, and injected failure on the second observer all fail closed.
+  Completed replay revalidates both observers without new simulation cost.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in five-artifact runner now commits two
+  `.vop` outcome contexts before `.vcs` calibration, derives and durably freezes
+  a `.vpr` rule through an API with no held-out/outcome inputs, executes one
+  private held-out pair, and atomically stores both native workspace outcomes
+  plus their shared ledger in `.vpa`. The experiment records the positive
+  association and its matched valid-null false positive. It therefore
+  falsifies this cardinality-only rule as a discriminator rather than
+  promoting it: `predictive_discrimination_observed=False`,
+  `dimensional_separation_observed=False`, and
+  `resolution_trial_ready=False`.
+- **PROPOSED:** Do not revise the mapping against these held-out results. The
+  next dependency is a newly preregistered multi-context cohort containing at
+  least two actually observed Lens-cardinality profiles, disjoint calibration
+  and evaluation evidence, an untouched valid-null control, and
+  leave-one-context-out evaluation. Its rule family and outcome grammar must
+  be frozen before cohort execution and preserve the present falsifying result.
+  Until a new rule survives such controls, v0.42 does not establish predictive
+  discrimination, dimensional separation, independent real-world sources,
+  external outcome, truth selection, causal success, canonical resolution or
+  promotion, autonomous scheduling, policy rewrite, semantic understanding,
+  `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -1918,6 +1976,17 @@ three-sidecar zero-cost replay. They enforce the hard absence of record-identity
 Lens-projection, and functional-disposition inputs and of predictive,
 dimensional-separation, source-independence, external-outcome, truth,
 resolution, promotion, policy-rewrite, or canonical-commit authority.
+Contradiction prediction-audit tests additionally require both matched `.vop`
+contexts before calibration, the `.vpr` rule before any held-out execution,
+one byte-identical held-out observation and simulation ledger for both outcome
+policies, and an atomic `.vpa` result. They target the observed positive match
+and valid-null false positive, a calibration-only rule API with no held-out or
+outcome inputs, fully rehashed leakage and authority forgeries, foreign durable
+lineage, injected second-observer rollback, stage-before-context rejection,
+and completed zero-simulation replay. They preserve the falsifying control and
+enforce the hard absence of predictive-discrimination, dimensional-separation,
+independent-source, external-outcome, truth, resolution, promotion,
+policy-rewrite, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

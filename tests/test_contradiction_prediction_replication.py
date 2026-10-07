@@ -26,24 +26,33 @@ from verdant_obligations import (
     CONTRADICTION_PROVENANCE_ACTION_OPERATOR,
     AttentionBidInput,
     AttentionPortfolio,
+    ContradictionDurablePredictionReplicationRunner,
     ContradictionHypothesisProtocol,
+    ContradictionLensHeldOutTrialRunner,
     ContradictionLensTrialContext,
     ContradictionLensTrialPairContext,
     ContradictionLensTrialSplit,
     ContradictionObligationDetector,
     ContradictionPredictionReplicationContext,
     ContradictionPredictionReplicationContextInput,
+    ContradictionPredictionReplicationExecutionInput,
     ContradictionPredictionReplicationDeclaration,
     ContradictionPredictionReplicationIntegrityError,
     ContradictionPredictionReplicationPreregistrar,
     ContradictionPredictionReplicationPreregistrationEnvelope,
+    ContradictionPredictionReplicationResultIntegrityError,
     ContradictionPredictionReplicationTraceRole,
+    CounterfactualRuntime,
     EquivalenceLensSystem,
     LensEvidenceResult,
     LensOpcode,
+    SimulationLedger,
     contradiction_prediction_replication_preregistration_bytes,
+    contradiction_prediction_replication_result_bytes,
     read_contradiction_prediction_replication_preregistration,
+    read_contradiction_prediction_replication_result,
     save_contradiction_prediction_replication_preregistration,
+    save_contradiction_prediction_replication_result,
 )
 from verdant_structures import VerdantStructurePipeline
 
@@ -551,3 +560,304 @@ def test_sidecar_size_is_checked_before_json_parse(
         match="exceeds its size limit",
     ):
         read_contradiction_prediction_replication_preregistration(path)
+
+
+def _execution_inputs(replication_inputs):
+    return tuple(
+        ContradictionPredictionReplicationExecutionInput(
+            context=item,
+            calibration_runtime=CounterfactualRuntime(SimulationLedger()),
+            held_out_runtime=CounterfactualRuntime(SimulationLedger()),
+        )
+        for item in replication_inputs
+    )
+
+
+@pytest.fixture(scope="module")
+def executed_replication(preregistered_replication):
+    preregistration_path, inputs, before, _ = preregistered_replication
+    result_path = preregistration_path.with_suffix(".vrr")
+    preregistration_bytes = preregistration_path.read_bytes()
+    execution_inputs = _execution_inputs(inputs)
+    run = ContradictionDurablePredictionReplicationRunner().run(
+        preregistration_path,
+        result_path,
+        execution_inputs,
+    )
+    return (
+        preregistration_path,
+        result_path,
+        inputs,
+        before,
+        preregistration_bytes,
+        execution_inputs,
+        run,
+    )
+
+
+def test_executes_frozen_counts_and_records_negative_group_heldout_result(
+    executed_replication,
+) -> None:
+    (
+        preregistration_path,
+        result_path,
+        _,
+        before,
+        preregistration_bytes,
+        execution_inputs,
+        run,
+    ) = executed_replication
+    receipt = run.receipt
+    assert result_path.exists()
+    assert preregistration_path.read_bytes() == preregistration_bytes
+    assert not run.replayed
+    assert receipt.all_profiles_observed
+    assert receipt.all_count_transitions_matched
+    assert receipt.low_controls_valid_null
+    assert receipt.high_variations_admission_gain
+    assert receipt.outcome_variation_observed
+    assert receipt.outcome_varies_with_trace_background
+    assert not receipt.outcome_varies_with_profile
+    assert not receipt.replication_plan_falsified
+    assert receipt.bounded_rule_family_falsified
+    assert not receipt.predictive_discrimination_observed
+    assert not receipt.dimensional_separation_observed
+    assert not receipt.independent_held_out_replication_observed
+    assert not receipt.authority_enabled
+    assert not receipt.canonical_commit_permitted
+    for observation in receipt.context_observations:
+        expected = observation.context.trace_role.preexisting_structure_count
+        assert observation.baseline.trace_before_structure_count == expected
+        assert observation.baseline.trace_after_structure_count == expected
+        assert observation.treatment.trace_before_structure_count == expected
+        assert observation.treatment.trace_after_structure_count == expected + 1
+        assert observation.treatment.trace_added_structure_count == 1
+        if expected == 0:
+            assert not observation.baseline.admitted
+            assert not observation.treatment.admitted
+        else:
+            assert not observation.baseline.admitted
+            assert observation.treatment.admitted
+    assert all(item.rule_family_falsified for item in receipt.fold_results)
+    assert all(not item.evaluation_variation_match for item in receipt.fold_results)
+    assert all(item.evaluation_control_match for item in receipt.fold_results)
+    after = tuple(
+        (
+            item.context.calibration_kernel.fingerprint(),
+            item.context.held_out_kernel.fingerprint(),
+            item.context.lenses.fingerprint(),
+        )
+        for item in execution_inputs
+    )
+    assert after == before
+    assert all(
+        runtime.ledger.fingerprint() != SimulationLedger().fingerprint()
+        for item in execution_inputs
+        for runtime in (item.calibration_runtime, item.held_out_runtime)
+    )
+
+
+def test_completed_result_replays_without_executing_another_trial(
+    executed_replication,
+) -> None:
+    preregistration_path, result_path, inputs, _, original_vrp, _, first = (
+        executed_replication
+    )
+
+    class ForbiddenTrialRunner:
+        def run(self, *args, **kwargs):
+            raise AssertionError("completed replay executed a new trial")
+
+    replay_inputs = _execution_inputs(inputs)
+    replay = ContradictionDurablePredictionReplicationRunner(
+        trial_runner=ForbiddenTrialRunner()
+    ).run(preregistration_path, result_path, replay_inputs)
+    assert replay.replayed
+    assert replay.result == first.result
+    assert preregistration_path.read_bytes() == original_vrp
+    published = {
+        ContradictionPredictionReplicationContext.build(
+            item.context.pair_context,
+            item.context.calibration_kernel,
+            item.context.held_out_kernel,
+            item.context.lenses,
+            trace_role=item.context.trace_role,
+        ).context_id: (
+            item.calibration_runtime.ledger.fingerprint(),
+            item.held_out_runtime.ledger.fingerprint(),
+        )
+        for item in replay_inputs
+    }
+    assert published == {
+        execution.context_ref: (
+            execution.calibration_simulation_fingerprint,
+            execution.held_out_simulation_fingerprint,
+        )
+        for execution in first.result.executions
+    }
+
+
+def test_result_tamper_rejects_without_publishing_simulation_state(
+    tmp_path: Path,
+    executed_replication,
+) -> None:
+    preregistration_path, result_path, inputs, _, original_vrp, _, _ = (
+        executed_replication
+    )
+    changed = bytearray(result_path.read_bytes())
+    changed[-2] ^= 1
+    tampered = tmp_path / "tampered.vrr"
+    tampered.write_bytes(changed)
+    execution_inputs = _execution_inputs(inputs)
+    with pytest.raises(ContradictionPredictionReplicationResultIntegrityError):
+        ContradictionDurablePredictionReplicationRunner().run(
+            preregistration_path,
+            tampered,
+            execution_inputs,
+        )
+    assert preregistration_path.read_bytes() == original_vrp
+    assert all(
+        runtime.ledger.fingerprint() == SimulationLedger().fingerprint()
+        for item in execution_inputs
+        for runtime in (item.calibration_runtime, item.held_out_runtime)
+    )
+
+
+def test_result_cannot_predate_or_substitute_its_preregistration(
+    tmp_path: Path,
+    executed_replication,
+) -> None:
+    _, result_path, inputs, _, _, _, _ = executed_replication
+    backdated_result = tmp_path / "backdated.vrr"
+    backdated_result.write_bytes(result_path.read_bytes())
+    missing_preregistration = tmp_path / "missing.vrp"
+    execution_inputs = _execution_inputs(inputs)
+    with pytest.raises(
+        ContradictionPredictionReplicationResultIntegrityError,
+        match="preexisting .vrp",
+    ):
+        ContradictionDurablePredictionReplicationRunner().run(
+            missing_preregistration,
+            backdated_result,
+            execution_inputs,
+        )
+    assert all(
+        runtime.ledger.fingerprint() == SimulationLedger().fingerprint()
+        for item in execution_inputs
+        for runtime in (item.calibration_runtime, item.held_out_runtime)
+    )
+
+
+def test_failed_second_context_leaves_no_result_or_partial_caller_ledgers(
+    tmp_path: Path,
+    preregistered_replication,
+) -> None:
+    preregistration_path, inputs, _, _ = preregistered_replication
+
+    class FailSecondTrialRunner:
+        def __init__(self):
+            self.calls = 0
+            self.inner = ContradictionLensHeldOutTrialRunner()
+
+        def run(self, *args, **kwargs):
+            self.calls += 1
+            if self.calls == 2:
+                raise ValueError("injected second-context failure")
+            return self.inner.run(*args, **kwargs)
+
+    execution_inputs = _execution_inputs(inputs)
+    result_path = tmp_path / "failed.vrr"
+    with pytest.raises(
+        ContradictionPredictionReplicationResultIntegrityError,
+        match="injected second-context failure",
+    ):
+        ContradictionDurablePredictionReplicationRunner(
+            trial_runner=FailSecondTrialRunner()
+        ).run(preregistration_path, result_path, execution_inputs)
+    assert not result_path.exists()
+    assert all(
+        runtime.ledger.fingerprint() == SimulationLedger().fingerprint()
+        for item in execution_inputs
+        for runtime in (item.calibration_runtime, item.held_out_runtime)
+    )
+
+
+def test_nonpristine_caller_ledger_is_rejected_before_replay(
+    executed_replication,
+) -> None:
+    preregistration_path, result_path, inputs, _, _, _, completed = (
+        executed_replication
+    )
+    execution_inputs = _execution_inputs(inputs)
+    execution_inputs[0].calibration_runtime.ledger.state = (
+        completed.result.executions[0].calibration_simulation_state
+    )
+    occupied = execution_inputs[0].calibration_runtime.ledger.fingerprint()
+    with pytest.raises(
+        ContradictionPredictionReplicationResultIntegrityError,
+        match="pristine caller ledgers",
+    ):
+        ContradictionDurablePredictionReplicationRunner().run(
+            preregistration_path,
+            result_path,
+            execution_inputs,
+        )
+    assert execution_inputs[0].calibration_runtime.ledger.fingerprint() == occupied
+    assert all(
+        runtime.ledger.fingerprint() == SimulationLedger().fingerprint()
+        for index, item in enumerate(execution_inputs)
+        for runtime in (item.calibration_runtime, item.held_out_runtime)
+        if not (index == 0 and runtime is item.calibration_runtime)
+    )
+
+
+def test_result_authority_forgery_noncanonical_bytes_and_immutable_path_fail(
+    tmp_path: Path,
+    executed_replication,
+) -> None:
+    _, _, _, _, _, _, run = executed_replication
+    data = contradiction_prediction_replication_result_bytes(run.result)
+    payload = json.loads(data)
+    payload["receipt"]["authority_enabled"] = True
+    forged = tmp_path / "authority.vrr"
+    forged.write_bytes(canonical_json_bytes(payload))
+    with pytest.raises(ContradictionPredictionReplicationResultIntegrityError):
+        read_contradiction_prediction_replication_result(forged)
+
+    noncanonical = tmp_path / "noncanonical.vrr"
+    noncanonical.write_bytes(data + b"\n")
+    with pytest.raises(
+        ContradictionPredictionReplicationResultIntegrityError,
+        match="not canonical",
+    ):
+        read_contradiction_prediction_replication_result(noncanonical)
+
+    immutable = tmp_path / "immutable.vrr"
+    receipt_id = save_contradiction_prediction_replication_result(
+        immutable, run.result
+    )
+    assert save_contradiction_prediction_replication_result(
+        immutable, run.result
+    ) == receipt_id
+    immutable.write_bytes(b"occupied")
+    with pytest.raises(
+        ContradictionPredictionReplicationResultIntegrityError,
+        match="different evidence",
+    ):
+        save_contradiction_prediction_replication_result(immutable, run.result)
+
+
+def test_result_size_is_checked_before_json_parse(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import verdant_obligations.contradiction_prediction_replication_result as module
+
+    path = tmp_path / "oversized.vrr"
+    path.write_bytes(b"not-json-but-too-large")
+    monkeypatch.setattr(module, "_MAX_SIDECAR_BYTES", 4)
+    with pytest.raises(
+        ContradictionPredictionReplicationResultIntegrityError,
+        match="exceeds its size limit",
+    ):
+        read_contradiction_prediction_replication_result(path)

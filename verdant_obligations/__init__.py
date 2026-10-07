@@ -234,6 +234,26 @@ from .contradiction_prediction_replication import (
     read_contradiction_prediction_replication_preregistration,
     save_contradiction_prediction_replication_preregistration,
 )
+from .contradiction_prediction_replication_result import (
+    CONTRADICTION_PREDICTION_REPLICATION_RESULT_FORMAT,
+    CONTRADICTION_PREDICTION_REPLICATION_RESULT_VERSION,
+    ContradictionDurablePredictionReplicationRunner,
+    ContradictionPredictionReplicationArm,
+    ContradictionPredictionReplicationArmObservation,
+    ContradictionPredictionReplicationContextExecution,
+    ContradictionPredictionReplicationContextObservation,
+    ContradictionPredictionReplicationExecutionInput,
+    ContradictionPredictionReplicationFoldResult,
+    ContradictionPredictionReplicationObserver,
+    ContradictionPredictionReplicationReceipt,
+    ContradictionPredictionReplicationResultEnvelope,
+    ContradictionPredictionReplicationResultIntegrityError,
+    ContradictionPredictionReplicationRun,
+    contradiction_prediction_replication_result_bytes,
+    load_contradiction_prediction_replication_result,
+    read_contradiction_prediction_replication_result,
+    save_contradiction_prediction_replication_result,
+)
 from .prediction_failures import (
     PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
     PredictionFailureCandidate,

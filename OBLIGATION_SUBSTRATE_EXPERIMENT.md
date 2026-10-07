@@ -1,4 +1,4 @@
-# Obligation Substrate v0.44
+# Obligation Substrate v0.45
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -663,11 +663,36 @@ generation, or safe autonomous policy revision.
   held-out folds and forbids trace roles, evaluation outcomes, and negative
   controls as rule inputs. This is preregistration infrastructure only. It has
   not executed a replication trace, observed an outcome, or fitted a rule.
+- An explicitly invoked v0.45 runner now requires that unchanged `.vrp`,
+  executes its four contexts on private calibration and held-out simulation
+  ledgers, and atomically stores a separate immutable `.vrr`. The result embeds
+  both complete ledgers for every context, the actual matched traces, two
+  native shadow-workspace reports, and both frozen profile-group-held-out fold
+  evaluations. Caller ledgers are published only after the completed sidecar
+  reloads and reproduces exactly; failure restores every caller ledger.
+- The actual internal traces match the declared low `0 -> 1` and high `1 -> 2`
+  structure-count transitions. Under the single frozen `0.35` policy, counts
+  `0`, `1`, and `2` yield effective scores `0.232`, `0.302`, and `0.372`:
+  both low contexts remain `valid_null` while both high contexts become
+  `admission_gain`. Each profile-only held-out fold therefore misses its high
+  variation and matches its untouched low control. Outcome variation follows
+  the deliberately varied trace background, not Lens profile; the bounded
+  rule family is falsified and is not revised.
+- Loading `.vrr` reconstructs both ledgers, validates them against their exact
+  canonical kernels, and reruns the count-only native workspace observer
+  without executing another trial. Result-byte tampering, noncanonical or
+  oversized input, foreign preregistration, nonpristine caller ledgers,
+  authority forgery, and replacement of an occupied result path fail closed.
+  Replay grants no canonical, resolution, promotion, prediction, or policy-
+  rewrite authority.
 - The selected cardinality and the bounded functional disposition are both
   derived from the same internal simulated route evidence. Their held-out
   agreement is therefore only a trace-local criterion match. Resolution-level
   dimensional separation, predictive discrimination, independent held-out
   replication, source independence, and external outcome all remain missing.
+  v0.45 observes a downstream internal outcome difference, but that difference
+  is mechanically induced by the preregistered structure background and does
+  not validate Lens cardinality as a predictive dimension.
 - A deterministic `PredictionFailureDetector` now scans native
   `GovernanceOutcomeRecord` objects, comparing the Council proposal's declared
   harm risk with the canonical observed harm score already recorded by the
@@ -907,9 +932,14 @@ generation, or safe autonomous policy revision.
   a separately preregistered, trace-count-derived native workspace outcome that
   consumes neither Lens projections nor functional disposition. v0.42 freezes
   a cardinality-only prediction before held-out execution and observes that it
-  fails its matched valid-null control. This does not establish Resolution-
-  level dimensional separation or predictive discrimination, learn a Lens,
-  feed a Resolution Contract, or carry canonical resolution authority.
+  fails its matched valid-null control. v0.43 then falsifies the bounded
+  leave-one-context-out profile rule, v0.44 preregisters a fixed-policy
+  background-balanced replication, and v0.45 executes it without changing the
+  declaration. The result varies with the manipulated structure background,
+  not profile, and falsifies both profile-group-held-out folds. This does not
+  establish Resolution-level dimensional separation or predictive
+  discrimination, learn a Lens, feed a Resolution Contract, or carry canonical
+  resolution authority.
 - Shared or different evidence IDs and source roots are structural ledger
   observations only. They do not establish source independence, causal
   relevance, contextual compatibility, semantic correctness, or which opposed
@@ -941,6 +971,9 @@ generation, or safe autonomous policy revision.
   adds a calibration-stage `.vcs` sidecar, v0.41 adds `.vop`/`.vor` downstream
   sidecars, and v0.42 adds a pre-held-out `.vpr` rule plus completed `.vpa`
   matched-control audit paired back to all upstream bytes.
+  v0.43 adds `.vcp`/`.vcr` cohort sidecars, v0.44 adds the immutable `.vrp`
+  replication declaration, and v0.45 adds the separately immutable `.vrr`
+  result with its four pairs of complete simulation ledgers.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1951,6 +1984,51 @@ generation, or safe autonomous policy revision.
   scheduling, policy rewrite, semantic understanding, `T_g` control, or
   thermodynamic behavior.
 
+## v0.45 claim boundary
+
+- **OBSERVED:** Eight new execution/result tests, 122 focused Contradiction
+  tests, and the 554-test full repository suite pass. The full suite's
+  compatibility check still loads and embeds all 17 preexisting checkpoints.
+  All four actual matched traces satisfy the frozen count transitions: each
+  low context is `0 -> 1` and each high context is `1 -> 2`. Under the same
+  `0.35` workspace threshold, the native raw/effective score pairs are
+  `0.24/0.232`, `0.31/0.302`, and `0.38/0.372` for counts zero, one, and two.
+  Thus both low contexts are `valid_null`, both high contexts are
+  `admission_gain`, and the execution plan's count/profile checks pass.
+  Outcome variation is observed across internal experiment traces, but it
+  varies with the deliberately manipulated structure background rather than
+  either Lens-cardinality profile. Both frozen group-held-out rules predict
+  `valid_null` for the unseen profile, miss its high variation, and match its
+  untouched low control. The bounded profile rule family is therefore
+  falsified.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in runner requires the preexisting
+  immutable `.vrp`, executes all contexts privately, and atomically stores a
+  separate immutable `.vrr`. Each context embeds its complete calibration and
+  held-out simulation ledgers, actual trial receipt, count-only workspace
+  observations, and exact fold inputs. Loading reconstructs and validates both
+  ledgers and reruns the observer without another simulation. Result tampering,
+  noncanonical or oversized input, missing or substituted preregistration,
+  nonpristine caller ledgers, injected mid-cohort failure, authority forgery,
+  and occupied-path replacement fail without partial caller-ledger
+  publication. Canonical kernels, protected evidence, and Lens sidecars remain
+  unchanged.
+- **PROPOSED:** Preserve this negative result. Do not revise the completed
+  profile rule, relabel contexts, or admit the outcome-defining structure count
+  or trace role as a predictor. A further Contradiction prediction study would
+  first require an independently motivated, pre-outcome dimension and a new
+  preregistration that balances trace background within every dimension value;
+  no such independent input or external outcome channel exists in this
+  substrate. The next grounded dependency in the documented family backlog is
+  therefore a `PredictionFailure` family-local hypothesis/evidence protocol:
+  derive preregistered target-ablation, null, and insufficient-evidence
+  alternatives from canonical governance-outcome lineage before adding any
+  matched ablation trial or Resolution Contract. v0.45 does not establish
+  predictive discrimination, dimensional separation, independent held-out or
+  real-world replication, source independence, external outcome, truth
+  selection, causal attribution, canonical resolution or promotion,
+  autonomous scheduling, policy rewrite, semantic understanding, `T_g`
+  control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2110,6 +2188,17 @@ forgery, byte tampering, noncanonical and oversized input, deterministic input
 ordering, and immutable
 first-writer behavior. They also enforce the absence of replication traces,
 outcomes, fitted rules, predictive discrimination, dimensional separation,
+resolution, promotion, policy-rewrite, or canonical-commit authority.
+Contradiction prediction-replication result tests additionally execute all four
+frozen contexts and require the actual low `0 -> 1` and high `1 -> 2` counts,
+one unchanged native workspace policy, both expected internal outcomes, and
+both negative group-held-out fold results. They target completed-result replay
+without another trial, result-byte and authority tampering, missing or
+substituted preregistration, immutable result paths, oversized input,
+nonpristine caller ledgers, injected second-context rollback, canonical/Lens
+isolation, and no partial simulation publication. They preserve the negative
+rule-family result and the hard absence of predictive discrimination,
+dimensional separation, independent or external replication, truth,
 resolution, promotion, policy-rewrite, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact

@@ -1,4 +1,4 @@
-# Obligation Substrate v0.43
+# Obligation Substrate v0.44
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -650,6 +650,19 @@ generation, or safe autonomous policy revision.
   match the untouched control. The original singleton false positive is also
   reproduced unchanged. This falsifies the bounded cohort rule family; it
   does not rescue or rewrite the v0.42 rule.
+- A v0.44 `.vrp` replication preregistration now freezes four new, canonically
+  disjoint contexts before any replication trace exists: one low-trace control
+  and one high-trace variation for each source-topology-derived expected Lens
+  profile. Each high context contains exactly one opaque structure created by
+  Verdant's native observation, governance, and promotion path; each low
+  context contains none. Their protected claims, evidence, checkpoints,
+  structures, and promotion events are disjoint.
+- The v0.44 sidecar also freezes one policy for every context: consume only the
+  actual structures `after_record_count`, map each count to `0.5` pressure,
+  and use the same `0.35` workspace threshold. It fixes two whole-profile
+  held-out folds and forbids trace roles, evaluation outcomes, and negative
+  controls as rule inputs. This is preregistration infrastructure only. It has
+  not executed a replication trace, observed an outcome, or fitted a rule.
 - The selected cardinality and the bounded functional disposition are both
   derived from the same internal simulated route evidence. Their held-out
   agreement is therefore only a trace-local criterion match. Resolution-level
@@ -1903,6 +1916,41 @@ generation, or safe autonomous policy revision.
   success, canonical resolution or promotion, autonomous scheduling, policy
   rewrite, semantic understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.44 claim boundary
+
+- **OBSERVED:** Ten new replication-preregistration tests, 114 focused
+  Contradiction tests, and the 546-test full repository suite pass. The full
+  suite still loads and embeds all 17 preexisting checkpoints. Four new
+  canonical pair contexts can be bound without mutating their kernels or Lens
+  sidecars. Within each of the two source-topology-derived expected profiles,
+  the low context has zero
+  preexisting structures and the high context has one opaque, natively
+  promoted structure with preserved evidence, Council, and promotion-event
+  lineage. These are preregistration-time canonical facts, not executed trace
+  results. No replication outcome has been observed.
+- **IMPLEMENTED-EXPERIMENTAL:** One opt-in registrar atomically stores an
+  immutable `.vrp` containing the four contexts, their disjoint provenance,
+  the fixed `structures.after_record_count` outcome policy, the unchanged
+  `0.35` threshold, the bounded cardinality-only rule family, and two complete
+  profile-group-held-out partitions. It rejects duplicate kernels, missing
+  profile/role cells, foreign Lens state, role/background disagreement,
+  non-native structure lineage, evidence reuse, noncanonical bytes, sidecar
+  replacement, oversized input, and fully rehashed authority forgery. It
+  explicitly records `replication_executed=False`, `outcomes_observed=False`,
+  and preserves the v0.42 mapping and v0.43 rule-family failure boundary.
+- **PROPOSED:** Execute the four contexts without changing `.vrp`, verify
+  actual low-background `0 -> 1` and high-background `1 -> 2` structure-count
+  traces under the single frozen policy, persist the results separately, and
+  evaluate both profile-group-held-out folds with the low contexts untouched
+  as negative controls. Any count, policy, provenance, or control mismatch
+  must remain a falsifying result rather than trigger rule revision. Until
+  that execution exists, v0.44 does not establish outcome variation,
+  predictive discrimination, dimensional separation, independent held-out
+  replication, independent real-world sources, external outcome, truth
+  selection, causal success, canonical resolution or promotion, autonomous
+  scheduling, policy rewrite, semantic understanding, `T_g` control, or
+  thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2051,6 +2099,18 @@ of both source audits. They preserve the v0.42 false positive and enforce the
 hard absence of predictive discrimination, dimensional separation,
 independent-source, external-outcome, truth, resolution, promotion,
 policy-rewrite, or canonical-commit authority.
+Contradiction prediction-replication preregistration tests require the `.vrp`
+to contain exactly four contexts, both expected cardinality profiles, both
+trace-background roles per profile, eight distinct canonical checkpoints,
+disjoint protected evidence, native opaque-structure promotion lineage, one
+fixed trace field and threshold, and two complete profile-group-held-out
+folds. They target role/background mismatch, foreign Lens state, duplicate
+canonical contexts, fully rehashed background-evidence reuse and authority
+forgery, byte tampering, noncanonical and oversized input, deterministic input
+ordering, and immutable
+first-writer behavior. They also enforce the absence of replication traces,
+outcomes, fitted rules, predictive discrimination, dimensional separation,
+resolution, promotion, policy-rewrite, or canonical-commit authority.
 PredictionFailure-family tests additionally target native expected/observed
 value derivation, threshold rejection, fingerprint-pure inspection, exact
 replay, policy-version retriggering without identity fragmentation, event-scope

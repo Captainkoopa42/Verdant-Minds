@@ -215,6 +215,25 @@ from .contradiction_prediction_cohort import (
     save_contradiction_prediction_cohort_preregistration,
     save_contradiction_prediction_cohort_result,
 )
+from .contradiction_prediction_replication import (
+    CONTRADICTION_PREDICTION_REPLICATION_CONTEXT_COUNT,
+    CONTRADICTION_PREDICTION_REPLICATION_PREREGISTRATION_FORMAT,
+    CONTRADICTION_PREDICTION_REPLICATION_TRACE_FIELD,
+    CONTRADICTION_PREDICTION_REPLICATION_VERSION,
+    ContradictionPredictionReplicationContext,
+    ContradictionPredictionReplicationContextInput,
+    ContradictionPredictionReplicationDeclaration,
+    ContradictionPredictionReplicationFold,
+    ContradictionPredictionReplicationIntegrityError,
+    ContradictionPredictionReplicationOutcomePolicy,
+    ContradictionPredictionReplicationPreregistrar,
+    ContradictionPredictionReplicationPreregistrationEnvelope,
+    ContradictionPredictionReplicationRuleFamily,
+    ContradictionPredictionReplicationTraceRole,
+    contradiction_prediction_replication_preregistration_bytes,
+    read_contradiction_prediction_replication_preregistration,
+    save_contradiction_prediction_replication_preregistration,
+)
 from .prediction_failures import (
     PREDICTION_FAILURE_DETECTOR_POLICY_VERSION,
     PredictionFailureCandidate,

@@ -316,6 +316,13 @@ from .prediction_failure_trial_plans import (
     read_prediction_failure_trial_plan,
     save_prediction_failure_trial_plan,
 )
+from .prediction_failure_risk_operator import (
+    PREDICTION_FAILURE_RISK_OPERATOR_VERSION,
+    PredictionFailureGovernanceRiskOperator,
+    PredictionFailureRiskEvaluation,
+    PredictionFailureRiskProjection,
+    PredictionFailureRiskSource,
+)
 from .identity_ambiguities import (
     IDENTITY_AMBIGUITY_DETECTOR_POLICY_VERSION,
     IdentityAmbiguityCandidate,

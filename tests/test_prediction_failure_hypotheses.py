@@ -24,6 +24,7 @@ from verdant_obligations import (
     PREDICTION_FAILURE_TRIAL_ERROR_FORMULA,
     PREDICTION_FAILURE_TRIAL_OBSERVED_VALUE_SOURCE,
     PREDICTION_FAILURE_TRIAL_PLAN_VERSION,
+    PREDICTION_FAILURE_RISK_OPERATOR_VERSION,
     PREDICTION_FAILURE_TRIAL_PREREGISTRATION_VERSION,
     PREDICTION_FAILURE_TRIAL_TARGET_DELTA_FORMULA,
     PREDICTION_FAILURE_TRIAL_TRACE_VALUE_FIELD,
@@ -41,6 +42,9 @@ from verdant_obligations import (
     PredictionFailureHypothesisKind,
     PredictionFailureHypothesisProtocol,
     PredictionFailureSimulationInputProjection,
+    PredictionFailureGovernanceRiskOperator,
+    PredictionFailureRiskProjection,
+    PredictionFailureRiskSource,
     PredictionFailureTrialArm,
     PredictionFailureTrialArmDeclaration,
     PredictionFailureTrialDeclaration,
@@ -893,6 +897,168 @@ def _trial_plan_fixture(tmp_path: Path, seed: int, stem: str = "trial"):
         plan_path,
         plan_envelope,
     )
+
+
+def test_risk_projection_abstains_without_predecision_support(
+    tmp_path: Path,
+) -> None:
+    kernel, bundle, prereg_path, _, plan_path, _ = _trial_plan_fixture(
+        tmp_path, 7301
+    )
+    checkpoint = tmp_path / "risk.vdk"
+    save_checkpoint(checkpoint, kernel.snapshot())
+    original = kernel.fingerprint()
+    plan_bytes = plan_path.read_bytes()
+    prereg_bytes = prereg_path.read_bytes()
+    operator = PredictionFailureGovernanceRiskOperator()
+
+    result = operator.evaluate(
+        kernel=kernel, plan_path=plan_path, preregistration_path=prereg_path
+    )
+    by_arm = {item.arm: item for item in result.projections}
+    assert result.operator_version == PREDICTION_FAILURE_RISK_OPERATOR_VERSION
+    assert by_arm[PredictionFailureTrialArm.BASELINE].predicted_harm_score == 0.1
+    assert by_arm[PredictionFailureTrialArm.VALID_NULL].predicted_harm_score == 0.1
+    ablation = by_arm[PredictionFailureTrialArm.TARGET_ABLATION]
+    assert ablation.source == PredictionFailureRiskSource.INSUFFICIENT_EVIDENCE
+    assert ablation.predicted_harm_score is None
+    assert ablation.reason == "no_predecision_action_class_outcome"
+    assert bundle.evidence_receipt.outcome_ref not in ablation.supporting_refs
+    assert not result.matched_trial_executed
+    assert not result.result_observed
+    assert not result.canonical_commit_permitted
+    assert all(not item.simulation_trace_observed for item in result.projections)
+    assert kernel.fingerprint() == original
+    assert plan_path.read_bytes() == plan_bytes
+    assert prereg_path.read_bytes() == prereg_bytes
+
+    state = load_checkpoint(checkpoint)
+    state.evidence = dict(reversed(tuple(state.evidence.items())))
+    state.obligation_kernels = dict(reversed(tuple(state.obligation_kernels.items())))
+    restored = VerdantKernel.from_state(state)
+    assert operator.evaluate(
+        kernel=restored, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    ) == result
+
+
+def test_risk_projection_uses_only_earlier_physical_learning(
+    tmp_path: Path,
+) -> None:
+    kernel = VerdantKernel(
+        seed=7302, state_dim=16, run_label="prediction-failure-risk-prior"
+    )
+    governance = VerdantGovernancePipeline()
+    prior_proposal = governance.propose(
+        kernel, proposal_kind=GovernanceProposalKind.INVESTIGATE,
+        operation="inspect_risk_prior", action_class="inspection_one",
+        description="Controlled prior inspection.",
+        evidence_refs=_evidence(kernel, "risk-prior", EvidenceKind.OBSERVATION),
+        relevance=1.0, urgency=0.6, novelty=0.2,
+        predicted_information_gain=1.0, harm_risk=0.1, reversibility=1.0,
+    )
+    prior_decision = governance.commit(
+        kernel, governance.inspect(kernel, prior_proposal)
+    )
+    prior_outcome = governance.record_outcome(
+        kernel, decision_event_id=prior_decision.decision_event_id,
+        evidence_refs=_evidence(kernel, "risk-prior-outcome", EvidenceKind.OUTCOME),
+        succeeded=True, harm_score=0.8,
+    )
+    assert prior_outcome.learned_risk_after == pytest.approx(0.64)
+    target_outcome, target_decision, target_proposal = _outcome(kernel)
+    assert target_proposal.action_class == prior_proposal.action_class
+    assert prior_outcome.cycle < target_proposal.created_cycle
+    report = PredictionFailureDetector().detect_and_record(kernel)
+    obligation = next(
+        item.obligation for item in report.mutations
+        if item.obligation.prediction_source_ref == target_decision.decision_event_id
+    )
+    allocation = _authorize(
+        kernel, tuple(item.obligation.kernel_id for item in report.mutations),
+        source_event_key="prediction-failure-risk-prior-attention",
+    )[obligation.kernel_id]
+    bundle = PredictionFailureHypothesisProtocol().generate(
+        kernel, obligation_id=obligation.kernel_id,
+        attention_allocation_id=allocation.allocation_id,
+    )
+    prereg_path = tmp_path / "prior.vfp"
+    plan_path = tmp_path / "prior.vpp"
+    PredictionFailureTrialPreregistrar().register(
+        prereg_path, kernel=kernel, hypothesis_bundle=bundle,
+    )
+    PredictionFailureTrialPlanMaterializer().materialize(
+        plan_path, kernel=kernel, preregistration_path=prereg_path,
+    )
+    result = PredictionFailureGovernanceRiskOperator().evaluate(
+        kernel=kernel, plan_path=plan_path, preregistration_path=prereg_path,
+    )
+    by_arm = {item.arm: item for item in result.projections}
+    assert {item.predicted_harm_score for item in result.projections} == {
+        prior_outcome.learned_risk_after
+    }
+    assert (
+        by_arm[PredictionFailureTrialArm.TARGET_ABLATION].source
+        == PredictionFailureRiskSource.PRIOR_OUTCOME_LEARNING
+    )
+    assert all(prior_outcome.outcome_id in item.supporting_refs for item in result.projections)
+    assert all(target_outcome.outcome_id not in item.supporting_refs for item in result.projections)
+    assert all(target_outcome.evidence_refs[0] not in item.supporting_refs for item in result.projections)
+    assert not result.matched_trial_executed
+
+
+def test_risk_projection_rejects_foreign_and_tampered_plan(
+    tmp_path: Path,
+) -> None:
+    kernel, _, prereg_path, _, plan_path, _ = _trial_plan_fixture(
+        tmp_path, 7303, "first"
+    )
+    foreign, _, foreign_prereg, _, foreign_plan, _ = _trial_plan_fixture(
+        tmp_path, 7304, "foreign"
+    )
+    operator = PredictionFailureGovernanceRiskOperator()
+    expected = operator.evaluate(
+        kernel=kernel, plan_path=plan_path, preregistration_path=prereg_path,
+    )
+    with pytest.raises(PredictionFailureTrialPlanIntegrityError):
+        operator.evaluate(
+            kernel=foreign, plan_path=plan_path,
+            preregistration_path=prereg_path,
+        )
+    with pytest.raises(PredictionFailureTrialPlanIntegrityError):
+        operator.evaluate(
+            kernel=kernel, plan_path=foreign_plan,
+            preregistration_path=foreign_prereg,
+        )
+    tampered = tmp_path / "tampered.vpp"
+    data = bytearray(plan_path.read_bytes())
+    data[-2] ^= 1
+    tampered.write_bytes(data)
+    with pytest.raises(PredictionFailureTrialPlanIntegrityError):
+        operator.evaluate(
+            kernel=kernel, plan_path=tampered,
+            preregistration_path=prereg_path,
+        )
+    assert operator.evaluate(
+        kernel=kernel, plan_path=plan_path, preregistration_path=prereg_path,
+    ) == expected
+
+
+def test_risk_projection_rejects_forged_score_and_authority() -> None:
+    projection = PredictionFailureRiskProjection.build(
+        plan_ref="controlled-plan", arm=PredictionFailureTrialArm.TARGET_ABLATION,
+        source=PredictionFailureRiskSource.INSUFFICIENT_EVIDENCE,
+        score=None, supporting_refs=("native-council-report",),
+        reason="no_predecision_action_class_outcome",
+    )
+    forged = projection.model_dump(mode="json")
+    forged["predicted_harm_score"] = 0.8
+    with pytest.raises(ValueError, match="boundary"):
+        PredictionFailureRiskProjection.model_validate(forged)
+    forged = projection.model_dump(mode="json")
+    forged["canonical_commit_permitted"] = True
+    with pytest.raises(ValueError, match="boundary"):
+        PredictionFailureRiskProjection.model_validate(forged)
 
 
 def test_trial_plan_materializes_typed_target_absence_without_execution(

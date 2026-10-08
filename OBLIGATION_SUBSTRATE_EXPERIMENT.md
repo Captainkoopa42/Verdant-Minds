@@ -1,4 +1,4 @@
-# Obligation Substrate v0.48
+# Obligation Substrate v0.49
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -765,6 +765,15 @@ generation, or safe autonomous policy revision.
   The package records that no prediction operator, runtime plan, execution,
   trace, predicted-harm value, outcome, target-specific effect, causal claim,
   resolution, promotion, policy rewrite, or canonical commit exists.
+- An explicitly invoked, versioned, read-only risk operator now consumes the
+  exact `.vfp`/`.vpp`/canonical-checkpoint triple and projects the native
+  predecision Ethics effective-risk arithmetic for baseline, target ablation,
+  and valid-null. It verifies the original Council assessment and uses a
+  same-action-class learned risk for target absence only when a distinct,
+  earlier physical outcome supports that value in the predecision policy
+  snapshot. Without that support it returns `insufficient_evidence` and no
+  score. These are typed, checksum-bound, ephemeral risk projections, not
+  observations from simulation traces or a durable result sidecar.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1067,13 +1076,16 @@ generation, or safe autonomous policy revision.
 - A target-ablation hypothesis set is now implemented only for the canonical
   proposal's declared harm-risk field. v0.47 separately persists its exact
   three-arm matched-design preregistration, and v0.48 separately persists its
-  typed simulation-input/plan package. No independently grounded prediction
-  operator currently accepts the optional target, so no native runtime plan,
-  matched trial, trace-derived ablation observation, result sidecar, or
-  PredictionFailure-specific Resolution Contract exists. Target absence is not
-  zero and cannot be supplied a post-hoc default. Naming, preregistering, or
-  projecting this field does not identify it, any routing heuristic, or any
-  P-structure as causal.
+  typed simulation-input/plan package. v0.49 adds a predecision Council risk
+  projection with explicit abstention when target absence lacks prior physical
+  learning. Its score is a governance risk proxy, not a calibrated forecast of
+  physical harm; it does not yet produce the preregistered trace observation.
+  No native runtime plan, matched trial, trace-derived ablation observation,
+  durable operator-output or result sidecar, or PredictionFailure-specific
+  Resolution Contract exists. Target absence is not zero and cannot be
+  supplied a post-hoc default. Naming, preregistering, or projecting this
+  field does not identify it, any routing heuristic, or any P-structure as
+  causal.
 - `IdentityAmbiguity` currently covers only Verdant's native proto-object
   association competition. It does not cover text aliases, claim-level entity
   resolution, promoted-concept mergers, or arbitrary developer-supplied pairs.
@@ -2213,6 +2225,43 @@ generation, or safe autonomous policy revision.
   canonical resolution or promotion, autonomous scheduling, policy rewrite,
   semantic understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.49 claim boundary
+
+- **OBSERVED:** Four new risk-operator tests, all 42 focused
+  PredictionFailure tests, and the 588-test full repository suite pass. The
+  controlled first-outcome fixture has no predecision same-action-class
+  physical learning: baseline and valid-null risk projections are both `0.1`,
+  while target ablation has no score and explicitly reports
+  `insufficient_evidence`. A separate controlled prior-outcome fixture records
+  `0.8` physical harm before the target proposal; native policy learns `0.64`
+  at its existing `0.8` learning rate, and all three risk projections are
+  `0.64`. The target outcome and its evidence never appear as operator support.
+  Exact VDK restoration and mapping-order reversal replay the first fixture;
+  foreign ledgers, substituted plans, byte tampering, and forged score or
+  authority fields fail closed. These observations are about pre-execution
+  governance risk projection, not an executed matched trial.
+- **IMPLEMENTED-EXPERIMENTAL:** The v0.49 opt-in operator loads the exact
+  durable `.vfp` and `.vpp` against one canonical checkpoint, checks the native
+  Ethics assessment against its predecision policy snapshot, and computes the
+  native bounded effective-risk score for each typed arm. The ablation arm may
+  use only the latest distinct, earlier physical outcome of the same action
+  class when its learned value matches that snapshot. No earlier support means
+  no value; absence is never converted to zero. Versioned, checksum-bound
+  return records preserve plan and evidence references and explicitly deny
+  trace, trial-result, resolution, and canonical-commit authority. No
+  prediction is written into VDK, `.vfp`, or `.vpp`.
+- **PROPOSED:** Persist the operator decision separately with exact input
+  identity and adversarial replay checks before any opt-in runner treats it as
+  a possible trace source. A runner would still need three native, isolated,
+  resource-accounted executions and a distinct immutable trace-derived result
+  with matched valid-null control; the current first-outcome fixture must
+  remain insufficient rather than gain a synthetic ablation score. The native
+  Ethics score is a governance risk proxy, not a calibrated physical-harm
+  forecast. v0.49 does not establish target-specific effect, causality,
+  threshold calibration, semantic correctness, truth selection, canonical
+  resolution or promotion, autonomous scheduling, policy rewrite, semantic
+  understanding, `T_g` control, or thermodynamic behavior.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2415,6 +2464,12 @@ default injection, byte tampering, noncanonical and oversized input, occupied-
 path rejection, and the hard absence of native overlay patches, runtime plans,
 prediction operators, executions, traces, outcomes, causal claims, resolution,
 promotion, policy rewrite, or canonical commit.
+PredictionFailure risk-operator tests additionally target first-outcome
+abstention, native predecision learned-risk provenance from a distinct physical
+outcome, exclusion of the target outcome, exact VDK/mapping-order replay,
+unchanged canonical and sidecar bytes, foreign-ledger and plan substitution,
+byte tampering, and forged score or authority fields. They do not stand in for
+three executed isolated simulation ledgers or trace-derived observations.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

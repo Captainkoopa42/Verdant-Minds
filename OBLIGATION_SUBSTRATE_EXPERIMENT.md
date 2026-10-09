@@ -1,4 +1,4 @@
-# Obligation Substrate v0.50
+# Obligation Substrate v0.51
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -784,6 +784,20 @@ generation, or safe autonomous policy revision.
   Ordinary `read` checks local bytes and checksums only. The recorder and
   loader do not instantiate a simulation runtime or change canonical state,
   the input sidecars, Attention funding, or simulation consumption.
+- An explicitly invoked v0.51 PredictionFailure runner now stages three
+  separate native simulation ledgers and canonical copies. Each frozen arm is
+  translated into a deterministic, discarded-only, zero-overlay native plan;
+  its read-only governance risk operator is invoked after reservation and
+  before settlement. A typed execution trace records the actual returned
+  arm projection as `prediction_failure_trial_observation.predicted_harm_score`,
+  including absence. The complete `.vft` result embeds all three native
+  plans, execution traces and ledgers, applies the unchanged frozen error and
+  disposition rules, and charges `0.015` per arm / `0.045` total under the
+  original Attention grant. No caller-supplied score or observer is accepted.
+  Canonical/input bytes and caller ledgers remain unchanged on staged failure;
+  successful ledger publication follows complete immutable result publication.
+  Completed result validation reconstructs native lineage without another
+  operator execution inside a reservation or additional simulation charge.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1054,6 +1068,8 @@ generation, or safe autonomous policy revision.
   simulation ledger, trace, or result. v0.50 adds a separate `.vfr` receipt of
   the v0.49 pre-execution governance risk projections, including abstentions.
   It contains no simulation ledger, execution trace, or matched-trial result.
+  v0.51 adds a separate `.vft` completed PredictionFailure result with three
+  embedded, separate native simulation ledgers and typed operator traces.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1071,7 +1087,7 @@ generation, or safe autonomous policy revision.
   with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
   immutable first-committer-wins evidence rather than an execution authority
   or canonical journal.
-- `.vfp`, `.vpp`, and `.vfr` use the same bounded local POSIX flock/temporary-file/
+- `.vfp`, `.vpp`, `.vfr`, and `.vft` use the same bounded local POSIX flock/temporary-file/
   synced-replace assumptions. They do not cover Windows, network or lock-
   hostile filesystems, hostile path or symlink replacement, hardware failure,
   distributed merge, signatures, trusted timestamps, or remote notarization.
@@ -1085,6 +1101,17 @@ generation, or safe autonomous policy revision.
   be immutable during an invocation; drift is rejected, but no cross-file
   transaction or rollback of an external source writer is provided. v0.50
   adds no new process-kill, power-loss, or concurrent-writer durability proof.
+- `.vft` replay requires its exact canonical checkpoint and original
+  `.vfp`/`.vpp`/`.vfr` files. It reconstructs the recorded native settlement
+  lineage and read-only source provenance rather than replaying simulation
+  execution. The risk operator evaluates the immutable plan bundle during
+  each reservation; only the selected arm's independently computed output is
+  recorded. The native plans have no overlay patches because this computation
+  does not mutate any authorized canonical collection. Budget is an explicit
+  logical charge, not measured wall time or learned cost. The seed is frozen
+  lineage; this deterministic operator consumes no randomness and provides no
+  cross-seed independence proof. Accounting is bounded to one staged three-arm
+  trial, with no global cross-file budget journal or autonomous scheduler.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1098,10 +1125,10 @@ generation, or safe autonomous policy revision.
   typed simulation-input/plan package. v0.49 adds a predecision Council risk
   projection with explicit abstention when target absence lacks prior physical
   learning. Its score is a governance risk proxy, not a calibrated forecast of
-  physical harm; it does not yet produce the preregistered trace observation.
-  No native runtime plan, matched trial, trace-derived ablation observation,
-  matched-trial result sidecar or PredictionFailure-specific
-  Resolution Contract exists. Target absence is not zero and cannot be
+  physical harm. v0.51 records the operator's actual reserved invocation in
+  typed simulation observations and a matched-trial result, without modifying
+  the immutable pre-execution declarations. No PredictionFailure-specific
+  Resolution Contract or calibrated physical forecast exists. Target absence is not zero and cannot be
   supplied a post-hoc default. Naming, preregistering, or projecting this
   field does not identify it, any routing heuristic, or any P-structure as
   causal.
@@ -2327,6 +2354,54 @@ generation, or safe autonomous policy revision.
   or thermodynamic behavioral control. The v0.45 Contradiction negative result
   and all prior claim boundaries are preserved.
 
+## v0.51 claim boundary
+
+- **OBSERVED:** All 16 new execution/result tests, all 72 focused
+  PredictionFailure tests and all 618 full-suite tests pass, including the
+  existing checks of all 17 legacy checkpoints. The actual
+  operator invocation occurs inside each of three distinct native reservations,
+  each settled as discarded with `0.015` consumption and `0.045` aggregate
+  consumption. The first-outcome fixture completes with explicit
+  `insufficient_evidence`; the existing supported-prior fixture completes with
+  `target_error_unchanged` and exact valid-null equality. A controlled native
+  case with prior physical harm `0.2` (learned risk `0.16`), declared risk `0.3`,
+  and frozen target harm `0.8` produces actual simulated scores
+  `(0.3, 0.16, 0.3)`, errors `(0.5, 0.64, 0.5)`, and target-error delta `0.14`.
+  The unchanged rule reports `target_error_changed`; ablation worsens error,
+  so this is not corrective success. Positive-change and invalid-null
+  classifier branches are also unit tested; an actual invalid-null native
+  execution has not been observed. Exact VDK/mapping-order replay invokes
+  neither execution nor reservation. Foreign sources, shared/nonpristine
+  ledgers, rehashed score/outcome/seed/arm/authority/budget forgeries,
+  noncanonical/oversized bytes and occupied/source paths fail closed.
+  Injected second-arm, private-canonical-leak and pre-replace failures publish
+  neither partial caller ledgers nor a result; the original canonical and
+  source bytes remain unchanged. Checkpoint code and formats are unchanged.
+- **IMPLEMENTED-EXPERIMENTAL:** One family-local arm runtime and opt-in runner
+  close F–M for this frozen governance-risk-proxy experiment. The actual output
+  is recorded after invocation within native resource accounting, never copied
+  from the pre-execution receipt as an observation. Exact source/receipt and
+  expected projection equality still detect version/input drift. Three separate
+  native ledger snapshots, complete native plan/trace lineage, typed observations,
+  frozen metrics, outcome policy and all non-authority fields are bound into a
+  separately immutable `.vft` envelope. Loading verifies each canonical
+  Attention reservation, native plan/settlement reconstruction, selected-arm
+  provenance and the complete result formula without executing simulations.
+- **PROPOSED:** Add a family-local Resolution-evidence gate that derives its
+  coverage from this validated completed result and explicitly distinguishes
+  target error change from error reduction. Require stronger evidence before
+  any passing Resolution claim; native risk arithmetic alone does not prove
+  calibrated physical prediction, independent held-out replication, source
+  independence, causal repair or a warranted bounded revision.
+- **MISSING:** PredictionFailure-specific Resolution evidence/contract
+  assessment, calibrated physical forecasting, independent held-out retest,
+  bounded revision and one full developmental loop remain absent. v0.51 adds
+  no canonical resolution/promotion, autonomous policy-rewrite or scheduling,
+  semantic understanding, mind, consciousness, complete agency, `T_g` or
+  thermodynamic behavioral authority. The v0.45 Contradiction negative result
+  remains unchanged. Matching this internal governance proxy does not establish
+  that learning makes later learning cheaper.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2544,6 +2619,14 @@ score/support/plan-reference/input-hash and synthetic-default forgeries,
 authority and observation-claim rejection, pre-replace failure recovery, and
 source drift before publication. They exercise no actual simulation execution
 or matched-trial result and add no new power-loss or process-kill proof.
+PredictionFailure execution/result tests additionally target actual operator
+invocation inside separate native reservations, three-arm resource closure,
+insufficient/no-change/change fixtures, exact valid-null behavior, immutable
+complete result publication, zero-simulation reload, canonical-copy and caller-
+ledger isolation, foreign sources, nonpristine/shared ledger rejection,
+rehashed score/outcome/seed/arm/authority/budget forgeries, byte/size/path attacks,
+and second-arm/private-leak/pre-replace rollback. They do not establish physical
+forecast calibration, independent replication, causal repair or resolution.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

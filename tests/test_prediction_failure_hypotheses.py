@@ -86,7 +86,7 @@ def _evidence(kernel: VerdantKernel, key: str, kind: EvidenceKind) -> tuple[str,
     return result.additional_evidence_ids
 
 
-def _outcome(kernel: VerdantKernel, *, suffix: str = "one"):
+def _outcome(kernel: VerdantKernel, *, suffix: str = "one", declared_harm_risk: float = 0.1):
     governance = VerdantGovernancePipeline()
     forecast_evidence = _evidence(
         kernel, f"observation-{suffix}", EvidenceKind.OBSERVATION
@@ -102,7 +102,7 @@ def _outcome(kernel: VerdantKernel, *, suffix: str = "one"):
         urgency=0.6,
         novelty=0.2,
         predicted_information_gain=1.0,
-        harm_risk=0.1,
+        harm_risk=declared_harm_risk,
         reversibility=1.0,
     )
     decision = governance.commit(kernel, governance.inspect(kernel, proposal))
@@ -1287,7 +1287,8 @@ def test_risk_projection_abstains_without_predecision_support(
     ) == result
 
 
-def _risk_prior_fixture(tmp_path: Path, seed: int = 7302):
+def _risk_prior_fixture(tmp_path: Path, seed: int = 7302, *,
+                        prior_harm_score: float = 0.8, declared_harm_risk: float = 0.1):
     kernel = VerdantKernel(
         seed=seed, state_dim=16, run_label="prediction-failure-risk-prior"
     )
@@ -1306,10 +1307,12 @@ def _risk_prior_fixture(tmp_path: Path, seed: int = 7302):
     prior_outcome = governance.record_outcome(
         kernel, decision_event_id=prior_decision.decision_event_id,
         evidence_refs=_evidence(kernel, "risk-prior-outcome", EvidenceKind.OUTCOME),
-        succeeded=True, harm_score=0.8,
+        succeeded=True, harm_score=prior_harm_score,
     )
-    assert prior_outcome.learned_risk_after == pytest.approx(0.64)
-    target_outcome, target_decision, target_proposal = _outcome(kernel)
+    assert prior_outcome.learned_risk_after == pytest.approx(prior_harm_score * 0.8)
+    target_outcome, target_decision, target_proposal = _outcome(
+        kernel, declared_harm_risk=declared_harm_risk,
+    )
     assert target_proposal.action_class == prior_proposal.action_class
     assert prior_outcome.cycle < target_proposal.created_cycle
     report = PredictionFailureDetector().detect_and_record(kernel)

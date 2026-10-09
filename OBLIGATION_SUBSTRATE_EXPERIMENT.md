@@ -1,4 +1,4 @@
-# Obligation Substrate v0.49
+# Obligation Substrate v0.50
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -774,6 +774,16 @@ generation, or safe autonomous policy revision.
   snapshot. Without that support it returns `insufficient_evidence` and no
   score. These are typed, checksum-bound, ephemeral risk projections, not
   observations from simulation traces or a durable result sidecar.
+- An explicitly invoked v0.50 recorder now persists those complete operator
+  outputs in a separately immutable `.vfr` receipt. It binds the exact
+  canonical kernel identity, cycle and fingerprint, `.vfp` declaration and
+  byte hash, `.vpp` plan-bundle identity and byte hash, and every projection's
+  score or abstention plus native supporting references. Provenance-aware
+  save/load recomputes the read-only operator and requires exact equality;
+  recomputing hashes alone cannot validate fabricated scores or support.
+  Ordinary `read` checks local bytes and checksums only. The recorder and
+  loader do not instantiate a simulation runtime or change canonical state,
+  the input sidecars, Attention funding, or simulation consumption.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1041,7 +1051,9 @@ generation, or safe autonomous policy revision.
   separately immutable `.vfp` PredictionFailure trial declaration containing
   no executable plan, trace, or result. v0.48 adds a separately immutable
   `.vpp` typed plan package containing no runtime plan, prediction operator,
-  simulation ledger, trace, or result.
+  simulation ledger, trace, or result. v0.50 adds a separate `.vfr` receipt of
+  the v0.49 pre-execution governance risk projections, including abstentions.
+  It contains no simulation ledger, execution trace, or matched-trial result.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1059,13 +1071,20 @@ generation, or safe autonomous policy revision.
   with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
   immutable first-committer-wins evidence rather than an execution authority
   or canonical journal.
-- `.vfp` and `.vpp` use the same bounded local POSIX flock/temporary-file/
+- `.vfp`, `.vpp`, and `.vfr` use the same bounded local POSIX flock/temporary-file/
   synced-replace assumptions. They do not cover Windows, network or lock-
   hostile filesystems, hostile path or symlink replacement, hardware failure,
   distributed merge, signatures, trusted timestamps, or remote notarization.
   Their locks create no transaction with VDK, VOB, each other, or any other
   sidecar; identical bytes replay and different bytes at an occupied path fail
   rather than merge.
+- `.vfr` provenance-aware validation requires the exact canonical checkpoint
+  and both original `.vfp`/`.vpp` files; the receipt alone is not a recoverable
+  experiment archive or authenticated evidence. Loading re-evaluates the
+  read-only risk operator without executing simulations. Source inputs must
+  be immutable during an invocation; drift is rejected, but no cross-file
+  transaction or rollback of an external source writer is provided. v0.50
+  adds no new process-kill, power-loss, or concurrent-writer durability proof.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1081,7 +1100,7 @@ generation, or safe autonomous policy revision.
   learning. Its score is a governance risk proxy, not a calibrated forecast of
   physical harm; it does not yet produce the preregistered trace observation.
   No native runtime plan, matched trial, trace-derived ablation observation,
-  durable operator-output or result sidecar, or PredictionFailure-specific
+  matched-trial result sidecar or PredictionFailure-specific
   Resolution Contract exists. Target absence is not zero and cannot be
   supplied a post-hoc default. Naming, preregistering, or projecting this
   field does not identify it, any routing heuristic, or any P-structure as
@@ -2262,6 +2281,52 @@ generation, or safe autonomous policy revision.
   resolution or promotion, autonomous scheduling, policy rewrite, semantic
   understanding, `T_g` control, or thermodynamic behavior.
 
+## v0.50 claim boundary
+
+- **OBSERVED:** All 14 new risk-receipt tests, all 56 focused
+  PredictionFailure tests, and the 602-test full repository suite pass. The receipt
+  preserves the v0.49 first-outcome fixture's baseline/valid-null `0.1` scores
+  and target-ablation abstention. It also preserves the distinct earlier
+  physical outcome's learned `0.64` risk in all three arms of the supported
+  fixture, excluding the target outcome from operator support. Exact VDK
+  reload with reversed mapping order gives identical receipt bytes and
+  identity; repeated publication is idempotent. Canonical checkpoint and
+  input sidecar bytes remain unchanged, and forbidding runtime construction
+  does not prevent receipt creation or replay. Foreign/stale checkpoints,
+  substituted or missing inputs, occupied output paths, input-path reuse,
+  byte/noncanonical/oversized inputs, rehashed score/support/plan-reference/
+  input-digest forgeries, synthetic ablation defaults, target-outcome support
+  injection, and all exposed authority/claim flags fail closed. Injected
+  pre-replace failure publishes no receipt, cleans its temporary file, and
+  permits a subsequent successful save; detected source drift before
+  publication also leaves no output. The full suite's existing 17-checkpoint
+  load/embed compatibility test passes; checkpoint code and formats are unchanged.
+- **IMPLEMENTED-EXPERIMENTAL:** One explicit `.vfr` recorder, serializer,
+  local-integrity reader, provenance-aware loader, and validated saver pair a
+  complete v0.49 risk evaluation to exact durable inputs and canonical state.
+  The saver reuses the established POSIX locked, synced, atomic immutable
+  writer. The receipt's content address and envelope digest include its
+  version, exact source identities/hashes, complete output, and enforced
+  non-authority flags. Save/load reconstruct the expected output from the
+  original input lineage rather than accepting self-consistent checksums as
+  evidence. No score is written into VDK, `.vfp`, or `.vpp`; no simulation
+  reservation, settlement, trace, observation, or trial result is generated.
+- **PROPOSED:** The next dependency is one explicitly invoked runner consuming
+  this validated receipt and the frozen design, with three separate pristine
+  isolated simulation ledgers, unchanged resource/seed/non-target controls,
+  and observations derived only from actual execution traces. It must retain
+  insufficient-evidence outcomes, enforce the frozen valid-null and `0.05`
+  error-change rules, and publish a separate immutable result supporting
+  zero-simulation replay. Persisting a governance risk proxy does not establish
+  a calibrated physical-harm forecast or target-specific causality.
+- **MISSING:** Native three-arm execution, trace-derived PredictionFailure
+  observations, a matched-trial result, family-local Resolution evidence and
+  a full inquiry/resolution loop remain absent. v0.50 grants no canonical
+  resolution/promotion, autonomous policy-rewrite or scheduling authority,
+  semantic understanding, mind, consciousness, complete agency, `T_g` control,
+  or thermodynamic behavioral control. The v0.45 Contradiction negative result
+  and all prior claim boundaries are preserved.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2470,6 +2535,15 @@ outcome, exclusion of the target outcome, exact VDK/mapping-order replay,
 unchanged canonical and sidecar bytes, foreign-ledger and plan substitution,
 byte tampering, and forged score or authority fields. They do not stand in for
 three executed isolated simulation ledgers or trace-derived observations.
+PredictionFailure risk-receipt tests additionally target separately immutable
+output persistence, exact checkpoint/input/output replay, preservation of
+abstention and earlier physical learning, target-outcome exclusion, canonical
+and input-byte isolation, foreign/stale/missing/substituted inputs, occupied
+and source-path rejection, byte/noncanonical/oversized input, fully rehashed
+score/support/plan-reference/input-hash and synthetic-default forgeries,
+authority and observation-claim rejection, pre-replace failure recovery, and
+source drift before publication. They exercise no actual simulation execution
+or matched-trial result and add no new power-loss or process-kill proof.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

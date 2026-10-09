@@ -45,6 +45,8 @@ from verdant_obligations import (
     PredictionFailureGovernanceRiskOperator,
     PredictionFailureRiskProjection,
     PredictionFailureRiskSource,
+    PredictionFailureRiskReceiptRecorder,
+    PredictionFailureRiskReceiptIntegrityError,
     PredictionFailureTrialArm,
     PredictionFailureTrialArmDeclaration,
     PredictionFailureTrialDeclaration,
@@ -56,10 +58,14 @@ from verdant_obligations import (
     PredictionFailureTrialPreregistrar,
     PredictionFailureTrialSimulationPlan,
     load_prediction_failure_trial_plan,
+    load_prediction_failure_risk_receipt,
     load_prediction_failure_trial_preregistration,
     prediction_failure_trial_plan_bytes,
+    prediction_failure_risk_receipt_bytes,
     prediction_failure_trial_preregistration_bytes,
     read_prediction_failure_trial_plan,
+    read_prediction_failure_risk_receipt,
+    save_prediction_failure_risk_receipt,
     read_prediction_failure_trial_preregistration,
 )
 
@@ -899,6 +905,345 @@ def _trial_plan_fixture(tmp_path: Path, seed: int, stem: str = "trial"):
     )
 
 
+def _risk_receipt_fixture(tmp_path: Path, seed: int, stem: str = "receipt"):
+    kernel, bundle, prereg_path, _, plan_path, _ = _trial_plan_fixture(
+        tmp_path, seed, stem,
+    )
+    path = tmp_path / f"{stem}.vfr"
+    envelope = PredictionFailureRiskReceiptRecorder().record(
+        path, kernel=kernel, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    )
+    return kernel, bundle, prereg_path, plan_path, path, envelope
+
+
+def _rehash_risk_receipt(payload: dict) -> bytes:
+    receipt = payload["receipt"]
+    evaluation = receipt["evaluation"]
+    for projection in evaluation["projections"]:
+        projection["projection_id"] = stable_id(
+            "prediction_failure_risk_projection",
+            {k: v for k, v in projection.items() if k != "projection_id"},
+        )
+    evaluation["evaluation_id"] = stable_id(
+        "prediction_failure_risk_evaluation",
+        {k: v for k, v in evaluation.items() if k != "evaluation_id"},
+    )
+    receipt["receipt_id"] = stable_id(
+        "prediction_failure_risk_receipt",
+        {k: v for k, v in receipt.items() if k != "receipt_id"},
+    )
+    payload["receipt_sha256"] = hashlib.sha256(
+        canonical_json_bytes(receipt)
+    ).hexdigest()
+    return canonical_json_bytes(payload)
+
+
+def test_risk_receipt_checkpoint_replay_preserves_abstention_and_isolation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from verdant_obligations import CounterfactualRuntime
+
+    kernel, bundle, prereg_path, _, plan_path, plan = _trial_plan_fixture(
+        tmp_path, 7401,
+    )
+    before = kernel.fingerprint()
+    original_inputs = (prereg_path.read_bytes(), plan_path.read_bytes())
+    checkpoint = tmp_path / "receipt.vdk"
+    save_checkpoint(checkpoint, kernel.snapshot())
+    original_checkpoint = checkpoint.read_bytes()
+
+    def forbidden_runtime(*args, **kwargs):
+        raise AssertionError("Risk receipt must not instantiate a simulation runtime")
+
+    monkeypatch.setattr(CounterfactualRuntime, "__init__", forbidden_runtime)
+    path = tmp_path / "receipt.vfr"
+    recorder = PredictionFailureRiskReceiptRecorder()
+    envelope = recorder.record(
+        path, kernel=kernel, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    )
+    receipt = envelope.receipt
+    assert receipt.plan_bundle_ref == plan.plan_bundle.plan_bundle_id
+    assert receipt.plan_sha256 == hashlib.sha256(original_inputs[1]).hexdigest()
+    assert receipt.preregistration_sha256 == hashlib.sha256(original_inputs[0]).hexdigest()
+    assert receipt.evaluation == PredictionFailureGovernanceRiskOperator().evaluate(
+        kernel=kernel, plan_path=plan_path, preregistration_path=prereg_path,
+    )
+    ablation = receipt.evaluation.projections[1]
+    assert ablation.predicted_harm_score is None
+    assert ablation.source == PredictionFailureRiskSource.INSUFFICIENT_EVIDENCE
+    assert bundle.evidence_receipt.outcome_ref not in ablation.supporting_refs
+    assert not receipt.matched_trial_executed
+    assert not receipt.simulation_trace_observed
+    assert not receipt.trial_result_observed
+    assert not receipt.canonical_commit_permitted
+    data = path.read_bytes()
+    assert data == prediction_failure_risk_receipt_bytes(envelope)
+    assert read_prediction_failure_risk_receipt(path) == envelope
+
+    state = load_checkpoint(checkpoint)
+    state.evidence = dict(reversed(tuple(state.evidence.items())))
+    state.obligation_kernels = dict(reversed(tuple(state.obligation_kernels.items())))
+    restored = VerdantKernel.from_state(state)
+    assert load_prediction_failure_risk_receipt(
+        path, kernel=restored, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    ) == envelope
+    assert recorder.record(
+        path, kernel=restored, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    ) == envelope
+    assert path.read_bytes() == data
+    assert kernel.fingerprint() == restored.fingerprint() == before
+    save_checkpoint(checkpoint, kernel.snapshot())
+    assert checkpoint.read_bytes() == original_checkpoint
+    assert (prereg_path.read_bytes(), plan_path.read_bytes()) == original_inputs
+
+
+def test_risk_receipt_preserves_distinct_prior_outcome_support(tmp_path: Path) -> None:
+    kernel, _, prior, target, prereg_path, plan_path, evaluation = _risk_prior_fixture(
+        tmp_path, 7402,
+    )
+    path = tmp_path / "prior.vfr"
+    envelope = PredictionFailureRiskReceiptRecorder().record(
+        path, kernel=kernel, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    )
+    assert envelope.receipt.evaluation == evaluation
+    assert all(
+        p.predicted_harm_score == prior.learned_risk_after
+        and prior.outcome_id in p.supporting_refs
+        and target.outcome_id not in p.supporting_refs
+        and not set(target.evidence_refs).intersection(p.supporting_refs)
+        for p in envelope.receipt.evaluation.projections
+    )
+    assert load_prediction_failure_risk_receipt(
+        path, kernel=kernel, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    ) == envelope
+
+
+def test_risk_receipt_rejects_foreign_stale_and_substituted_inputs(tmp_path: Path) -> None:
+    kernel, _, prereg_path, plan_path, path, envelope = _risk_receipt_fixture(
+        tmp_path, 7403, "first",
+    )
+    foreign, _, foreign_prereg, foreign_plan, _, _ = _risk_receipt_fixture(
+        tmp_path, 7404, "foreign",
+    )
+    original = path.read_bytes()
+    for context, plan, prereg in (
+        (foreign, plan_path, prereg_path),
+        (kernel, foreign_plan, foreign_prereg),
+        (kernel, plan_path, foreign_prereg),
+        (kernel, foreign_plan, prereg_path),
+        (kernel, plan_path, tmp_path / "missing.vfp"),
+    ):
+        with pytest.raises(PredictionFailureRiskReceiptIntegrityError):
+            load_prediction_failure_risk_receipt(
+                path, kernel=context, plan_path=plan,
+                preregistration_path=prereg,
+            )
+        unpublished = tmp_path / "unpublished.vfr"
+        with pytest.raises(PredictionFailureRiskReceiptIntegrityError):
+            save_prediction_failure_risk_receipt(
+                unpublished, envelope, kernel=context, plan_path=plan,
+                preregistration_path=prereg,
+            )
+        assert not unpublished.exists()
+    _evidence(kernel, "stale-risk-receipt", EvidenceKind.OBSERVATION)
+    before = kernel.fingerprint()
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError):
+        load_prediction_failure_risk_receipt(
+            path, kernel=kernel, plan_path=plan_path,
+            preregistration_path=prereg_path,
+        )
+    assert path.read_bytes() == original
+    assert kernel.fingerprint() == before
+
+
+def test_risk_receipt_path_is_immutable_and_separate_from_inputs(tmp_path: Path) -> None:
+    kernel, _, prereg_path, plan_path, path, _ = _risk_receipt_fixture(
+        tmp_path, 7405, "first",
+    )
+    foreign, _, foreign_prereg, _, foreign_plan, _ = _trial_plan_fixture(
+        tmp_path, 7406, "foreign",
+    )
+    original = path.read_bytes()
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError):
+        PredictionFailureRiskReceiptRecorder().record(
+            path, kernel=foreign, plan_path=foreign_plan,
+            preregistration_path=foreign_prereg,
+        )
+    assert path.read_bytes() == original
+    for occupied in (plan_path, prereg_path):
+        before = occupied.read_bytes()
+        with pytest.raises(PredictionFailureRiskReceiptIntegrityError, match="separate"):
+            PredictionFailureRiskReceiptRecorder().record(
+                occupied, kernel=kernel, plan_path=plan_path,
+                preregistration_path=prereg_path,
+            )
+        assert occupied.read_bytes() == before
+
+
+@pytest.mark.parametrize("attack", (
+    "score", "suppress_support", "inject_target_outcome", "synthetic_ablation",
+    "swap_plan_refs", "input_digest",
+))
+def test_risk_receipt_rehashed_output_forgery_needs_exact_provenance(
+    tmp_path: Path, attack: str,
+) -> None:
+    kernel, bundle, prereg_path, plan_path, path, envelope = _risk_receipt_fixture(
+        tmp_path, 7407,
+    )
+    payload = envelope.model_dump(mode="json")
+    projections = payload["receipt"]["evaluation"]["projections"]
+    if attack == "score":
+        projections[0]["predicted_harm_score"] = 0.9
+    elif attack == "suppress_support":
+        projections[0]["supporting_refs"] = projections[0]["supporting_refs"][1:]
+    elif attack == "inject_target_outcome":
+        projections[0]["supporting_refs"] = sorted(set(
+            (*projections[0]["supporting_refs"], bundle.evidence_receipt.outcome_ref)
+        ))
+    elif attack == "synthetic_ablation":
+        projections[1]["source"] = PredictionFailureRiskSource.PRIOR_OUTCOME_LEARNING.value
+        projections[1]["predicted_harm_score"] = 0.0
+        projections[1]["reason"] = None
+    elif attack == "swap_plan_refs":
+        projections[0]["plan_ref"], projections[2]["plan_ref"] = (
+            projections[2]["plan_ref"], projections[0]["plan_ref"]
+        )
+    else:
+        payload["receipt"]["plan_sha256"] = "0" * 64
+    forged = tmp_path / "forged.vfr"
+    forged.write_bytes(_rehash_risk_receipt(payload))
+    # These forgeries are locally self-consistent; only exact input replay
+    # establishes whether the operator really produced the declared output.
+    untrusted = read_prediction_failure_risk_receipt(forged)
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError, match="provenance"):
+        load_prediction_failure_risk_receipt(
+            forged, kernel=kernel, plan_path=plan_path,
+            preregistration_path=prereg_path,
+        )
+    unpublished = tmp_path / "unpublished.vfr"
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError, match="provenance"):
+        save_prediction_failure_risk_receipt(
+            unpublished, untrusted, kernel=kernel, plan_path=plan_path,
+            preregistration_path=prereg_path,
+        )
+    assert not unpublished.exists()
+    assert path.read_bytes() == prediction_failure_risk_receipt_bytes(envelope)
+
+
+def test_risk_receipt_rehashed_authority_and_claims_fail_closed(tmp_path: Path) -> None:
+    _, _, _, _, _, envelope = _risk_receipt_fixture(tmp_path, 7408)
+    receipt_flags = (
+        "matched_trial_executed", "simulation_trace_observed", "trial_result_observed",
+        "causal_attribution_enabled", "resolution_authority_enabled",
+        "promotion_authority_enabled", "policy_rewrite_authority_enabled",
+        "canonical_commit_permitted",
+    )
+    for level, flags in (
+        ("receipt", receipt_flags),
+        ("evaluation", ("matched_trial_executed", "result_observed",
+                        "resolution_authority_enabled", "canonical_commit_permitted")),
+        ("projection", ("simulation_trace_observed", "trial_result_observed",
+                        "canonical_commit_permitted")),
+    ):
+        for flag in flags:
+            payload = envelope.model_dump(mode="json")
+            target = payload["receipt"]
+            if level != "receipt":
+                target = target["evaluation"]
+            if level == "projection":
+                target = target["projections"][0]
+            target[flag] = True
+            path = tmp_path / "authority.vfr"
+            path.write_bytes(_rehash_risk_receipt(payload))
+            with pytest.raises(PredictionFailureRiskReceiptIntegrityError):
+                read_prediction_failure_risk_receipt(path)
+
+
+def test_risk_receipt_rejects_byte_noncanonical_and_oversized_input(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import verdant_obligations.prediction_failure_risk_sidecar as module
+
+    _, _, _, _, path, envelope = _risk_receipt_fixture(tmp_path, 7409)
+    for data in (
+        path.read_bytes()[:-1] + b"!",
+        b" " + path.read_bytes(),
+        json.dumps(envelope.model_dump(mode="json"), indent=2).encode(),
+    ):
+        invalid = tmp_path / "invalid.vfr"
+        invalid.write_bytes(data)
+        with pytest.raises(PredictionFailureRiskReceiptIntegrityError):
+            read_prediction_failure_risk_receipt(invalid)
+    monkeypatch.setattr(module, "_MAX_SIDECAR_BYTES", 4)
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError, match="size limit"):
+        read_prediction_failure_risk_receipt(path)
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError, match="size limit"):
+        prediction_failure_risk_receipt_bytes(envelope)
+
+
+def test_risk_receipt_atomic_replace_failure_publishes_nothing_and_recovers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import verdant_obligations.prediction_failure_trial_plans as module
+
+    kernel, _, prereg_path, _, plan_path, _ = _trial_plan_fixture(tmp_path, 7410)
+    before = kernel.fingerprint()
+    original_inputs = (plan_path.read_bytes(), prereg_path.read_bytes())
+    path = tmp_path / "recover.vfr"
+    replace = module.os.replace
+
+    def fail_replace(*args, **kwargs):
+        raise OSError("injected risk receipt replacement failure")
+
+    monkeypatch.setattr(module.os, "replace", fail_replace)
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError, match="injected"):
+        PredictionFailureRiskReceiptRecorder().record(
+            path, kernel=kernel, plan_path=plan_path,
+            preregistration_path=prereg_path,
+        )
+    assert not path.exists()
+    assert not tuple(tmp_path.glob(".recover.vfr.*.tmp"))
+    assert kernel.fingerprint() == before
+    assert (plan_path.read_bytes(), prereg_path.read_bytes()) == original_inputs
+    monkeypatch.setattr(module.os, "replace", replace)
+    envelope = PredictionFailureRiskReceiptRecorder().record(
+        path, kernel=kernel, plan_path=plan_path,
+        preregistration_path=prereg_path,
+    )
+    assert load_prediction_failure_risk_receipt(
+        path, kernel=kernel, plan_path=plan_path, preregistration_path=prereg_path,
+    ) == envelope
+
+
+def test_risk_receipt_detects_input_drift_before_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    kernel, _, prereg_path, _, plan_path, _ = _trial_plan_fixture(tmp_path, 7411)
+    before = kernel.fingerprint()
+    evaluate = PredictionFailureGovernanceRiskOperator.evaluate
+
+    def alter_input(self, **kwargs):
+        result = evaluate(self, **kwargs)
+        plan_path.write_bytes(plan_path.read_bytes() + b" ")
+        return result
+
+    monkeypatch.setattr(PredictionFailureGovernanceRiskOperator, "evaluate", alter_input)
+    path = tmp_path / "drift.vfr"
+    with pytest.raises(PredictionFailureRiskReceiptIntegrityError, match="inputs changed"):
+        PredictionFailureRiskReceiptRecorder().record(
+            path, kernel=kernel, plan_path=plan_path,
+            preregistration_path=prereg_path,
+        )
+    assert not path.exists()
+    assert kernel.fingerprint() == before
+
+
 def test_risk_projection_abstains_without_predecision_support(
     tmp_path: Path,
 ) -> None:
@@ -942,11 +1287,9 @@ def test_risk_projection_abstains_without_predecision_support(
     ) == result
 
 
-def test_risk_projection_uses_only_earlier_physical_learning(
-    tmp_path: Path,
-) -> None:
+def _risk_prior_fixture(tmp_path: Path, seed: int = 7302):
     kernel = VerdantKernel(
-        seed=7302, state_dim=16, run_label="prediction-failure-risk-prior"
+        seed=seed, state_dim=16, run_label="prediction-failure-risk-prior"
     )
     governance = VerdantGovernancePipeline()
     prior_proposal = governance.propose(
@@ -993,6 +1336,13 @@ def test_risk_projection_uses_only_earlier_physical_learning(
     result = PredictionFailureGovernanceRiskOperator().evaluate(
         kernel=kernel, plan_path=plan_path, preregistration_path=prereg_path,
     )
+    return kernel, bundle, prior_outcome, target_outcome, prereg_path, plan_path, result
+
+
+def test_risk_projection_uses_only_earlier_physical_learning(
+    tmp_path: Path,
+) -> None:
+    _, _, prior_outcome, target_outcome, _, _, result = _risk_prior_fixture(tmp_path)
     by_arm = {item.arm: item for item in result.projections}
     assert {item.predicted_harm_score for item in result.projections} == {
         prior_outcome.learned_risk_after

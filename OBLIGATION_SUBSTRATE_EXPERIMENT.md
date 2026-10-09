@@ -1,4 +1,4 @@
-# Obligation Substrate v0.51
+# Obligation Substrate v0.52
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -798,6 +798,19 @@ generation, or safe autonomous policy revision.
   successful ledger publication follows complete immutable result publication.
   Completed result validation reconstructs native lineage without another
   operator execution inside a reservation or additional simulation charge.
+- An explicitly invoked v0.52 PredictionFailure Resolution-evidence deriver
+  consumes only a provenance-validated completed `.vft` and its original
+  checkpoint/`.vfp`/`.vpp`/`.vfr` sources. It records complete requirement
+  coverage, distinguishes unsigned error change from signed proxy error
+  reduction, preserves all protected evidence and three hypothesis
+  counterweights, and binds every execution/observation/reservation/settlement
+  ref. A separately immutable `.vfe` embeds the frozen declaration and full
+  completed result plus exact completed-file hash. This is unresolved coverage,
+  not a passing Resolution result. Calibrated physical prediction, causal
+  repair, independent held-out replication and source independence remain
+  explicitly missing for every currently admissible result, even when the
+  governance proxy's error decreases. No caller-supplied coverage or score is
+  accepted; reload derives exact coverage without another simulation charge.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1070,6 +1083,8 @@ generation, or safe autonomous policy revision.
   It contains no simulation ledger, execution trace, or matched-trial result.
   v0.51 adds a separate `.vft` completed PredictionFailure result with three
   embedded, separate native simulation ledgers and typed operator traces.
+  v0.52 adds a separately immutable `.vfe` PredictionFailure unresolved
+  Resolution-evidence coverage receipt paired to the completed trial.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1087,7 +1102,7 @@ generation, or safe autonomous policy revision.
   with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
   immutable first-committer-wins evidence rather than an execution authority
   or canonical journal.
-- `.vfp`, `.vpp`, `.vfr`, and `.vft` use the same bounded local POSIX flock/temporary-file/
+- `.vfp`, `.vpp`, `.vfr`, `.vft`, and `.vfe` use the same bounded local POSIX flock/temporary-file/
   synced-replace assumptions. They do not cover Windows, network or lock-
   hostile filesystems, hostile path or symlink replacement, hardware failure,
   distributed merge, signatures, trusted timestamps, or remote notarization.
@@ -1112,6 +1127,24 @@ generation, or safe autonomous policy revision.
   lineage; this deterministic operator consumes no randomness and provides no
   cross-seed independence proof. Accounting is bounded to one staged three-arm
   trial, with no global cross-file budget journal or autonomous scheduler.
+- `.vfe` provenance-aware reload requires the exact canonical checkpoint and
+  all original `.vfp`/`.vpp`/`.vfr`/`.vft` bytes. Embedded declaration/result
+  snapshots are not a standalone recovery archive or authenticated execution
+  attestation. Ordinary `read` checks local shape, formula, non-authority and
+  canonical bytes only; `derive`, `save` and `load` reconstruct full upstream
+  provenance. Source files must remain immutable during invocation; no
+  cross-file transaction or rollback of an external writer is provided.
+  Coverage marks trace-derived prediction lineage grounded even when a trace
+  records an abstention; sufficient numeric evidence is a separate requirement.
+  Error reduction means a valid-null-preserving target-ablation reduction of
+  at least the unchanged `0.05` threshold in this internal proxy's absolute
+  error. It does not mean physical forecast calibration or causal repair.
+  This version has no input protocol for calibration, a repair candidate,
+  source-independence proof or independent held-out replication. These four
+  requirements must remain missing and `resolution_contract_satisfied` and
+  `resolution_trial_ready` must remain false. No passing PredictionFailure
+  Resolution Contract validator, resolution result or bounded revision is added.
+  There is no new process-death, power-loss or concurrent-writer durability proof.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1127,8 +1160,9 @@ generation, or safe autonomous policy revision.
   learning. Its score is a governance risk proxy, not a calibrated forecast of
   physical harm. v0.51 records the operator's actual reserved invocation in
   typed simulation observations and a matched-trial result, without modifying
-  the immutable pre-execution declarations. No PredictionFailure-specific
-  Resolution Contract or calibrated physical forecast exists. Target absence is not zero and cannot be
+  the immutable pre-execution declarations. v0.52 adds family-local unresolved
+  Resolution-evidence coverage, with no passing PredictionFailure-specific
+  Resolution Contract or calibrated physical forecast. Target absence is not zero and cannot be
   supplied a post-hoc default. Naming, preregistering, or projecting this
   field does not identify it, any routing heuristic, or any P-structure as
   causal.
@@ -2402,6 +2436,63 @@ generation, or safe autonomous policy revision.
   remains unchanged. Matching this internal governance proxy does not establish
   that learning makes later learning cheaper.
 
+## v0.52 claim boundary
+
+- **OBSERVED:** All 28 new family-local Resolution-evidence tests, all
+  100 focused PredictionFailure tests and all 646 full-suite tests pass,
+  including the existing checks of all 17 legacy checkpoints. Exact completed
+  results cover first-outcome insufficiency, unchanged proxy error, changed/worsened proxy
+  error and changed/reduced proxy error; all four remain unresolved with the
+  four unsupported contract requirements explicitly missing. The added native
+  control has prior physical harm `0.2`, learned risk `0.16`, declared risk
+  `0.3` and target physical harm `0.0` recorded before preregistration. Actual
+  scores `(0.3, 0.16, 0.3)` yield errors `(0.3, 0.16, 0.3)` and signed reduction
+  `0.14`; the v0.51 worsening control has signed reduction `-0.14`. No frozen
+  policy, target outcome or old artifact was tuned after execution. These are
+  designed native arithmetic controls, not spontaneous inquiry, calibrated
+  forecasting or demonstrated learning. VDK/mapping-order coverage replay
+  executes, reserves and settles nothing. Fully rehashed missing-field
+  suppression, synthetic passing coverage, outcome-direction/ref/hash changes
+  and authority forgeries fail closed, including bypassed model construction
+  submitted to provenance-aware save. Rehashed invalid-null observations,
+  swapped arms, altered policies and foreign simulation ledgers cannot enter
+  coverage. Missing observations, stale/foreign/missing/swapped sources,
+  noncanonical/oversized bytes and occupied/input output paths fail closed.
+  Injected pre-replace failure leaves no coverage file or temporary member;
+  canonical state, all source bytes and recorded trial ledgers remain intact.
+- **IMPLEMENTED-EXPERIMENTAL:** Step N's evidence boundary is now an explicitly
+  invoked family-local coverage protocol over the validated F–M result. A
+  frozen 18-requirement set is partitioned completely into grounded and
+  missing fields. Numeric sufficiency, exact valid-null equality, unchanged
+  preregistered target-specific change and qualifying signed proxy error
+  reduction are derived from typed execution observations and frozen physical
+  target evidence. The complete frozen declaration, full result, exact `.vft`
+  file hash, canonical checkpoint/Attention/obligation refs, protected evidence
+  and every arm's native lineage are embedded in an immutable `.vfe`. Canonical
+  provenance is rederived on load/save; checksums cannot grant authority or hide
+  missing requirements. Historical pre-execution false flags remain historical
+  snapshots. This receipt is simulated-only evidence coverage; it cannot
+  resolve or promote the obligation, select a true hypothesis, revise policy
+  or commit canonical state.
+- **PROPOSED:** The next smallest dependency is a separately preregistered
+  physical forecast calibration/evaluation protocol using distinct earlier
+  learning support and disjoint later outcomes, with matched controls and
+  protected source lineage. It must not tune the completed F–M trial, use the
+  target physical outcome as forecast support, or treat repeated deterministic
+  seeds as independent replication. Only after physical prediction validity,
+  a causal repair candidate and independent retest evidence exist can a
+  future version assess a passing family-local Resolution Contract. Continue
+  toward bounded revision and held-out retest only as evidence warrants.
+- **MISSING:** Calibrated physical forecasting, causal repair, source
+  independence, independent held-out replication, a passing PredictionFailure
+  Resolution Contract, bounded revision and a complete developmental loop
+  remain absent. This version deliberately accepts no caller declarations that
+  those requirements passed. No canonical resolution/promotion, autonomous
+  policy rewrite or scheduler, semantic understanding, mind, consciousness,
+  complete agency, `T_g` or thermodynamic behavioral control is added. The
+  v0.45 Contradiction negative result remains unchanged. No experiment here
+  establishes that learning makes later learning cheaper.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2627,6 +2718,15 @@ ledger isolation, foreign sources, nonpristine/shared ledger rejection,
 rehashed score/outcome/seed/arm/authority/budget forgeries, byte/size/path attacks,
 and second-arm/private-leak/pre-replace rollback. They do not establish physical
 forecast calibration, independent replication, causal repair or resolution.
+PredictionFailure Resolution-evidence tests additionally target complete
+18-field coverage from validated finished trials, abstention/change/no-change
+and both error directions, mandatory missing calibration/repair/independence/
+replication, exact trace/observation/reservation/settlement and protected-evidence
+closure, zero-cost VDK/mapping-order replay, fully rehashed suppression and
+synthetic passing/authority/ref/hash forgeries, bypassed-model save rejection,
+upstream invalid-null/arm/policy/foreign-ledger attacks, stale/foreign/missing/
+swapped sources, canonical size/path/immutability checks and pre-replace cleanup.
+They produce no passing Resolution result or new execution durability proof.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

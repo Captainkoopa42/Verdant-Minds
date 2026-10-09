@@ -86,7 +86,8 @@ def _evidence(kernel: VerdantKernel, key: str, kind: EvidenceKind) -> tuple[str,
     return result.additional_evidence_ids
 
 
-def _outcome(kernel: VerdantKernel, *, suffix: str = "one", declared_harm_risk: float = 0.1):
+def _outcome(kernel: VerdantKernel, *, suffix: str = "one", declared_harm_risk: float = 0.1,
+             target_harm_score: float = 0.8):
     governance = VerdantGovernancePipeline()
     forecast_evidence = _evidence(
         kernel, f"observation-{suffix}", EvidenceKind.OBSERVATION
@@ -112,7 +113,7 @@ def _outcome(kernel: VerdantKernel, *, suffix: str = "one", declared_harm_risk: 
         decision_event_id=decision.decision_event_id,
         evidence_refs=outcome_evidence,
         succeeded=True,
-        harm_score=0.8,
+        harm_score=target_harm_score,
     )
     return outcome, decision, proposal
 
@@ -1288,7 +1289,8 @@ def test_risk_projection_abstains_without_predecision_support(
 
 
 def _risk_prior_fixture(tmp_path: Path, seed: int = 7302, *,
-                        prior_harm_score: float = 0.8, declared_harm_risk: float = 0.1):
+                        prior_harm_score: float = 0.8, declared_harm_risk: float = 0.1,
+                        target_harm_score: float = 0.8):
     kernel = VerdantKernel(
         seed=seed, state_dim=16, run_label="prediction-failure-risk-prior"
     )
@@ -1311,7 +1313,7 @@ def _risk_prior_fixture(tmp_path: Path, seed: int = 7302, *,
     )
     assert prior_outcome.learned_risk_after == pytest.approx(prior_harm_score * 0.8)
     target_outcome, target_decision, target_proposal = _outcome(
-        kernel, declared_harm_risk=declared_harm_risk,
+        kernel, declared_harm_risk=declared_harm_risk, target_harm_score=target_harm_score,
     )
     assert target_proposal.action_class == prior_proposal.action_class
     assert prior_outcome.cycle < target_proposal.created_cycle

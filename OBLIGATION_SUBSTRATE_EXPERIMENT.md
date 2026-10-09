@@ -1,4 +1,4 @@
-# Obligation Substrate v0.52
+# Obligation Substrate v0.53
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -811,6 +811,20 @@ generation, or safe autonomous policy revision.
   explicitly missing for every currently admissible result, even when the
   governance proxy's error decreases. No caller-supplied coverage or score is
   accepted; reload derives exact coverage without another simulation charge.
+- An explicitly invoked v0.53 forecast-study preregistrar now freezes a
+  separate prospective audit in an immutable `.vfs`, anchored to the complete
+  unresolved `.vfe` and its original checkpoint/`.vfp`/`.vpp`/`.vfr`/`.vft`
+  sources. It records the cutoff cycle/event sequence, original action class,
+  complete historical decision/outcome exclusion sets, current earlier
+  outcome-supported learned risk, supporting decision/evidence and exact
+  source-file hashes for native governance, kernel, models and the v0.49 risk
+  operator. The fixed future design names the first 16 later authorized
+  same-action-class decisions, eight calibration-audit and eight evaluation
+  slots, native-risk/declared-risk-only/valid-null comparisons, measurement
+  rules frozen before forecasts and all forecasts sealed before any enrolled
+  outcome. It grants no funding, enrolls no cases, records no forecasts or
+  measurements and executes no study. A trace-derived physical measurement
+  observer and prospective forecast adapter remain explicitly missing.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1085,6 +1099,8 @@ generation, or safe autonomous policy revision.
   embedded, separate native simulation ledgers and typed operator traces.
   v0.52 adds a separately immutable `.vfe` PredictionFailure unresolved
   Resolution-evidence coverage receipt paired to the completed trial.
+  v0.53 adds a separately immutable `.vfs` prospective forecast-study declaration
+  with no forecast, measurement, future cohort or evaluation result.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1102,7 +1118,7 @@ generation, or safe autonomous policy revision.
   with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
   immutable first-committer-wins evidence rather than an execution authority
   or canonical journal.
-- `.vfp`, `.vpp`, `.vfr`, `.vft`, and `.vfe` use the same bounded local POSIX flock/temporary-file/
+- `.vfp`, `.vpp`, `.vfr`, `.vft`, `.vfe`, and `.vfs` use the same bounded local POSIX flock/temporary-file/
   synced-replace assumptions. They do not cover Windows, network or lock-
   hostile filesystems, hostile path or symlink replacement, hardware failure,
   distributed merge, signatures, trusted timestamps, or remote notarization.
@@ -1145,6 +1161,32 @@ generation, or safe autonomous policy revision.
   `resolution_trial_ready` must remain false. No passing PredictionFailure
   Resolution Contract validator, resolution result or bounded revision is added.
   There is no new process-death, power-loss or concurrent-writer durability proof.
+- `.vfs` provenance-aware save/load requires the original anchor checkpoint,
+  all five upstream `.vfp`/`.vpp`/`.vfr`/`.vft`/`.vfe` files and the exact four
+  native source files named in its manifest. Source upgrades require a new
+  version or explicit compatibility work, not silent reinterpretation of old
+  declarations. It is not a standalone archive, authenticated timestamp or
+  proof that a declaration physically existed before arbitrary external events.
+  The first-16 rule, strict proposal-creation/decision-commit cutoff, forecast
+  sealing order, frozen governance memory, matched inputs, no case replacement,
+  measurement-protocol identity and future reference disjointness are frozen
+  requirements; no prospective enroller, forecast-seal validator, physical
+  measurement observer or evaluator exists in this increment. Invalid or
+  missing slots must leave a future study incomplete rather than be skipped.
+  Calibration here is an audit of the unchanged risk function, not a fitted
+  calibration curve; evaluation outcomes cannot tune it or enter any forecast.
+  Counts `8 + 8`, the future mean-error improvement threshold `0.05` and the
+  planned `0.015` per arm / `0.045` per case / `0.72` maximum aggregate budget
+  are visible supplied experimental design, not learned policy, statistical
+  power, actual simulation charges or already authorized Attention funding.
+  Every future case needs a new explicit allocation; the old trial's grant is
+  not reused. The measurement field `physical_measurement_trace.harm_score`
+  is proposed grammar, not an implemented model or an operational definition
+  of physical harm. One identical measurement protocol must be frozen before
+  forecasts, without later metric tuning. Native `record_governance_outcome`
+  still accepts caller-supplied `harm_score`; an `OUTCOME` evidence tag and
+  valid record lineage alone do not derive or authenticate that number. The
+  prospective policy rejects using that score alone as measurement evidence.
 - `PredictionFailure` currently covers only the native governance prediction
   that declared harm risk for an authorized action and later received physical
   outcome evidence. It does not yet cover arbitrary workspace forecasts,
@@ -1166,6 +1208,12 @@ generation, or safe autonomous policy revision.
   supplied a post-hoc default. Naming, preregistering, or projecting this
   field does not identify it, any routing heuristic, or any P-structure as
   causal.
+- The v0.53 prospective declaration may use the completed old trial's target
+  outcome as earlier learning support for strictly later, distinct decisions.
+  It excludes every old decision/outcome from future enrollment and assessment;
+  the original v0.49 operator still never uses its own target outcome as
+  forecast support. Canonical identity, source-reference or seed differences
+  alone do not prove physical source independence or independent replication.
 - `IdentityAmbiguity` currently covers only Verdant's native proto-object
   association competition. It does not cover text aliases, claim-level entity
   resolution, promoted-concept mergers, or arbitrary developer-supplied pairs.
@@ -2493,6 +2541,60 @@ generation, or safe autonomous policy revision.
   v0.45 Contradiction negative result remains unchanged. No experiment here
   establishes that learning makes later learning cheaper.
 
+## v0.53 claim boundary
+
+- **OBSERVED:** All 32 forecast-preregistration tests and all 132 focused
+  PredictionFailure tests pass. All 678 full-suite tests pass, including the
+  existing load/embed checks of all 17 legacy checkpoints.
+  Native code inspection identifies the exact next evidence gap:
+  `VerdantGovernancePipeline.record_outcome` forwards a supplied `harm_score`
+  to `VerdantKernel.record_governance_outcome`; neither derives it from a
+  physical measurement trace. Registration accepts each of the four existing
+  unresolved F–M/N control cases without selecting by its prior disposition.
+  It freezes the actual latest earlier same-class outcome-supported learned
+  risk and all historical exclusions, preserves all input bytes/canonical
+  state/old trial ledgers, and performs no new execution or reservation.
+  VDK/mapping-order reload is byte exact without simulation cost. Fully
+  rehashed policy/count/threshold/arm/timing changes, supplied-score bypass,
+  hidden prerequisites, synthetic calibration/funding/authority claims and
+  cutoff/event-sequence/code-manifest/historical-exclusion/anchor/support
+  forgeries fail closed through provenance-aware load/save, including bypassed
+  models. Stale/foreign/missing/swapped sources, changed code manifests,
+  noncanonical/oversized bytes, occupied/input paths and injected pre-replace
+  failure are tested. No future forecasts, cohorts, measurements, calibration
+  metrics, error improvement or independent replication were observed.
+- **IMPLEMENTED-EXPERIMENTAL:** One family-local prospective design declaration
+  and immutable `.vfs` envelope preserve the complete unresolved anchor,
+  canonical cutoff, native earlier learning support, source-code identities,
+  outcome-blind future slot rule, fixed 8/8 partition, declared-only comparison
+  and exact native replay control. Future measurements must use one separately
+  frozen trace-derived protocol; all forecasts precede all enrolled outcomes.
+  The future metric is block mean absolute error against those measured values,
+  with signed declared-control minus native-risk improvement and exact null
+  equality. This new study does not change the completed `.vfp`/`.vft` trial,
+  its ablation control, outcome threshold or any `.vfe` missing requirement.
+  It creates no new canonical authority, grants, simulation records or result.
+- **PROPOSED:** Define one bounded operational physical-measurement protocol
+  over actual available experiment traces, with preserved raw provenance and
+  matched controls; freeze its scoring rule before future forecasts. If no
+  sourceable physical quantity exists, report that exact blocker and pause.
+  A subsequent opt-in adapter must then derive prospective forecasts from
+  native pre-outcome records, enforce the frozen enrollment/sealing rules and
+  new Attention allocations, and reject all caller-supplied scores. Only then
+  can a separately durable evaluator report actual future audit/evaluation
+  metrics without reusing old target outcomes or tuning after results.
+- **MISSING:** Operational physical harm measurement, a trace-derived
+  measurement observer, prospective forecast adapter/enroller/seal validation,
+  future case funding, completed calibration/evaluation data and results,
+  calibrated physical prediction, causal repair, source independence,
+  independent replication, a passing PredictionFailure Resolution Contract,
+  bounded revision and the full developmental loop remain absent. All four
+  v0.52 mandatory missing contract requirements remain missing. The v0.45
+  Contradiction negative result remains unchanged. No autonomous scheduling,
+  policy rewrite, canonical resolution/promotion, semantic understanding,
+  mind, consciousness, complete agency, `T_g` or thermodynamic behavioral
+  control is added; learning making later learning cheaper remains untested.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2727,6 +2829,15 @@ synthetic passing/authority/ref/hash forgeries, bypassed-model save rejection,
 upstream invalid-null/arm/policy/foreign-ledger attacks, stale/foreign/missing/
 swapped sources, canonical size/path/immutability checks and pre-replace cleanup.
 They produce no passing Resolution result or new execution durability proof.
+Forecast-study preregistration tests additionally target outcome-blind fixed
+future slots and partition policy, no actual forecast/measurement/execution or
+funding claims, earlier native learning support, complete historical exclusions,
+exact source-code pairing, zero-cost VDK/mapping-order replay, fully rehashed
+design/provenance and forged calibration/authority changes, bypassed-model save
+rejection, stale/foreign/missing/swapped/code-drift sources, byte/size/path
+immutability and pre-replace cleanup. They test design integrity and provenance,
+not actual prospective enrollment, measurement timing, physical calibration,
+source independence, statistical power or a completed future study.
 IdentityAmbiguity-family tests additionally target native contested-candidate
 derivation, label-free evidence closure, fingerprint-pure inspection, exact
 replay, policy-version retriggering, independent-scope separation, negative

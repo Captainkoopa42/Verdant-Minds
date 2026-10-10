@@ -1,4 +1,4 @@
-# Obligation Substrate v0.53
+# Obligation Substrate v0.54
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -825,6 +825,16 @@ generation, or safe autonomous policy revision.
   outcome. It grants no funding, enrolls no cases, records no forecasts or
   measurements and executes no study. A trace-derived physical measurement
   observer and prospective forecast adapter remain explicitly missing.
+- An explicitly invoked v0.54 measurement intake now validates and preserves
+  candidate raw captures in a separate immutable `.vmi`, paired to the exact
+  `.vfs` and its original checkpoint/trial provenance. It retains the original
+  raw bytes, parses bounded finite samples, enforces supported unit-label
+  consistency and declared single-clock order/completeness, and classifies
+  historical decision references as excluded. Other references remain
+  unverified. Every capture, including `physical_reported`, is quarantined;
+  source claims cannot confer physical admission, harm scoring or authority.
+  A read-only CLI and a capture-format/API guide are included. This preparation
+  implements no operational physical measurement protocol or study outcome.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1101,6 +1111,8 @@ generation, or safe autonomous policy revision.
   Resolution-evidence coverage receipt paired to the completed trial.
   v0.53 adds a separately immutable `.vfs` prospective forecast-study declaration
   with no forecast, measurement, future cohort or evaluation result.
+  v0.54 adds a separately immutable `.vmi` quarantined raw-capture pilot receipt
+  with no physical admission, harm score, forecast or evaluation result.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1118,7 +1130,7 @@ generation, or safe autonomous policy revision.
   with `.vob`, `.vct`, `.vdc`, `.vop`, `.vpr`, `.vor`, or `.vpa`; the stage is
   immutable first-committer-wins evidence rather than an execution authority
   or canonical journal.
-- `.vfp`, `.vpp`, `.vfr`, `.vft`, `.vfe`, and `.vfs` use the same bounded local POSIX flock/temporary-file/
+- `.vfp`, `.vpp`, `.vfr`, `.vft`, `.vfe`, `.vfs`, and `.vmi` use the same bounded local POSIX flock/temporary-file/
   synced-replace assumptions. They do not cover Windows, network or lock-
   hostile filesystems, hostile path or symlink replacement, hardware failure,
   distributed merge, signatures, trusted timestamps, or remote notarization.
@@ -1214,6 +1226,19 @@ generation, or safe autonomous policy revision.
   the original v0.49 operator still never uses its own target outcome as
   forecast support. Canonical identity, source-reference or seed differences
   alone do not prove physical source independence or independent replication.
+- The v0.54 capture reader accepts only a visible, versioned single-quantity
+  JSON capture grammar, at most 1 MiB/4096 samples, and an 8 MiB `.vmi` sidecar.
+  Unit labels and timestamps are supplied metadata; there is no unit
+  conversion, dimensional/quantity semantic check, clock authentication,
+  authenticated acquisition or proof that a reported decision ID caused a
+  reading. Raw bytes, including whitespace/mapping order, remain exact source
+  identity. A self-reported physical origin cannot escape quarantine. The
+  pilot cannot enroll cases, admit outcomes, implement harm scoring, alter any
+  `.vfs` prerequisite or remove any `.vfe` mandatory missing requirement.
+  CLI inspection checks local structure only; provenance-aware receipt
+  load/save additionally requires the exact original kernel, `.vfs`, complete
+  upstream chain, native source manifest and raw file. Local `.vmi` read is
+  self-contained integrity only, not canonical or physical authentication.
 - `IdentityAmbiguity` currently covers only Verdant's native proto-object
   association competition. It does not cover text aliases, claim-level entity
   resolution, promoted-concept mergers, or arbitrary developer-supplied pairs.
@@ -2595,6 +2620,55 @@ generation, or safe autonomous policy revision.
   mind, consciousness, complete agency, `T_g` or thermodynamic behavioral
   control is added; learning making later learning cheaper remains untested.
 
+## v0.54 claim boundary
+
+- **OBSERVED:** All 37 measurement-intake tests and all 169 focused
+  PredictionFailure tests pass. All 715 full-suite tests pass, including the
+  existing load/embed checks of all 17 legacy checkpoints. Synthetic parser
+  fixtures cover `simulated`, `unknown` and falsely self-reported physical
+  origins; none was admitted as physical evidence. The importer preserves
+  raw/input bytes, canonical state and old trial ledgers, and performs no
+  execution, reservation or settlement. It replays byte-exact after VDK and
+  mapping-order reload. Fully rehashed source/admission/calibration/funding/
+  authority/prerequisite/study/checkpoint/historical-exclusion/raw-origin
+  forgeries fail through provenance-aware load/save, including bypassed models.
+  Duplicate keys, supplied harm scores, incomplete/duplicate samples, unit
+  mismatch, bad timing, nonfinite/boolean/string values, stale/foreign/missing/changed
+  sources, bounded-size failures, occupied/input paths, noncanonical sidecars
+  and injected pre-replace failure are covered. No actual physical capture,
+  source authentication, measurement protocol, forecast, cohort, evaluation,
+  calibrated prediction or passing Resolution result was observed.
+- **IMPLEMENTED-EXPERIMENTAL:** One family-local candidate capture reader,
+  immutable `.vmi` pilot receipt, local inspection CLI and operator guide.
+  The receipt embeds the exact source bytes and parsed readings, binds to the
+  original prospective-study provenance, retains source claims and separates
+  excluded historical from unverified decision references. Quarantine and
+  every admission/execution/funding/authority flag are fixed. The user has
+  explicitly authorized preparation of the needed tooling despite absent
+  physical data; this increment provides intake preparation without inventing
+  a physical quantity or changing the existing studies or negative results.
+- **PROPOSED:** Use a candidate capture from an actual acquisition source to
+  define one operational physical quantity and verify decision linkage; freeze
+  the defensible measurement/scoring protocol before forecasts, with matched
+  controls and protected raw provenance. Then implement prospective forecast
+  recording, enrollment/sealing and new Attention funding, followed by durable
+  evaluation. The CLI or origin label cannot substitute for those prerequisites.
+- **MISSING:** An authenticated physical source, actual physical capture,
+  operational harm definition/scoring protocol, physical measurement observer,
+  prospective forecast adapter/enroller/seal validation, future case funding,
+  calibration/evaluation data and results, calibrated physical prediction,
+  causal repair, source independence, independent held-out replication, a
+  passing PredictionFailure Resolution Contract, bounded revision and the
+  developmental loop remain absent. All four v0.52 mandatory missing contract
+  requirements remain missing. The v0.45 Contradiction negative result and
+  completed `.vfp`/`.vft` controls/thresholds are unchanged. No canonical
+  resolution/promotion, autonomous policy rewrite, semantic understanding,
+  mind, consciousness, complete agency, `T_g` or thermodynamic behavioral
+  control is added; learning making later learning cheaper remains untested.
+
+The file format and usage are documented in
+[PredictionFailure measurement intake](docs/PREDICTION_FAILURE_MEASUREMENT_INTAKE.md).
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -2927,3 +3001,9 @@ chain closure, reorder and unrehashed-truncation rejection, fully rehashed
 authority rejection, pre/post-replace process death, stale-temporary recovery,
 lock release on process death, six-way cooperating-writer retention, live-
 reader prefix atomicity, and zero canonical or simulation mutation on reload.
+Measurement-intake tests additionally target raw-byte preservation, strict
+single-clock completeness, supported unit-label consistency, duplicate-key and
+supplied-score rejection, unverified-origin quarantine, historical exclusions,
+exact study/checkpoint/raw pairing, zero-cost replay, fully rehashed admission
+and authority attacks, bounded reads, occupied/input paths, pre-replace failure
+and read-only inspection that never claims physical admission or calibration.

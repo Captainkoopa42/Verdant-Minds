@@ -1,4 +1,4 @@
-# Obligation Substrate v0.54
+# Obligation Substrate v0.55
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -835,6 +835,16 @@ generation, or safe autonomous policy revision.
   source claims cannot confer physical admission, harm scoring or authority.
   A read-only CLI and a capture-format/API guide are included. This preparation
   implements no operational physical measurement protocol or study outcome.
+- An explicitly invoked v0.55 performance pilot brackets the existing full
+  read-only risk-bundle evaluator with actual `time.perf_counter_ns` calls.
+  Two private canonical copies, fixed warmups and six alternating baseline/
+  valid-null pairs require exact full-output equality; durations need not match.
+  A separately immutable `.vtp` binds every elapsed reading to clock/runtime
+  metadata, exact input/code hashes and historical decision lineage, and embeds
+  its quarantined v0.54 intake. Reload validates stored readings and complete
+  provenance without new timing samples or simulation charges. The recorded
+  local pilot, raw bytes, intake and synthetic-workload source chain/checkpoint
+  are retained for review. No physical harm or prospective study is measured.
 - A deterministic `IdentityAmbiguityDetector` now consumes native proto-object
   candidates only when the object tracker has already marked a candidate
   `CONTESTED`, recorded an ambiguity event, and preserved at least two competing
@@ -1113,6 +1123,9 @@ generation, or safe autonomous policy revision.
   with no forecast, measurement, future cohort or evaluation result.
   v0.54 adds a separately immutable `.vmi` quarantined raw-capture pilot receipt
   with no physical admission, harm score, forecast or evaluation result.
+  v0.55 adds a separately immutable `.vtp` performance pilot containing twelve
+  elapsed clock readings and its quarantined `.vmi`, with no physical harm,
+  calibration or Resolution result.
   None is automatically scheduled, appended, merged, or loaded by VDK/VOB
   APIs. The `.vcs` stage is self-contained for calibration-ledger replay but
   deliberately accepts only pristine calibration and held-out simulation
@@ -1239,6 +1252,27 @@ generation, or safe autonomous policy revision.
   load/save additionally requires the exact original kernel, `.vfs`, complete
   upstream chain, native source manifest and raw file. Local `.vmi` read is
   self-contained integrity only, not canonical or physical authentication.
+- The v0.55 timing roles repeat the identical complete native risk bundle;
+  they are not separately ablated performance workloads or new simulation
+  trials. Six alternating pairs and one untimed warmup per private copy are
+  fixed before acquisition; no timing-based replacement or adaptive sampling
+  is allowed. Actual local elapsed time supports descriptive performance only.
+  Identical output does not imply identical durations. Historical decision
+  refs identify workload inputs, not a repeated authorized decision or measured
+  physical consequence. Runtime/clock metadata and the Git parent checkout
+  revision are self-recorded; twelve bounded code-file hashes pin the working
+  code, not the complete environment. No independent clock/source attestation,
+  controlled CPU/load/cache conditions, timing causal attribution, performance
+  improvement or learning-makes-learning-cheaper result is established. Fully
+  consistent substituted clock readings can remain structurally valid and
+  quarantined; hashes cannot authenticate their acquisition. The immutable
+  result embeds its complete v0.54 intake, uses one final whole-file replace
+  and grants no new budget, enrollment, outcome, harm-scoring or authority.
+  Existing-path replay still recomputes native read-only provenance checks;
+  it does not resample clocks or reproduce durations. No cross-file transaction,
+  source-writer rollback, hostile-path, power-loss, process-death or competing
+  acquisition proof is added. All previously missing `.vfs`/`.vfe` prerequisites
+  remain missing.
 - `IdentityAmbiguity` currently covers only Verdant's native proto-object
   association competition. It does not cover text aliases, claim-level entity
   resolution, promoted-concept mergers, or arbitrary developer-supplied pairs.
@@ -2669,6 +2703,60 @@ generation, or safe autonomous policy revision.
 The file format and usage are documented in
 [PredictionFailure measurement intake](docs/PREDICTION_FAILURE_MEASUREMENT_INTAKE.md).
 
+## v0.55 claim boundary
+
+- **OBSERVED:** All 33 timing-pilot tests and all 202 focused PredictionFailure
+  tests pass. All 748 full-suite tests pass, including the existing load/embed
+  checks of all 17 legacy checkpoints. Rehashed unit/arithmetic/control/
+  code/input/decision/output/authority attacks fail. An internally consistent
+  replacement of all clock readings remains valid and quarantined, showing
+  that consistency does not authenticate a clock source. One recorded local
+  acquisition used
+  actual `time.perf_counter_ns` readings around the existing full risk-bundle
+  evaluator, on the existing synthetic fixture seed `79055`, mode `unchanged`.
+  All twelve complete outputs matched exactly; the native old risk scores
+  remained `(0.64, 0.64, 0.64)`. Baseline elapsed values were
+  `(28.762745, 35.239932, 79.885488, 57.586138, 53.72232, 38.659871)` ms;
+  valid-null values were
+  `(31.172089, 37.839568, 64.632821, 62.783954, 45.910694, 45.763101)` ms.
+  The means were `48.97608233333333` and `48.01703783333333` ms respectively.
+  Other tests were active in the shared container; all samples are retained,
+  and these are descriptive local measurements with uncontrolled timing noise.
+  Canonical/input bytes and old simulation ledgers stayed unchanged. Native
+  checkpoint and mapping-order reload replayed the exact stored pilot with no
+  new timing call or simulation charge. The preserved `capture.json`/`intake.vmi`
+  copies equal the embedded bytes. No physical harm measurement, calibration,
+  performance improvement, causal repair or passing Resolution was observed.
+- **IMPLEMENTED-EXPERIMENTAL:** One fixed opt-in paired timing acquisition,
+  immutable `.vtp` with exact elapsed arithmetic, clock/runtime/input/code/
+  decision/output lineage and complete v0.54 quarantine, provenance-aware replay,
+  local inspection/acquisition/replay CLI, guide and reviewable pilot dataset.
+  The acquisition records actual clock readings without caller-supplied values,
+  observer callbacks or scores. Private-copy mutations, changed outputs,
+  source/code drift and publication failure reject completion. Existing results
+  replay without taking new measurements; external source changes fail reload.
+  Logical valid-null output identity is separate from duration equality.
+- **PROPOSED:** The next prerequisite remains an independently defensible
+  operational physical measurement/harm protocol with verified acquisition and
+  decision linkage. Elapsed read-only execution time supplies no such harm mapping.
+  Freeze that protocol before prospective forecasts, then implement the
+  separately required adapter, enrollment/sealing and fresh per-case Attention
+  funding, followed by durable evaluation. This performance pilot does not
+  authorize changing the v0.53 preregistration or tuning a score after outcomes.
+- **MISSING:** Authenticated acquisition, an operational physical harm scoring
+  protocol, physical measurement observer, prospective forecasts/enrollment/
+  seals/funding, calibration/evaluation data, calibrated physical prediction,
+  causal repair, source independence and independent held-out replication
+  remain absent. The four mandatory missing v0.52 contract requirements and N
+  remain unresolved. The v0.45 Contradiction negative result and old control/
+  threshold/anti-suppression/evidence boundaries are unchanged. No canonical
+  resolution/promotion, policy rewrite, semantic understanding, mind,
+  consciousness, complete agency, `T_g` or thermodynamic control is added;
+  learning making later learning cheaper remains untested.
+
+The protocol, commands and exact local dataset are documented in
+[PredictionFailure timing pilot](docs/PREDICTION_FAILURE_TIMING_PILOT.md).
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3007,3 +3095,12 @@ supplied-score rejection, unverified-origin quarantine, historical exclusions,
 exact study/checkpoint/raw pairing, zero-cost replay, fully rehashed admission
 and authority attacks, bounded reads, occupied/input paths, pre-replace failure
 and read-only inspection that never claims physical admission or calibration.
+Timing-pilot tests additionally target fixed alternating matched controls,
+elapsed arithmetic and unit binding, exact full-output matching with unequal
+durations, private-copy isolation, no simulation charge, actual recorded-capture
+replay after native checkpoint/mapping-order reload, rehashed input/code/
+decision/output substitutions, hard quarantine and authority flags, failed
+acquisition without caller-state publication, immutable occupied/input paths,
+noncanonical/oversized sidecars and CLI replay without resampling. An explicit
+negative test preserves quarantine for fully self-consistent substituted
+timestamps; byte consistency does not authenticate a clock source.

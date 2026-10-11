@@ -1,4 +1,4 @@
-# Obligation Substrate v0.58
+# Obligation Substrate v0.59
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -2926,6 +2926,75 @@ in [Successor counting pilot](docs/COUNTING_TEACHING_PILOT.md).
 
 The native mappings, exact protocol/results, trust limits and commands are
 documented in [Teacher-scaffolded addition pilot](docs/SCAFFOLD_ADDITION_PILOT.md).
+
+## v0.59 claim boundary
+
+- **OBSERVED:** The separately frozen coverage/operand-order challenge retains
+  all `128` records: thirty-two predeclared cases in each of the same four
+  roles. Taught and exact valid null each answer twelve supported cases
+  correctly, abstain on eight missing right-operand mappings and four missing
+  terminal successor paths, and reject all eight invalid inputs. The no-rule
+  control abstains on all twenty-four accepted inputs; the incorrect starting
+  rule gives sixteen wrong answers, eight missing-mapping abstentions and
+  eight invalid-input rejections. Both orders of the four supported small
+  pairs succeed. All four large-left pairs succeed while their reversals
+  abstain on missing mappings. Available partial walks are retained without
+  answer credit. The incorrect rule's different starting point avoids the
+  missing terminal link in four cases, but their frozen group stays unchanged.
+  Complete denominators are `12/24` accepted inputs and `12/32` enrolled cases
+  for the taught/null roles; the supported-only `12/12` is narrower. These
+  observations characterize sampled taught coverage, not broad arithmetic,
+  spontaneous commutativity discovery or learning efficiency. All `95` new
+  tests, `353` combined math/archive tests and `1077` full-suite tests pass,
+  including load/embed checks of all `17` legacy checkpoints and exact
+  original-manifest replay of all three earlier math pilots.
+- **IMPLEMENTED-EXPERIMENTAL:** One explicitly invoked challenge wrapper
+  freezes a separately durable immutable `.vacp` before teaching/query, then
+  writes a separate immutable `.vacr` evaluation bound to the exact plan bytes.
+  All v0.58 adapter, lesson and arithmetic-grader bytes are unchanged. The
+  fixed fresh source is seed `79059`, state dimension `16`, run label
+  `math-coverage-v059`; four deep private copies receive the same twenty-five
+  old teaching/prompt slots. All `128` responses/input rejections precede the
+  unchanged external grader's ninety-six accepted-input evaluations. Fresh
+  valid pairs are disjoint from all three consumed pilots and recorded probes;
+  invalid inputs preserve their original typed JSON and API error locations/
+  types without fabricated targets. Frozen group/pairing labels do not enter
+  the response path. Every case, abstention, partial/blocking derivation and
+  input rejection remains in its fixed denominator. The plan embeds source
+  VDK and a thirty-one-file implementation/lock manifest; the evaluation
+  embeds the plan, four private VDKs, complete lessons and all records. Replay
+  reconstructs native responses/rejections and exact whole execution. Rehashed
+  case/order/pairing/type/grade/evidence/lesson/checkpoint/metric/source/authority
+  substitutions fail; code/source/plan/private drift, divergent exact null and
+  conflicting publication reject completion. Canonical checkpoint format,
+  earlier code manifests, canonical source, simulation ledgers, Attention and
+  governance remain unchanged and isolated.
+- **PROPOSED:** The asymmetric order result grounds a next protocol-only
+  increment for one explicitly teacher-scaffolded operand-order instruction.
+  Freeze original-order versus authorized swapped-order provenance, fresh
+  problems disjoint from all four consumed cohorts and observed probes,
+  no-instruction/incorrect-instruction/exact-null controls, missing-mapping/
+  link and invalid cases, and external scoring before implementing an adapter
+  or producing new responses. Any supplied swapping rule would remain teacher
+  guidance. This increment implements no such protocol, new lesson or
+  operand-swapping adapter and claims no spontaneous rule discovery.
+- **MISSING:** Generalized arithmetic, spontaneous rule discovery,
+  mathematical understanding and learning making later learning cheaper
+  remain unestablished. Local replay/source labels do not authenticate a
+  teacher, verify mathematical truth, prove historical freeze timing or
+  provide independent replication. A verifiable task-linked physical
+  acquisition source, defensible physical harm protocol and prospective
+  physical study remain absent. Calibrated physical prediction, causal repair,
+  source independence and independent held-out replication remain the four
+  mandatory missing N requirements. The v0.53 preregistration remains
+  unexecuted and unchanged; the v0.45 Contradiction negative result is
+  preserved. No canonical resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency claim is introduced.
+
+The exact frozen cohort, matched controls, complete results, durability and
+trust limits are documented in
+[Addition coverage challenge](docs/ADDITION_COVERAGE_CHALLENGE.md).
 
 ## Access-pressure integration
 

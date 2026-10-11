@@ -1,4 +1,4 @@
-# Obligation Substrate v0.57
+# Obligation Substrate v0.58
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -2866,6 +2866,67 @@ in [Addition teaching pilot](docs/MATH_TEACHING_PILOT.md).
 The protocol, exact dataset, controls, commands and trust limits are documented
 in [Successor counting pilot](docs/COUNTING_TEACHING_PILOT.md).
 
+## v0.58 claim boundary
+
+- **OBSERVED:** The frozen teacher-scaffolded addition pilot retains all 64
+  cases. Taught and exact valid-null roles each score `16/16`, including four
+  zero identities, four short compositions and eight longer held-out problems.
+  Withholding the addition instruction causes sixteen abstentions; supplying
+  the incorrect starting-operand rule causes sixteen wrong answers. Every
+  nonzero response follows actual native successor edges, with addition-rule,
+  operand-mapping and complete counting evidence. Wrong mappings/edges change
+  answers without arithmetic repair. Observed adversarial queries with an
+  untaught right operand, a reversed pair requiring an untaught mapping or a
+  missing terminal successor abstain. These establish guided composition
+  through supplied interpreters and facts, not generalized arithmetic,
+  discovered rules, commutativity or mathematical truth verification. Both
+  original recorded math pilots and their manifests replay unchanged. All
+  `102` addition-pilot tests, all `254` focused tests and all `982` full-suite
+  tests pass, including the existing load/embed checks of all `17` legacy
+  checkpoints. Fully rehashed operand/instruction/token/step/evidence/case/
+  grade/lesson/checkpoint/code/authority substitutions fail; source/code drift
+  and conflicting publication reject completion.
+- **IMPLEMENTED-EXPERIMENTAL:** One explicitly invoked addition adapter
+  consumes only two ordered integer operands. A native teacher instruction
+  binds the start operand; a native teacher mapping supplies the actual token
+  object. Handwritten dispatch passes those inputs to the existing unchanged
+  successor walker. No numeric addition, evaluator target or curriculum
+  lookup supplies its answer. Four fresh private copies each receive the same
+  nineteen counting lessons, five token mappings and one addition rule/prompt
+  slot. All sixty-four replies precede external exact-integer grading. Cases
+  and controls are fixed and disjoint from both consumed pilot cohorts. The
+  first twenty-four native lessons match in all roles; the last instruction
+  changes text/state and is not an exact processing-cost control. The valid
+  null must match the full taught result. An immutable `.vadd` embeds complete
+  source/four private VDKs, lessons, native binding/step traces, all grades and
+  abstentions, protocol and a twenty-eight-file code/lock-file manifest. Local
+  replay checks every derivation and exact full native execution. New sibling
+  code preserves v0.56/v0.57 source identity; native checkpoint serialization
+  remains unchanged. Canonical source, old simulation ledgers, Attention and
+  governance remain isolated; no physical outcomes are created.
+- **PROPOSED:** The next educational dependency is a separately frozen
+  coverage/operand-order challenge for this unchanged adapter, teaching and
+  scoring, with fresh cases disjoint from all three consumed pilots and
+  observed adversarial probes. Include supported and absent-mapping/link
+  cases, no-rule/incorrect-rule controls and exact null. Retain all abstentions
+  and invalid cases before any curriculum expansion or broad-transfer claim.
+  This increment implements no such challenge or discovery protocol.
+- **MISSING:** Generalized arithmetic, spontaneous rule discovery,
+  mathematical understanding and learning making later learning cheaper
+  remain unestablished. Local replay and self-declared teacher labels provide
+  no independent source or physical authentication. A verifiable task-linked
+  physical acquisition source, defensible physical harm protocol and
+  prospective physical study remain absent. Calibrated physical prediction,
+  causal repair, source independence and independent held-out replication
+  remain the four mandatory missing N requirements. The v0.53 preregistration
+  remains unexecuted and unchanged; the v0.45 Contradiction negative result is
+  preserved. No canonical resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency claim is introduced.
+
+The native mappings, exact protocol/results, trust limits and commands are
+documented in [Teacher-scaffolded addition pilot](docs/SCAFFOLD_ADDITION_PILOT.md).
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3230,3 +3291,13 @@ all-response capture before grading, replay of substituted instruction/step/
 endpoint/order/evidence/case/grade/lesson/checkpoint/authority fields, source/code
 drift, immutable publication failure, native VDK/mapping-order and old-pilot
 compatibility, exact null equality and canonical/simulation isolation.
+Scaffolded-addition tests additionally target native operand-to-counting
+bindings, literal teacher token decoding, zero-identity prerequisites, reuse of
+the unchanged successor walker, false source-class rejection, unsupported
+instruction/encoding rejection, wrong mapping/edge propagation without oracle
+repair, retained partial/blocking evidence, absent-mapping/reversed/terminal
+abstention, all-response capture before external grading, fully rehashed
+operand/instruction/token/request/step/case/grade/lesson/checkpoint/authority
+substitution, source/code drift, immutable publication failure, native VDK and
+mapping-order replay, exact complete null equality, both preceding pilot
+manifests and canonical/simulation/Attention/governance isolation.

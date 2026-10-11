@@ -1,4 +1,4 @@
-# Obligation Substrate v0.55
+# Obligation Substrate v0.56
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -2757,6 +2757,61 @@ The file format and usage are documented in
 The protocol, commands and exact local dataset are documented in
 [PredictionFailure timing pilot](docs/PREDICTION_FAILURE_TIMING_PILOT.md).
 
+## v0.56 claim boundary
+
+- **OBSERVED:** The frozen educational addition pilot records all 64 cases.
+  The taught role recalls `8/8` supplied facts, the no-answer control abstains
+  on all eight retention cases, the exact valid-null copy matches the complete
+  taught result, and the incorrect-teacher control recalls `8/8` incorrect
+  answers. All four roles abstain on all eight held-out questions, comprising
+  four reversed operand pairs and four new pairs. Native teacher-testimony
+  claims persist through private VDK reload and fingerprint-pure queries.
+  These observations establish fact retention through this explicit adapter;
+  they do not establish generalized addition or independent verification of
+  taught facts. All `55` math-pilot tests, all `75` focused tests and all `803`
+  full-suite tests pass, including the existing checks of all `17` legacy
+  checkpoints. Rehashed case/grade/lesson/source/checkpoint/code/authority
+  substitutions fail; conflicting and negated facts remain visible.
+- **IMPLEMENTED-EXPERIMENTAL:** One explicitly invoked, fixed fresh-source,
+  four-role addition teaching/retrieval pilot through the existing native
+  `ClaimLearningPipeline`. All responses precede external exact-integer
+  grading. Query inputs contain only ordered operands; a supplied teacher
+  fact is retrieved without consulting an arithmetic oracle or evaluator
+  target. No-answer prompts match operand pairs/source/event keys/exposure
+  counts; omission changes text, features and state and is not an exact
+  processing-cost control. The valid null uses identical teaching/query
+  operations and must match complete private checkpoints and traces. An
+  immutable, separately durable `.vmp` retains the frozen protocol, complete
+  source/four private VDKs, original responses, all abstentions, grades,
+  native lesson/claim/evidence lineage and code/lock-file manifests. Load/save
+  reruns the complete protocol and requires exact whole-result equality.
+  Local run/replay/query commands restore private memories only. This path
+  invokes no obligation simulations, creates no Attention funding or harm
+  outcomes, and leaves the supplied canonical kernel untouched.
+- **PROPOSED:** The next educational dependency is an explicitly taught
+  counting/successor and addition procedure with checkable native derivation
+  traces and fresh, frozen disjoint held-out cases. Teacher-supplied rules
+  must be labelled as scaffolds; evaluator arithmetic must stay outside the
+  learner path. Add no-rule/incorrect-rule controls and exact null replay
+  before claiming transfer beyond supplied facts.
+- **MISSING:** Generalized arithmetic, spontaneous rule discovery,
+  mathematical understanding and evidence that learning makes later learning
+  cheaper remain unestablished. The software correctness count has no physical
+  harm interpretation. No verifiable task-linked physical acquisition source,
+  physical harm protocol, measurement observer or physical prospective study
+  is supplied; the v0.53 exclusions, scoring/controls and unexecuted status
+  remain unchanged. Calibrated physical prediction, causal repair, source
+  independence and independent held-out replication remain the four mandatory
+  missing N requirements. The v0.45 Contradiction negative result remains.
+  Self-reported teacher labels, code hashes and deterministic local replay
+  do not authenticate a source or prove independent replication. No canonical
+  resolution/promotion, autonomous policy rewrite, `T_g`, thermodynamic
+  behavioral control, semantic understanding, mind, consciousness or complete
+  agency claim is introduced.
+
+The protocol, controls, trust limits, commands and exact dataset are documented
+in [Addition teaching pilot](docs/MATH_TEACHING_PILOT.md).
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3104,3 +3159,12 @@ acquisition without caller-state publication, immutable occupied/input paths,
 noncanonical/oversized sidecars and CLI replay without resampling. An explicit
 negative test preserves quarantine for fully self-consistent substituted
 timestamps; byte consistency does not authenticate a clock source.
+Math-teaching tests additionally target source/input isolation, exact native
+teacher-testimony lineage, answer-oracle exclusion from retrieval, all-response
+capture before grading, fixed disjoint ordered cases, no-answer and incorrect-
+teacher controls, exact complete valid-null equality, preserved conflicting/
+negated evidence, held-out abstention, strict operands, native VDK/mapping-order
+replay, rehashed case/grade/lesson/source/checkpoint/code/authority substitutions,
+duplicate JSON keys and compressed/oversized payload rejection, immutable
+publication conflicts/failures, private restored memories and explicit query
+commands without evaluator labels or physical claims.

@@ -1,4 +1,4 @@
-# Obligation Substrate v0.56
+# Obligation Substrate v0.57
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -2812,6 +2812,60 @@ The protocol, commands and exact local dataset are documented in
 The protocol, controls, trust limits, commands and exact dataset are documented
 in [Addition teaching pilot](docs/MATH_TEACHING_PILOT.md).
 
+## v0.57 claim boundary
+
+- **OBSERVED:** The successor/counting pilot retains all 64 replies across
+  four private roles. Taught and exact valid-null roles each answer `16/16`
+  correctly, including `8/8` longer held-out compositions. The no-rule control
+  abstains on all sixteen; the incorrect-rule control produces sixteen wrong
+  answers by following two native successor links per token. Every hop names
+  an actual native claim and teacher-testimony evidence. Incorrect successor
+  testimony changes the answer rather than being repaired; missing, conflicting,
+  invalid and cyclic links retain evidence and abstain. All successor links and
+  a handwritten bounded interpreter are supplied: these results establish
+  composition through that scaffold, not independent instruction discovery,
+  general addition or a novel arithmetic algorithm. The original v0.56 pilot
+  and its twenty-two-file implementation manifest replay unchanged. All `77`
+  counting-pilot tests, all `152` focused tests and all `880` full-suite tests
+  pass, including all `17` legacy checkpoint load/embed checks. Fully rehashed
+  instruction/step/evidence/case/grade/lesson/checkpoint/code/authority
+  substitutions fail, as do source/code drift and conflicting publication.
+- **IMPLEMENTED-EXPERIMENTAL:** One explicitly invoked fresh-source counting
+  prerequisite, eighteen native successor lessons and one procedure/prompt
+  slot per private role. Queries contain only a start integer and literal tick
+  tokens; numeric output follows native edge targets without arithmetic grading
+  or a curriculum lookup. A local replay checker verifies complete instruction,
+  step, endpoint and evidence lineage. All replies precede external scoring.
+  Cases are frozen and disjoint from consumed v0.56 pairs; held-out cases are
+  longer walks over known links with a supplied rule. No-rule and incorrect-rule
+  controls match initial source, first eighteen lessons, event keys and exposure
+  counts; changed final text/state is not an exact processing-cost control.
+  An immutable `.vcount` stores complete source/four private VDKs, lessons,
+  derivations, all grades/abstentions and a twenty-five-file code manifest.
+  Load/save requires exact full native replay; local queries restore private
+  copies. New code is nested to preserve the recorded v0.56 source manifest.
+  Canonical sources, old simulation ledgers and checkpoint serialization remain
+  unchanged. No Attention funding, simulations or physical outcomes are created.
+- **PROPOSED:** The next educational dependency is an explicitly supplied
+  operand-to-counting addition scaffold with native instruction provenance,
+  checkable derivations and fresh frozen cases disjoint from both consumed
+  pilots. Freeze no-rule/incorrect-rule and exact null controls before that
+  run. Keep evaluator arithmetic outside responses and label supplied
+  procedures as scaffolds. This increment does not implement addition.
+- **MISSING:** Generalized arithmetic, independent rule discovery, mathematical
+  understanding and learning making later learning cheaper remain unestablished.
+  Local code hashes and exact replay authenticate no teacher or physical source
+  and establish no independent replication. The physical harm/acquisition
+  blocker, unexecuted v0.53 study and four mandatory missing N requirements
+  remain: calibrated physical prediction, causal repair, source independence
+  and independent held-out replication. The v0.45 Contradiction negative result
+  is preserved. No canonical resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency claim is introduced.
+
+The protocol, exact dataset, controls, commands and trust limits are documented
+in [Successor counting pilot](docs/COUNTING_TEACHING_PILOT.md).
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3168,3 +3222,11 @@ replay, rehashed case/grade/lesson/source/checkpoint/code/authority substitution
 duplicate JSON keys and compressed/oversized payload rejection, immutable
 publication conflicts/failures, private restored memories and explicit query
 commands without evaluator labels or physical claims.
+Counting-teaching tests additionally target native multi-link composition,
+instruction provenance, no-rule and incorrect-rule controls, wrong successor
+testimony without oracle repair, missing/invalid/conflicting/cyclic edge
+abstention, complete partial/blocking evidence, strict bounded token requests,
+all-response capture before grading, replay of substituted instruction/step/
+endpoint/order/evidence/case/grade/lesson/checkpoint/authority fields, source/code
+drift, immutable publication failure, native VDK/mapping-order and old-pilot
+compatibility, exact null equality and canonical/simulation isolation.

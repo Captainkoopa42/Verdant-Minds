@@ -1,4 +1,4 @@
-# Obligation Substrate v0.61
+# Obligation Substrate v0.62
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -3093,6 +3093,58 @@ next dependency.
 See [Private operand-order adapter](docs/OPERAND_ORDER_ADAPTER.md) for exact
 routing behavior, consumed-case checks, implementation hashes and exclusions.
 
+## v0.62 claim boundary
+
+- **OBSERVED:** The exact frozen v0.60 cohort has now been executed once through
+  the exact frozen v0.61 adapter. All `160` response/rejection records were
+  durably saved before any of `128` external grades. Taught and exact valid
+  null each produce sixteen correct responses, sixteen abstentions and eight
+  invalid-input rejections; their complete records match apart from outer role.
+  No instruction produces eight correct responses, twenty-four abstentions and
+  eight invalid rejections. The incorrect instruction produces thirty-two
+  abstentions and eight invalid rejections, with no numeric answer. The eight
+  taught/null gains over no instruction are exactly the predeclared one-swap
+  candidates. Eight both-mappings-absent and eight terminal-link valid cases
+  remain abstentions with complete blocking/partial evidence. Thus a broad
+  reading that the supplied order instruction repairs addition generally is
+  falsified in this cohort. The full denominators remain `16/32` valid and
+  `16/40` enrolled for taught/null, never the supported-only `16/16`.
+- **IMPLEMENTED-EXPERIMENTAL:** A new versioned sibling validates exact `.vaop`
+  and `.vaoi` bytes/code, creates four distinct private copies, runs each frozen
+  typed request once without expected/group/grade behavioral inputs, and writes
+  an immutable ungraded `.vaob`. Only a later call applies the unchanged v0.58
+  grader to valid original requests and writes a separately immutable `.vaor`
+  bound to exact response bytes. Invalid payloads stay enrolled and ungraded.
+  Reload statically verifies every instruction/mapping route, nested successor
+  trace, rejection and grade without teaching, answering or grading again.
+  Rehashed case/order/pair/type/route/evidence/partial-step/lesson/checkpoint/
+  grade/code/source/authority changes fail; stale/foreign/swapped inputs,
+  divergent nulls, incomplete role capture and conflicting publication fail
+  closed. All `126` new tests, `677` focused math/archive tests and `1,401`
+  full-suite tests pass, including the existing checks of all seventeen legacy
+  checkpoints. Existing checkpoint formats and all 22/25/28/31/34/37-file
+  manifests remain unchanged; the new response manifest contains forty files.
+- **PROPOSED:** Freeze one separate protocol-only terminal-successor repair
+  study grounded in the eight retained missing-successor traces. The existing
+  native number and step bounds stop at eighteen, so any proposed repair must
+  first declare a versioned bounded domain extension and exact teacher
+  successor testimony through twenty-one, with no-repair, wrong-link and exact-
+  null controls plus fresh disjoint cases. Do not implement or execute that
+  repair in this increment or feed external targets back into native responses.
+- **MISSING:** This result does not establish spontaneous commutativity or rule
+  discovery, generalized arithmetic, mathematical understanding, authenticated
+  teaching, independent replication, causal self-repair or cheaper later
+  learning. No private lesson is canonically installed. The physical
+  acquisition/harm blocker, unexecuted v0.53 study, v0.54/v0.55 quarantine,
+  four mandatory N requirements and v0.45 Contradiction negative result remain
+  unchanged. No canonical resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency authority is added.
+
+See [Frozen operand-order evaluation](docs/OPERAND_ORDER_EVALUATION.md) for
+the exact cohort result, durable barrier, artifact hashes, replay boundaries
+and exclusions.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3467,3 +3519,14 @@ operand/instruction/token/request/step/case/grade/lesson/checkpoint/authority
 substitution, source/code drift, immutable publication failure, native VDK and
 mapping-order replay, exact complete null equality, both preceding pilot
 manifests and canonical/simulation/Attention/governance isolation.
+Operand-order evaluation tests additionally target exact v0.60/v0.61 byte and
+code pairing, four distinct private copies, complete 160-record durability
+before 128 external grades, original-request grading, full denominators,
+typed-invalid retention, exact taught/null equality, route and nested partial-
+evidence replay without response/grader entry points, source/canonical/
+simulation/Attention/governance isolation, incomplete multi-role failure,
+stale/foreign/swapped inputs, immutable conflicting paths, and fully rehashed
+case/group/pair/type/request/route/instruction/mapping/successor/lesson/
+checkpoint/grade/code/source/authority substitutions. They preserve abstention
+as evidence and establish neither spontaneous discovery, broad arithmetic,
+source authentication, independent replication nor learning efficiency.

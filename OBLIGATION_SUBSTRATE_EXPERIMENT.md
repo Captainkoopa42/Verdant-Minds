@@ -1,4 +1,4 @@
-# Obligation Substrate v0.59
+# Obligation Substrate v0.60
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -2995,6 +2995,56 @@ documented in [Teacher-scaffolded addition pilot](docs/SCAFFOLD_ADDITION_PILOT.m
 The exact frozen cohort, matched controls, complete results, durability and
 trust limits are documented in
 [Addition coverage challenge](docs/ADDITION_COVERAGE_CHALLENGE.md).
+
+## v0.60 claim boundary
+
+- **OBSERVED:** All 94 new operand-order protocol tests, all 447 focused
+  math/archive tests and all 1,171 full-suite tests pass, including all 17 legacy checkpoint load/embed
+  checks and exact replay of all four earlier math experiments. A separately
+  immutable prospective declaration contains forty fresh unanswered typed
+  cases, four control roles, exact historical/probe/code identities and an
+  unexposed source checkpoint. Freeze/reload work with teaching, response,
+  grading and simulation entry points blocked. Rehashed routing-instruction,
+  original-order provenance, case/order/group/pair/type, scoring/denominator,
+  source/manifest/probe and authority substitutions fail. All four consumed
+  cohort records and their 22/25/28/31-file manifests remain unchanged. No new
+  operand-order response, installed instruction, grade or learning result was
+  observed. Future evidence retention/routing is declared, not yet executed.
+- **IMPLEMENTED-EXPERIMENTAL:** One protocol-only sibling package freezes an
+  explicitly supplied missing-right-mapping instruction, native authorization
+  scope, original/effective operand provenance, bounded future response
+  contract, no-instruction/incorrect-instruction/exact-null controls, complete
+  invalid/missing handling and unchanged external grading. Its `.vaop` pairs
+  five exact historical artifacts and four recorded-probe source files with
+  a 34-file manifest and pure source reconstruction. Both possible operand
+  orders are excluded against all four consumed cohorts and recorded probes,
+  including earlier rejected inputs. All forty prospective cases are retained;
+  future denominators are forty enrolled and thirty-two valid per role. This
+  implements no swapping adapter, native instruction installation, trace
+  verifier, execution wrapper or evaluation.
+- **PROPOSED:** Implement one separate opt-in operand-order adapter and native
+  derivation verifier that satisfy the frozen contract. Freeze their bytes
+  before a later separate evaluation. Right mapping conflict/invalidity must
+  block swapping; native absence may permit one taught transposition only
+  after valid left-mapping evidence. Keep original requests and every partial,
+  blocking or rejected record. A supplied rule remains teacher scaffolding,
+  not spontaneous discovery of commutativity.
+- **MISSING:** Actual operand swapping, new performance results, generalized
+  arithmetic, spontaneous rule discovery, mathematical understanding and
+  learning making later learning cheaper remain unestablished. Local source
+  labels/checksums/replay establish no teacher authentication, historical
+  freeze-time proof or independent replication. Physical acquisition/harm
+  scoring and the v0.53 prospective physical study remain absent/unexecuted.
+  Calibrated physical prediction, causal repair, source independence and
+  independent held-out replication remain the four mandatory missing N
+  requirements. v0.54/v0.55 quarantine and the v0.45 Contradiction negative
+  result are preserved. No canonical resolution/promotion, autonomous policy
+  rewrite, `T_g`, thermodynamic behavioral control, semantic understanding,
+  mind, consciousness or complete-agency authority is added.
+
+See [Prospective operand-order protocol](docs/OPERAND_ORDER_PROTOCOL.md) for
+the exact instruction, unanswered cases, controls, source/trust limits and
+next dependency.
 
 ## Access-pressure integration
 

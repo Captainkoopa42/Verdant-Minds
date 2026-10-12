@@ -1,4 +1,4 @@
-# Obligation Substrate v0.60
+# Obligation Substrate v0.61
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -3045,6 +3045,53 @@ trust limits are documented in
 See [Prospective operand-order protocol](docs/OPERAND_ORDER_PROTOCOL.md) for
 the exact instruction, unanswered cases, controls, source/trust limits and
 next dependency.
+
+## v0.61 claim boundary
+
+- **OBSERVED:** One separate private-copy adapter now follows the frozen v0.60
+  order instruction on previously consumed cases and recorded probes only.
+  Valid original-right mappings retain order; native absence can authorize one
+  swap only after a valid decoded original-left mapping. Missing, conflicting,
+  invalid and unsupported instruction/mapping evidence remains visible and
+  blocks as frozen. No-instruction delegates to the unchanged original-order
+  v0.58 path; the incorrect control follows its separately declared opposite
+  trigger. Exact native replay covers original/effective requests, private
+  fingerprint, instruction/mapping closure and the complete nested addition /
+  counting result including partial failures. The forty v0.60 prospective
+  cases remain unanswered and ungraded. Earlier artifacts and 22/25/28/31/34-
+  file manifests remain byte-unchanged.
+- **IMPLEMENTED-EXPERIMENTAL:** An explicitly invoked versioned sibling adds
+  private installation of the same twenty-five correct old lessons plus one
+  order slot, read-only single-transposition routing, typed native traces and
+  a trace verifier. A separately immutable 37-file `.vaoi` binds exact v0.60
+  declaration/file bytes and implementation sources. Its receipt records the
+  adapter, private installer and verifier as implemented while prospective
+  cohort execution, responses and evaluation remain false. Freeze/replay has
+  no run/query/evaluate command and invokes no teaching, response, grader,
+  Attention or simulation path. No sorting, recursive retry, numeric token
+  reconstruction or evaluator arithmetic is available to the response path.
+  All 104 adapter tests, 551 focused math/archive tests and 1,275 full-suite
+  tests pass, including the existing load/embed checks for all seventeen legacy
+  checkpoints; checkpoint behavior and formats are unchanged.
+- **PROPOSED:** In one later separate evaluation increment, load the exact
+  `.vaop` and `.vaoi`, prepare four distinct private roles, collect all 160
+  frozen response/rejection records before any of 128 external grades, grade
+  the original ordered request with the unchanged v0.58 grader, enforce exact
+  complete taught/null equality and publish a separately immutable result.
+  Retain forty enrolled / thirty-two valid denominators per role and never
+  replace blocked, missing or invalid cases.
+- **MISSING:** No new prospective performance result, generalized arithmetic,
+  spontaneous commutativity discovery, mathematical understanding, independent
+  replication or cheaper later learning is established. Local hashes and replay
+  do not authenticate the declared teacher or mathematical truth. The physical
+  acquisition/harm-scoring blocker, unexecuted v0.53 study, four mandatory N
+  requirements, v0.54/v0.55 quarantine and v0.45 Contradiction negative result
+  are unchanged. No canonical resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency authority is added.
+
+See [Private operand-order adapter](docs/OPERAND_ORDER_ADAPTER.md) for exact
+routing behavior, consumed-case checks, implementation hashes and exclusions.
 
 ## Access-pressure integration
 

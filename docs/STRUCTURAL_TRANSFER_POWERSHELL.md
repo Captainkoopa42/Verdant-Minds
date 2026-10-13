@@ -90,3 +90,14 @@ if ($LASTEXITCODE -ne 0) { throw "Grading failed" }
 The run saves immutable, hashed per-arm `.vst` stages with checkpoint bytes, native events, private teaching schedules and trace-grounded responses. All native responses are durably recorded before separate external grading. A code or manifest change fails closed during resume; do not edit saved evidence. Preserve `manifest.json`, `responses.json`, `grades.json`, and `stages/`.
 
 Existing `v0.65` evidence remains untouched. The full 12,000-per-arm adaptive curriculum still requires separate experimental implementation and validation.
+
+## Built-in verification and category report
+
+After completing any experiment, this command validates the saved checkpoints, manifests, raw responses and grade receipt, then prints the last assessment by seed/role and counts for each split (direct, short, transfer, boundary):
+
+```powershell
+& $Py -m verdant_math.structural_transfer.experiment report ".\structural-transfer-1000"
+if ($LASTEXITCODE -ne 0) { throw "Report verification failed; preserve evidence" }
+```
+
+For the 200-cycle smoke use `report ".\structural-smoke-200"`; its latest probe is still diagnostic and does not contain final transfer questions.

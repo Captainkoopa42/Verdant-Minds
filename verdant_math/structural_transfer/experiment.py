@@ -475,13 +475,45 @@ def grade(path):
         return result
 
 
+
+def report(path):
+    """Print validated stage/checkpoint scores, including held-out category totals."""
+    destination = grade(path)
+    receipt = persistence._parse(destination)
+    print("Verified response SHA-256:", receipt["response_sha256"])
+    rows = receipt["grading"]
+    print("seed role cycle assessment correct incorrect abstained total")
+    for row in rows:
+        final = row["probes"][-1]
+        print(row["seed"], row["role"], final["cycle"], final["assessment"],
+              final["correct"], final["incorrect"], final["abstained"], final["total"])
+    print("Group by question split (all three seeds)")
+    for role in ROLES:
+        by_split = {}
+        for row in rows:
+            if row["role"] != role:
+                continue
+            final = row["probes"][-1]
+            for case in final["by_case"]:
+                group = case["split"]
+                if group not in by_split:
+                    by_split[group] = dict(correct=0, incorrect=0, abstained=0)
+                by_split[group][case["grade"]] += 1
+        for group, counts in sorted(by_split.items()):
+            print(role, group, "correct", counts["correct"],
+                  "incorrect", counts["incorrect"],
+                  "abstained", counts["abstained"],
+                  "total", sum(counts.values()))
+    return destination
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
     new = sub.add_parser("start")
     new.add_argument("directory")
     new.add_argument("--cycles", type=int, default=1000)
-    for name in ("resume", "status", "grade"):
+    for name in ("resume", "status", "grade", "report"):
         sub.add_parser(name).add_argument("directory")
     args = parser.parse_args(argv)
     if args.cmd == "start":
@@ -490,6 +522,8 @@ def main(argv=None):
         result = resume(args.directory)
     elif args.cmd == "grade":
         result = grade(args.directory)
+    elif args.cmd == "report":
+        result = report(args.directory)
     else:
         status(args.directory)
         return

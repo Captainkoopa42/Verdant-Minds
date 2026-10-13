@@ -80,3 +80,23 @@ def test_invalid_resume_does_not_make_a_cohort(tmp_path):
         r.resume(tmp_path / "missing")
     with pytest.raises(ValueError):
         r.start(tmp_path / "invalid", cycles=12000, seeds=(79066,))
+
+
+def test_native_fifty_cycle_recovery_runner_keeps_supplied_fact(tmp_path):
+    root = tmp_path / "fifty"
+    result = r.start(root, cycles=50, seeds=(79066,))
+    batch = json.loads(result.read_bytes())
+    assert len(batch["arms"]) == 4
+    by_role = {arm["role"]: arm for arm in batch["arms"]}
+    for role, count in (("progressive", 1), ("rehearsal", 1),
+                        ("activity_control", 0), ("delayed", 0)):
+        arm = by_role[role]
+        assert arm["native_cycles"] == 50
+        assert len(arm["teaching"]) == count
+        assert len(arm["probes"]) == 2
+        answers = [item["reply"]["answer"] for item in arm["probes"][-1]["responses"]]
+        assert answers.count(5) == count  # First taught fact: 5 + 0 = 5
+        assert all(answer is None or answer == 5 for answer in answers)
+        stage = root / "stages" / "seed-79066" / role / "00050.vstage"
+        assert stage.is_file()
+    assert r.resume(root).read_bytes() == result.read_bytes()

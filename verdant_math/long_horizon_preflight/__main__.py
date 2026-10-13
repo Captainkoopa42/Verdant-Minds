@@ -171,6 +171,7 @@ def execute(output_dir: str | Path, *, cycles: int = 1000,
             first_fingerprint = kernel.fingerprint()
             if first_fingerprint != source_fingerprint:
                 raise PreflightError("Private role did not start from identical native seed.")
+            kernel = _checkpoint(kernel, root / f"seed-{seed}" / role / "cycle-00000.vdk")
             observations = [_probe(kernel, cycle=0)]
             teaching = []
             transitions = []

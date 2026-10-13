@@ -1,13 +1,6 @@
 name: Structural Transfer Focused Validation
 
 on:
-  push:
-    branches:
-      - test/structural-transfer-v0
-    paths:
-      - "verdant_math/structural_transfer/**"
-      - "tests/test_structural_transfer.py"
-      - ".github/workflows/structural-transfer-tests.yml"
   workflow_dispatch:
 
 jobs:
@@ -26,7 +19,7 @@ jobs:
       - name: Compile experimental code
         run: |
           python -m compileall -q verdant_math/structural_transfer tests/test_structural_transfer.py
-      - name: Run only focused tests (no full curriculum or seeds)
+      - name: Run manually requested focused tests (includes bounded native integration tests)
         env:
           OPENBLAS_NUM_THREADS: "1"
           OMP_NUM_THREADS: "1"

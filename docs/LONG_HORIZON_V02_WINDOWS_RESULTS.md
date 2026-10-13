@@ -42,3 +42,6 @@ The same reported table held for all three seeds. Across twelve final per-arm ev
 ## Authority boundary
 
 This result is a completed native persistence exercise, **not** the 12,000-cycles-per-arm (144,000 total) curriculum. It authorizes no canonical Resolution, knowledge promotion, autonomous policy change, harm inference, physical actuation or consciousness claim.
+## Follow-up console verification (operator-reported)
+
+The operator's Windows run of the resumable status command reported all twelve arms at durable cycle 1000 / 1000 and complete_response_batch=True. The SHA-256 computed over the original responses.json locally matched the response_sha256 field in the grading receipt. Across all three seeds, correct answer counts at cycles 0/250/500/750/1000 were: progressive 0/5/8/8/8; rehearsal 0/1/1/1/1; activity 0/0/0/0/0; delayed 0/0/0/3/8. All other responses were abstentions; none were incorrect. Across 1,200 probe responses, totals were 132 correct and 1,068 abstentions. This constitutes user-reported integrity validation, not independent retrieval and replay of the artifact bytes.

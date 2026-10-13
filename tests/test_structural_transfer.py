@@ -169,3 +169,13 @@ def test_200_native_cycles_per_arm_and_durable_grades(tmp_path):
     assert rows["no_rule"]["probes"][-1]["correct"] == 0
     assert receipt["computed_after_durable_responses"] is True
     assert receipt["response_sha256"] == t.util.digest(responses.read_bytes())
+
+
+def test_report_displays_verified_split_denominators(tmp_path, capsys):
+    root = tmp_path / "report"
+    t.start(root, cycles=0, seeds=(79101,))
+    t.report(root)
+    printed = capsys.readouterr().out
+    assert "Verified response SHA-256:" in printed
+    assert "progressive diagnostic correct 0 incorrect 0 abstained 8 total 8" in printed
+    assert (root / "grades.json").is_file()

@@ -24,7 +24,7 @@ $Py = ".\.venv\Scripts\python.exe"
 # First, verify the implementation's focused tests.
 & $Py -m pytest -q tests/test_long_horizon_preflight.py
 
-# Then a tiny native smoke run, four roles by one seed for 0 and 2 cycles
+# Then a tiny native smoke run, four roles by three seeds for 2 cycles
 # (the runner defaults to three seeds).
 & $Py -m verdant_math.long_horizon_preflight pilot ".\long-horizon-smoke" --cycles 2
 & $Py -m verdant_math.long_horizon_preflight grade ".\long-horizon-smoke\responses.json" ".\long-horizon-smoke\grades.json"

@@ -1,29 +1,25 @@
 # Long-horizon readiness and execution ledger
 
-Updated 2026-10-13. Branch: `test/long-horizon-curriculum-v0`. Starting source: v0.65 `25d47fb`.
+Updated 2026-10-13. Branch: `test/long-horizon-curriculum-v0`. Parent baseline: experimental obligation-substrate v0.65.
 
-## Current status
+## Verified now
 
-- **COMMITTED:** `docs/LONG_HORIZON_CURRICULUM_V0.md` is the proposed 12,000-native-cycle **per arm** curriculum design, not an approved frozen prospective protocol.
-- **COMMITTED:** `verdant_math/long_horizon_preflight/__main__.py` implements a separate 0–1,000 cycle **per arm** feasibility experiment, with four native private roles and three seeds. It uses native ClaimLearningPipeline for supplied facts and native ExperienceCommand for unrelated events, read-only recall, checkpoints and explicit separate grading. It does not implement transfer beyond direct fact recall.
-- **COMMITTED:** `tests/test_long_horizon_preflight.py` covers protocol schedule, private teaching, checkpoint/response boundaries, native unrelated events, changed-order rejection and v0.65 artifact hashes.
-- **COMMITTED:** PowerShell run instructions in `docs/LONG_HORIZON_PREFLIGHT_RUN_GUIDE.md`.
-- **GITHUB ACTIONS VERIFIED:** Branch static workflow `long-horizon-static.yml` passed syntax compilation and pytest discovery, collecting seven tests: https://github.com/Captainkoopa42/Verdant-Minds/actions/runs/38455013657
-- **NOT YET DONE:** The seven tests have **not been executed**, no native 2-cycle smoke or 1,000-cycle pilot has been executed, no new measured retention/transfer results exist, and no full 12,000-per-arm runner or results exist.
+- Existing user-run nonresumable **50-cycle × 12 arms** benchmark: 600 native cycles in 6.39 s, one recalled teacher fact in progressive and rehearsal roles per seed, zero in untrained roles.
+- Existing user-run nonresumable **250-cycle × 12 arms** benchmark: 3,000 native cycles in 50.83 s; progressive 5/20, rehearsal 1/20, untrained 0/20 per seed; all three seeds identical, no wrong replies; 24 saved checkpoints taking 8.75 MB.
+- Native 1,000-cycle **per arm** preflight still uses explicit teacher testimony, no inferred mathematical rule. It is not the full 12,000-cycle per-arm long curriculum.
+- `verdant_math/long_horizon_preflight/resumable.py` adds immutable canonical-json stages with native VDK bytes, checkpoint digest, native fingerprint, complete response probes, teaching lineage, transition chain, and per-arm stage predecessor hashes. Frozen code manifest is checked before resuming. Status and resume are explicit CLI commands.
+- A run interrupted after a committed milestone resumes only the uncommitted cycles. Orphan `.part` members are discarded only under a filesystem process lock and only when their target is absent; finished members are not overwritten.
+- **13/13 focused tests passed in GitHub Actions**, including real 50-cycle supplied-fact recall, simulated interruption and byte-identical completion versus uninterrupted execution, tamper rejection, source-manifest rejection, and v0.65 artifact hash guards. Workflow: https://github.com/Captainkoopa42/Verdant-Minds/actions/runs/38458796417
+- **No full 1,000-cycle recovery cohort has yet been executed**, nor the full 144,000-operation long curriculum. The entire historical test suite was not rerun for this change.
 
-## Mandatory next gates
+## Next steps
 
-1. In a real complete repository checkout, run `python -m pytest -q tests/test_long_horizon_preflight.py`; investigate any failure without weakening v0.65 frozen evidence.
-2. Run isolated 2-cycle smoke; inspect checkpoint, canonical response-before-grade output and external grade artifact.
-3. Benchmark a 50- or 100-cycle run for total runtime, growth of serialized checkpoint, RAM and CPU usage; estimate 1,000 and 12,000 per arm costs **empirically**. Do not launch the full experiment with unbounded resource use.
-4. Address restart durability before long Colab execution: current preflight fails closed on occupied output paths and does not resume incomplete runs. Implement verified per-arm resume/reconstruction or use an uninterrupted reliable runtime. Treat partial output as incomplete, not a completed cohort.
-5. Execute and independently revalidate all 12 one-thousand-cycle arms. Inspect learner histories; compare longitudinal correct/incorrect/abstained counts and all native checkpoint evidence. Evaluate whether the evidence supports only storage/retention, not transfer.
-6. Implement actual multi-domain and disjoint reserved transfer tasks as independently versioned native adapters. Freeze their prospective protocols, resource limits, seeded controls, and quantitative pass thresholds before execution. The existing 0–21 v0.65 domain cannot be silently expanded.
-7. Only after those gates implement and launch 12,000 cycles per arm, across four groups and three seeds (144,000 total) with periodic restart and complete response-before-grade receipts.
-8. Rerun full existing suite, v0.65 history validation, and all 17 legacy checkpoints. This must be documented as actual execution, not inferred from reported prior results.
+1. Pull the branch and run 13 focused tests on Windows. This verifies the platform-specific lock path.
+2. Run a new resumable 50-cycle Windows smoke and grade; use a fresh output directory.
+3. Run 1,000 cycles per arm across four roles and three seeds, with status/resume if interrupted. Grade only after all response records are durable. PowerShell instructions: `docs/LONG_HORIZON_RESUMABLE_GUIDE.md`.
+4. Inspect teaching/retention curves, checkpoint sizes and per-seed failures; compare against rehearsal and delayed controls. No general learning claim from storage alone.
+5. Independently implement genuinely disjoint transfer tasks and preregister threshold/evaluation controls before attempting any full 12,000-per-arm adaptive curriculum.
 
-## Boundary
+## Hard boundaries
 
-The preflight demonstrates an executable **test design and native teaching path**, not validated long-range learning. The presence of 12,000 prompt experiences across all arms cannot establish 12,000 learning cycles. If the system simply persists teacher-supplied facts, report retained testimony, not generalized cognition.
-
-Do not deploy autonomous policy revisions, real-world actions, teacher-independent repair, or any form of claimed personhood from these tests. Never modify historical v0.65 artifacts or merge experimental versions.
+Do not modify original v0.65 artifacts. Do not merge experimental milestone branches, use auto-seed-on-push, promote private lessons to canonical state, infer mathematical understanding from memorized facts, or treat an interrupted run as complete.

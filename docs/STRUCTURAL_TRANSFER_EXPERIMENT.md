@@ -1,6 +1,6 @@
 # Native Structural Transfer Experiment v0.1
 
-Status: **implemented experimental** in `verdant_math/structural_transfer/experiment.py`, branch `test/structural-transfer-v0`. Exact interpretation: *compositional traversal of separately teacher-supplied opaque relations under an explicitly teacher-supplied handwritten traversal rule*. **No Windows outcome or full 1,000-cycle/arm result yet**.
+Status: **implemented experimental** in `verdant_math/structural_transfer/experiment.py`, branch `test/structural-transfer-v0`. Exact interpretation: *compositional traversal of separately teacher-supplied opaque relations under an explicitly teacher-supplied handwritten traversal rule*. **1,000-cycle/arm Windows execution reported complete by the operator; see `docs/STRUCTURAL_TRANSFER_V01_WINDOWS_RESULTS.md` for verified console outputs and claim limits. Original result bytes have not been independently replayed.**
 
 ## Question and prospective structure
 

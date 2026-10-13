@@ -1,4 +1,4 @@
-# Obligation Substrate v0.63
+# Obligation Substrate v0.64
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -3194,6 +3194,55 @@ and exclusions.
 
 See [Prospective terminal-successor repair protocol](docs/TERMINAL_SUCCESSOR_REPAIR_PROTOCOL.md)
 for the exact domain, testimony, fresh cases, artifact identity and exclusions.
+
+## v0.64 claim boundary
+
+- **OBSERVED:** On only the eight already-consumed v0.62 terminal cases, the
+  explicitly invoked correct and exact-null private implementations traverse
+  the supplied `18→19→20→21` testimony and reproduce the already-saved external
+  targets. The no-repair control reproduces each original missing-at-eighteen
+  abstention and partial walk. The prospectively fixed wrong chain follows its
+  native claims and becomes cyclic rather than being repaired by an oracle.
+  These are implementation checks on consumed records, not a new cohort or a
+  new learning-performance result. All forty v0.63 cases remain unanswered and
+  ungraded.
+- **IMPLEMENTED-EXPERIMENTAL:** A separate private-copy v0.64 sibling preserves
+  the same twenty-five v0.58 lessons and correct v0.61 operand-order instruction
+  in every role, then installs only three role-specific successor claim or
+  prompt slots. It uses strict 0–21 request, answer and step types without
+  editing the old bounded modules or manifests. Its read-only route retains the
+  original/effective request, order and operand lookups, addition binding,
+  counting rule, every native successor claim/evidence reference, complete
+  partial walk and blocking lookup. Missing, conflicting, invalid, unsupported
+  and cyclic testimony fails closed; `math:integer:21` has no synthesized
+  successor. The exact trace verifier replays every field against the presented
+  private kernel. A separately immutable `.vsri` binds exact v0.63 protocol
+  bytes and extends its forty-three-file manifest with only three new sibling
+  sources. Freeze/replay install no lesson, answer no case, invoke no grader,
+  allocate no Attention and run no simulation. Existing 22/25/28/31/34/37/40/
+  43-file manifests and checkpoint formats remain unchanged. All `120` new
+  adapter tests, `920` focused math/archive tests and `1,644` full-suite tests
+  pass, including the existing checks of all seventeen legacy checkpoints.
+- **PROPOSED:** In one later, separate increment, execute exactly the frozen
+  forty cases in four distinct private roles. Save all 160 native response or
+  rejection records before any external arithmetic grade, then grade only the
+  128 valid original requests, retain every invalid and abstained case, require
+  exact complete taught/null equality and publish results bound to exact
+  `.vsrp` and `.vsri` bytes. Do not alter the adapter, testimony, cases,
+  controls or grader after observing responses.
+- **MISSING:** This implementation establishes no prospective repair effect,
+  causal self-repair, spontaneous rule discovery, generalized arithmetic,
+  mathematical understanding, authenticated teaching, independent replication
+  or cheaper later learning. No private lesson is canonically installed. The
+  physical acquisition/harm blocker, unexecuted v0.53 study, v0.54/v0.55
+  quarantine, four mandatory N requirements and v0.45 Contradiction negative
+  result remain unchanged. No canonical Resolution/promotion, autonomous policy
+  rewrite, `T_g`, thermodynamic behavioral control, semantic understanding,
+  mind, consciousness or complete-agency authority is added.
+
+See [Private terminal-successor repair adapter](docs/TERMINAL_SUCCESSOR_REPAIR_ADAPTER.md)
+for the exact versioned types, native routing, isolation, replay and immutable
+implementation boundary.
 
 ## Access-pressure integration
 

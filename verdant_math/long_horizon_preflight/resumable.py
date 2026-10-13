@@ -288,3 +288,46 @@ def resume(output_dir):
         _error("No immutable experiment manifest to resume")
     with _exclusive(root):
         return _run(root)
+
+def main(argv=None):
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="action", required=True)
+    begin = sub.add_parser("start", help="Begin new immutable native cohort")
+    begin.add_argument("output_dir")
+    begin.add_argument("--cycles", type=int, default=1000)
+    cont = sub.add_parser("resume", help="Validate and resume interrupted cohort")
+    cont.add_argument("output_dir")
+    progress = sub.add_parser("status", help="Read milestones without running cycles")
+    progress.add_argument("output_dir")
+    args = parser.parse_args(argv)
+    if args.action == "start":
+        print(start(args.output_dir, cycles=args.cycles), flush=True)
+    elif args.action == "resume":
+        print(resume(args.output_dir), flush=True)
+    else:
+        root = Path(args.output_dir)
+        manifest = _parse(root / "manifest.json")
+        if manifest != _manifest(manifest["cycles_per_arm"], tuple(manifest["seeds"])):
+            _error("Frozen manifest or source code has changed")
+        with _exclusive(root):
+            for seed in manifest["seeds"]:
+                for role in manifest["roles"]:
+                    last = None
+                    previous = None
+                    missing = False
+                    for n in manifest["milestones"]:
+                        path = _stage_path(root, seed, role, n)
+                        if path.exists():
+                            if missing:
+                                _error("Found later milestone after a missing predecessor")
+                            _, _, previous = _load_stage(path, seed, role, n, previous)
+                            last = n
+                        else:
+                            missing = True
+                    print(f"seed={seed} role={role} durable_cycle={last} / {manifest['cycles_per_arm']}")
+            print("complete_response_batch=" + str((root / "responses.json").is_file()))
+
+
+if __name__ == "__main__":
+    main()

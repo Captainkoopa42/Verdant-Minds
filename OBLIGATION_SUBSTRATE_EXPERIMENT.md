@@ -1,4 +1,4 @@
-# Obligation Substrate v0.64
+# Obligation Substrate v0.65
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -3244,6 +3244,58 @@ See [Private terminal-successor repair adapter](docs/TERMINAL_SUCCESSOR_REPAIR_A
 for the exact versioned types, native routing, isolation, replay and immutable
 implementation boundary.
 
+## v0.65 claim boundary
+
+- **OBSERVED:** The exact forty-case v0.63 cohort has now been executed once
+  through the exact v0.64 private adapter. All 160 response/rejection records
+  were durably saved before 128 external grades of valid original requests.
+  Per role, taught repair and exact null each produce `20` correct, `0`
+  incorrect, `12` abstained and `8` invalid records; no repair produces `16`
+  correct, `0` incorrect, `16` abstained and `8` invalid records; the fixed
+  wrong chain produces `16` correct, `2` incorrect, `14` abstained and `8`
+  invalid records. Taught/null records are completely equal apart from outer
+  role. The supplied chain adds four correct responses over no repair exactly
+  in the predeclared repair-supported group. All twelve declared-ceiling cases
+  still abstain at missing 21 successors. Thus the narrow supplied-repair
+  effect is observed, while the broader claim that three supplied links repair
+  addition generally is falsified within this cohort. The full denominators
+  remain `20/32` valid and `20/40` enrolled, never supported-only `20/20`.
+- **IMPLEMENTED-EXPERIMENTAL:** A separate v0.65 sibling validates the exact
+  `.vsrp`, `.vsri`, bound artifacts, checkpoint and 49-file code manifest,
+  creates four distinct private role copies, and retains original/effective
+  requests, complete native routes, nested addition/counting replies, supplied
+  claims/evidence, partial walks, blocks and typed invalid errors. A separately
+  immutable 1,484,088-byte `.vsrb` stores every response before any grade. A
+  separately immutable 37,357-byte `.vsrr` binds those exact bytes and the 128
+  later v0.58-rule grades. Reload validates both without teaching, responding,
+  walking or grading again. Source, canonical, simulation, Attention and
+  governance state remain unchanged; old modules, artifacts, manifests and
+  checkpoint formats remain byte-unchanged. All `140` new evaluation tests,
+  `1,060` focused math/archive tests and `1,784` full-suite
+  tests pass, including the existing checks of all seventeen legacy
+  checkpoints.
+- **PROPOSED:** Freeze one later protocol-only bounded retention/transfer study
+  only after auditing that genuinely fresh requests remain in the declared
+  0–21 domain. It may prospectively compare zero-new-lesson reuse of the exact
+  supplied repair against matched fresh no-repair, exact-null and fixed-wrong
+  controls, with teaching cost and checkpoint lineage frozen before responses.
+  This could characterize narrow reuse only. If no disjoint cases remain,
+  pause rather than recycle targets or silently expand the domain.
+- **MISSING:** The repair was selected and supplied by a teacher; it is not
+  Verdant's causal self-repair or spontaneous discovery. This result establishes
+  no generalized arithmetic, mathematical understanding, authenticated
+  teaching, source independence, independent replication or cheaper later
+  learning. No private lesson is canonically installed. The physical
+  acquisition/harm blocker, unexecuted v0.53 study, v0.54/v0.55 quarantine,
+  four mandatory N requirements and v0.45 Contradiction negative result remain
+  unchanged. No canonical Resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency authority is added.
+
+See [Frozen terminal-successor repair evaluation](docs/TERMINAL_SUCCESSOR_REPAIR_EVALUATION.md)
+for the complete cohort result, response barrier, immutable identities,
+falsification and exact claim limits.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3629,3 +3681,16 @@ case/group/pair/type/request/route/instruction/mapping/successor/lesson/
 checkpoint/grade/code/source/authority substitutions. They preserve abstention
 as evidence and establish neither spontaneous discovery, broad arithmetic,
 source authentication, independent replication nor learning efficiency.
+Terminal-successor evaluation tests additionally target exact v0.63/v0.64
+byte and 49-file code pairing, four distinct private copies, durable complete
+160-record capture before 128 external grades, original-request grading, full
+40-enrolled/32-valid denominators, typed-invalid retention, exact complete
+taught/null equality, supplied-link and wrong-link traces, missing-at-21 and
+cyclic evidence, static replay without teaching/responding/walking/grading,
+source/canonical/simulation/Attention/governance isolation, interrupted or
+partial publication, stale/foreign/swapped frozen inputs, and fully rehashed
+case/group/pair/type/request/route/instruction/mapping/successor/lesson/
+checkpoint/record/grade/code/source/authority substitutions. They preserve the
+bounded supplied-repair effect and the broader-repair falsification without
+claiming self-repair, discovery, generalized arithmetic, source authentication,
+independent replication or learning efficiency.

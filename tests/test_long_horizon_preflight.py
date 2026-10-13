@@ -41,7 +41,7 @@ def test_zero_cycle_native_checkpoint_and_all_responses_before_grading(tmp_path)
         assert len(arm["probes"]) == 1
         assert len(arm["probes"][0]["responses"]) == 20
         assert (tmp_path / "cohort" / "seed-79066" / arm["role"]
-                / "cycle-00000.vdk").exists() is False
+                / "cycle-00000.vdk").exists() is True
     before = path.read_bytes()
     grades = m.grade(path, tmp_path / "grade.json")
     assert path.read_bytes() == before

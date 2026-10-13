@@ -1,4 +1,4 @@
-# Obligation Substrate v0.62
+# Obligation Substrate v0.63
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -3144,6 +3144,56 @@ routing behavior, consumed-case checks, implementation hashes and exclusions.
 See [Frozen operand-order evaluation](docs/OPERAND_ORDER_EVALUATION.md) for
 the exact cohort result, durable barrier, artifact hashes, replay boundaries
 and exclusions.
+
+## v0.63 claim boundary
+
+- **OBSERVED:** The exact v0.62 taught arm contains eight retained
+  `terminal_link` abstentions. Each follows the frozen order route, preserves
+  zero to two old native successor steps, reaches value eighteen and stops at a
+  genuinely absent `math_successor` lookup with no fabricated blocking claim.
+  Their already-saved external grades require answers twenty or twenty-one;
+  exact-null records remain matched. No new response, repair effect or grade is
+  observed in v0.63. A fresh-case audit also finds that every unchanged v0.58
+  request at or below eighteen that crosses this boundary has an original or
+  one-transposition form already consumed. That limitation is preserved rather
+  than reusing a target under another order.
+- **IMPLEMENTED-EXPERIMENTAL:** A separate versioned protocol-only sibling
+  freezes strict 0–21 request/answer/step requirements, exact supplied
+  `18→19→20→21` testimony, a fixed wrong chain, no-repair and exact-null
+  controls, and forty still-unanswered typed cases per future role. The cases
+  retain ten pre-boundary controls, six new-domain zero identities, four fresh
+  repair-path inputs, twelve declared-ceiling inputs and eight invalid inputs.
+  Every raw request and possible one-transposition form is disjoint from the
+  five consumed math cohorts, all v0.60 cases and thirty-one recorded/actual
+  probes. The immutable `.vsrp` binds exact v0.56–v0.62 bytes, all eight source
+  trace/grade anchors, seven probe files, a fresh unexposed source checkpoint
+  and a forty-three-file manifest. Freeze/replay install no lesson, answer no
+  case, invoke no grader, allocate no Attention and run no simulation. Rehashed
+  domain/testimony/control/case/exclusion/anchor/artifact/code/source/authority
+  changes fail closed. Existing 22/25/28/31/34/37/40-file manifests and old
+  checkpoint formats remain unchanged. All `123` new protocol tests, `800`
+  focused math/archive tests and `1,524` full-suite tests pass, including the
+  existing checks of all seventeen legacy checkpoints.
+- **PROPOSED:** Implement one later private-copy repair adapter and native trace
+  verifier as another versioned sibling. It must consume the exact `.vsrp`,
+  preserve the 25 v0.58 lessons and correct v0.61 order instruction in every
+  role, install only the role's three successor slots, support native values no
+  wider than twenty-one, retain every partial/blocking reference and expose no
+  cohort runner or grader. Only after that implementation is separately frozen
+  may a later increment execute the forty cases per role and preserve all 160
+  records before 128 external grades.
+- **MISSING:** The declaration establishes no repair effect, causal self-repair,
+  spontaneous rule discovery, generalized arithmetic, mathematical
+  understanding, authenticated teaching, independent replication or cheaper
+  later learning. No private lesson is canonically installed. The physical
+  acquisition/harm blocker, unexecuted v0.53 study, v0.54/v0.55 quarantine,
+  four mandatory N requirements and v0.45 Contradiction negative result remain
+  unchanged. No canonical Resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency authority is added.
+
+See [Prospective terminal-successor repair protocol](docs/TERMINAL_SUCCESSOR_REPAIR_PROTOCOL.md)
+for the exact domain, testimony, fresh cases, artifact identity and exclusions.
 
 ## Access-pressure integration
 

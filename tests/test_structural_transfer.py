@@ -152,3 +152,20 @@ def test_guard_original_evidence_digests():
         "6f7fc01cfa4f380fd3b7f09e10fb0de4631cc1b5c1071823e59e864b6aad7f26")
     assert hashlib.sha256((base / "evaluation.vsrr").read_bytes()).hexdigest() == (
         "e704ee573b92f6bd9979502ae92d73f9f7f75a6928e1eb6e3a63d4900cfbea0f")
+
+
+def test_200_native_cycles_per_arm_and_durable_grades(tmp_path):
+    # Small genuine time-ordered native teaching run (5 private roles, one seed).
+    root = tmp_path / "two-hundred"
+    responses = t.start(root, cycles=200, seeds=(79101,))
+    assert responses.is_file()
+    assert t.resume(root).read_bytes() == responses.read_bytes()
+    receipt = json.loads(t.grade(root).read_bytes())
+    rows = {x["role"]: x for x in receipt["grading"]}
+    assert len(rows) == 5
+    assert all(x["probes"][-1]["cycle"] == 200 for x in rows.values())
+    assert rows["progressive"]["probes"][-1]["correct"] >= 2
+    assert rows["exact_null"]["probes"] == rows["progressive"]["probes"]
+    assert rows["no_rule"]["probes"][-1]["correct"] == 0
+    assert receipt["computed_after_durable_responses"] is True
+    assert receipt["response_sha256"] == t.util.digest(responses.read_bytes())

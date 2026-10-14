@@ -70,16 +70,20 @@ def advance_q_from_new_p(
     deferred = []
     promoted = []
 
-    # Waiting until two Ps exist avoids creating empty one-P interactions,
-    # but later newly-promoted sources will inspect all available prior Ps.
-    available_count = sum(
-        kernel.structure_is_available(sid) for sid in kernel.state.structures
+    # Wait for at least three independently earned Ps, the native Q minimum.
+    # This ensures three Ps promoted across separate sections still receive
+    # three distinct native interaction inspections, not only the newest one.
+    # Each P source is processed ONCE under this protocol; never manufacture
+    # recurrence by replaying an old source on every curriculum boundary.
+    available_ids = sorted(
+        sid for sid in kernel.state.structures
+        if kernel.structure_is_available(sid)
     )
-    for sid in sorted(newly_promoted_p_ids):
-        if sid in prior_sources:
-            raise ValueError("Q research policy refuses repeated P source interaction")
-        if available_count < 2:
-            continue
+    available_count = len(available_ids)
+    pending_sources = [
+        sid for sid in available_ids if sid not in prior_sources
+    ] if available_count >= 3 else []
+    for sid in pending_sources[:maximum_interactions]:
         result = interaction.interact(kernel, sid)
         interactions.append(dict(
             source_structure_id=sid,
@@ -149,6 +153,8 @@ def advance_q_from_new_p(
         q_promotion_cap=maximum_q_promotions,
         native_p_sources=list(sorted(newly_promoted_p_ids)),
         native_p_available=available_count,
+        pending_unseen_p_sources=len(pending_sources),
+        unprocessed_sources_due_to_interaction_cap=max(0, len(pending_sources)-len(interactions)),
         interactions=interactions,
         hierarchy_observations=observations,
         eligible_q_at_boundary=len(eligible),

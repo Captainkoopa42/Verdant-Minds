@@ -129,3 +129,19 @@ def test_no_reuse_of_output_directory(tmp_path):
     for arm in v.ARMS:
         assert (root / "stages" / "seed-81001" / arm / "001.vdk").is_file()
         assert (root / "stages" / "seed-81001" / arm / "001.json").is_file()
+
+
+
+def test_preview_and_verified_report(tmp_path, capsys):
+    pack = tmp_path / "input.vcpack"
+    pack.write_bytes(_pack())
+    v.preview(pack, limit_sections=1)
+    preview_output = capsys.readouterr().out
+    assert "Teaching experiences: 2" in preview_output
+    root = tmp_path / "cohort"
+    v.start(root, pack, limit_sections=1, seeds=(81001,))
+    v.report(root)
+    message = capsys.readouterr().out
+    assert "experiences native_cycles" in message
+    assert "v5x_observe" in message
+    assert "DIAGNOSTICS ARE NOT GRADES" in message

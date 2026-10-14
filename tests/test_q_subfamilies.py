@@ -121,3 +121,28 @@ def test_crosslinks_do_not_create_fake_three_member_group():
 def test_no_subgroup_from_unweighted_missing_paper_evidence():
     graph, scores, _ = _group_graph((4, 4, 4))
     assert _discover(graph, {}) == ()
+
+
+
+def test_checkpoint_audit_read_only_with_no_promoted_p(tmp_path):
+    from verdant_integrated.q_subfamily_audit import audit_checkpoint
+    from verdant_kernel import VerdantKernel, save_checkpoint
+
+    original = VerdantKernel(seed=91802, state_dim=16,
+                             run_label="bounded-q-read-only")
+    p = tmp_path / "empty.vdk"
+    save_checkpoint(p, original.snapshot())
+    frozen = p.read_bytes()
+    report = audit_checkpoint(p)
+    assert report["promoted_p"] == 0
+    assert report["promoted_q"] == 0
+    assert report["component_reports"] == []
+    assert report["no_native_mutation"] is True
+    assert p.read_bytes() == frozen
+
+
+def test_hierarchy_code_is_in_study_manifest_source_lock():
+    from verdant_integrated import vast
+    assert "verdant_hierarchy/pipeline.py" in vast._SOURCE_FILES
+    assert "verdant_interaction/pipeline.py" in vast._SOURCE_FILES
+    assert "verdant_integrated/q_subfamily_audit.py" in vast._SOURCE_FILES

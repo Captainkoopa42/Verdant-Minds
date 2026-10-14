@@ -1,13 +1,6 @@
 name: Vast Integrated Full-Heartbeat Unit Validation
 
 on:
-  push:
-    branches:
-      - test/vast-integrated-development-v0
-    paths:
-      - "verdant_integrated/**"
-      - "tests/test_vast_integrated.py"
-      - ".github/workflows/vast-integrated-validation.yml"
   workflow_dispatch:
 
 jobs:

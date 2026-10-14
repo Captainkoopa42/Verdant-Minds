@@ -1,13 +1,5 @@
 name: Relational Abstraction Transfer Validation
 on:
-  push:
-    branches:
-      - test/relational-abstraction-transfer-v0
-    paths:
-      - "verdant_hierarchy/relational_abstraction.py"
-      - "verdant_integrated/relational_transfer_audit.py"
-      - "tests/test_relational_abstraction_transfer.py"
-      - ".github/workflows/relational-abstraction-transfer-validation.yml"
   workflow_dispatch:
 jobs:
   native-role-transfer:
@@ -21,7 +13,7 @@ jobs:
       - name: Install source-locked dependencies
         run: python -m pip install -r requirements-lock.txt
       - name: Check experimental syntax
-        run: python -m compileall -q verdant_hierarchy/relational_abstraction.py tests/test_relational_abstraction_transfer.py
+        run: python -m compileall -q verdant_hierarchy/relational_abstraction.py verdant_integrated/relational_transfer_audit.py tests/test_relational_abstraction_transfer.py
       - name: Run native Council Q and exact-output transfer tests
         env:
           OPENBLAS_NUM_THREADS: "1"

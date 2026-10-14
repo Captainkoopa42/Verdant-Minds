@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 import sys
 
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[1]
 _WORKBENCH = _ROOT / "workbench" / "backend"
 if str(_WORKBENCH) not in sys.path:
     sys.path.insert(0, str(_WORKBENCH))

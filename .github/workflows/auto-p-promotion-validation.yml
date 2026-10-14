@@ -1,0 +1,32 @@
+name: Auto-P Native Promotion Integration Validation
+
+on:
+  push:
+    branches:
+      - test/vast-auto-p-promotion-v0
+    paths:
+      - "verdant_integrated/**"
+      - "tests/test_vast_integrated.py"
+      - ".github/workflows/auto-p-promotion-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  focused-synthetic-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install locked dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: Syntax verification
+        run: python -m compileall -q verdant_integrated tests/test_vast_integrated.py
+      - name: Bounded synthetic preflight (never user curriculum)
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: python -m pytest -q tests/test_vast_integrated.py tests/test_structures_phase.py

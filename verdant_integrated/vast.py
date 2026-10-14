@@ -34,7 +34,7 @@ from verdant_obligations.detection import DependencyGapDetector  # noqa: E402
 from verdant_obligations.contradictions import ContradictionObligationDetector  # noqa: E402
 from verdant_thermodynamics.models import ThermodynamicState  # noqa: E402
 
-VERSION = "vast_auto_pq_development_v0.3"
+VERSION = "vast_q_bounded_subfamilies_v0.4"
 ARMS = ("v5", "v5x_observe", "v5x_auto_p", "v5x_auto_pq", "kernel_only")
 DEFAULT_SEEDS = (81001, 81002, 81003)
 _SOURCE_FILES = (
@@ -51,6 +51,8 @@ _SOURCE_FILES = (
     "verdant_workspace/pipeline.py",
     "verdant_plasticity/pipeline.py",
     "verdant_structures/pipeline.py",
+    "verdant_interaction/pipeline.py",
+    "verdant_hierarchy/pipeline.py",
     "verdant_compilation/pipeline.py",
     "verdant_obligations/detection.py",
     "verdant_obligations/contradictions.py",
@@ -204,6 +206,8 @@ def _manifest(pack_bytes, sections, seeds, state_dim):
             obligation_inquiry_executed=False,
             bounded_native_council_p_promotion_in_auto_arm=True,
             bounded_native_q_interaction_observation_and_council_promotion=True,
+            weighted_oversize_subfamilies_requires_distinguishable_boundaries=True,
+            uniform_oversized_cliques_not_force_partitioned=True,
             autonomous_learning_demonstrated=False,
             canonical_simulation_promotion=False,
             automatic_grading=False,

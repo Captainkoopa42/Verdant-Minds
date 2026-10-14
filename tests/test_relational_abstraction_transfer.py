@@ -118,3 +118,29 @@ def test_exact_only_no_false_claims_from_strict_threshold(native_fixture):
     assert not r["native_structure_or_q_mutation"]
     assert r["construction_ignored_in_query_cost"]
     assert not r["learned_semantic_equivalence"]
+
+
+
+def test_saved_checkpoint_transfer_audit_is_readonly_and_verdict_exact(native_fixture, tmp_path):
+    from verdant_integrated.relational_transfer_audit import audit_checkpoint
+
+    kernel, ids, qid = fresh(native_fixture)
+    path = tmp_path / "original.vdk"
+    save_checkpoint(path, kernel.snapshot())
+    raw = path.read_bytes()
+    old_fingerprint = kernel.fingerprint()
+
+    results = audit_checkpoint(path, max_queries=7)
+    assert results["promoted_p"] == 7
+    assert results["promoted_q"] == 1
+    assert results["query_count"] == 7
+    assert results["all_query_verdicts_preserved"]
+    assert results["native_fingerprint"] == old_fingerprint
+    assert results["checkpoint_modified"] is False
+    assert all(q["exactly_identical_verdicts"] for q in results["queries"])
+    assert path.read_bytes() == raw
+
+    with pytest.raises(ValueError):
+        audit_checkpoint(path, max_queries=0)
+    with pytest.raises(ValueError):
+        audit_checkpoint(path, max_queries=101)

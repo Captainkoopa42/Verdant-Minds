@@ -39,7 +39,9 @@ def test_one_section_full_v5_and_v5x_observer_equivalent(tmp_path):
     assert v.resume(root).read_bytes() == original
     assert len(json.loads(original)["arms"]) == 3
     assert [x["arm"] for x in json.loads(original)["arms"]] == list(v.ARMS)
-    assert all(x["cycle"] == 2 for x in json.loads(original)["arms"])
+    assert all(x["teaching_experiences"] == 2 for x in json.loads(original)["arms"])
+    assert json.loads(original)["arms"][0]["native_engine_cycles"] > 2
+    assert json.loads(original)["arms"][2]["native_engine_cycles"] == 2
     canonical = json.loads((root / "stages" / "seed-81001" / "v5" / "001.json").read_bytes())
     diagnostics = canonical["observations"]
     assert diagnostics["probe_type"] == "read_only_compilation_inspection"
@@ -60,7 +62,7 @@ def test_resumption_after_section_checkpoint(tmp_path, monkeypatch):
 
     def stop_in_second_section(self, kernel, command):
         if (not interrupted[0] and
-            kernel.state.cycle == 2 and
+            len(kernel.state.processed_event_keys) == 2 and
             command.event_key == "tiny-2-1"):
             interrupted[0] = True
             raise InterruptedError("Intentional fault")
@@ -110,7 +112,7 @@ def test_rejects_grammar_scaffold_and_duplicated_event_keys(tmp_path):
         v._plan(v._json(raw), 1)
     raw = json.loads(_pack())
     raw["sections"][0]["items"][1]["event_key"] = raw["sections"][0]["items"][0]["event_key"]
-    with pytest.raises(v.StudyIntegrityError, match="Duplicate"):
+    with pytest.raises(ValueError, match="Duplicate"):
         v._plan(v._json(raw), 1)
     with pytest.raises(ValueError, match="exceeds"):
         v._plan(_pack(), 2)

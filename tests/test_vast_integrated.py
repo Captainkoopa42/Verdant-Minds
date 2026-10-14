@@ -349,3 +349,18 @@ def test_q_waits_for_three_native_p_and_uses_native_council():
         advance_q_from_new_p(kernel, newly_promoted_p_ids=(family[0], family[0]))
     with pytest.raises(ValueError, match="native P"):
         advance_q_from_new_p(kernel, newly_promoted_p_ids=("not-a-P",))
+
+
+
+def test_five_arm_q_receipt_tamper_fails_closed(tmp_path):
+    pack = tmp_path / "input.vcpack"
+    pack.write_bytes(_pack())
+    root = tmp_path / "q-integrity"
+    v.start(root, pack, limit_sections=1, seeds=(81001,))
+    target = v._stage_path(root, 81001, "v5x_auto_pq", 1).with_suffix(".json")
+    receipt = v._load_json(target)
+    assert receipt["q_promotion"] is not None
+    receipt["q_promotion"]["native_p_sources"] = ["fabricated-p"]
+    target.write_bytes(v._json(receipt))
+    with pytest.raises(v.StudyIntegrityError, match="Q did not receive exactly"):
+        v.resume(root)

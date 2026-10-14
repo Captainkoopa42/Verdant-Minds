@@ -1,14 +1,5 @@
 name: Bounded Q Subfamilies Validation
 on:
-  push:
-    branches:
-      - test/vast-q-bounded-subfamilies-v0
-    paths:
-      - "verdant_hierarchy/pipeline.py"
-      - "verdant_integrated/**"
-      - "tests/test_q_subfamilies.py"
-      - "tests/test_hierarchy_phase.py"
-      - ".github/workflows/q-bounded-subfamily-validation.yml"
   workflow_dispatch:
 jobs:
   focused-adversarial:

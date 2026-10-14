@@ -287,8 +287,9 @@ def _load_stage(root, seed, arm, number, predecessor, expected_cycle, expected_k
             _fail("Checkpoint bytes do not roundtrip")
         if kernel.fingerprint() != receipt["fingerprint"]:
             _fail("Canonical checkpoint fingerprint mismatch")
-        if kernel.state.cycle != expected_cycle:
-            _fail("Checkpoint cycle count differs from compiled curriculum")
+        if (kernel.state.cycle < expected_cycle or
+            (number == 0 and kernel.state.cycle != 0)):
+            _fail("Checkpoint engine cycle count is below teaching-experience count")
         for key in expected_keys:
             if key not in kernel.state.processed_event_keys:
                 _fail("A declared teaching event is missing")
@@ -373,6 +374,7 @@ def _arm(root, seed, arm, sections, state_dim):
         section = sections[number - 1]
         for command in section["commands"]:
             before_cycle = kernel.state.cycle
+            before_events = len(kernel.state.processed_event_keys)
             if arm == "kernel_only":
                 result = kernel.apply_experience(command)
             else:
@@ -381,10 +383,14 @@ def _arm(root, seed, arm, sections, state_dim):
                     _fail("Native developmental semantic firewall failed")
                 if arm == "v5x_observe" and result.thermodynamic_control is not None:
                     _fail("Behavioral thermodynamic control must remain disabled")
-            if result.replayed or kernel.state.cycle != before_cycle + 1:
-                _fail(f"Expected charged teaching: arm={arm} event={command.event_key} "
+            if (result.replayed or kernel.state.cycle <= before_cycle
+                or len(kernel.state.processed_event_keys) != before_events + 1
+                or command.event_key not in kernel.state.processed_event_keys):
+                _fail(f"Expected fresh charged teaching: arm={arm} event={command.event_key} "
                       f"replayed={result.replayed} before={before_cycle} "
-                      f"after={kernel.state.cycle}")
+                      f"after={kernel.state.cycle} "
+                      f"processed_before={before_events} "
+                      f"processed_after={len(kernel.state.processed_event_keys)}")
         observation = _inspect(kernel, section)
         thermo = None
         if arm == "v5x_observe":
@@ -395,7 +401,8 @@ def _arm(root, seed, arm, sections, state_dim):
         print(f"Saved: seed={seed} arm={arm} section={number}/{len(sections)} "
               f"cycle={kernel.state.cycle}", flush=True)
     return dict(seed=seed, arm=arm, sections=len(sections),
-                cycle=kernel.state.cycle, fingerprint=kernel.fingerprint(),
+                teaching_experiences=len(kernel.state.processed_event_keys),
+                native_engine_cycles=kernel.state.cycle, fingerprint=kernel.fingerprint(),
                 semantic=dict(
                     concepts=tuple(sorted(kernel.state.concepts)),
                     relations=tuple(sorted(kernel.state.relations)),

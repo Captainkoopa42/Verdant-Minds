@@ -37,11 +37,11 @@ def test_one_section_full_v5_and_v5x_observer_equivalent(tmp_path):
     output = v.start(root, pack, limit_sections=1, seeds=(81001,))
     original = output.read_bytes()
     assert v.resume(root).read_bytes() == original
-    assert len(json.loads(original)["arms"]) == 3
+    assert len(json.loads(original)["arms"]) == 4
     assert [x["arm"] for x in json.loads(original)["arms"]] == list(v.ARMS)
     assert all(x["teaching_experiences"] == 2 for x in json.loads(original)["arms"])
     assert json.loads(original)["arms"][0]["native_engine_cycles"] > 2
-    assert json.loads(original)["arms"][2]["native_engine_cycles"] == 2
+    assert json.loads(original)["arms"][3]["native_engine_cycles"] == 2
     canonical = json.loads((root / "stages" / "seed-81001" / "v5" / "001.json").read_bytes())
     diagnostics = canonical["observations"]
     assert diagnostics["probe_type"] == "read_only_compilation_inspection"
@@ -125,7 +125,7 @@ def test_no_reuse_of_output_directory(tmp_path):
     v.start(root, pack, limit_sections=1, seeds=(81001,))
     with pytest.raises(FileExistsError):
         v.start(root, pack, limit_sections=1, seeds=(81001,))
-    # All three arms contain independent native checkpoints.
+    # All four arms contain independent native checkpoints.
     for arm in v.ARMS:
         assert (root / "stages" / "seed-81001" / arm / "001.vdk").is_file()
         assert (root / "stages" / "seed-81001" / arm / "001.json").is_file()
@@ -144,4 +144,62 @@ def test_preview_and_verified_report(tmp_path, capsys):
     message = capsys.readouterr().out
     assert "experiences native_cycles" in message
     assert "v5x_observe" in message
+    assert "v5x_auto_p" in message
     assert "DIAGNOSTICS ARE NOT GRADES" in message
+
+
+def test_auto_p_respects_gates_and_uses_native_council(tmp_path):
+    import hashlib
+    from verdant_development import VerdantDevelopmentPipeline
+    from verdant_kernel import EvidenceKind, ExperienceCommand, VerdantKernel
+    from verdant_integrated.p_promotion import promote_eligible_p
+
+    kernel = VerdantKernel(seed=1403, state_dim=48, run_label="automatic-p-test")
+    development = VerdantDevelopmentPipeline()
+
+    def command(i):
+        return ExperienceCommand(
+            event_key=f"auto-triad-{i}",
+            source_ref="auto-p:supplied-testimony",
+            modality="text",
+            payload_sha256=hashlib.sha256(str(i).encode()).hexdigest(),
+            feature_vector=(1.0, 0.0, 0.0),
+            concept_labels=("kren", "tar", "vel"),
+            confidence=1.0,
+            semantic_evidence_kind=EvidenceKind.TESTIMONY,
+            semantic_evidence_details={"author_supplied": True},
+            metadata={"context_id": f"context-{i % 2}"},
+        )
+
+    for i in range(3):
+        development.advance(kernel, command(i))
+    before = kernel.fingerprint()
+    refused = promote_eligible_p(kernel, maximum=4)
+    assert refused["promoted"] == []
+    assert kernel.fingerprint() == before
+    for i in range(3, 6):
+        development.advance(kernel, command(i))
+    assert any(c.status.value == "eligible"
+               for c in kernel.state.structure_candidates.values())
+    original_semantics = (
+        tuple(sorted(kernel.state.concepts)),
+        tuple(sorted(kernel.state.relations)),
+        tuple(sorted(kernel.state.claims)),
+        tuple(sorted(kernel.state.evidence)),
+    )
+    result = promote_eligible_p(kernel, maximum=4)
+    assert len(result["promoted"]) == 1
+    assert len(kernel.state.structures) == 1
+    assert len(kernel.state.structure_promotion_events) == 1
+    assert result["promoted"][0]["council_decision_event_id"]
+    after_semantics = (
+        tuple(sorted(kernel.state.concepts)),
+        tuple(sorted(kernel.state.relations)),
+        tuple(sorted(kernel.state.claims)),
+        tuple(sorted(kernel.state.evidence)),
+    )
+    assert after_semantics == original_semantics
+    again = promote_eligible_p(kernel, maximum=4)
+    assert not again["promoted"]
+    with pytest.raises(ValueError):
+        promote_eligible_p(kernel, maximum=9)

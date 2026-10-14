@@ -24,6 +24,7 @@ from verdant_workbench.curriculum import (  # noqa: E402
     parse_curriculum_pack,
 )
 from verdant_compilation import VerdantCompilationPipeline  # noqa: E402
+from verdant_integrated.p_promotion import promote_eligible_p  # noqa: E402
 from verdant_development import VerdantDevelopmentPipeline  # noqa: E402
 from verdant_development.v5x import V5XDevelopmentPipeline  # noqa: E402
 from verdant_kernel import ExperienceCommand, VerdantKernel, checkpoint_bytes  # noqa: E402
@@ -32,12 +33,13 @@ from verdant_obligations.detection import DependencyGapDetector  # noqa: E402
 from verdant_obligations.contradictions import ContradictionObligationDetector  # noqa: E402
 from verdant_thermodynamics.models import ThermodynamicState  # noqa: E402
 
-VERSION = "vast_full_heartbeat_preflight_v0.1"
-ARMS = ("v5", "v5x_observe", "kernel_only")
+VERSION = "vast_auto_p_promotion_v0.2"
+ARMS = ("v5", "v5x_observe", "v5x_auto_p", "kernel_only")
 DEFAULT_SEEDS = (81001, 81002, 81003)
 _SOURCE_FILES = (
     "requirements-lock.txt",
     "verdant_integrated/vast.py",
+    "verdant_integrated/p_promotion.py",
     "workbench/backend/verdant_workbench/curriculum.py",
     "verdant_kernel/kernel.py",
     "verdant_kernel/models.py",
@@ -198,7 +200,8 @@ def _manifest(pack_bytes, sections, seeds, state_dim):
             v5x_thermodynamic_control=False,
             obligation_detectors_inspection_only=True,
             obligation_inquiry_executed=False,
-            governed_p_q_promotion_executed=False,
+            bounded_native_council_p_promotion_in_auto_arm=True,
+            governed_q_promotion_executed=False,
             autonomous_learning_demonstrated=False,
             canonical_simulation_promotion=False,
             automatic_grading=False,
@@ -219,6 +222,11 @@ def _metrics(kernel):
         plasticity_associations=len(state.plasticity_associations),
         structures=len(state.structures),
         structure_candidates=len(state.structure_candidates),
+        eligible_structure_candidates=sum(
+            c.status.value == "eligible" for c in state.structure_candidates.values()
+        ),
+        structure_promotion_events=len(state.structure_promotion_events),
+        council_decisions=len(state.council_decisions),
         layered_structures=len(state.layered_structures),
         workspace_items=len(state.workspace_items),
         obligation_kernels=len(state.obligation_kernels),
@@ -295,13 +303,32 @@ def _load_stage(root, seed, arm, number, predecessor, expected_cycle, expected_k
             _inspect(kernel, section) if section is not None else None
         ):
             _fail("Read-only stage inspection differs from checkpoint")
+        promotion = receipt.get("p_promotion")
+        if (arm != "v5x_auto_p" or number == 0):
+            if promotion is not None:
+                _fail("Unexpected auto-P promotion receipt in control arm")
+        else:
+            if not isinstance(promotion, dict) or promotion.get("cap") != 4:
+                _fail("Missing or invalid auto-P scheduler receipt")
+            promoted = promotion.get("promoted")
+            if not isinstance(promoted, list):
+                _fail("Invalid P promotion records")
+            for event in promoted:
+                structure = kernel.state.structures.get(event.get("structure_id"))
+                if structure is None:
+                    _fail("Promoted P structure is absent from native checkpoint")
+                if (structure.source_candidate_id != event.get("candidate_id") or
+                    structure.council_decision_event_id !=
+                        event.get("council_decision_event_id")):
+                    _fail("Auto-P native Council provenance mismatch")
+
     except (KeyError, ValueError, AttributeError, TypeError) as exc:
         raise StudyIntegrityError("Stage could not be validated") from exc
     return kernel, receipt, _digest(_json(receipt))
 
 
 def _save_stage(root, kernel, seed, arm, number, predecessor, observation,
-                compiled_sha256, thermodynamic_state):
+                compiled_sha256, thermodynamic_state, p_promotion=None):
     path = _stage_path(root, seed, arm, number)
     snap = checkpoint_bytes(kernel.snapshot())
     if checkpoint_bytes(VerdantKernel.from_state(load_checkpoint_bytes(snap)).snapshot()) != snap:
@@ -310,7 +337,8 @@ def _save_stage(root, kernel, seed, arm, number, predecessor, observation,
                    section_number=number, predecessor_sha256=predecessor,
                    checkpoint_sha256=_digest(snap), fingerprint=kernel.fingerprint(),
                    metrics=_metrics(kernel), section_compiled_sha256=compiled_sha256,
-                   observations=observation, last_thermodynamics=thermodynamic_state)
+                   observations=observation, last_thermodynamics=thermodynamic_state,
+                   p_promotion=p_promotion)
     # Fail closed if a power loss occurs between the immutable VDK and its receipt.
     _write_new(path.with_suffix(".vdk"), snap)
     _write_new(path.with_suffix(".json"), _json(receipt))
@@ -379,7 +407,7 @@ def _arm(root, seed, arm, sections, state_dim):
                 result = pipeline.advance(kernel, command)
                 if not result.semantic_firewall_held:
                     _fail("Native developmental semantic firewall failed")
-                if arm == "v5x_observe" and result.thermodynamic_control is not None:
+                if arm in ("v5x_observe", "v5x_auto_p") and result.thermodynamic_control is not None:
                     _fail("Behavioral thermodynamic control must remain disabled")
             if (result.replayed or kernel.state.cycle <= before_cycle
                 or len(kernel.state.processed_event_keys) != before_events + 1
@@ -389,13 +417,17 @@ def _arm(root, seed, arm, sections, state_dim):
                       f"after={kernel.state.cycle} "
                       f"processed_before={before_events} "
                       f"processed_after={len(kernel.state.processed_event_keys)}")
+        p_promotion = (
+            promote_eligible_p(kernel, maximum=4) if arm == "v5x_auto_p" else None
+        )
         observation = _inspect(kernel, section)
         thermo = None
-        if arm == "v5x_observe":
+        if arm in ("v5x_observe", "v5x_auto_p"):
             latest = pipeline._last_thermodynamics.get(kernel.state.identity.kernel_id)
             thermo = latest.model_dump(mode="json") if latest is not None else None
         prior_hash = _save_stage(root, kernel, seed, arm, number, prior_hash,
-                                 observation, section["compiled_sha256"], thermo)
+                                 observation, section["compiled_sha256"], thermo,
+                                 p_promotion=p_promotion)
         print(f"Saved: seed={seed} arm={arm} section={number}/{len(sections)} "
               f"cycle={kernel.state.cycle}", flush=True)
     return dict(seed=seed, arm=arm, sections=len(sections),
@@ -427,6 +459,8 @@ def _run(root):
             _fail("Observer-only V5-X changed canonical developmental state")
         if by_arm["v5"]["semantic"] != by_arm["kernel_only"]["semantic"]:
             _fail("Developmental heartbeat changed canonical semantic identities")
+        if by_arm["v5x_auto_p"]["semantic"] != by_arm["v5"]["semantic"]:
+            _fail("P promotion changed canonical semantic identities")
     data = dict(schema=VERSION, manifest_sha256=_digest(_json(manifest)),
                 pack_sha256=_digest(pack_bytes), arms=result,
                 conclusion="ungraded_staged_developmental_integrity_only")
@@ -521,8 +555,8 @@ def report(directory):
     if result["manifest_sha256"] != _digest(_json(manifest)):
         _fail("Results do not bind the immutable manifest")
     print("seed arm experiences native_cycles concepts relations claims "
-          "plasticity P_candidates P_structures Q_structures "
-          "dependency_gaps contradictions")
+          "plasticity P_candidates P_eligible P_structures P_promotions "
+          "Q_structures dependency_gaps contradictions")
     for entry in result["arms"]:
         stage = _load_json(_stage_path(
             root, entry["seed"], entry["arm"], entry["sections"]
@@ -537,7 +571,8 @@ def report(directory):
         print(entry["seed"], entry["arm"], entry["teaching_experiences"],
               m["cycle"], m["concepts"], m["relations"], m["claims"],
               m["plasticity_associations"], m["structure_candidates"],
-              m["structures"], m["layered_structures"],
+              m["eligible_structure_candidates"], m["structures"],
+              m["structure_promotion_events"], m["layered_structures"],
               obs["dependency_gap_candidates"], obs["contradiction_candidates"])
     print("DIAGNOSTICS ARE NOT GRADES. Obligation findings are read-only.")
     return root / "results.json"

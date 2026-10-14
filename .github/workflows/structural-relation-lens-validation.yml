@@ -1,0 +1,31 @@
+name: Structural Relation Lens Experimental Validation
+on:
+  push:
+    branches:
+      - test/structural-relation-lens-v0
+    paths:
+      - "verdant_interaction/relation_lens.py"
+      - "verdant_integrated/structural_lens_audit.py"
+      - "tests/test_structural_relation_lens.py"
+      - ".github/workflows/structural-relation-lens-validation.yml"
+  workflow_dispatch:
+jobs:
+  native-controlled-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned environment
+        run: python -m pip install -r requirements-lock.txt
+      - name: Syntax check only native research sources
+        run: python -m compileall -q verdant_interaction/relation_lens.py verdant_integrated/structural_lens_audit.py tests/test_structural_relation_lens.py
+      - name: Run matched native P/Q and adversarial baseline suite only
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: python -m pytest -q tests/test_structural_relation_lens.py tests/test_structure_interaction_phase.py tests/test_hierarchy_phase.py tests/test_q_subfamilies.py tests/test_vast_integrated.py

@@ -120,6 +120,82 @@ class VerdantHierarchyPipeline:
             components.append(tuple(sorted(component)))
         return tuple(sorted(components))
 
+
+    @staticmethod
+    def _bounded_subfamilies(
+        members: tuple[str, ...],
+        adjacency: dict[str, set[str]],
+        pair_scores: dict[tuple[str, str], list[float]],
+        *,
+        minimum_members: int,
+        maximum_members: int,
+    ) -> tuple[tuple[str, ...], ...]:
+        """Conservative weighted subfamilies inside an *oversized* P component.
+
+        Use mutual, near-best VERIFIED symbolic alignments, not IDs, original
+        training labels, arbitrary chunking, or low-confidence field matches.
+        A candidate must show a measured internal/external alignment margin.
+        Uniform cliques deliberately produce NO invented subdivisions.
+        """
+        if not minimum_members <= maximum_members:
+            raise ValueError("Invalid native Q member bounds")
+        if len(members) <= maximum_members:
+            return (members,) if len(members) >= minimum_members else ()
+        if len(members) > 128:
+            # Runtime bound; diagnosing very large components belongs to an
+            # explicit follow-on experiment, not unconstrained global search.
+            return ()
+
+        population = set(members)
+        strengths = {
+            tuple(sorted((a, b))): max(scores)
+            for (a, b), scores in pair_scores.items()
+            if scores and a in population and b in population and a != b
+        }
+        best_for = {
+            sid: max(
+                (strengths[tuple(sorted((sid, other)))]
+                 for other in adjacency.get(sid, ())
+                 if other in population and tuple(sorted((sid, other))) in strengths),
+                default=0.0,
+            )
+            for sid in members
+        }
+
+        near_best = 0.03
+        boundary_margin = 0.03
+        strong = {sid: set() for sid in members}
+        for (a, b), value in sorted(strengths.items()):
+            # A single reciprocal weak bridge must not join otherwise
+            # coherent families. There is no arbitrary chunk-size partition.
+            if (b in adjacency.get(a, ()) and a in adjacency.get(b, ())
+                and value >= best_for[a] - near_best
+                and value >= best_for[b] - near_best):
+                strong[a].add(b)
+                strong[b].add(a)
+
+        accepted = []
+        for group in VerdantHierarchyPipeline._components(strong):
+            if not minimum_members <= len(group) <= maximum_members:
+                continue
+            inside = set(group)
+            internal = [
+                value for (a, b), value in strengths.items()
+                if a in inside and b in inside
+            ]
+            external = [
+                value for (a, b), value in strengths.items()
+                if (a in inside) != (b in inside)
+            ]
+            if not internal:
+                continue
+            if sum(internal) / len(internal) - max(external, default=0.0) < boundary_margin:
+                # A homogeneous 12-P clique, ties and near-ties provide no
+                # defensible reason to nominate one subset over another.
+                continue
+            accepted.append(group)
+        return tuple(sorted(accepted))
+
     def _prototype(
         self, kernel: VerdantKernel, member_structure_ids: tuple[str, ...]
     ) -> tuple[int, tuple[float, ...], tuple[float, ...], str, float]:
@@ -258,13 +334,32 @@ class VerdantHierarchyPipeline:
         adjacency, pair_scores, pair_events, boundary = self._verified_graph(kernel)
         prospective_cycle = kernel.state.cycle + 1
         proposed: list[HierarchyCandidateRecord] = []
-        for members in self._components(adjacency):
-            candidate = self._candidate_from_component(
-                kernel, members, pair_scores, pair_events, boundary, prospective_cycle
-            )
-            if candidate is None or latest.event_id not in set(candidate.interaction_event_ids):
-                continue
-            proposed.append(candidate)
+        for connected in self._components(adjacency):
+            if len(connected) <= policy.maximum_members:
+                groups = (connected,)
+            else:
+                groups = self._bounded_subfamilies(
+                    connected, adjacency, pair_scores,
+                    minimum_members=policy.minimum_members,
+                    maximum_members=policy.maximum_members,
+                )
+            for members in groups:
+                # Verified but relatively weak cross-group alignments are real
+                # boundary pressure, not omitted evidence. Keep the native
+                # candidate quality and Council requirements unchanged.
+                selected = set(members)
+                cross_verified = [
+                    (a, b, max(values))
+                    for (a, b), values in pair_scores.items()
+                    if values and (a in selected) != (b in selected)
+                ] if len(connected) > policy.maximum_members else []
+                candidate = self._candidate_from_component(
+                    kernel, members, pair_scores, pair_events,
+                    [*boundary, *cross_verified], prospective_cycle
+                )
+                if candidate is None or latest.event_id not in set(candidate.interaction_event_ids):
+                    continue
+                proposed.append(candidate)
         proposed.sort(
             key=lambda item: (
                 -item.quality.alignment_cohesion,

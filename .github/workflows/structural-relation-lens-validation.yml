@@ -1,13 +1,5 @@
 name: Structural Relation Lens Experimental Validation
 on:
-  push:
-    branches:
-      - test/structural-relation-lens-v0
-    paths:
-      - "verdant_interaction/relation_lens.py"
-      - "verdant_integrated/structural_lens_audit.py"
-      - "tests/test_structural_relation_lens.py"
-      - ".github/workflows/structural-relation-lens-validation.yml"
   workflow_dispatch:
 jobs:
   native-controlled-evidence:

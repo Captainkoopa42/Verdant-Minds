@@ -261,13 +261,23 @@ def _inspect(kernel, section):
     )
 
 
-def _load_stage(root, seed, arm, number, predecessor, expected_cycle, expected_keys):
+def _load_stage(root, seed, arm, number, predecessor, expected_cycle, expected_keys, section=None):
     base = _stage_path(root, seed, arm, number)
     receipt = _load_json(base.with_suffix(".json"))
     expected = dict(schema=VERSION, seed=seed, arm=arm, section_number=number,
                     predecessor_sha256=predecessor)
     if any(receipt.get(k) != v for k, v in expected.items()):
         _fail("Foreign stage, changed role, or broken chain")
+    if receipt.get("section_compiled_sha256") != (
+        section["compiled_sha256"] if section is not None else None
+    ):
+        _fail("Stage compiled-curriculum identity diverged")
+    if receipt.get("observations") != (
+        _inspect(VerdantKernel.from_state(load_checkpoint_bytes(
+            base.with_suffix(".vdk").read_bytes()
+        )), section) if section is not None else None
+    ):
+        _fail("Read-only stage inspection differs from checkpoint")
     try:
         raw = base.with_suffix(".vdk").read_bytes()
         if _digest(raw) != receipt["checkpoint_sha256"]:
@@ -347,7 +357,8 @@ def _arm(root, seed, arm, sections, state_dim):
         if missing:
             _fail("Future stage exists after missing stage")
         kernel, last_receipt, prior_hash = _load_stage(
-            root, seed, arm, number, prior_hash, cycle, keys
+            root, seed, arm, number, prior_hash, cycle, keys,
+            sections[number - 1] if number else None,
         )
         last_stage = number
     if kernel is None:
@@ -467,7 +478,8 @@ def status(directory):
                             _fail("Stage lineage contains a gap")
                         break
                     _, _, previous = _load_stage(root, seed, arm, number,
-                                                 previous, cycle, keys)
+                                                 previous, cycle, keys,
+                                                 sections[number - 1] if number else None)
                     last = number
                 print(f"seed={seed} arm={arm} durable_section={last}/{len(sections)}")
         print(f"complete_result={ (root / 'results.json').exists() }")

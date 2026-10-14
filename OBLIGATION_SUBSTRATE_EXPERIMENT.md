@@ -1,4 +1,4 @@
-# Obligation Substrate v0.65
+# Obligation Substrate v0.66
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -3296,6 +3296,52 @@ See [Frozen terminal-successor repair evaluation](docs/TERMINAL_SUCCESSOR_REPAIR
 for the complete cohort result, response barrier, immutable identities,
 falsification and exact claim limits.
 
+## v0.66 claim boundary
+
+- **OBSERVED:** An exhaustive audit of the unchanged strict `0–21` addition
+  domain, all six consumed math cohorts, all v0.60/v0.63 requests and all 31
+  recorded/actual probes leaves exactly six fresh transposition-safe unordered
+  pairs: `(0,15)`, `(0,16)`, `(0,17)`, `(1,17)`, `(4,18)` and `(4,21)`.
+  Their twelve ordered forms are frozen with eight fresh typed-invalid inputs.
+  No fresh completion-bearing terminal-repair case remains: `(4,18)` can retain
+  the supplied `18→19→20→21` partial walk but must then abstain at the missing
+  successor from 21; `(4,21)` begins at that ceiling. No prospective response,
+  grade or retention effect is observed. All `171` new protocol tests,
+  `1,231` focused math/archive tests and `1,955`
+  full-suite tests pass, including the existing checks of all seventeen legacy
+  checkpoints.
+- **IMPLEMENTED-EXPERIMENTAL:** A separate protocol-only v0.66 sibling binds
+  exact v0.63 `.vsrp`, v0.64 `.vsri`, v0.65 `.vsrb` and v0.65 `.vsrr` bytes;
+  all four saved role checkpoint hashes, fingerprints, lesson traces and run
+  references; the four historical supplied-repair effects and complete
+  outcomes; 183 consumed projections; 31 probes; ten audit-source hashes; a
+  fresh unexposed source checkpoint; and a 52-file manifest preserving every
+  v0.65 source. Every future role has 29 historical lesson slots and exactly
+  zero new successor lessons, teacher exposures or claim installations. The
+  future contract requires all 80 records before 48 external grades, full
+  20-enrolled/12-valid denominators and exact retained/null equality. Freeze
+  and replay load no prospective private role, answer no case and expose no
+  run/query/respond/evaluate/grade entrypoint.
+- **PROPOSED:** Only if retained partial-trace reuse is worth measuring, add one
+  later separate response/evaluation runner for these exact bytes and saved
+  checkpoints. It could characterize retained trace reuse and continued
+  abstention, not new correct-answer transfer. Otherwise pause this bounded
+  `0–21` line rather than recycle a target or silently widen the domain.
+- **MISSING:** This availability audit establishes no prospective performance,
+  causal self-repair, spontaneous discovery, generalized arithmetic,
+  mathematical understanding, authenticated teaching, source independence,
+  independent replication or cheaper later learning. No private lesson is
+  canonically installed. The physical acquisition/harm blocker, unexecuted
+  v0.53 study, v0.54/v0.55 quarantine, four mandatory N requirements and v0.45
+  Contradiction negative result remain unchanged. No canonical Resolution/
+  promotion, autonomous policy rewrite, `T_g`, thermodynamic behavioral
+  control, semantic understanding, mind, consciousness or complete-agency
+  authority is added.
+
+See [Prospective zero-new-lesson successor-retention protocol](docs/SUCCESSOR_RETENTION_PROTOCOL.md)
+for the exact freshness audit, teaching-cost accounting, saved-checkpoint
+lineage, immutable identity and negative availability boundary.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3694,3 +3740,15 @@ checkpoint/record/grade/code/source/authority substitutions. They preserve the
 bounded supplied-repair effect and the broader-repair falsification without
 claiming self-repair, discovery, generalized arithmetic, source authentication,
 independent replication or learning efficiency.
+Successor-retention protocol tests additionally target exact v0.63-v0.65
+artifact and 52-file manifest pairing, exhaustive 183-projection/31-probe
+closure, the exact six remaining transposition-safe pairs, twelve valid and
+eight invalid unanswered cases, zero fresh completion-bearing cases, four
+saved checkpoint lineages, zero new lesson/exposure/claim cost, all four
+historical supplied-repair effects and complete outcomes, future 80-record/
+48-grade ordering, full denominators, exact-null requirements, native-evidence
+retention, source and audit drift, immutable publication, blocked execution
+entrypoints, and fully rehashed cost/case/checkpoint/lineage/effect/outcome/
+code/source/authority substitutions. They establish an availability and
+provenance boundary only, not prospective retention behavior or learning
+efficiency.

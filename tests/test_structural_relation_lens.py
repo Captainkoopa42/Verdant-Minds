@@ -193,3 +193,30 @@ def test_synthetic_matched_accuracy_is_reportable_not_semantic_truth(native_fixt
         typed_predictions.append((result["verdict"] == "accept") == label)
     assert sum(baseline_predictions) == 2
     assert sum(typed_predictions) == 4
+
+
+
+def test_readonly_checkpoint_audit_respects_original_vdk_bytes(native_fixture, tmp_path):
+    from verdant_integrated.structural_lens_audit import audit_checkpoint
+    kernel, groups, qid = fresh(native_fixture)
+    p = tmp_path / "heldout.vdk"
+    save_checkpoint(p, kernel.snapshot())
+    original = p.read_bytes()
+    original_fingerprint = kernel.fingerprint()
+
+    report = audit_checkpoint(p, max_pairs=8)
+    assert report["native_p"] == len(groups)
+    assert report["native_q"] == 1
+    assert report["pair_counts"]["total_pairs"] == 8
+    assert report["pair_counts"]["native_topology_accept"] >= 1
+    assert report["audit_only"] is True
+    assert report["promotion_or_native_hierarchy_mutation"] is False
+    assert p.read_bytes() == original
+    assert report["canonical_fingerprint"] == original_fingerprint
+    assert any(
+        item["earlier_q_available"] >= 1
+        for item in report["native_retrospective_q_work"]
+    )
+
+    with pytest.raises(ValueError):
+        audit_checkpoint(p, max_pairs=300)

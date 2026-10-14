@@ -494,23 +494,81 @@ def status(directory):
         print(f"complete_result={ (root / 'results.json').exists() }")
 
 
+
+def preview(pack_path, *, limit_sections=1):
+    """Read-only preview; does not create an organism or change the pack."""
+    raw = Path(pack_path).read_bytes()
+    pack, selected = _plan(raw, limit_sections)
+    print("Pack:", pack.title)
+    print("Pack SHA-256:", _digest(raw))
+    print("Field dimension:", pack.state_dim)
+    print("Selected sections:", len(selected),
+          "Teaching experiences:", sum(len(s["commands"]) for s in selected),
+          "Diagnostic probes:", sum(len(s["tests"]) for s in selected))
+    for index, section in enumerate(selected, 1):
+        print(index, section["id"],
+              "experiences", len(section["commands"]),
+              "diagnostics", len(section["tests"]),
+              "compiler_warnings", len(section["warnings"]))
+
+
+def report(directory):
+    """Validate recorded sections; report measured counts, not fabricated scores."""
+    root = Path(directory)
+    status(root)
+    if not (root / "results.json").is_file():
+        _fail("No complete results batch; reporting cannot finish a run")
+    result = _load_json(root / "results.json")
+    manifest = _load_json(root / "manifest.json")
+    if result["manifest_sha256"] != _digest(_json(manifest)):
+        _fail("Results do not bind the immutable manifest")
+    print("seed arm experiences native_cycles concepts relations claims "
+          "plasticity P_candidates P_structures Q_structures "
+          "dependency_gaps contradictions")
+    for entry in result["arms"]:
+        stage = _load_json(_stage_path(
+            root, entry["seed"], entry["arm"], entry["sections"]
+        ).with_suffix(".json"))
+        m = stage["metrics"]
+        obs = stage["observations"]
+        if (entry["fingerprint"] != stage["fingerprint"] or
+            entry["native_engine_cycles"] != m["cycle"] or
+            entry["teaching_experiences"] !=
+            sum(x["commands"] for x in manifest["sections"])):
+            _fail("Reported arm summary diverges from staged native history")
+        print(entry["seed"], entry["arm"], entry["teaching_experiences"],
+              m["cycle"], m["concepts"], m["relations"], m["claims"],
+              m["plasticity_associations"], m["structure_candidates"],
+              m["structures"], m["layered_structures"],
+              obs["dependency_gap_candidates"], obs["contradiction_candidates"])
+    print("DIAGNOSTICS ARE NOT GRADES. Obligation findings are read-only.")
+    return root / "results.json"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
+    peek = sub.add_parser("preview")
+    peek.add_argument("curriculum")
+    peek.add_argument("--sections", type=int, default=1)
     new = sub.add_parser("start")
     new.add_argument("directory")
     new.add_argument("curriculum")
     new.add_argument("--sections", type=int, default=1)
     new.add_argument("--seeds", type=int, nargs="+", default=list(DEFAULT_SEEDS))
-    for action in ("resume", "status"):
+    for action in ("resume", "status", "report"):
         sub.add_parser(action).add_argument("directory")
     args = parser.parse_args(argv)
-    if args.action == "start":
+    if args.action == "preview":
+        preview(args.curriculum, limit_sections=args.sections)
+    elif args.action == "start":
         result = start(args.directory, args.curriculum,
                        limit_sections=args.sections, seeds=tuple(args.seeds))
         print(result)
     elif args.action == "resume":
         print(resume(args.directory))
+    elif args.action == "report":
+        print(report(args.directory))
     else:
         status(args.directory)
 

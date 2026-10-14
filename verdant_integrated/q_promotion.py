@@ -147,6 +147,27 @@ def advance_q_from_new_p(
     if _semantic_ids(kernel) != before:
         raise RuntimeError("P interactions and Q promotion changed canonical semantics")
 
+    # Read-only explanation of why oversized hierarchy groups were, or were
+    # not, subdivided; it never changes structural evidence or eligibility.
+    graph, scores, _, _ = hierarchy._verified_graph(kernel)
+    connected = hierarchy._components(graph)
+    oversized = [g for g in connected
+                 if len(g) > kernel.state.hierarchy_policy.maximum_members]
+    groups = [
+        hierarchy._bounded_subfamilies(
+            component, graph, scores,
+            minimum_members=kernel.state.hierarchy_policy.minimum_members,
+            maximum_members=kernel.state.hierarchy_policy.maximum_members,
+        )
+        for component in oversized
+    ]
+    subgroup_diagnostics = [
+        dict(component_size=len(component),
+             bounded_candidate_sizes=[len(g) for g in eligible_groups],
+             unresolved_no_defensible_split=(len(eligible_groups) == 0))
+        for component, eligible_groups in zip(oversized, groups)
+    ]
+
     return dict(
         scheduler="bounded_section_end_native_q_v0.1",
         interaction_cap=maximum_interactions,
@@ -162,6 +183,7 @@ def advance_q_from_new_p(
         promoted=promoted,
         deferred=deferred,
         not_considered_due_to_cap=max(0, len(eligible)-considered),
+        oversized_hierarchy_diagnostics=subgroup_diagnostics,
         native_verified_alignment_required=True,
         native_council_authorization_required=True,
         learned_q_scheduling_policy=False,

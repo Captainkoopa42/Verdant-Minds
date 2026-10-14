@@ -272,12 +272,6 @@ def _load_stage(root, seed, arm, number, predecessor, expected_cycle, expected_k
         section["compiled_sha256"] if section is not None else None
     ):
         _fail("Stage compiled-curriculum identity diverged")
-    if receipt.get("observations") != (
-        _inspect(VerdantKernel.from_state(load_checkpoint_bytes(
-            base.with_suffix(".vdk").read_bytes()
-        )), section) if section is not None else None
-    ):
-        _fail("Read-only stage inspection differs from checkpoint")
     try:
         raw = base.with_suffix(".vdk").read_bytes()
         if _digest(raw) != receipt["checkpoint_sha256"]:
@@ -297,6 +291,10 @@ def _load_stage(root, seed, arm, number, predecessor, expected_cycle, expected_k
             _fail("Unexpected or duplicated teaching-event history")
         if _metrics(kernel) != receipt["metrics"]:
             _fail("Checkpoint metrics do not agree with saved receipt")
+        if receipt.get("observations") != (
+            _inspect(kernel, section) if section is not None else None
+        ):
+            _fail("Read-only stage inspection differs from checkpoint")
     except (KeyError, ValueError, AttributeError, TypeError) as exc:
         raise StudyIntegrityError("Stage could not be validated") from exc
     return kernel, receipt, _digest(_json(receipt))

@@ -1,13 +1,6 @@
 name: Native P and Q Integration Validation
 
 on:
-  push:
-    branches:
-      - test/vast-auto-pq-development-v0
-    paths:
-      - "verdant_integrated/**"
-      - "tests/test_vast_integrated.py"
-      - ".github/workflows/vast-auto-pq-validation.yml"
   workflow_dispatch:
 
 jobs:

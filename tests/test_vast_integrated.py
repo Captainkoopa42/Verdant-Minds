@@ -203,3 +203,47 @@ def test_auto_p_respects_gates_and_uses_native_council(tmp_path):
     assert not again["promoted"]
     with pytest.raises(ValueError):
         promote_eligible_p(kernel, maximum=9)
+
+
+def test_real_four_arm_pack_promotes_only_gated_treatment(tmp_path):
+    raw = json.loads(_pack())
+    items = []
+    for i in range(7):
+        items.append(dict(
+            item_id=f"triad-{i}", context_id=f"ctx-{i%2}",
+            source_text="The instructor presents three related symbolic objects.",
+            modality="text",
+            concepts=[{"label": x} for x in ("kren", "tar", "vel")],
+            relations=[], claims=[],
+            feature_vector=[1.0] + [0.0] * 15,
+            confidence=1.0,
+            event_key=f"integrated-triad-{i}",
+            semantic_evidence_kind="testimony",
+            provenance={"synthetic": True},
+        ))
+    raw["sections"][0]["items"] = items
+    pack = tmp_path / "triad.vcpack"
+    pack.write_bytes(v._json(raw))
+    root = tmp_path / "auto-comparison"
+    v.start(root, pack, limit_sections=1, seeds=(81001,))
+    results = json.loads((root / "results.json").read_bytes())
+    arms = {entry["arm"]: entry for entry in results["arms"]}
+    assert set(arms) == set(v.ARMS)
+    for arm in ("v5", "v5x_observe", "kernel_only"):
+        receipt = v._load_json(v._stage_path(root, 81001, arm, 1).with_suffix(".json"))
+        assert receipt["metrics"]["structures"] == 0
+        assert receipt["p_promotion"] is None
+    receipt = v._load_json(v._stage_path(root, 81001, "v5x_auto_p", 1).with_suffix(".json"))
+    assert receipt["metrics"]["structures"] >= 1
+    assert receipt["metrics"]["structure_promotion_events"] >= 1
+    assert len(receipt["p_promotion"]["promoted"]) >= 1
+    assert receipt["p_promotion"]["native_quality_and_council_required"] is True
+    assert arms["v5"]["semantic"] == arms["v5x_auto_p"]["semantic"]
+    assert arms["v5"]["fingerprint"] != arms["v5x_auto_p"]["fingerprint"]
+    assert v.resume(root).read_bytes() == (root / "results.json").read_bytes()
+    tampered = receipt["p_promotion"]["promoted"][0]
+    tampered["council_decision_event_id"] = "bogus"
+    stage = v._stage_path(root, 81001, "v5x_auto_p", 1).with_suffix(".json")
+    stage.write_bytes(v._json(receipt))
+    with pytest.raises(v.StudyIntegrityError, match="Council provenance mismatch"):
+        v.resume(root)

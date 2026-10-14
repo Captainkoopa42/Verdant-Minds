@@ -1,0 +1,31 @@
+name: Relational Abstraction Transfer Validation
+on:
+  push:
+    branches:
+      - test/relational-abstraction-transfer-v0
+    paths:
+      - "verdant_hierarchy/relational_abstraction.py"
+      - "verdant_integrated/relational_transfer_audit.py"
+      - "tests/test_relational_abstraction_transfer.py"
+      - ".github/workflows/relational-abstraction-transfer-validation.yml"
+  workflow_dispatch:
+jobs:
+  native-role-transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install source-locked dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: Check experimental syntax
+        run: python -m compileall -q verdant_hierarchy/relational_abstraction.py tests/test_relational_abstraction_transfer.py
+      - name: Run native Council Q and exact-output transfer tests
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: python -m pytest -q tests/test_relational_abstraction_transfer.py tests/test_structural_relation_lens.py tests/test_structure_interaction_phase.py tests/test_hierarchy_phase.py tests/test_q_subfamilies.py tests/test_vast_integrated.py

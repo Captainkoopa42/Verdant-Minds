@@ -37,11 +37,11 @@ def test_one_section_full_v5_and_v5x_observer_equivalent(tmp_path):
     output = v.start(root, pack, limit_sections=1, seeds=(81001,))
     original = output.read_bytes()
     assert v.resume(root).read_bytes() == original
-    assert len(json.loads(original)["arms"]) == 4
+    assert len(json.loads(original)["arms"]) == 5
     assert [x["arm"] for x in json.loads(original)["arms"]] == list(v.ARMS)
     assert all(x["teaching_experiences"] == 2 for x in json.loads(original)["arms"])
     assert json.loads(original)["arms"][0]["native_engine_cycles"] > 2
-    assert json.loads(original)["arms"][3]["native_engine_cycles"] == 2
+    assert json.loads(original)["arms"][4]["native_engine_cycles"] == 2
     canonical = json.loads((root / "stages" / "seed-81001" / "v5" / "001.json").read_bytes())
     diagnostics = canonical["observations"]
     assert diagnostics["probe_type"] == "read_only_compilation_inspection"
@@ -125,7 +125,7 @@ def test_no_reuse_of_output_directory(tmp_path):
     v.start(root, pack, limit_sections=1, seeds=(81001,))
     with pytest.raises(FileExistsError):
         v.start(root, pack, limit_sections=1, seeds=(81001,))
-    # All four arms contain independent native checkpoints.
+    # All five arms contain independent native checkpoints.
     for arm in v.ARMS:
         assert (root / "stages" / "seed-81001" / arm / "001.vdk").is_file()
         assert (root / "stages" / "seed-81001" / arm / "001.json").is_file()
@@ -145,6 +145,7 @@ def test_preview_and_verified_report(tmp_path, capsys):
     assert "experiences native_cycles" in message
     assert "v5x_observe" in message
     assert "v5x_auto_p" in message
+    assert "v5x_auto_pq" in message
     assert "DIAGNOSTICS ARE NOT GRADES" in message
 
 
@@ -205,7 +206,7 @@ def test_auto_p_respects_gates_and_uses_native_council(tmp_path):
         promote_eligible_p(kernel, maximum=9)
 
 
-def test_real_four_arm_pack_promotes_only_gated_treatment(tmp_path):
+def test_real_five_arm_pack_promotes_only_gated_treatment(tmp_path):
     raw = json.loads(_pack())
     items = []
     for i in range(7):
@@ -239,6 +240,12 @@ def test_real_four_arm_pack_promotes_only_gated_treatment(tmp_path):
     assert len(receipt["p_promotion"]["promoted"]) >= 1
     assert receipt["p_promotion"]["native_quality_and_council_required"] is True
     assert arms["v5"]["semantic"] == arms["v5x_auto_p"]["semantic"]
+    assert arms["v5"]["semantic"] == arms["v5x_auto_pq"]["semantic"]
+    pq_receipt = v._load_json(v._stage_path(root, 81001, "v5x_auto_pq", 1).with_suffix(".json"))
+    assert pq_receipt["metrics"]["structures"] >= 1
+    assert pq_receipt["q_promotion"]["native_p_available"] >= 1
+    assert pq_receipt["q_promotion"]["promoted"] == []
+    assert pq_receipt["metrics"]["layered_structures"] == 0
     assert arms["v5"]["fingerprint"] != arms["v5x_auto_p"]["fingerprint"]
     assert v.resume(root).read_bytes() == (root / "results.json").read_bytes()
     tampered = receipt["p_promotion"]["promoted"][0]
@@ -247,3 +254,98 @@ def test_real_four_arm_pack_promotes_only_gated_treatment(tmp_path):
     stage.write_bytes(v._json(receipt))
     with pytest.raises(v.StudyIntegrityError, match="Council provenance mismatch"):
         v.resume(root)
+
+
+
+def test_q_waits_for_three_native_p_and_uses_native_council():
+    import hashlib
+    from verdant_development import VerdantDevelopmentPipeline
+    from verdant_integrated.q_promotion import advance_q_from_new_p
+    from verdant_kernel import EvidenceKind, ExperienceCommand, VerdantKernel
+    from verdant_structures import VerdantStructurePipeline
+
+    kernel = VerdantKernel(seed=1701, state_dim=16, run_label="native-q-auto-test")
+    kernel.update_plasticity_policy(decay_rate=0.0, learning_rate=0.40)
+    kernel.update_structure_policy(
+        minimum_members=4, maximum_members=4,
+        maximum_neighbors_per_seed=3,
+        minimum_member_association_strength=0.20,
+        minimum_reconstructability=0.25,
+        minimum_internal_cohesion=0.20,
+        minimum_recurrence_events=2, minimum_evidence_events=2,
+    )
+    kernel.update_hierarchy_policy(
+        minimum_interaction_events=3,
+        minimum_evidence_events=6,
+        layered_probe_similarity=0.985,
+    )
+    dev = VerdantDevelopmentPipeline()
+    structure = VerdantStructurePipeline()
+    family = []
+    for prefix in ("world-a", "world-b", "world-c"):
+        letter = prefix[-1]
+        edges = (
+            (f"{letter}1", f"{letter}2"),
+            (f"{letter}2", f"{letter}3"),
+            (f"{letter}3", f"{letter}4"),
+        )
+        for repeat in range(2):
+            for index, edge in enumerate(edges):
+                key = f"{prefix}-{repeat}-{index}"
+                dev.advance(kernel, ExperienceCommand(
+                    event_key=key,
+                    source_ref="user-independent-test-fixture",
+                    modality="text",
+                    payload_sha256=hashlib.sha256(key.encode()).hexdigest(),
+                    feature_vector=(1.0, 0.0, 0.0),
+                    concept_labels=edge,
+                    confidence=1.0,
+                    semantic_evidence_kind=EvidenceKind.TESTIMONY,
+                    semantic_evidence_details={"synthetic_fixture": True},
+                    metadata={"context_id": f"{prefix}-context-{repeat % 2}"},
+                ))
+        wanted = set(v for edge in edges for v in edge)
+        candidate = max(
+            (c for c in kernel.state.structure_candidates.values()
+             if {kernel.state.concepts[cid].normalized_label
+                 for cid in c.member_concept_ids} == wanted),
+            key=lambda c: c.occurrence_count,
+        )
+        sid = structure.promote(kernel, candidate.candidate_id).event.structure_id
+        family.append(sid)
+        before_semantic = (
+            tuple(sorted(kernel.state.concepts)),
+            tuple(sorted(kernel.state.relations)),
+            tuple(sorted(kernel.state.claims)),
+            tuple(sorted(kernel.state.evidence)),
+        )
+        result = advance_q_from_new_p(kernel, newly_promoted_p_ids=(sid,))
+        if len(family) < 3:
+            assert result["interactions"] == []
+            assert result["promoted"] == []
+        else:
+            assert len(result["interactions"]) == 3
+            assert len(result["hierarchy_observations"]) >= 1
+            assert len(result["promoted"]) == 1
+            assert result["native_council_authorization_required"] is True
+            assert result["promoted"][0]["council_decision_event_id"]
+            assert len(kernel.state.layered_structures) == 1
+        after_semantic = (
+            tuple(sorted(kernel.state.concepts)),
+            tuple(sorted(kernel.state.relations)),
+            tuple(sorted(kernel.state.claims)),
+            tuple(sorted(kernel.state.evidence)),
+        )
+        assert after_semantic == before_semantic
+
+    fingerprint = kernel.fingerprint()
+    once = advance_q_from_new_p(kernel, newly_promoted_p_ids=())
+    assert not once["interactions"]
+    assert not once["promoted"]
+    assert kernel.fingerprint() == fingerprint
+    with pytest.raises(ValueError, match="between"):
+        advance_q_from_new_p(kernel, newly_promoted_p_ids=(), maximum_q_promotions=9)
+    with pytest.raises(ValueError, match="distinct"):
+        advance_q_from_new_p(kernel, newly_promoted_p_ids=(family[0], family[0]))
+    with pytest.raises(ValueError, match="native P"):
+        advance_q_from_new_p(kernel, newly_promoted_p_ids=("not-a-P",))

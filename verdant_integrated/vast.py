@@ -42,6 +42,7 @@ _SOURCE_FILES = (
     "verdant_integrated/vast.py",
     "verdant_integrated/p_promotion.py",
     "verdant_integrated/q_promotion.py",
+    "verdant_integrated/q_subfamily_audit.py",
     "workbench/backend/verdant_workbench/curriculum.py",
     "verdant_kernel/kernel.py",
     "verdant_kernel/models.py",

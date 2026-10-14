@@ -382,7 +382,9 @@ def _arm(root, seed, arm, sections, state_dim):
                 if arm == "v5x_observe" and result.thermodynamic_control is not None:
                     _fail("Behavioral thermodynamic control must remain disabled")
             if result.replayed or kernel.state.cycle != before_cycle + 1:
-                _fail("Expected one newly charged native teaching cycle")
+                _fail(f"Expected charged teaching: arm={arm} event={command.event_key} "
+                      f"replayed={result.replayed} before={before_cycle} "
+                      f"after={kernel.state.cycle}")
         observation = _inspect(kernel, section)
         thermo = None
         if arm == "v5x_observe":

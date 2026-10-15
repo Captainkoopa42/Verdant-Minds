@@ -1,0 +1,30 @@
+name: Cognitive Pocket Evidence Retention v2.1
+on:
+  push:
+    branches:
+      - test/cognitive-pocket-evidence-retention-v2-1
+    paths:
+      - "verdant_pockets/**"
+      - "tests/test_cognitive_pocket_evidence_retention.py"
+      - ".github/workflows/cognitive-pocket-evidence-retention-v2-1.yml"
+  workflow_dispatch:
+jobs:
+  native-evidence-retention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install native locked dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: Compile research code
+        run: python -m compileall -q verdant_pockets tests/test_cognitive_pocket_evidence_retention.py
+      - name: Native P/Q, gap acquisition, retention, adversarial regression
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: python -m pytest -q tests/test_cognitive_pocket_evidence_retention.py tests/test_cognitive_pocket_composition.py tests/test_cognitive_pocket_curriculum.py tests/test_cognitive_pocket_cultivation.py tests/test_cognitive_pocket_lifecycle.py tests/test_cognitive_pocket_integration.py tests/test_hierarchy_phase.py tests/test_structure_interaction_phase.py tests/test_obligation_substrate.py tests/test_counterfactual_runtime.py

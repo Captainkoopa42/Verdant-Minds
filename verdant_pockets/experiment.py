@@ -148,6 +148,10 @@ def cultivate_pocket(
     for r in _typed_rows(kernel, all_nodes):
         if r["id"] in all_member_relations:
             continue
+        # Hypothetical, contradicted or rejected canonical records are
+        # visible in native memory but never an evidenced cross-pocket bridge.
+        if r["status"] not in ("supported", "confirmed"):
+            continue
         if not any(a != b for a in owners[r["source"]] for b in owners[r["target"]]):
             continue
         cross_relations.append(r)
@@ -176,7 +180,10 @@ def cultivate_pocket(
 
     # A path through separate Ps is a factual path description ONLY where
     # both native relation edges already exist, and never a transitive claim.
-    canonical_edges = list(all_member_relations.values()) + cross_relations
+    canonical_edges = [
+        row for row in all_member_relations.values()
+        if row["status"] in ("supported", "confirmed")
+    ] + cross_relations
     walks = []
     for first, second in combinations(canonical_edges, 2):
         for a, b in ((first, second), (second, first)):

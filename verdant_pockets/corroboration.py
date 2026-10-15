@@ -225,6 +225,10 @@ def status_snapshot(pocket,journal):
         (r["source"],r["target"],r["type"])
         for r in native if r["directed"] and r["status"] in ("supported","confirmed")
     }
+    native_contradicted = {
+        (r["source"],r["target"],r["type"])
+        for r in native if r["directed"] and r["status"] == "contradicted"
+    }
     grouped = defaultdict(list)
     for oid,item in records.items():
         if oid not in withdrawn:
@@ -237,7 +241,8 @@ def status_snapshot(pocket,journal):
         if oid in withdrawn:
             kind="withdrawn"
         elif (o["target"],o["source"],o["type"]) in grouped or (
-            o["target"],o["source"],o["type"]) in native_forward:
+            o["target"],o["source"],o["type"]) in native_forward or (
+            o["source"],o["target"],o["type"]) in native_contradicted:
             kind="disputed_quarantined"
         else:
             families={records[x]["lineage_family"] for x in grouped[

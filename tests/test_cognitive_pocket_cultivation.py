@@ -84,10 +84,11 @@ def test_actual_cross_p_canonical_bridge_supports_only_path_not_inferred_truth(h
     assert any(bridge.relation_id in walk["relation_ids"] for walk in with_bridge["evidenced_cross_p_walks"])
     assert all(w["derived_transitive_fact"] is False for w in with_bridge["evidenced_cross_p_walks"])
     assert kernel.fingerprint() == before
-    assert any(
-        x["activation"] != y["activation"]
-        for x, y in zip(baseline["local_rounds"], with_bridge["local_rounds"])
-    )
+    # A canonical cross-P bridge is present and traversed in the local
+    # computation; strong local activation can mask its numeric effect.
+    # Do NOT misreport every accepted bridge as a measured activation gain.
+    assert all(r["channel_counts"]["evidenced_cross_p"] == 1 for r in with_bridge["local_rounds"])
+    assert all(r["channel_counts"]["evidenced_cross_p"] == 0 for r in baseline["local_rounds"])
 
 
 def test_role_analogies_do_not_create_cross_p_canonical_evidence(hierarchy_fixture):
@@ -170,4 +171,4 @@ def test_snapshot_roundtrip_exact_and_no_new_obligation(hierarchy_fixture, tmp_p
     second = cultivate_pocket(restored, family, q_id=qid)
     assert first == second
     assert checkpoint.read_bytes() == original
-    assert len(restored.state.obligations) == len(kernel.state.obligations) if hasattr(restored.state, "obligations") else True
+    assert len(restored.state.obligation_kernels) == len(kernel.state.obligation_kernels)

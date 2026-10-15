@@ -178,7 +178,7 @@ def _witness(
     pocket: dict, ledger: dict, query: CompositionQuery,
 ) -> tuple[list[dict], list[str], dict, str]:
     ps, concepts, native, _ = _load_source(pocket)
-    native_base = _admitted_edges(native, query.relation_type)
+    native_base = [dict(r, origin="native_canonical") for r in _admitted_edges(native, query.relation_type)]
     overlay = []
     for event in ledger["events"]:
         obs = event["observation"]
@@ -193,8 +193,6 @@ def _witness(
             "observation_id": event["observation_id"],
         })
     # Do not trust a simulated bridge to manufacture a canonical native row.
-    for r in native_base:
-        r.setdefault("origin", "native_canonical")
     admitted = native_base + overlay
     source_owner = set(concepts[query.source_concept_id]["owner_p_ids"])
     target_owner = set(concepts[query.target_concept_id]["owner_p_ids"])

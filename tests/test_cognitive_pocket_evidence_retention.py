@@ -197,3 +197,27 @@ def test_retained_journal_never_crosses_native_fingerprint(case):
     with pytest.raises(PocketIntegrityError):
         validate_ledger(ledger, changed)
     assert len(kernel.state.obligation_kernels) == 0
+
+
+
+def test_end_to_end_disposable_native_acquisition_demo_has_separated_truth(case):
+    from verdant_pockets.research_acquisition_demo import run_acquisition_demo
+
+    report, journal, pocket = run_acquisition_demo()
+    assert report["pre_observation_gap"]["disposition"] == "abstain_missing_supported_path"
+    assert report["post_external_observation"]["disposition"] == "supported_experimental_composition"
+    assert report["heldout_new_query"]["disposition"] == "supported_experimental_composition"
+    assert report["post_reload_heldout_same_result"]
+    assert report["native_primitive_relation_count"] == 9
+    assert report["flat_graph_same_evidence_control"]["disposition"] == "supported_experimental_composition"
+    assert report["comparison_proves_pocket_advantage_over_flat_graph"] is False
+    assert report["native_memory_modified"] is False
+    assert report["external_observation_truth_independently_verified"] is False
+    assert report["controls"] == {
+        "no_observation": "abstain_missing_supported_path",
+        "reverse_observation": "abstain_missing_supported_path",
+        "irrelevant_p_observation": "abstain_missing_supported_path",
+        "direct_answer_leak_control": "abstain_direct_observation_not_composition",
+        "unlicensed_query": "abstain_rule_not_licensed",
+    }
+    validate_ledger(journal, pocket)

@@ -1,0 +1,31 @@
+name: Selective Cognitive Pocket Composition v2 Research
+on:
+  push:
+    branches:
+      - test/cognitive-pocket-selective-composition-v2
+    paths:
+      - "verdant_pockets/**"
+      - "tests/test_cognitive_pocket_composition.py"
+      - "tests/test_cognitive_pocket_curriculum.py"
+      - ".github/workflows/cognitive-pocket-selective-composition-v2.yml"
+  workflow_dispatch:
+jobs:
+  evidence-grounded-native-composition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned runtime
+        run: python -m pip install -r requirements-lock.txt
+      - name: Compile
+        run: python -m compileall -q verdant_pockets tests/test_cognitive_pocket_composition.py
+      - name: Run composition and prior pocket regressions
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: python -m pytest -q tests/test_cognitive_pocket_composition.py tests/test_cognitive_pocket_cultivation.py tests/test_cognitive_pocket_lifecycle.py tests/test_cognitive_pocket_integration.py tests/test_hierarchy_phase.py tests/test_structure_interaction_phase.py tests/test_obligation_substrate.py tests/test_counterfactual_runtime.py

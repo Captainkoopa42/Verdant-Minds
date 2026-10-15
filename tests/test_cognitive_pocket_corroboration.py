@@ -328,6 +328,10 @@ def test_explicit_native_contradicted_same_direction_blocks_attested_bridge(case
     j=new_provenance(revised,manifest_sources)
     j=attest(revised,j,observed(names,"origin-alpha"),source_id="origin-alpha")
     j=attest(revised,j,observed(names,"origin-beta"),source_id="origin-beta")
-    state=status_snapshot(revised,j)
+    state=status_snapshot(revised,j,native_kernel=kernel)
     assert state["counts"]["disputed_quarantined"]==2
-    assert inspect_corroboration(revised,j,question(names))["disposition"]=="abstain_missing_supported_path"
+    report=inspect_corroboration(revised,j,question(names),native_kernel=kernel)
+    assert report["disposition"]=="abstain_missing_supported_path"
+    assert report["native_negative_relations_considered_from_live_source"]
+    with pytest.raises(PocketIntegrityError):
+        inspect_corroboration(revised,j,question(names),native_kernel=VerdantKernel(seed=77,state_dim=16))

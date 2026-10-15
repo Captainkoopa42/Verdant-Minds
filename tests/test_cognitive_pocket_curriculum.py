@@ -82,3 +82,21 @@ def test_native_cli_no_fake_labels_or_wrong_q_allowed(composed_case, tmp_path):
         inspect_native_task(vdk, tmp_path / "bad.json", q_index=90,
                             source_label="a1", target_label="b4")
     assert not (tmp_path / "bad.json").exists()
+
+
+def test_standalone_native_teacher_demo_trains_real_council_p_and_withholds_composite():
+    from verdant_pockets.research_demo import run_controlled_demo
+    report = run_controlled_demo()
+    assert len(report["native_p_ids"]) == 3
+    assert report["promoted_q_id"].startswith("layered_structure_")
+    assert report["external_primitive_testimony_count"] == 10
+    assert report["direct_composition"]["disposition"] == "supported_composition"
+    assert len(report["direct_composition"]["witness_native_relation_ids"]) == 7
+    assert report["frozen_curriculum"]["confusion"] == {
+        "true_positive": 2, "true_negative": 4,
+        "false_positive": 0, "false_negative": 0,
+    }
+    assert report["transitivity_rule_externally_supplied"] is True
+    assert report["not_spontaneous_composition_rule_discovery"] is True
+    assert report["final_answer_never_taught"] is True
+    assert report["no_native_canonical_result_written"] is True

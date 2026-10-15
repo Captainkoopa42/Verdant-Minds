@@ -249,3 +249,66 @@ def test_controlled_unrelated_evidence_scaling_has_matched_flat_inputs(case):
     assert result["source_count_held_constant"]
     assert not result["pocket_advantage_demonstrated"]
     assert result["results"][-1]["provenance_attestations_replayed"]==66
+
+
+
+def test_end_to_end_controlled_native_v23_provenance_and_scaling_demo():
+    from verdant_pockets.research_corroboration_demo import run_demo
+    report,journal,pocket=run_demo()
+    assert [step["disposition"] for step in report["history"]]==[
+        "abstain_missing_supported_path",
+        "abstain_missing_supported_path",
+        "supported_experimental_composition",
+        "abstain_missing_supported_path",
+        "supported_experimental_composition",
+        "abstain_missing_supported_path",
+        "supported_experimental_composition",
+    ]
+    assert report["heldout_after_native_restart"]["disposition"]=="supported_experimental_composition"
+    assert report["heldout_exact_replay"] is True
+    assert len(journal["events"])==12
+    assert report["native_relation_count"]==9
+    assert report["declared_roots_are_NOT_authenticated"]
+    assert not report["flat_graph_has_same_admissible_evidence"] is False
+    assert report["pocket_advantage_not_established"]
+    validate_provenance(journal,pocket)
+
+
+def test_user_compatible_v22_journal_migration_and_verification_cli(case,tmp_path,capsys):
+    from verdant_pockets.research_corroboration_demo import (
+        main, LEGACY_MANIFEST, LEGACY_MAP,
+    )
+    from verdant_pockets.reconciliation import save_revision
+    _kernel,pocket,names,_ps,_qid=case
+    legacy=start_revision(pocket)
+    a=observation_from_testimony(source=names["r4"],target=names["s1"],
+        relation_type="precedes",source_ref="controlled:independent-stage-two-primitive-observation")
+    c=observation_from_testimony(source=names["s1"],target=names["r4"],
+        relation_type="precedes",source_ref="controlled:independent-reverse-challenge")
+    noise=observation_from_testimony(source=names["r2"],target=names["t2"],
+        relation_type="precedes",source_ref="controlled:unrelated-p-evidence")
+    d=observation_from_testimony(source=names["r4"],target=names["s1"],
+        relation_type="precedes",source_ref="controlled:second-declared-replacement-source")
+    legacy=v22_observe(pocket,legacy,a)
+    legacy=v22_observe(pocket,legacy,c)
+    legacy=v22_observe(pocket,legacy,noise)
+    legacy=v22_withdraw(pocket,legacy,_hash(c),source_ref=c["source_ref"],reason="controlled challenger withdrawn")
+    legacy=v22_withdraw(pocket,legacy,_hash(a),source_ref=a["source_ref"],reason="controlled origin withdrawn")
+    legacy=v22_observe(pocket,legacy,d)
+    old=tmp_path/"prior.vpr.json"
+    save_revision(old,legacy,pocket)
+    original=old.read_bytes()
+    output=tmp_path/"corroboration.json"
+    journal=tmp_path/"provenance.vpc.json"
+    main(["--from-v22",str(old),"--out",str(output),"--journal",str(journal)])
+    assert original==old.read_bytes()
+    report=json.loads(output.read_text(encoding="utf-8"))
+    assert report["source_v22_journal_imported_without_changes"]
+    assert report["history"][0]["disposition"]=="abstain_missing_supported_path"
+    assert report["history"][-1]["disposition"]=="supported_experimental_composition"
+    capsys.readouterr()
+    main(["--verify",str(journal)])
+    verified=json.loads(capsys.readouterr().out)
+    assert verified["fresh_source_replay"]
+    assert verified["heldout_disposition"]=="supported_experimental_composition"
+    assert original==old.read_bytes()

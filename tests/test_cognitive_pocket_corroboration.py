@@ -312,3 +312,22 @@ def test_user_compatible_v22_journal_migration_and_verification_cli(case,tmp_pat
     assert verified["fresh_source_replay"]
     assert verified["heldout_disposition"]=="supported_experimental_composition"
     assert original==old.read_bytes()
+
+
+
+def test_explicit_native_contradicted_same_direction_blocks_attested_bridge(case):
+    from verdant_kernel import RelationStatus
+    kernel,_pocket,names,ps,qid=case
+    kernel.propose_relation(
+        names["r4"],names["s1"],"precedes",
+        evidence_refs=kernel.state.structures[ps[0]].evidence_refs,
+        status=RelationStatus.CONTRADICTED,directed=True,
+    )
+    revised=cultivate_pocket(kernel,ps,q_id=qid,rounds=1)
+    manifest_sources=manifest()
+    j=new_provenance(revised,manifest_sources)
+    j=attest(revised,j,observed(names,"origin-alpha"),source_id="origin-alpha")
+    j=attest(revised,j,observed(names,"origin-beta"),source_id="origin-beta")
+    state=status_snapshot(revised,j)
+    assert state["counts"]["disputed_quarantined"]==2
+    assert inspect_corroboration(revised,j,question(names))["disposition"]=="abstain_missing_supported_path"

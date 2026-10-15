@@ -1,4 +1,4 @@
-# Obligation Substrate v0.66
+# Obligation Substrate v0.67
 
 Status: **implemented-experimental** on `test/obligation-substrate-v0`.
 
@@ -3342,6 +3342,56 @@ See [Prospective zero-new-lesson successor-retention protocol](docs/SUCCESSOR_RE
 for the exact freshness audit, teaching-cost accounting, saved-checkpoint
 lineage, immutable identity and negative availability boundary.
 
+## v0.67 claim boundary
+
+- **OBSERVED:** The exact twenty-case v0.66 cohort has now been executed once
+  by loading the exact four v0.65 private checkpoints and adding zero lessons,
+  teacher exposures or claims. All eighty response/rejection records were
+  durably saved before forty-eight external grades of valid original requests.
+  Every role produces `8` correct, `0` incorrect, `4` abstained and `8`
+  invalid records. Retained repair and exact null are completely equal apart
+  from outer role/source-role labels. On the two fresh `(4,18)` orders, their
+  native traces reuse `18→19→20→21` before abstaining at the missing successor
+  from 21; no repair stops missing at 18, while the fixed wrong chain retains
+  `18→20` and the blocking cyclic `20→18` evidence. Every repair-bearing fresh
+  request abstains. Exact retained partial-trace reuse is therefore observed,
+  while fresh correct-answer transfer is falsified in the exhaustive remaining
+  unchanged 0–21 cohort. Full denominators remain `8/12` valid and `8/20`
+  enrolled, never prerequisite-only `8/8`.
+- **IMPLEMENTED-EXPERIMENTAL:** A separate v0.67 sibling validates the exact
+  `.vsrt`, v0.65 response/evaluation history, saved checkpoint and lesson
+  lineage, and 55-file code manifest. It loads four distinct private copies,
+  retains every original/effective request, route, lookup, nested reply,
+  successor claim/evidence reference, partial walk, block and typed rejection,
+  and changes no checkpoint. A separately immutable 1,252,824-byte `.vstrb`
+  stores all responses before any grade. A separately immutable 21,185-byte
+  `.vstrr` binds those exact bytes and the later unchanged-v0.58 grades. Reload
+  verifies both without teaching, responding, walking or grading again. Old
+  modules, artifacts, manifests, canonical/simulation/Attention/governance
+  state and checkpoint formats remain unchanged. All `110` new evaluation
+  tests, `1,341` focused math/archive tests and `2,065` full-suite tests pass,
+  including the existing checks of all seventeen legacy checkpoint formats.
+- **PROPOSED:** Pause the bounded 0–21 successor-retention line. The exhaustive
+  availability audit and this result leave no fresh completion-bearing request
+  inside the unchanged domain. Any later correct-answer transfer study needs a
+  separately authorized, prospectively frozen domain extension or a distinct
+  curriculum question; it must not recycle a consumed target, add hidden
+  testimony or reinterpret retained partial evidence as an answer.
+- **MISSING:** This is retained human-selected teacher testimony, not Verdant's
+  causal self-repair or spontaneous discovery. It establishes no fresh
+  correct-answer transfer, generalized arithmetic, mathematical understanding,
+  authenticated teaching, source independence, independent replication or
+  cheaper later learning. No lesson is canonically installed. The physical
+  acquisition/harm blocker, unexecuted v0.53 study, v0.54/v0.55 quarantine,
+  four mandatory N requirements and v0.45 Contradiction negative result remain
+  unchanged. No canonical Resolution/promotion, autonomous policy rewrite,
+  `T_g`, thermodynamic behavioral control, semantic understanding, mind,
+  consciousness or complete-agency authority is added.
+
+See [Frozen zero-new-lesson successor-retention evaluation](docs/SUCCESSOR_RETENTION_EVALUATION.md)
+for the complete answer-level and native-trace result, response barrier,
+immutable identities, falsification and exact pause boundary.
+
 ## Access-pressure integration
 
 Pre-admission access pressure is now a typed v2 observation and a distinct
@@ -3752,3 +3802,18 @@ entrypoints, and fully rehashed cost/case/checkpoint/lineage/effect/outcome/
 code/source/authority substitutions. They establish an availability and
 provenance boundary only, not prospective retention behavior or learning
 efficiency.
+Successor-retention evaluation tests additionally target exact v0.66 protocol,
+v0.65 history and 55-file manifest pairing, exact saved-checkpoint loading with
+zero new teaching, four distinct private copies, durable complete 80-record
+capture before 48 external grades, original-request grading, full
+20-enrolled/12-valid denominators, typed-invalid retention, exact complete
+retained/null equality, retained-link and wrong-link partial traces,
+missing-at-21 and cyclic evidence, static replay without teaching/responding/
+walking/grading, source/canonical/simulation/Attention/governance isolation,
+interrupted or partial publication, stale/foreign/swapped frozen inputs, and
+fully rehashed case/group/pair/type/request/route/instruction/mapping/
+successor/lesson/checkpoint/record/grade/code/source/authority substitutions.
+They establish retained partial-trace reuse and falsify fresh correct-answer
+transfer only in the exhaustive remaining unchanged 0–21 cohort; they do not
+establish self-repair, discovery, generalized arithmetic, source
+authentication, independent replication or learning efficiency.

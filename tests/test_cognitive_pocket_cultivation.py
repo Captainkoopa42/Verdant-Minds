@@ -216,3 +216,24 @@ def test_cli_exports_real_checkpoint_without_overwrite_or_reteaching(hierarchy_f
     with pytest.raises(PocketIntegrityError, match="No native available Q"):
         export_pocket(source, tmp_path / "not-created.json", q_index=99, rounds=4)
     assert not (tmp_path / "not-created.json").exists()
+
+
+
+@pytest.mark.parametrize("unsupported_status", ["hypothesis", "contradicted", "rejected"])
+def test_unconfirmed_cross_p_relation_cannot_be_counted_as_evidenced_bridge(
+    hierarchy_fixture, unsupported_status
+):
+    from verdant_kernel import RelationStatus
+
+    kernel, family, qid, _, _, _ = fresh(hierarchy_fixture)
+    labels = _typed_native_sources(kernel, family)
+    relation = kernel.propose_relation(
+        labels["a4"], labels["b1"], "next_stage",
+        evidence_refs=kernel.state.structures[family[0]].evidence_refs,
+        status=RelationStatus(unsupported_status),
+        weight=0.85,
+    )
+    pocket = cultivate_pocket(kernel, family, q_id=qid)
+    assert all(r["id"] != relation.relation_id for r in pocket["evidenced_cross_p_relations"])
+    assert not pocket["evidenced_cross_p_walks"]
+    assert all(r["channel_counts"]["evidenced_cross_p"] == 0 for r in pocket["local_rounds"])

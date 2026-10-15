@@ -15,6 +15,7 @@ from verdant_pockets.obligations import inspect_obligation_handoff
 from verdant_pockets.dynamics import simulate
 from verdant_pockets.lifecycle_cli import run_native
 from verdant_pockets.lifecycle import load_lifecycle
+from verdant_pockets.compression import pack_native_relations, unpack_native_relations, validate_native_dictionary
 
 
 @pytest.fixture
@@ -107,3 +108,31 @@ def test_full_cli_seals_native_q_and_verifies_without_rewriting_vdk(earned, tmp_
     with pytest.raises(FileExistsError):
         run_native(vdk, dest, q_index=0, rounds=4)
     assert vdk.read_bytes() == before
+
+
+
+def test_native_typed_relation_dictionary_is_lossless_and_evidence_complete(earned):
+    kernel, family, qid, pocket, labels = earned
+    before = kernel.fingerprint()
+    result = pack_native_relations(pocket)
+    restored = unpack_native_relations(result)
+    assert restored == sorted(pocket["current_member_relations"], key=lambda e: e["id"])
+    assert result["receipt"]["full_reconstruction"]
+    assert result["receipt"]["type_and_evidence_retention"]
+    assert not result["receipt"]["is_learned_semantic_compression"]
+    assert result["receipt"]["dictionary_encoded_bytes"] > 0
+    validate_native_dictionary(result, pocket)
+    assert kernel.fingerprint() == before
+
+
+def test_dictionary_tampering_and_wrong_pocket_rejected(earned):
+    _, family, qid, pocket, labels = earned
+    packed = pack_native_relations(pocket)
+    mutated = deepcopy(packed)
+    mutated["encoded_rows"][0][3] = len(mutated["relation_type_table"]) + 1
+    with pytest.raises(PocketIntegrityError):
+        validate_native_dictionary(mutated, pocket)
+    changed = deepcopy(pocket)
+    changed["pocket_id"] = "other"
+    with pytest.raises(PocketIntegrityError):
+        validate_native_dictionary(packed, changed)

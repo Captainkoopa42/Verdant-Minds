@@ -1,13 +1,5 @@
 name: Cognitive Pocket Source Corroboration v2.3
 on:
-  push:
-    branches:
-      - test/cognitive-pocket-source-corroboration-v2-3
-    paths:
-      - "verdant_pockets/**"
-      - "tests/test_cognitive_pocket_corroboration.py"
-      - "tests/test_cognitive_pocket_benchmark.py"
-      - ".github/workflows/cognitive-pocket-source-corroboration-v2-3.yml"
   workflow_dispatch:
 jobs:
   native-source-corroboration:

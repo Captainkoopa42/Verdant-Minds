@@ -36,6 +36,11 @@ def _summary(lifecycle: dict, handoff: dict) -> dict:
             if e["arm"] == "role_aligned" and e["measurable_effect"]
         }),
         "experimental_daughter_count": len(lifecycle["experimental_daughters"]["daughters"]),
+        "local_adaptation_epochs": lifecycle["local_plasticity"]["epochs"],
+        "local_numeric_plasticity_effect_on_held_out_stimulus": (
+            lifecycle["local_plasticity"]["held_out"]["measurable_local_plasticity_effect"]
+            if lifecycle["local_plasticity"]["held_out"] else False
+        ),
         "compression_reduction_fraction": lifecycle["compression"]["reduction_fraction"],
         "compression_kind": "zlib_bytes_only_not_structural_learning",
         "native_obligation_candidates": len(handoff["candidate_obligations"]),

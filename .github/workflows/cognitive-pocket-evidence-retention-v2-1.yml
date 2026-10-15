@@ -1,12 +1,5 @@
 name: Cognitive Pocket Evidence Retention v2.1
 on:
-  push:
-    branches:
-      - test/cognitive-pocket-evidence-retention-v2-1
-    paths:
-      - "verdant_pockets/**"
-      - "tests/test_cognitive_pocket_evidence_retention.py"
-      - ".github/workflows/cognitive-pocket-evidence-retention-v2-1.yml"
   workflow_dispatch:
 jobs:
   native-evidence-retention:

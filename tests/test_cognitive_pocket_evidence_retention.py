@@ -221,3 +221,30 @@ def test_end_to_end_disposable_native_acquisition_demo_has_separated_truth(case)
         "unlicensed_query": "abstain_rule_not_licensed",
     }
     validate_ledger(journal, pocket)
+
+
+
+def test_flat_control_abstains_without_bridge_and_under_reversed_observation(case):
+    _kernel, pocket, names, _family, _qid = case
+    query = _full(names)
+    before = deepcopy(pocket)
+    empty = new_ledger(pocket)
+    wrong = acquire_observation(pocket, empty, _observation(names,"s1","r4"))
+    assert flat_graph_control(pocket, empty, query)["disposition"] == "abstain_missing_supported_path"
+    assert flat_graph_control(pocket, wrong, query)["disposition"] == "abstain_missing_supported_path"
+    assert pocket == before
+
+
+def test_fresh_process_cli_mode_validates_sealed_teacher_journal(case, tmp_path, capsys):
+    from verdant_pockets.research_acquisition_demo import main
+    output = tmp_path / "controlled.json"
+    journal = tmp_path / "controlled.vpel.json"
+    main(["--out", str(output), "--ledger", str(journal)])
+    assert output.is_file() and journal.is_file()
+    capsys.readouterr()
+    main(["--verify", str(journal)])
+    result = json.loads(capsys.readouterr().out)
+    assert result["sidecar_verified_against_fresh_native_checkpoint"]
+    assert result["original_native_relation_count"] == 9
+    assert result["heldout_disposition"] == "supported_experimental_composition"
+    assert result["native_memory_unchanged"]

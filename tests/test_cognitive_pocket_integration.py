@@ -136,3 +136,19 @@ def test_dictionary_tampering_and_wrong_pocket_rejected(earned):
     changed["pocket_id"] = "other"
     with pytest.raises(PocketIntegrityError):
         validate_native_dictionary(packed, changed)
+
+
+
+def test_offline_viewer_contains_actual_records_without_executing_source_labels(earned):
+    from verdant_pockets.lifecycle import build_lifecycle
+    from verdant_pockets.viewer import render_lifecycle_html
+
+    kernel, family, qid, pocket, labels = earned
+    body = build_lifecycle(pocket, rounds=2)
+    html = render_lifecycle_html(body)
+    assert "<svg" in html and "Native canonical writes: NONE" in html
+    assert body["lifecycle_id"] in html
+    assert "hypothetical_cross_grammar" in html
+    assert "__POCKET_DATA__" not in html
+    assert "https://" not in html
+    assert kernel.fingerprint() == pocket["canonical_fingerprint"]

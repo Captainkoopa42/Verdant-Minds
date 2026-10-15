@@ -119,6 +119,11 @@ def validate_revision(journal: dict, pocket: dict) -> None:
                         concepts=concepts, observations=observations,
                         withdrawn=withdrawn)
         prev = event["record_hash"]
+    # v2.2 materializes eligible observations into the bounded v2.1
+    # experimental view. Admit no journal that could exceed its 16-source
+    # capacity, including after an unbounded series of withdrawals.
+    if len(observations) > 16:
+        raise PocketIntegrityError("Revision observation count exceeds v2.1 replay capacity")
     if journal["head_hash"] != prev:
         raise PocketIntegrityError("Revision head hash mismatch")
 

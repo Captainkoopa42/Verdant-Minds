@@ -14,6 +14,7 @@ import zlib
 
 from .experiment import PocketIntegrityError
 from .dynamics import paired_cohort
+from .adaptation import local_cultivation
 
 
 def _bytes(obj: object) -> bytes:
@@ -132,6 +133,7 @@ def compression_receipt(payload: dict) -> dict:
 def build_lifecycle(pocket: dict, *, rounds: int = 8, maximum_links_per_p: int = 2) -> dict:
     cohort = paired_cohort(pocket, rounds=rounds, maximum_links_per_p=maximum_links_per_p)
     daughters = daughter_partitions(pocket, cohort)
+    adaptation = local_cultivation(pocket, epochs=2, rounds=min(rounds, 8), maximum_links_per_p=maximum_links_per_p)
     # A separate receipt for every chronological session, chained to the
     # original certified pocket ID. Sequential replay is deterministic.
     history = []
@@ -155,6 +157,7 @@ def build_lifecycle(pocket: dict, *, rounds: int = 8, maximum_links_per_p: int =
         "parent_pocket": pocket,
         "matched_cohort": cohort,
         "experimental_daughters": daughters,
+        "local_plasticity": adaptation,
         "history": history,
         "head_hash": predecessor,
         "limitations": {
@@ -192,6 +195,15 @@ def validate_lifecycle(body: dict) -> None:
     # Re-evaluate daughter membership and all boundary references from trials.
     if body["experimental_daughters"] != daughter_partitions(pocket, cohort):
         raise PocketIntegrityError("Daughter partitions or boundary links changed")
+    adaptation = body["local_plasticity"]
+    if adaptation != local_cultivation(
+        pocket,
+        epochs=adaptation["epochs"],
+        rounds=adaptation["local_rounds_per_session"],
+        rate=adaptation["rate"],
+        maximum_links_per_p=adaptation["maximum_links_per_p"],
+    ):
+        raise PocketIntegrityError("Local plasticity changed under deterministic replay")
     predecessor = pocket["pocket_id"]
     if len(body["history"]) != len(cohort["trials"]):
         raise PocketIntegrityError("Lifecycle has missing trial history")

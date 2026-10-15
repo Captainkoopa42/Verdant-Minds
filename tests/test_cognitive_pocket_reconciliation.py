@@ -293,3 +293,31 @@ def test_cli_can_migrate_existing_v21_as_new_sidecar_and_verify_independently(ca
     with pytest.raises(SystemExit):
         main(["--from-v21",str(source),"--out",str(out),"--journal",str(newer)])
     assert source.read_bytes()==original
+
+
+
+def test_second_independent_same_direction_source_preserves_proof_after_first_withdrawn(case):
+    kernel,pocket,names,query,family,qid = case
+    first,oid = stage(case)
+    alternate = obs(names, source_ref="controlled:independent-second-source")
+    with_two = observe(pocket,first,alternate)
+    assert inspect_revision(pocket,with_two,query)["disposition"] == "supported_experimental_composition"
+    no_first = withdraw(pocket,with_two,oid,
+                        source_ref="controlled:original-teacher",
+                        reason="first source testimony rescinded")
+    state = inspect_revision(pocket,no_first,query)
+    assert state["disposition"] == "supported_experimental_composition"
+    assert state["suspended_proof_depended_on_observation_ids"] == []
+    assert state["conditional_proof"]["witness_external_observation_ids"] == [_hash(alternate)]
+    assert state["flat_baseline"]["disposition"] == "supported_experimental_composition"
+    assert len(kernel.state.relations)==9
+
+
+def test_too_many_observations_do_not_overrun_v21_replay_capacity(case):
+    _kernel,pocket,names,query,family,qid = case
+    journal=start_revision(pocket)
+    for i in range(16):
+        journal=observe(pocket,journal,obs(names,source_ref=f"controlled:source-{i:02d}"))
+    assert len(journal["events"])==16
+    with pytest.raises(PocketIntegrityError,match="capacity"):
+        observe(pocket,journal,obs(names,source_ref="controlled:source-17"))

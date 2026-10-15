@@ -160,6 +160,7 @@ def simulate(
     mode: str,
     rounds: int = 8,
     maximum_links_per_p: int = 2,
+    hypothetical_weights: dict[str, float] | None = None,
 ) -> dict:
     """Isolated local stimulus; exact channel-accounted additive activation.
 
@@ -169,6 +170,17 @@ def simulate(
     """
     ps, concepts = _validate(pocket, source_p_id, rounds)
     edges = _edges(pocket, ps, mode, maximum_links_per_p)
+    if hypothetical_weights is not None:
+        link_keys = {
+            f"{e['source']}|{e['target']}": e for e in edges
+            if e["kind"].startswith("hypothetical_")
+        }
+        if not set(hypothetical_weights).issubset(link_keys):
+            raise PocketIntegrityError("Unknown/forged local plasticity link identity")
+        for k, weight in hypothetical_weights.items():
+            if not isinstance(weight, (int, float)) or not math.isfinite(weight) or not 0 <= weight <= 0.40:
+                raise PocketIntegrityError("Local plasticity weights must be finite in [0, 0.40]")
+            link_keys[k]["strength"] = round(float(weight), 8)
     nodes = sorted(concepts)
     seed = min(ps[source_p_id]["members"])
     activated = {cid: (1.0 if cid == seed and mode != "null" else 0.0) for cid in nodes}

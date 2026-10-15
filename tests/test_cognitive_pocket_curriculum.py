@@ -8,6 +8,7 @@ import json
 import pytest
 
 from test_cognitive_pocket_composition import composed_case
+from test_hierarchy_phase import hierarchy_fixture
 from verdant_kernel import save_checkpoint
 from verdant_pockets import PocketIntegrityError
 from verdant_pockets.composition import CompositionQuery

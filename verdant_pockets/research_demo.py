@@ -42,7 +42,7 @@ def _experience(event: str, concept_labels: tuple[str, ...], context: str) -> Ex
     )
 
 
-def make_native_teaching_corpus():
+def make_native_teaching_corpus(*, include_cross_p_bridge: bool = True):
     kernel = VerdantKernel(seed=27182, state_dim=16, run_label="pocket-v2-teacher-only-demo")
     kernel.update_plasticity_policy(decay_rate=0.0, learning_rate=0.40)
     kernel.update_structure_policy(
@@ -100,13 +100,17 @@ def make_native_teaching_corpus():
                 confidence=0.85, weight=0.85,
             )
             primitive_relations.append(r.relation_id)
-    bridge = kernel.propose_relation(
-        names["r4"], names["s1"], "precedes",
-        evidence_refs=kernel.state.structures[family[0]].evidence_refs,
-        directed=True, status=RelationStatus.SUPPORTED,
-        confidence=0.85, weight=0.85,
-    )
-    primitive_relations.append(bridge.relation_id)
+    if include_cross_p_bridge:
+        # Legacy v2 controlled positive corpus; v2.1 instead introduces the
+        # missing observation AFTER taking a gap snapshot and never writes it
+        # into this native kernel.
+        bridge = kernel.propose_relation(
+            names["r4"], names["s1"], "precedes",
+            evidence_refs=kernel.state.structures[family[0]].evidence_refs,
+            directed=True, status=RelationStatus.SUPPORTED,
+            confidence=0.85, weight=0.85,
+        )
+        primitive_relations.append(bridge.relation_id)
     return kernel, tuple(family), q_id, names, primitive_relations
 
 

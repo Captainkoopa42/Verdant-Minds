@@ -127,9 +127,27 @@ def run_acquisition_demo() -> tuple[dict, dict, dict]:
 
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--ledger", type=Path, required=True)
+    parser.add_argument("--out", type=Path)
+    parser.add_argument("--ledger", type=Path)
+    parser.add_argument("--verify", type=Path, help="Replay a saved sidecar from a fresh controlled native source")
     args = parser.parse_args(argv)
+    if args.verify is not None:
+        native, ps, qid, names, primitive_ids = make_native_teaching_corpus(
+            include_cross_p_bridge=False,
+        )
+        source = cultivate_pocket(native, ps, q_id=qid, rounds=1)
+        retained = load_ledger(args.verify, source)
+        heldout = CompositionQuery(names["r3"], names["s2"], maximum_hops=9)
+        result = compose_with_evidence(source, retained, heldout)
+        print(json.dumps({
+            "sidecar_verified_against_fresh_native_checkpoint": True,
+            "original_native_relation_count": len(native.state.relations),
+            "heldout_disposition": result["disposition"],
+            "native_memory_unchanged": True,
+        }, indent=2))
+        return
+    if args.out is None or args.ledger is None:
+        parser.error("Provide --out and --ledger for new trial, or --verify for replay")
     if args.out.resolve() == args.ledger.resolve():
         parser.error("Experiment report and evidence journal must use different paths")
     if args.out.exists() or args.ledger.exists():

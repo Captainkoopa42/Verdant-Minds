@@ -79,8 +79,8 @@ def _staged_v22(pocket,names):
     return old
 
 
-def _stage(pocket,journal,query,label):
-    report=inspect_corroboration(pocket,journal,query)
+def _stage(pocket,journal,query,label,*,native_kernel=None):
+    report=inspect_corroboration(pocket,journal,query,native_kernel=native_kernel)
     return {
         "stage":label,
         "disposition":report["disposition"],
@@ -91,6 +91,7 @@ def _stage(pocket,journal,query,label):
         "graph_work":report["cost_accounting"],
         "native_canonical_writeback":False,
         "source_authenticity_verified":False,
+        "live_native_negative_relations_scanned":report["native_negative_relations_considered_from_live_source"],
     }
 
 
@@ -103,33 +104,33 @@ def run_demo(previous_v22=None):
     journal=migrate_v22(pocket,old,LEGACY_MAP,LEGACY_MANIFEST)
     query=CompositionQuery(names["r1"],names["s4"],maximum_hops=9)
     heldout=CompositionQuery(names["r3"],names["s2"],maximum_hops=9)
-    states=[_stage(pocket,journal,query,"migrated_v22_single_active_bridge_provisional")]
+    states=[_stage(pocket,journal,query,"migrated_v22_single_active_bridge_provisional",native_kernel=kernel)]
 
     replacement=_obs(names,"r4","s1","v22-replacement")
     old_id=_hash(replacement)
     copied=_obs(names,"r4","s1","new-copy")
     journal=attest(pocket,journal,copied,source_id="new-copy",derived_from=old_id)
-    states.append(_stage(pocket,journal,query,"copied_citation_same_origin_no_quorum"))
+    states.append(_stage(pocket,journal,query,"copied_citation_same_origin_no_quorum",native_kernel=kernel))
 
     beta=_obs(names,"r4","s1","new-beta")
     journal=attest(pocket,journal,beta,source_id="new-beta")
-    states.append(_stage(pocket,journal,query,"declared_second_origin_corrob_proof"))
+    states.append(_stage(pocket,journal,query,"declared_second_origin_corrob_proof",native_kernel=kernel))
 
     reverse=_obs(names,"s1","r4","new-reverse")
     journal=attest(pocket,journal,reverse,source_id="new-reverse")
-    states.append(_stage(pocket,journal,query,"contradictory_source_quarantines"))
+    states.append(_stage(pocket,journal,query,"contradictory_source_quarantines",native_kernel=kernel))
 
     journal=withdraw(pocket,journal,_hash(reverse),source_id="new-reverse",
                      reason="source withdraws its contradictory observation")
-    states.append(_stage(pocket,journal,query,"challenge_withdrawn_recovers"))
+    states.append(_stage(pocket,journal,query,"challenge_withdrawn_recovers",native_kernel=kernel))
 
     journal=withdraw(pocket,journal,_hash(beta),source_id="new-beta",
                      reason="second independent family withdraws support")
-    states.append(_stage(pocket,journal,query,"second_origin_withdrawn_loses_quorum"))
+    states.append(_stage(pocket,journal,query,"second_origin_withdrawn_loses_quorum",native_kernel=kernel))
 
     epsilon=_obs(names,"r4","s1","new-epsilon")
     journal=attest(pocket,journal,epsilon,source_id="new-epsilon")
-    states.append(_stage(pocket,journal,query,"new_distinct_origin_recovers"))
+    states.append(_stage(pocket,journal,query,"new_distinct_origin_recovers",native_kernel=kernel))
 
     expected=[
         "abstain_missing_supported_path",
@@ -144,7 +145,7 @@ def run_demo(previous_v22=None):
         raise PocketIntegrityError("Corroboration research sequence did not reproduce")
     if any(x["disposition"]!=x["flat_disposition"] for x in states):
         raise PocketIntegrityError("Flat and pocket conditionals disagree")
-    scaling=benchmark_scale(pocket,names)
+    scaling=benchmark_scale(pocket,names,native_kernel=kernel)
 
     with TemporaryDirectory(prefix="verdant-v23-") as dirname:
         vdk=Path(dirname)/"prebridge-source.vdk"
@@ -152,8 +153,8 @@ def run_demo(previous_v22=None):
         old_sha=sha256(vdk.read_bytes()).hexdigest()
         reopened=VerdantKernel.from_state(load_checkpoint(vdk))
         fresh=cultivate_pocket(reopened,ps,q_id=qid,rounds=1)
-        test=inspect_corroboration(fresh,journal,heldout)
-        if test!=inspect_corroboration(pocket,journal,heldout):
+        test=inspect_corroboration(fresh,journal,heldout,native_kernel=reopened)
+        if test!=inspect_corroboration(pocket,journal,heldout,native_kernel=kernel):
             raise PocketIntegrityError("Post-restart held-out proof diverged")
         if sha256(vdk.read_bytes()).hexdigest()!=old_sha:
             raise PocketIntegrityError("Controlled native checkpoint changed")
@@ -195,7 +196,7 @@ def main(argv=None):
         journal=load_provenance(args.verify,pocket)
         probe=inspect_corroboration(pocket,journal,CompositionQuery(
             names["r3"],names["s2"],maximum_hops=9,
-        ))
+        ),native_kernel=_kernel)
         if probe["disposition"]!="supported_experimental_composition":
             raise PocketIntegrityError("Reconstructed provenance does not corroborate held-out task")
         print(json.dumps({

@@ -238,3 +238,58 @@ def test_contradiction_between_experiment_and_native_is_quarantined(case):
     states = reconcile_state(updated,j)
     assert states["quarantined_observation_ids"] == [_hash(obs(names))]
     assert inspect_revision(updated,j,query)["disposition"] == "abstain_missing_supported_path"
+
+
+
+def test_disposable_native_controlled_reconciliation_demo_replays_from_v21(case):
+    from verdant_pockets.research_reconciliation_demo import run_reconciliation_demo
+    report, journal, pocket = run_reconciliation_demo()
+    assert report["native_primitive_relations"] == 9
+    assert len(journal["events"]) == 6
+    assert [x["disposition"] for x in report["stages"]] == [
+        "supported_experimental_composition",
+        "suspended_contested_evidence",
+        "suspended_contested_evidence",
+        "supported_experimental_composition",
+        "suspended_withdrawn_evidence",
+        "supported_experimental_composition",
+    ]
+    assert report["heldout_reproduced_after_native_checkpoint_reload"]
+    assert report["heldout_after_restart"]["disposition"] == "supported_experimental_composition"
+    assert report["unrelated_query_disposition"] == "abstain_missing_supported_path"
+    assert report["source_authenticity_independently_verified"] is False
+    assert report["pocket_advantage_over_flat_graph_demonstrated"] is False
+    assert report["no_canonical_writeback"]
+    validate_revision(journal,pocket)
+
+
+def test_cli_can_migrate_existing_v21_as_new_sidecar_and_verify_independently(case,tmp_path,capsys):
+    from verdant_pockets.research_reconciliation_demo import main
+    from verdant_pockets.evidence_retention import save_ledger
+
+    kernel,pocket,names,query,family,qid = case
+    old = acquire_observation(
+        pocket,new_ledger(pocket),
+        observation_from_testimony(
+            source=names["r4"],target=names["s1"],
+            relation_type="precedes",
+            source_ref="controlled:independent-stage-two-primitive-observation",
+        ),
+    )
+    source=tmp_path/"original-v21.vpel.json"
+    save_ledger(source,old,pocket)
+    original=source.read_bytes()
+    out=tmp_path/"controlled-reconciliation.json"
+    newer=tmp_path/"new-revision.vpr.json"
+    main(["--from-v21",str(source),"--out",str(out),"--journal",str(newer)])
+    assert source.read_bytes()==original
+    assert out.exists() and newer.exists()
+    capsys.readouterr()
+    main(["--verify",str(newer)])
+    verify=json.loads(capsys.readouterr().out)
+    assert verify["reconciliation_journal_verified"]
+    assert verify["event_count"]==6
+    assert verify["heldout_disposition"]=="supported_experimental_composition"
+    with pytest.raises(SystemExit):
+        main(["--from-v21",str(source),"--out",str(out),"--journal",str(newer)])
+    assert source.read_bytes()==original

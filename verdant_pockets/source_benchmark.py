@@ -19,7 +19,7 @@ from .experiment import PocketIntegrityError
 LEVELS = (0, 8, 16, 32, 64)
 
 
-def benchmark_scale(pocket: dict, names: dict) -> dict:
+def benchmark_scale(pocket: dict, names: dict, *, native_kernel=None) -> dict:
     registry={
         "bench-root-a":{"lineage_family":"bench-independent-family-a","description":"controlled attestation A"},
         "bench-root-b":{"lineage_family":"bench-independent-family-b","description":"controlled attestation B"},
@@ -55,6 +55,7 @@ def benchmark_scale(pocket: dict, names: dict) -> dict:
         result=inspect_corroboration(
             pocket,growing,
             CompositionQuery(names["r1"],names["s4"],maximum_hops=9),
+            native_kernel=native_kernel,
         )
         if result["disposition"]!="supported_experimental_composition":
             raise PocketIntegrityError("Uncorroborated noise spoiled true corroborated claim")
@@ -86,6 +87,7 @@ def benchmark_scale(pocket: dict, names: dict) -> dict:
         "levels":list(LEVELS),
         "results":reports,
         "same_native_source_every_level":True,
+        "live_native_negative_relation_scan":native_kernel is not None,
         "distractors_eligible_without_corroboration":False,
         "equal_admissible_evidence_for_flat_and_pocket":True,
         "measured_wall_clock_speedup":False,

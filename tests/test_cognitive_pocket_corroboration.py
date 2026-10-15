@@ -235,3 +235,17 @@ def test_source_manifest_common_lineage_not_distinct_independence(case):
     state=status_snapshot(pocket,j)
     assert state["counts"]["corroborated_experimental"]==0
     assert inspect_corroboration(pocket,j,question(names))["disposition"]=="abstain_missing_supported_path"
+
+
+
+def test_controlled_unrelated_evidence_scaling_has_matched_flat_inputs(case):
+    from verdant_pockets.source_benchmark import benchmark_scale
+    _kernel,pocket,names,_ps,_q=case
+    result=benchmark_scale(pocket,names)
+    assert [row["unrelated_attestations"] for row in result["results"]]==[0,8,16,32,64]
+    assert all(x["eligible_experimental_bridges"]==1 for x in result["results"])
+    assert all(x["pocket_disposition"]=="supported_experimental_composition" for x in result["results"])
+    assert all(x["flat_disposition"]==x["pocket_disposition"] for x in result["results"])
+    assert result["source_count_held_constant"]
+    assert not result["pocket_advantage_demonstrated"]
+    assert result["results"][-1]["provenance_attestations_replayed"]==66

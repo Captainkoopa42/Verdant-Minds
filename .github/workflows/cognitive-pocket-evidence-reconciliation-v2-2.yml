@@ -1,12 +1,5 @@
 name: Cognitive Pocket Evidence Reconciliation v2.2
 on:
-  push:
-    branches:
-      - test/cognitive-pocket-evidence-reconciliation-v2-2
-    paths:
-      - "verdant_pockets/**"
-      - "tests/test_cognitive_pocket_reconciliation.py"
-      - ".github/workflows/cognitive-pocket-evidence-reconciliation-v2-2.yml"
   workflow_dispatch:
 jobs:
   native-evidence-reconciliation:

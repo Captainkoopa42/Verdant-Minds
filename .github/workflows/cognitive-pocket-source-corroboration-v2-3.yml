@@ -1,0 +1,31 @@
+name: Cognitive Pocket Source Corroboration v2.3
+on:
+  push:
+    branches:
+      - test/cognitive-pocket-source-corroboration-v2-3
+    paths:
+      - "verdant_pockets/**"
+      - "tests/test_cognitive_pocket_corroboration.py"
+      - "tests/test_cognitive_pocket_benchmark.py"
+      - ".github/workflows/cognitive-pocket-source-corroboration-v2-3.yml"
+  workflow_dispatch:
+jobs:
+  native-source-corroboration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned dependencies
+        run: python -m pip install -r requirements-lock.txt
+      - name: Compile v2.3 and tests
+        run: python -m compileall -q verdant_pockets tests/test_cognitive_pocket_corroboration.py
+      - name: Focused native P/Q, corroboration, reconciliation and obligation suite
+        env:
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          NUMEXPR_NUM_THREADS: "1"
+        run: python -m pytest -q tests/test_cognitive_pocket_corroboration.py tests/test_cognitive_pocket_reconciliation.py tests/test_cognitive_pocket_evidence_retention.py tests/test_cognitive_pocket_composition.py tests/test_cognitive_pocket_curriculum.py tests/test_cognitive_pocket_cultivation.py tests/test_cognitive_pocket_lifecycle.py tests/test_cognitive_pocket_integration.py tests/test_hierarchy_phase.py tests/test_structure_interaction_phase.py tests/test_obligation_substrate.py tests/test_counterfactual_runtime.py

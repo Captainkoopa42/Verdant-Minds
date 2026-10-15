@@ -1,5 +1,13 @@
 name: Cognitive Pocket Cultivation Research v0
 on:
+  push:
+    branches:
+      - test/cognitive-pocket-cultivation-v0
+    paths:
+      - "verdant_pockets/**"
+      - "tests/test_cognitive_pocket_lifecycle.py"
+      - "tests/test_cognitive_pocket_cultivation.py"
+      - ".github/workflows/cognitive-pocket-cultivation-validation.yml"
   workflow_dispatch:
 jobs:
   native-pocket-controls:

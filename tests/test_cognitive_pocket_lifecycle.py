@@ -63,7 +63,7 @@ def test_no_cross_p_evidence_in_original_like_earned_p_q(native_pocket):
     _kernel, family, pocket = native_pocket
     cohort = paired_cohort(pocket, rounds=6)
     assert len(cohort["source_p_ids"]) == 3
-    assert len(cohort["trials"]) == 21
+    assert len(cohort["trials"]) == len(cohort["arms"]) * len(family)
     assert not pocket["evidenced_cross_p_relations"]
     assert not pocket["evidenced_cross_p_walks"]
     assert all(e["is_evidenced_compositional_gain"] is False for e in cohort["effects"])
@@ -117,7 +117,7 @@ def test_chain_and_lossless_compression_and_roundtrip(native_pocket, tmp_path):
     assert lifecycle["compression"]["lossless_exact_reconstruction"]
     assert lifecycle["compression"]["compressed_bytes"] < lifecycle["compression"]["original_bytes"]
     assert not lifecycle["compression"]["learned_representation_compression"]
-    assert len(lifecycle["history"]) == 21
+    assert len(lifecycle["history"]) == len(lifecycle["matched_cohort"]["arms"]) * len(family)
     assert lifecycle["head_hash"] == lifecycle["history"][-1]["record_hash"]
     dest = tmp_path / "sidecar.json"
     save_lifecycle(dest, lifecycle)

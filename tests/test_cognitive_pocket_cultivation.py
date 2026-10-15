@@ -172,3 +172,47 @@ def test_snapshot_roundtrip_exact_and_no_new_obligation(hierarchy_fixture, tmp_p
     assert first == second
     assert checkpoint.read_bytes() == original
     assert len(restored.state.obligation_kernels) == len(kernel.state.obligation_kernels)
+
+
+
+def test_wrong_direction_bridge_does_not_forge_a_cross_p_path(hierarchy_fixture):
+    kernel, family, qid, _, _, _ = fresh(hierarchy_fixture)
+    labels = _typed_native_sources(kernel, family)
+    kernel.propose_relation(
+        labels["b1"], labels["a4"], "next_stage",
+        evidence_refs=kernel.state.structures[family[0]].evidence_refs,
+        weight=0.85,
+    )
+    wrong = cultivate_pocket(kernel, family, q_id=qid)
+    assert len(wrong["evidenced_cross_p_relations"]) == 1
+    assert wrong["evidenced_cross_p_walks"] == []
+
+
+def test_cli_exports_real_checkpoint_without_overwrite_or_reteaching(hierarchy_fixture, tmp_path):
+    import hashlib
+    import json
+    from verdant_kernel import save_checkpoint
+    from verdant_pockets.cli import export_pocket
+
+    kernel, family, qid, _, _, _ = fresh(hierarchy_fixture)
+    _typed_native_sources(kernel, family, mixed=True)
+    source = tmp_path / "original.vdk"
+    target = tmp_path / "read-only-pocket.json"
+    save_checkpoint(source, kernel.snapshot())
+    original = source.read_bytes()
+
+    summary = export_pocket(source, target, q_index=0, rounds=4)
+    record = json.loads(target.read_text(encoding="utf-8"))
+    assert summary["original_vdk_unchanged"]
+    assert summary["p_count"] == 3
+    assert record["source_checkpoint_sha256"] == hashlib.sha256(original).hexdigest()
+    assert record["pocket"]["canonical_fingerprint"] == kernel.fingerprint()
+    assert record["pocket"]["q_context_id"] == qid
+    assert source.read_bytes() == original
+    with pytest.raises(FileExistsError):
+        export_pocket(source, target, q_index=0, rounds=4)
+    with pytest.raises(PocketIntegrityError, match="overwrite"):
+        export_pocket(source, source, q_index=0, rounds=4)
+    with pytest.raises(PocketIntegrityError, match="No native available Q"):
+        export_pocket(source, tmp_path / "not-created.json", q_index=99, rounds=4)
+    assert not (tmp_path / "not-created.json").exists()

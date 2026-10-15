@@ -218,7 +218,7 @@ def withdraw(pocket,journal,observation_id,*,source_id,reason):
     })
 
 
-def status_snapshot(pocket,journal):
+def status_snapshot(pocket,journal,*,native_kernel=None):
     records, withdrawn = _replay(journal,pocket)
     native = _load_source(pocket)[2]
     native_forward = {
@@ -229,6 +229,26 @@ def status_snapshot(pocket,journal):
         (r["source"],r["target"],r["type"])
         for r in native if r["directed"] and r["status"] == "contradicted"
     }
+    # v0 pockets deliberately excluded unsupported native cross-P relations
+    # from the evidence-backed export. Inspect a live verified source kernel
+    # explicitly when the caller needs negative cross-P evidence. Never add
+    # these contradicted rows to a proof edge view.
+    if native_kernel is not None:
+        if native_kernel.fingerprint() != pocket["canonical_fingerprint"]:
+            raise PocketIntegrityError("Native conflict inspection kernel differs from source checkpoint")
+        members = {c["id"] for c in pocket["concepts"]}
+        for row in native_kernel.state.relations.values():
+            if (row.source_concept_id in members and
+                row.target_concept_id in members and
+                row.directed and row.status.value == "contradicted"):
+                if not row.evidence_refs or any(
+                    ref not in native_kernel.state.evidence for ref in row.evidence_refs
+                ):
+                    raise PocketIntegrityError("Contradicted native relation evidence closure incomplete")
+                native_contradicted.add((
+                    row.source_concept_id,row.target_concept_id,row.relation_type
+                ))
+
     grouped = defaultdict(list)
     for oid,item in records.items():
         if oid not in withdrawn:
@@ -275,13 +295,14 @@ def status_snapshot(pocket,journal):
             for key,metadata in eligible_keys.items()
         ],
         "source_authenticity_verified":False,
+        "complete_native_conflict_source_inspected":native_kernel is not None,
         "lineage_independence_external_declaration_only":True,
         "no_canonical_writeback":True,
     }
 
 
-def _admitted_v21(pocket,journal):
-    state=status_snapshot(pocket,journal)
+def _admitted_v21(pocket,journal,*,native_kernel=None):
+    state=status_snapshot(pocket,journal,native_kernel=native_kernel)
     if len(state["corroborated_claims"])>MAX_MATERIALIZED_CLAIMS:
         raise PocketIntegrityError("Corroborated claim graph exceeds bounded v2.1 view")
     view=new_ledger(pocket)
@@ -303,10 +324,10 @@ def _admitted_v21(pocket,journal):
     return view,state,attestation_map
 
 
-def inspect_corroboration(pocket,journal,query):
+def inspect_corroboration(pocket,journal,query,*,native_kernel=None):
     """Conditionally answer only using 2+ declared lineage groups per bridge."""
     query.validate()
-    view, state, evidence = _admitted_v21(pocket,journal)
+    view, state, evidence = _admitted_v21(pocket,journal,native_kernel=native_kernel)
     proof=compose_with_evidence(pocket,view,query)
     flat=flat_graph_control(pocket,view,query)
     if flat["disposition"]!=proof["disposition"]:
@@ -342,6 +363,7 @@ def inspect_corroboration(pocket,journal,query):
             "not_a_wall_clock_benchmark":True,
         },
         "corroboration_not_source_authentication":True,
+        "native_negative_relations_considered_from_live_source":native_kernel is not None,
         "no_native_writeback":True,
         "no_obligation_writeback":True,
     }

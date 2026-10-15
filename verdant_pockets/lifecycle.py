@@ -88,7 +88,7 @@ def daughter_partitions(pocket: dict, cohort: dict) -> dict:
                 "source_daughter_id": da, "target_daughter_id": db,
                 "source_concept_id": e["source"], "target_concept_id": e["target"],
                 "kind": e["kind"], "native_relation_id": e.get("relation_id"),
-                "hypothetical_only": e["kind"] == "hypothetical_role",
+                "hypothetical_only": e["kind"].startswith("hypothetical_"),
                 "weight": e["strength"],
             }
     result = {

@@ -19,6 +19,7 @@ _MODES = (
     "native_only",
     "role_aligned",
     "role_scrambled",
+    "same_grammar_only",
     "canonical_only",
     "canonical_reversed",
     "combined",
@@ -65,7 +66,7 @@ def _validate(pocket: dict, source_p: str, rounds: int) -> tuple[dict, dict]:
     return ps, concepts
 
 
-def _role_edges(pocket: dict, ps: dict, *, scramble: bool, maximum_links_per_p: int) -> list[dict]:
+def _role_edges(pocket: dict, ps: dict, *, scramble: bool, maximum_links_per_p: int, same_grammar_only: bool = False) -> list[dict]:
     if not 0 <= maximum_links_per_p <= 4:
         raise PocketIntegrityError("Role link budget per P must be 0..4")
     taken: dict[str, int] = defaultdict(int)
@@ -80,8 +81,12 @@ def _role_edges(pocket: dict, ps: dict, *, scramble: bool, maximum_links_per_p: 
             raise PocketIntegrityError("Role mapping has unknown source P")
         if row["status"] != "hypothetical_role_correspondence" or row["canonical_relation_asserted"] or row["semantic_equivalence_asserted"]:
             raise PocketIntegrityError("Analogical mapping tried to assert semantic truth")
-        if _grammar(ps[a]) is None or _grammar(ps[a]) != _grammar(ps[b]):
-            continue  # analogy requires a matching typed-variable relational grammar
+        left_grammar, right_grammar = _grammar(ps[a]), _grammar(ps[b])
+        if left_grammar is None or right_grammar is None:
+            continue  # no typed relation basis for this transfer protocol
+        cross_grammar = left_grammar != right_grammar
+        if cross_grammar and same_grammar_only:
+            continue
         if taken[a] >= maximum_links_per_p or taken[b] >= maximum_links_per_p:
             continue
         members_a, members_b = set(ps[a]["members"]), set(ps[b]["members"])
@@ -104,8 +109,9 @@ def _role_edges(pocket: dict, ps: dict, *, scramble: bool, maximum_links_per_p: 
             "target": y,
             "from_p": a,
             "to_p": b,
-            "strength": round(0.22 * float(row["topology_score"]), 8),
-            "kind": "hypothetical_role",
+            "strength": round((0.08 if cross_grammar else 0.22) * float(row["topology_score"]), 8),
+            "kind": "hypothetical_cross_grammar" if cross_grammar else "hypothetical_role",
+            "source_grammar_differs": cross_grammar,
         } for x, y in mapping)
         taken[a] += 1
         taken[b] += 1
@@ -118,7 +124,7 @@ def _edges(pocket: dict, ps: dict, mode: str, maximum_links_per_p: int) -> list[
         raise PocketIntegrityError("Unknown experimental arm")
     if mode == "null":
         return selected
-    if mode in {"native_only", "role_aligned", "role_scrambled", "combined", "canonical_only", "canonical_reversed"}:
+    if mode in {"native_only", "role_aligned", "role_scrambled", "same_grammar_only", "combined", "canonical_only", "canonical_reversed"}:
         for edge in pocket["native_plastic_edges"]:
             a, b = edge["nodes"]
             selected.append({
@@ -137,10 +143,11 @@ def _edges(pocket: dict, ps: dict, mode: str, maximum_links_per_p: int) -> list[
                 "directed": bool(r["directed"]), "kind": "evidenced_cross_p",
                 "relation_id": r["id"],
             })
-    if mode in {"role_aligned", "role_scrambled", "combined"}:
+    if mode in {"role_aligned", "role_scrambled", "same_grammar_only", "combined"}:
         for e in _role_edges(
             pocket, ps, scramble=(mode == "role_scrambled"),
             maximum_links_per_p=maximum_links_per_p,
+            same_grammar_only=(mode == "same_grammar_only"),
         ):
             selected.append({**e, "directed": False})
     return sorted(selected, key=lambda x: (x["kind"], x["source"], x["target"], x.get("relation_id", "")))

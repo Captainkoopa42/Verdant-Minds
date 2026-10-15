@@ -1,13 +1,5 @@
 name: Selective Cognitive Pocket Composition v2 Research
 on:
-  push:
-    branches:
-      - test/cognitive-pocket-selective-composition-v2
-    paths:
-      - "verdant_pockets/**"
-      - "tests/test_cognitive_pocket_composition.py"
-      - "tests/test_cognitive_pocket_curriculum.py"
-      - ".github/workflows/cognitive-pocket-selective-composition-v2.yml"
   workflow_dispatch:
 jobs:
   evidence-grounded-native-composition:

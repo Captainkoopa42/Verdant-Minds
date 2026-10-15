@@ -139,6 +139,8 @@ def main(argv=None) -> None:
         retained = load_ledger(args.verify, source)
         heldout = CompositionQuery(names["r3"], names["s2"], maximum_hops=9)
         result = compose_with_evidence(source, retained, heldout)
+        if result["disposition"] != "supported_experimental_composition":
+            raise PocketIntegrityError("Retained journal did not support the expected held-out controlled task")
         print(json.dumps({
             "sidecar_verified_against_fresh_native_checkpoint": True,
             "original_native_relation_count": len(native.state.relations),

@@ -75,7 +75,7 @@ def assess_corroboration(observations, *, required_independent_sources=2):
                               "status":"conflicting_claims_require_review"})
     return {"schema":SCHEMA,"policy":"source_family_and_record_id_must_both_differ",
             "observation_count":len(observations),"claim_count":len(claims),
-            "declared_source_family_count":len(groups),"claims":claims,
+            "declared_provenance_pair_count":len(groups),\n            "distinct_source_family_label_count":len({item["source_family"] for item in observations}),"claims":claims,
             "conflicts":conflicts,"authenticity_or_truth_verified":False,
             "canonical_writeback":False}
 

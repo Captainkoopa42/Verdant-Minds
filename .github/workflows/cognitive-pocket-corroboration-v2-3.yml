@@ -1,0 +1,32 @@
+name: Cognitive Pocket Corroboration v2.3
+on:
+  workflow_dispatch:
+jobs:
+  focused-research-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/cognitive-pocket-corroboration-v2-3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-lock.txt
+      - run: python -m pip install -r requirements-lock.txt
+      - name: Focused v2.3 and native regression
+        run: >-
+          python -m pytest -q
+          tests/test_cognitive_pocket_corroboration.py
+          tests/test_cognitive_pocket_reconciliation.py
+          tests/test_cognitive_pocket_evidence_retention.py
+          tests/test_cognitive_pocket_composition.py
+          tests/test_cognitive_pocket_curriculum.py
+          tests/test_cognitive_pocket_cultivation.py
+          tests/test_cognitive_pocket_lifecycle.py
+          tests/test_cognitive_pocket_integration.py
+          tests/test_hierarchy_phase.py
+          tests/test_structure_interaction_phase.py
+          tests/test_obligation_substrate.py
+          tests/test_counterfactual_runtime.py

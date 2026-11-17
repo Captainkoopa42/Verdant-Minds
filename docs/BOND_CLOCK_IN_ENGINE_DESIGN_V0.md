@@ -85,3 +85,23 @@ not enough.
 * Pass mark: the whole existing suite on the new branch; replay determinism (same lessons, same
   fingerprint twice); and this week's results reproduced on the 406-lesson life (promotions,
   wrong promotions 0, cues recalled) with stock decay and with `decay_mode = "bond_clock"`.
+
+## Second life (life seed 4242, kernel seed 7), same settings
+| | engine as it was | full system |
+|---|---|---|
+| all gate-meeting families promoted | 8/46 | 45/46 |
+| short gaps / long gaps / returning | 0/15 / 0/15 / 0/5 | 15/15 / 15/15 / 5/5 |
+| cues recalled exactly | 33/148 | 148/148 |
+| wrong / noise-only promotions | 0 / 0 | 0 / 0 |
+| ms per lesson at lesson 406 | 3,399 (full records) | 1,924 (changes-only) |
+
+## Does it now remember too much? (`run_observer_should_fade.py`, life seed 9001, final organisms)
+| | engine as it was | full system |
+|---|---|---|
+| bonds among random noise pairs | 8 | 8 |
+| met once: families with a living bond / cues recalling a partner | 4/28, 0/84 | 7/28, 3/84 |
+| met twice: | 3/14, 0/42 | 9/14, 15/42 |
+| met 5 times in one setting: | 2/6, 0/18 | 6/6, 12/18 |
+Noise is not held more; one-offs still fade. Things met twice, or often in one setting, stay
+recallable from the living web (never promoted). Whether a mind should keep those weak,
+unearned memories is a design decision, not settled by this measurement.

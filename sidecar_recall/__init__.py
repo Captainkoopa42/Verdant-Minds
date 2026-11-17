@@ -15,6 +15,12 @@ Every answer says how it was reached, and every element carries where it came fr
     ECHO        called up by the memory itself (the unchanged replay calls it up too)
     IMAGINED    introduced by imagination, or called up only by the new combination;
                 never presented as remembered
+Each fine label belongs to one of the five provenance kinds from the Mindspace design (kind_of):
+    OBSERVED          the experience happening now (only a real beat or a simulation has one)
+    REMEMBERED        EARNED, REMEMBERED, WEAK, FADED, RELIVED, ECHO, CONTEXT: all read from the record
+    INFERRED          SEARCHED: a guess from resemblance, with the record checked that it was never met
+    IMAGINED          IMAGINED: made by imagination; never written, never presented as remembered
+    SIMULATED_RESULT  what the organism's real pipeline did on a throwaway copy (simulate)
 Meetings are counted from the record (real experiences holding both), never from how many
 internal cycles reinforced a bond.
 
@@ -44,7 +50,20 @@ import numpy as np
 from verdant_compilation import VerdantCompilationPipeline
 from verdant_kernel.models import EvidenceKind
 
-__all__ = ["recall", "relive", "imagine", "Recollection", "RelivedExperience", "Imagined"]
+__all__ = ["recall", "relive", "imagine", "simulate", "kind_of", "Recollection", "RelivedExperience", "Imagined", "Simulated"]
+
+KINDS = ("OBSERVED", "REMEMBERED", "INFERRED", "IMAGINED", "SIMULATED_RESULT")
+_KIND = {"EARNED": "REMEMBERED", "REMEMBERED": "REMEMBERED", "WEAK": "REMEMBERED", "FADED": "REMEMBERED",
+         "RELIVED": "REMEMBERED", "ECHO": "REMEMBERED", "CONTEXT": "REMEMBERED", "SEARCHED": "INFERRED",
+         "IMAGINED": "IMAGINED", "OBSERVED": "OBSERVED", "SIMULATED_RESULT": "SIMULATED_RESULT"}
+
+
+def kind_of(provenance: str) -> str:
+    """Which of the five provenance kinds a fine label belongs to."""
+    head = provenance.split(",")[0].split(" (")[0].strip()
+    if head not in _KIND:
+        raise ValueError(f"Unknown provenance label {provenance!r}.")
+    return _KIND[head]
 
 STRONG_EXPOSURES = 3
 
@@ -76,6 +95,13 @@ class Imagined:
     context: str
     held_in_mind: tuple[tuple[str, str], ...]      # (label, provenance) strongest first
     original_intact: bool
+    brought: tuple[tuple[str, str], ...] = ()      # second step: what the newcomer brings with it
+    called_back: tuple[tuple[str, str], ...] = ()  # second step: what the rest of the scene calls back (often the swapped-out piece)
+    scene: tuple[str, ...] = ()
+    effect: np.ndarray | None = field(default=None, repr=False)
+    sensed: np.ndarray | None = field(default=None, repr=False)
+    moment: np.ndarray | None = field(default=None, repr=False)
+    readout: tuple[tuple[str, float], ...] = ()
 
 
 def _vec(record) -> np.ndarray:
@@ -179,46 +205,176 @@ def recall(kernel, cue_label: str) -> Recollection:
     return Recollection(cue_label, mode, tuple(partners), "; ".join(notes))
 
 
-def imagine(kernel, event_key: str, swap_out: str, swap_in: str, *, context: str = "then", top: int = 6) -> Imagined:
-    """Relive an experience with one concept swapped for another, against the mind then or now."""
+def _experience_parts(kernel, base: RelivedExperience) -> np.ndarray:
+    """Split a relived effect back into what was sensed: effect = unit(fc*F + cc*C), with C known from the
+    concepts present and |F| = 1, so the scale s solves |s*effect - cc*C| = fc (one positive root)."""
+    policy = kernel.state.ecwf_policy; fc, cc = policy.feature_coupling, policy.concept_coupling
+    C = kernel._concept_binding_effect(base.concept_ids)
+    if C is None:
+        return base.effect
+    b = cc * float(np.vdot(base.effect, C).real)
+    s = b + math.sqrt(max(0.0, b * b - cc * cc + fc * fc))
+    return (s * base.effect - cc * C) / fc
+
+
+def _scope(kernel) -> list[str]:
+    state = kernel.state; shard = state.shards.get(state.active_shard_id)
+    ids = shard.concept_ids if shard is not None and shard.concept_ids else state.concepts
+    return sorted(c for c in ids if c in state.field_addresses)
+
+
+def _readout(kernel, feature_effect, scene, moment, frames, top):
+    """The organism's own resonance readout (profile, live field, recent history), on numbers only.
+    Profiles of the concepts in the scene take the imagined sensing as one more exposure, as they would."""
+    state = kernel.state; policy = state.ecwf_policy
+    w = np.array([policy.query_profile_weight, policy.query_current_weight, policy.query_history_weight]); w = w / w.sum()
+    frames = [_unit(f) for f in frames][-policy.history_window:]
+    ages = [policy.history_decay ** a for a in range(len(frames))][::-1]
+    out = []
+    for cid in _scope(kernel):
+        addr = _vec(state.field_addresses[cid]); prof = state.resonance_profiles.get(cid)
+        p = 0.0
+        if prof is not None:
+            v = _vec(prof)
+            if cid in scene:
+                v = _unit(prof.exposure_count * v + feature_effect)
+            p = min(1.0, abs(np.vdot(v, feature_effect)))
+        elif cid in scene:
+            p = 1.0
+        c = min(1.0, abs(np.vdot(addr, moment)))
+        h = (sum(a * min(1.0, abs(np.vdot(addr, f))) for a, f in zip(ages, frames)) / sum(ages)) if frames else 0.0
+        out.append((min(1.0, w[0] * p + w[1] * c + w[2] * h), cid))
+    out.sort(key=lambda x: (-x[0], x[1]))
+    return out[:top]
+
+
+def _brought_by(kernel, cid: str, scene: set[str], threshold: float, verb: str = "brought") -> list[tuple[str, str]]:
+    """The second step: what the organism's own association recall would offer from one concept.
+    Earned partners first, then bonds at or above the recall threshold (the workspace's own rule)."""
+    state = kernel.state; label = {c: x.label for c, x in state.concepts.items()}; out = {}
+    for s in state.structures.values():
+        if cid in s.member_concept_ids and kernel.structure_is_available(s.structure_id):
+            for m in s.member_concept_ids:
+                if m != cid and m not in scene:
+                    out[m] = f"IMAGINED ({verb} by {label[cid]}: its earned partner)"
+    for b in sorted(state.plasticity_associations.values(), key=lambda x: (-x.strength, x.association_id)):
+        if cid in b.concept_ids and b.strength >= threshold:
+            other = b.concept_ids[0] if b.concept_ids[1] == cid else b.concept_ids[1]
+            if other not in scene and other not in out:
+                n = len(_meetings_with(kernel, cid, other))
+                out[other] = f"IMAGINED ({verb} by {label[cid]}: bonded {b.strength:.2f}, met {n} time(s))"
+    return list(out.items())
+
+
+ASSOCIATION_RECALL_THRESHOLD = 0.24      # the development pipeline's default association_recall_threshold
+
+
+def imagine(kernel, event_key: str, swap_out: str, swap_in: str, *, context: str = "then", top: int = 6,
+            second_step: bool = True, association_threshold: float = ASSOCIATION_RECALL_THRESHOLD,
+            look: tuple | None = None) -> Imagined:
+    """Relive an experience with one concept swapped for another, against the mind then or now.
+
+    Step one rebuilds the moment: the original sensing (recovered exactly from the record) with the
+    swapped concept's share replaced by the newcomer's average sensing, and the concepts present
+    changed. It is read with the organism's own resonance readout. Step two lets the newcomer bring
+    what the organism's association recall would bring from it: earned partners and strong bonds.
+    If a look (features, modality) is supplied, it replaces the guessed look; nothing else changes.
+    Everything is computed on numbers derived from the record; nothing is written."""
     fingerprint = kernel.fingerprint(); state = kernel.state
     label = {cid: c.label for cid, c in state.concepts.items()}; ids = {v: k for k, v in label.items()}
     base = relive(kernel, event_key); out_id, in_id = ids[swap_out], ids[swap_in]
     if out_id not in base.concept_ids:
         raise ValueError(f"{swap_out!r} was not part of that experience.")
     policy = state.ecwf_policy; k = max(1, len(base.concept_ids))
-    a_out, a_in = _vec(state.field_addresses[out_id]), _vec(state.field_addresses[in_id])
+    sensed = _experience_parts(kernel, base)
+    scene = tuple(sorted((set(base.concept_ids) - {out_id}) | {in_id}))
     p_out, p_in = _vec(state.resonance_profiles[out_id]), _vec(state.resonance_profiles[in_id])
-    imagined = _unit(base.effect
-                     + (policy.concept_coupling / math.sqrt(k)) * (a_in - a_out)
-                     + (policy.feature_coupling / k) * (p_in - p_out))
-    mind = base.mind_before if context == "then" else _vec(state.field)
+    if look is None:
+        sensed_new = _unit(sensed + (p_in - p_out) / k)      # declared before testing: newcomer's average look, one share in k
+    else:                                                    # a described look (features, modality), e.g. from a sketch or a sentence
+        sensed_new = kernel._project_effect(np.asarray(look[0], dtype=np.float64), look[1])
+    C_new = kernel._concept_binding_effect(scene)
+    effect = _unit(policy.feature_coupling * sensed_new + policy.concept_coupling * C_new)
 
-    def held_by(effect):
-        moment = _unit(policy.retention * mind + effect) if np.linalg.norm(mind) else effect
-        out = []
-        for cid, address in state.field_addresses.items():
-            if cid in state.resonance_profiles:
-                out.append((0.5 * abs(np.vdot(_vec(address), moment)) + 0.5 * abs(np.vdot(_vec(state.resonance_profiles[cid]), effect)), cid))
-        return sorted(out, reverse=True)
-    scores = held_by(imagined)
-    echoes = {cid for _s, cid in held_by(base.effect)[:top]}          # what the unchanged replay calls up
-    from_mind = {cid: abs(np.vdot(_vec(state.field_addresses[cid]), policy.retention * mind)) > abs(np.vdot(_vec(state.field_addresses[cid]), imagined))
-                 for _s, cid in scores[:top]}
+    history = state.field.history; i = _frames_by_event(kernel)[event_key]
+    if context == "then":
+        mind = base.mind_before; past = [_vec(f) for f in history[max(0, i - policy.history_window):i]]
+    else:
+        mind = _vec(state.field); past = [_vec(f) for f in history[-policy.history_window:]]
+    def moment_of(e):
+        return _unit(policy.retention * mind + e) if np.linalg.norm(mind) else e
+    moment = moment_of(effect)
+    readout = _readout(kernel, sensed_new, set(scene), moment, past + [moment], top)
+    echo_moment = moment_of(base.effect)
+    echoes = {cid for _s, cid in _readout(kernel, sensed, set(base.concept_ids), echo_moment, past + [echo_moment], top)}
 
     def where(cid):
         if cid == in_id:
             return "IMAGINED (swapped in)"
         if cid in base.concept_ids:
             return "RELIVED (from the original experience)"
-        if from_mind[cid]:
-            return f"CONTEXT (on the mind {'then' if context == 'then' else 'now'})"
+        a = _vec(state.field_addresses[cid])
+        if np.linalg.norm(mind) and abs(np.vdot(a, policy.retention * mind)) > abs(np.vdot(a, effect)):
+            return f"CONTEXT (on the mind {context})"
         if cid in echoes:
             return "ECHO (the unchanged memory calls it up too)"
         return "IMAGINED (called up only by the new combination)"
-    held = tuple((label[c], where(c)) for _s, c in scores[:top])
+    held = tuple((label[c], where(c)) for _s, c in readout)
+    brought_ids = dict(_brought_by(kernel, in_id, set(scene), association_threshold)) if second_step else {}
+    brought = tuple((label[c], how) for c, how in brought_ids.items())
+    called_back = {}
+    if second_step:
+        for t in scene:
+            if t != in_id:
+                for c, how in _brought_by(kernel, t, set(scene), association_threshold, verb="called back"):
+                    if c not in called_back and c not in brought_ids:
+                        called_back[c] = how
     again = relive(kernel, event_key)
     intact = bool(np.allclose(again.effect, base.effect) and again.concept_ids == base.concept_ids)
     if kernel.fingerprint() != fingerprint:
         raise RuntimeError("Imagining changed the organism.")
-    return Imagined(event_key, swap_out, swap_in, context, held, intact)
+    return Imagined(event_key, swap_out, swap_in, context, held, intact, brought=brought,
+                    called_back=tuple((label[c], how) for c, how in sorted(called_back.items(), key=lambda x: label[x[0]])),
+                    scene=tuple(label[c] for c in scene), effect=effect, sensed=sensed_new, moment=moment,
+                    readout=tuple((label[c], float(sc)) for sc, c in readout))
+
+
+@dataclass(frozen=True)
+class Simulated:
+    event_key: str
+    observed: tuple[str, ...]                      # the concepts of the simulated experience (OBSERVED in the copy)
+    came_to_mind: tuple[tuple[str, float], ...]     # the copy's real resonance readout
+    brought: tuple[tuple[str, str], ...]            # (label, provenance) offered by association and earned structure
+    effect: np.ndarray = field(repr=False)
+    moment: np.ndarray = field(repr=False)
+    organism_unchanged: bool = True
+
+
+def simulate(kernel, pipeline, command) -> Simulated:
+    """Run one experience through the organism's real pipeline on a throwaway copy and read what happened.
+
+    This is the SIMULATED_RESULT kind: unlike imagining, it needs a concrete experience (its features)
+    and runs every real stage. The copy is discarded; the organism's fingerprint is checked."""
+    from verdant_kernel import VerdantKernel
+    fingerprint = kernel.fingerprint()
+    copy = VerdantKernel.from_state(kernel.state.model_copy(deep=True))
+    pipeline.advance(copy, command)
+    label = {c: x.label for c, x in copy.state.concepts.items()}
+    x = relive(copy, command.event_key); after = _vec(copy.state.field.history[_frames_by_event(copy)[command.event_key]])
+    ev = next(e for e in reversed(copy.state.resonance_events)
+              if any(copy.state.evidence[r].event_key == command.event_key for r in e.evidence_refs if r in copy.state.evidence))
+    came = tuple((label[c.concept_id], float(c.score)) for c in ev.query_report.candidates)
+    work = next(w for w in copy.state.workspace_cycle_events if w.report.cycle == ev.committed_cycle)
+    scene = set(x.concept_ids); brought = {}
+    for a in work.report.assessments:
+        if a.candidate.source_kind.value in ("local_association", "earned_structure") and a.carried_from_item_id is None:
+            won = "won attention" if a.disposition.value == "admit" else "offered, not admitted"
+            by = ", ".join(label[t] for t in a.candidate.metadata.get("trigger_concept_ids", ()))
+            for m in a.candidate.binding_refs:
+                if m not in scene:
+                    brought.setdefault(label[m], f"SIMULATED_RESULT (brought by {by}; {won})")
+    unchanged = kernel.fingerprint() == fingerprint
+    if not unchanged:
+        raise RuntimeError("Simulating changed the organism.")
+    return Simulated(command.event_key, tuple(sorted(label[c] for c in scene)), came, tuple(sorted(brought.items())),
+                     x.effect, after, unchanged)

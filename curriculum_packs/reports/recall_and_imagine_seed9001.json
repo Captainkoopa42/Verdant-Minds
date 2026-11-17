@@ -208,8 +208,8 @@
  "3_imagine_summary": {
   "trials": 6,
   "rest_of_the_memory_kept": 6,
-  "swapped_out_dropped": 5,
-  "swapped_in_held": 5,
+  "swapped_out_dropped": 4,
+  "swapped_in_held": 6,
   "called_up_partners_of_the_new_piece": 0,
   "original_memory_intact_after_imagining": 12,
   "of_all_trials": 12,
@@ -221,13 +221,14 @@
    "rupati",
    "rusiku"
   ],
-  "swapped_out_still_held": false,
+  "swapped_out_still_held": true,
   "swapped_in_held": true,
   "new_partners_called_up": [],
   "labels": {
-   "RELIVED": 2,
-   "ECHO": 2,
-   "IMAGINED": 2
+   "RELIVED": 3,
+   "CONTEXT": 1,
+   "IMAGINED": 1,
+   "ECHO": 1
   },
   "original_intact": true,
   "held_in_mind": [
@@ -236,24 +237,24 @@
     "RELIVED (from the original experience)"
    ],
    [
-    "rusiku",
-    "RELIVED (from the original experience)"
+    "vatavo",
+    "CONTEXT (on the mind then)"
    ],
    [
-    "vatavo",
-    "ECHO (the unchanged memory calls it up too)"
+    "rusiku",
+    "RELIVED (from the original experience)"
    ],
    [
     "sabude",
     "IMAGINED (swapped in)"
    ],
    [
-    "senefe",
-    "IMAGINED (called up only by the new combination)"
+    "vukagi",
+    "ECHO (the unchanged memory calls it up too)"
    ],
    [
-    "pulono",
-    "ECHO (the unchanged memory calls it up too)"
+    "bikari",
+    "RELIVED (from the original experience)"
    ]
   ]
  },

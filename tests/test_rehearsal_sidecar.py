@@ -77,3 +77,16 @@ def test_nothing_to_rehearse_leaves_state_untouched():
 def test_config_refuses_zero_exposures():
     with pytest.raises(ValueError):
         RehearsalConfig(min_real_exposures=0)
+
+
+def test_sleep_uses_the_waking_plasticity_stage_so_the_bond_clock_pauses():
+    from sidecar_bond_clock import BondClockPlasticityPipeline
+    stage = BondClockPlasticityPipeline()
+    pipe = RehearsingDevelopmentPipeline(VerdantDevelopmentPipeline(plasticity=stage),
+                                         RehearsalConfig(every_experiences=4, min_real_exposures=1, refresh_below=1.0))
+    assert pipe.rehearsal.plasticity is stage
+    kernel = _run(pipe, _lessons())
+    committed = [r for r in pipe.reports if r.committed]
+    assert committed
+    sleeps = [e for e in kernel.state.plasticity_events if "suspended=1" in e.report.operation]
+    assert len(sleeps) == len(committed)                      # every committed sleep beat paused the clock

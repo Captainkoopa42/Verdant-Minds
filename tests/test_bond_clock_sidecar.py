@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import hashlib
-import inspect
+
+import pytest
 
 from verdant_development import VerdantDevelopmentPipeline
 from verdant_kernel import ConceptProposal, ExperienceCommand, VerdantKernel
-from verdant_plasticity.pipeline import VerdantPlasticityPipeline
-from sidecar_bond_clock import STOCK_INSPECT_SHA256, BondClockPlasticityPipeline
+from sidecar_bond_clock import BondClockPlasticityPipeline, ChangesOnlyPlasticityPipeline, replay_tables
 
 DIM = 32
 
@@ -48,11 +48,6 @@ def _bonds(kernel, family):
     return sorted(a.strength for a in kernel.state.plasticity_associations.values() if set(a.concept_ids) <= want)
 
 
-def test_stock_inspect_has_not_drifted_from_the_derived_copy():
-    src = inspect.getsource(VerdantPlasticityPipeline.inspect)
-    assert hashlib.sha256(src.encode()).hexdigest() == STOCK_INSPECT_SHA256
-
-
 def test_single_exposure_bond_fades_exactly_as_stock():
     stock = _run(); clock = _run(BondClockPlasticityPipeline())
     assert _bonds(clock, ONCE) == _bonds(stock, ONCE)
@@ -63,6 +58,23 @@ def test_recurring_bond_is_more_durable_and_run_is_deterministic():
     assert a.fingerprint() == b.fingerprint()
     assert _bonds(a, OFTEN) and min(_bonds(a, OFTEN)) > max(_bonds(stock, OFTEN) or [0.0])
     assert min(_bonds(a, OFTEN)) >= 0.10
-    # same evidence, concepts and experiences: only bond strengths differ
     assert sorted(a.state.evidence) == sorted(stock.state.evidence)
     assert sorted(a.state.concepts) == sorted(stock.state.concepts)
+
+
+@pytest.mark.parametrize("rule", ["uniform", "bond_clock"])
+def test_changes_only_record_leaves_exactly_the_same_bonds(rule):
+    make = BondClockPlasticityPipeline if rule == "bond_clock" else ChangesOnlyPlasticityPipeline
+    full = _run(make(changes_only=False)); slim = _run(make(changes_only=True))
+    view = lambda k: {key: r.model_dump(exclude={"last_workspace_event_id"}) for key, r in k.state.plasticity_associations.items()}
+    assert view(full) == view(slim)
+    assert sorted(full.state.structure_candidates) == sorted(slim.state.structure_candidates)
+    assert list(replay_tables(slim))[-1][1] == slim.state.plasticity_associations
+    assert sum(len(e.report.proposed_associations) for e in slim.state.plasticity_events) < \
+        sum(len(e.report.proposed_associations) for e in full.state.plasticity_events) / 3
+
+
+def test_uniform_changes_only_is_the_stock_beat_with_a_smaller_record():
+    stock = _run(); slim = _run(ChangesOnlyPlasticityPipeline())
+    view = lambda k: {key: r.model_dump(exclude={"last_workspace_event_id"}) for key, r in k.state.plasticity_associations.items()}
+    assert view(stock) == view(slim) and sorted(stock.state.evidence) == sorted(slim.state.evidence)

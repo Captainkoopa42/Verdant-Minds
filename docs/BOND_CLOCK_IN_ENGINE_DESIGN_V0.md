@@ -1,4 +1,40 @@
-# Moving the bond clock into the engine: design v0 (PROPOSED, not implemented)
+# Changes-only plasticity records and the bond clock (IMPLEMENTED-EXPERIMENTAL as a layer)
+
+## What was built (2026-11-17), and why not as an engine edit
+An engine edit was built first (Option A below, in verdant_kernel/ and verdant_plasticity/).
+It was behaviour-identical by default, but the frozen math line pins every top-level file in
+verdant_kernel/ by hash, and its protocols are preregistered: re-freezing them would rewrite
+preregistered protocols after their outcomes are known. So the engine edit was reverted and the
+same design was built as `sidecar_bond_clock`, outside every pinned directory:
+* the kernel's plasticity check and commit, and the plasticity stage's inspect, are derived from
+  their stock source with one passage replaced and refuse to install if stock changes;
+* a changes-only report names itself and its fade rule in its `operation` string, lists bonds that
+  only faded in `decayed_association_ids`, and stores only real changes in `proposed_associations`;
+* stock reports go through stock code unchanged; the Explorer replays changes-only history.
+Checks: full suite 2,185 passed (math line included, preregistration checks intact); Workbench 71
+passed; uniform changes-only gives exactly the stock bonds; a saved-and-resumed organism ends on the
+same fingerprint as an uninterrupted one, and replayed history equals the live table.
+
+Bug found and fixed at the same time: sleep (`sidecar_rehearsal`) ran its own fresh STOCK plasticity
+stage, so every rehearsal beat faded every bond at the stock rate and "free sleep" never happened in
+any earlier run. Sleep now uses the waking plasticity stage (test added).
+
+## Result, same 406-lesson life (seed 9001), full stack (`--arm reunion`)
+| | 2026-11-16 | 2026-11-17 |
+|---|---|---|
+| long-gap families promoted | 6/15 | 12/15 |
+| all gate-meeting families promoted | 37/46 | 43/46 |
+| cues recalled exactly | 129/148 | 145/148 |
+| wrong / distractor promotions | 0 / 0 | 0 / 0 |
+| saved organism | 135.5 MB | 37.8 MB |
+| peak memory (resume + 2 beats) | 1.45 GB | 0.46 GB |
+| ms per lesson at checkpoints 100..400 | 411, 1358, 2848, 7902 | 371, 879, 1408, 1910 |
+| wall time | 21.8 min | 7.8 min |
+The learning gains come from the sleep fix (changes-only records are proven not to change bonds).
+Cost now grows roughly linearly (~0.5 s per lesson per 100 lessons). Rough projection, untested:
+1,000 lessons ~45 min and ~1.2 GB; 2,500 lessons ~4-5 h and ~3 GB.
+
+# Original design note (kept for the record)
 
 ## The problem, measured (saved 406-lesson organism, full experimental stack)
 * State 135.5 MB; 108 MB (80%) is `plasticity_events`.

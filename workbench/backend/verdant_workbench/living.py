@@ -91,8 +91,20 @@ def _historical_associations(kernel, cycle: int) -> tuple[list[dict[str, Any]], 
     change_by_id: dict[str, str] = {}
     for assessment in event.report.assessments:
         change_by_id[assessment.association_id] = getattr(assessment.disposition, "value", str(assessment.disposition))
+    associations = event.report.proposed_associations
+    if "|record=changes_only|" in event.report.operation:
+        # Changes-only records (sidecar_bond_clock) hold only real changes; rebuild the table.
+        from sidecar_bond_clock import replay_tables
+
+        for association_id in event.report.decayed_association_ids:
+            change_by_id.setdefault(association_id, "decay")
+        associations = ()
+        for replayed, after in replay_tables(kernel):
+            if replayed.event_id == event.event_id:
+                associations = tuple(after.values())
+                break
     edges = []
-    for assoc in event.report.proposed_associations:
+    for assoc in associations:
         a, b = assoc.concept_ids
         edges.append({
             "id": assoc.association_id,

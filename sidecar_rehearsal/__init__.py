@@ -183,6 +183,10 @@ class RehearsingDevelopmentPipeline:
     def __init__(self, inner: VerdantDevelopmentPipeline | None = None, config: RehearsalConfig | None = None) -> None:
         self.inner = inner or VerdantDevelopmentPipeline()
         self.rehearsal = VerdantRehearsalPipeline(config); self.reports: list[RehearsalReport] = []
+        # Sleep must use the same plasticity stage as waking beats: the same fade rule, and
+        # (with the bond clock) no time fade during a rehearsal beat. Before 2026-11-17 sleep
+        # used a fresh stock stage, so every rehearsal beat faded every bond at the stock rate.
+        self.rehearsal.plasticity = self.inner.plasticity
 
     def advance(self, kernel: VerdantKernel, command):
         result = self.inner.advance(kernel, command)

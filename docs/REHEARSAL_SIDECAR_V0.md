@@ -1,5 +1,11 @@
 # Rehearsal sidecar v0 (opt-in, IMPLEMENTED-EXPERIMENTAL)
 
+CORRECTION (2026-11-17): until this date every rehearsal beat used a fresh stock plasticity stage,
+so it faded all bonds at the stock rate and the bond clock's "free sleep" never took effect. All
+results below and in LONG_LIFE_RUN_V0.md / SURPRISE_SIDECAR_V0.md that include rehearsal were
+measured with that bug. Fixed: sleep now uses the waking plasticity stage. See
+BOND_CLOCK_IN_ENGINE_DESIGN_V0.md for the rerun (long-gap families 6/15 -> 12/15).
+
 Port of the V0-V4 `dream_cycle` idea onto the V5 heartbeat, as a sidecar. No file under
 `verdant_*` is changed; the frozen math manifests and the Workbench engine identity are
 untouched. Nothing runs unless `sidecar_rehearsal` is imported and constructed.

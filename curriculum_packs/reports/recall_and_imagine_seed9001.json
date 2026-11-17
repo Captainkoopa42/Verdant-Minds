@@ -1,0 +1,261 @@
+{
+ "schema": "verdant.observer.recall_and_imagine.v0",
+ "lessons": 406,
+ "1_mode_chosen_by_history": {
+  "massed": {
+   "pull": 33
+  },
+  "spaced_long": {
+   "pull": 47,
+   "search": 3
+  },
+  "under_exposed": {
+   "relive": 15,
+   "search": 27
+  },
+  "single_context": {
+   "search": 6,
+   "pull": 12
+  },
+  "once": {
+   "search": 81,
+   "relive": 3
+  },
+  "never met": {
+   "unknown": 10
+  }
+ },
+ "1_how_each_partner_was_reached": {
+  "massed": {
+   "EARNED": 66
+  },
+  "spaced_long": {
+   "EARNED": 102,
+   "FADED": 6,
+   "SEARCHED": 3,
+   "SEARCHED and truly never met": 3,
+   "REMEMBERED": 12
+  },
+  "under_exposed": {
+   "WEAK": 30,
+   "FADED": 54,
+   "SEARCHED": 27,
+   "SEARCHED and truly never met": 27
+  },
+  "single_context": {
+   "FADED": 12,
+   "SEARCHED": 6,
+   "SEARCHED and truly never met": 6,
+   "REMEMBERED": 24
+  },
+  "once": {
+   "FADED": 162,
+   "SEARCHED": 81,
+   "SEARCHED and truly never met": 81,
+   "WEAK": 6
+  }
+ },
+ "1_examples": {
+  "massed/pull": {
+   "cue": "bikari",
+   "partners": [
+    [
+     "rusiku",
+     "EARNED"
+    ],
+    [
+     "rupati",
+     "EARNED"
+    ]
+   ],
+   "note": "2 from what it knows, 0 checked by reliving"
+  },
+  "spaced_long/pull": {
+   "cue": "vudeda",
+   "partners": [
+    [
+     "dipobu",
+     "EARNED"
+    ],
+    [
+     "visede",
+     "EARNED"
+    ]
+   ],
+   "note": "2 from what it knows, 0 checked by reliving"
+  },
+  "spaced_long/search": {
+   "cue": "tipane",
+   "partners": [
+    [
+     "togema",
+     "FADED, met 5 time(s), RELIVED 5 meeting(s) in 3 setting(s), likeness 0.97"
+    ],
+    [
+     "sesazo",
+     "FADED, met 5 time(s), RELIVED 5 meeting(s) in 3 setting(s), likeness 0.97"
+    ],
+    [
+     "senefe",
+     "SEARCHED (resemblance 0.91, never met with the cue)"
+    ]
+   ],
+   "note": "nothing held strongly enough to pull; looked wider and checked the record"
+  },
+  "under_exposed/relive": {
+   "cue": "topane",
+   "partners": [
+    [
+     "zepusu",
+     "WEAK, RELIVED 2 meeting(s) in 2 setting(s), likeness 0.98"
+    ],
+    [
+     "fezena",
+     "WEAK, RELIVED 2 meeting(s) in 2 setting(s), likeness 0.98"
+    ]
+   ],
+   "note": "0 from what it knows, 2 checked by reliving"
+  },
+  "under_exposed/search": {
+   "cue": "zuzudo",
+   "partners": [
+    [
+     "busike",
+     "FADED, met 2 time(s), RELIVED 2 meeting(s) in 2 setting(s), likeness 0.97"
+    ],
+    [
+     "bogipu",
+     "FADED, met 2 time(s), RELIVED 2 meeting(s) in 2 setting(s), likeness 0.97"
+    ],
+    [
+     "govike",
+     "SEARCHED (resemblance 0.89, never met with the cue)"
+    ]
+   ],
+   "note": "nothing held strongly enough to pull; looked wider and checked the record"
+  },
+  "single_context/search": {
+   "cue": "bapefe",
+   "partners": [
+    [
+     "mikote",
+     "FADED, met 5 time(s), RELIVED 5 meeting(s) in 1 setting(s), likeness 0.98"
+    ],
+    [
+     "kedese",
+     "FADED, met 5 time(s), RELIVED 5 meeting(s) in 1 setting(s), likeness 0.98"
+    ],
+    [
+     "pafure",
+     "SEARCHED (resemblance 0.92, never met with the cue)"
+    ]
+   ],
+   "note": "nothing held strongly enough to pull; looked wider and checked the record"
+  },
+  "single_context/pull": {
+   "cue": "temozu",
+   "partners": [
+    [
+     "pititu",
+     "REMEMBERED (5 meetings)"
+    ],
+    [
+     "tolazi",
+     "REMEMBERED (5 meetings)"
+    ]
+   ],
+   "note": "2 from what it knows, 0 checked by reliving"
+  },
+  "once/search": {
+   "cue": "kitufa",
+   "partners": [
+    [
+     "vasugo",
+     "FADED, met 1 time(s), RELIVED 1 meeting(s) in 1 setting(s), only once"
+    ],
+    [
+     "luzola",
+     "FADED, met 1 time(s), RELIVED 1 meeting(s) in 1 setting(s), only once"
+    ],
+    [
+     "vasanu",
+     "SEARCHED (resemblance 0.91, never met with the cue)"
+    ]
+   ],
+   "note": "nothing held strongly enough to pull; looked wider and checked the record"
+  },
+  "once/relive": {
+   "cue": "dolepu",
+   "partners": [
+    [
+     "komiso",
+     "WEAK, RELIVED 1 meeting(s) in 1 setting(s), only once"
+    ],
+    [
+     "reguli",
+     "WEAK, RELIVED 1 meeting(s) in 1 setting(s), only once"
+    ]
+   ],
+   "note": "0 from what it knows, 2 checked by reliving"
+  }
+ },
+ "2_relive": {
+  "experiences": 40,
+  "max_length_error": 4.440892098500626e-16,
+  "max_replay_difference": 6.206335383118183e-17,
+  "concepts_exactly_as_recorded": "40/40"
+ },
+ "3_imagine_summary": {
+  "trials": 6,
+  "rest_of_the_memory_kept": 6,
+  "swapped_out_dropped": 5,
+  "swapped_in_held": 5,
+  "called_up_partners_of_the_new_piece": 0,
+  "original_memory_intact_after_imagining": 12,
+  "of_all_trials": 12,
+  "now_context_differs_from_then": 6
+ },
+ "3_imagine_example": {
+  "context": "then",
+  "kept_from_the_memory": [
+   "rupati",
+   "rusiku"
+  ],
+  "swapped_out_still_held": false,
+  "swapped_in_held": true,
+  "new_partners_called_up": [],
+  "labels": {
+   "RELIVED": 2,
+   "ECHO": 2,
+   "IMAGINED": 2
+  },
+  "original_intact": true,
+  "held_in_mind": [
+   [
+    "rupati",
+    "RELIVED (from the original experience)"
+   ],
+   [
+    "rusiku",
+    "RELIVED (from the original experience)"
+   ],
+   [
+    "vatavo",
+    "ECHO (the unchanged memory calls it up too)"
+   ],
+   [
+    "sabude",
+    "IMAGINED (swapped in)"
+   ],
+   [
+    "senefe",
+    "IMAGINED (called up only by the new combination)"
+   ],
+   [
+    "pulono",
+    "ECHO (the unchanged memory calls it up too)"
+   ]
+  ]
+ },
+ "4_organism_unchanged": true
+}

@@ -1,0 +1,443 @@
+{
+ "schema": "verdant.observer.interference_vs_network.v0",
+ "claim_boundary": "OBSERVED on this pack prefix, this seed, this toy network; not a general benchmark result",
+ "pack": "pack.vcpack",
+ "sections": 8,
+ "items": 160,
+ "concepts": 95,
+ "shared_concepts": [
+  "motion"
+ ],
+ "kernel_seed": 2301,
+ "final_cycle": 769,
+ "promoted_structures": 31,
+ "compilation_policy_minimum_association_strength": 0.24,
+ "arms": {
+  "V-web": {
+   "final_average": 0.2188,
+   "backward_transfer": -0.8409,
+   "learned_when_taught": 0.9545,
+   "R": [
+    [
+     1.0
+    ],
+    [
+     0.75,
+     1.0
+    ],
+    [
+     0.0,
+     0.75,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.75,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.75,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.75,
+     0.6363636363636364
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.7272727272727273,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.75,
+     1.0
+    ]
+   ]
+  },
+  "V-web-neighbours": {
+   "final_average": 0.6875,
+   "backward_transfer": -0.3571,
+   "learned_when_taught": 1.0,
+   "R": [
+    [
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     0.5,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     0.0,
+     0.5,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.5,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   ]
+  },
+  "V-P": {
+   "final_average": 0.9659,
+   "backward_transfer": 0.0,
+   "learned_when_taught": 0.9659,
+   "R": [
+    [
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     0.7272727272727273
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     0.9090909090909091,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     0.7272727272727273,
+     1.0,
+     1.0
+    ]
+   ]
+  },
+  "N-same": {
+   "final_average": 0.0312,
+   "backward_transfer": -0.2532,
+   "learned_when_taught": 0.2528,
+   "final_average_min_max": [
+    0.0312,
+    0.0312
+   ],
+   "R_mean": [
+    [
+     0.25
+    ],
+    [
+     0.0,
+     0.25
+    ],
+    [
+     0.0,
+     0.0,
+     0.25
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.25
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.25
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.273
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.25
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.25
+    ]
+   ]
+  },
+  "N-crit": {
+   "final_average": 0.2152,
+   "backward_transfer": -0.897,
+   "learned_when_taught": 1.0,
+   "final_average_min_max": [
+    0.125,
+    0.2491
+   ],
+   "R_mean": [
+    [
+     1.0
+    ],
+    [
+     0.067,
+     1.0
+    ],
+    [
+     0.05,
+     0.15,
+     1.0
+    ],
+    [
+     0.0,
+     0.017,
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.017,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.582,
+     1.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.655,
+     0.067,
+     1.0
+    ]
+   ]
+  },
+  "N-replay": {
+   "final_average": 0.9886,
+   "backward_transfer": -0.013,
+   "learned_when_taught": 1.0,
+   "final_average_min_max": [
+    0.9886,
+    0.9886
+   ],
+   "R_mean": [
+    [
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     0.909,
+     1.0
+    ],
+    [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     0.909,
+     1.0,
+     1.0
+    ]
+   ]
+  }
+ },
+ "section1_bond_decay_in_living_web": [
+  {
+   "after_section": 1,
+   "cycle": 96,
+   "section1_mean_bond": 0.4482,
+   "section1_living_bonds": 12
+  },
+  {
+   "after_section": 2,
+   "cycle": 192,
+   "section1_mean_bond": 0.2701,
+   "section1_living_bonds": 12
+  },
+  {
+   "after_section": 3,
+   "cycle": 288,
+   "section1_mean_bond": 0.1628,
+   "section1_living_bonds": 12
+  },
+  {
+   "after_section": 4,
+   "cycle": 384,
+   "section1_mean_bond": 0.0981,
+   "section1_living_bonds": 12
+  },
+  {
+   "after_section": 5,
+   "cycle": 480,
+   "section1_mean_bond": 0.0591,
+   "section1_living_bonds": 12
+  },
+  {
+   "after_section": 6,
+   "cycle": 577,
+   "section1_mean_bond": 0.0398,
+   "section1_living_bonds": 6
+  },
+  {
+   "after_section": 7,
+   "cycle": 673,
+   "section1_mean_bond": 0.0,
+   "section1_living_bonds": 0
+  },
+  {
+   "after_section": 8,
+   "cycle": 769,
+   "section1_mean_bond": 0.0,
+   "section1_living_bonds": 0
+  }
+ ],
+ "network": {
+  "hidden": 64,
+  "seeds": 5,
+  "learning_rate": 0.2,
+  "mean_epochs_per_section": {
+   "N-crit": 4.3,
+   "N-replay": 3.9
+  },
+  "replay_examples_stored_at_end": 480
+ }
+}

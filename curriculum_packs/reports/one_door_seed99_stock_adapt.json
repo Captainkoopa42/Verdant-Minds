@@ -1,0 +1,56 @@
+{
+ "schema": "verdant.observer.one_door.v0",
+ "wave_installed": false,
+ "adaptation": true,
+ "stack": false,
+ "shapes_taught": 8,
+ "showings_per_shape": 3,
+ "lessons": 64,
+ "concepts_in_the_mind": 24,
+ "structures_promoted": 1,
+ "episodes_where_the_eye_tracked_nothing": 0,
+ "chance": 0.042,
+ "seeing": {
+  "sights": 40,
+  "named_by_the_mind": 0.525,
+  "named_by_profile_term_alone": 0.825,
+  "family_recalled_from_sight": 0.4,
+  "named_by_eye_only_nearest_average": 1.0
+ },
+ "named_per_shape": {
+  "square": "1/5",
+  "wide_bar": "0/5",
+  "tall_bar": "0/5",
+  "disc": "1/5",
+  "ring": "5/5",
+  "triangle": "5/5",
+  "cross": "4/5",
+  "checker": "5/5"
+ },
+ "never_shown_shapes": {
+  "sights": 10,
+  "stand_out_known_mean": 2.72,
+  "stand_out_never_shown_mean": 1.97,
+  "stand_out_separation_new_less_than_known": 0.96,
+  "leftover_separation_by_basis": {
+   "best 1": 0.985,
+   "best 3": 0.975,
+   "all known": 1.0
+  },
+  "leftover_means_known_new_by_basis": {
+   "best 1": [
+    0.75,
+    0.968
+   ],
+   "best 3": [
+    0.322,
+    0.89
+   ],
+   "all known": [
+    0.054,
+    0.764
+   ]
+  },
+  "told_apart_at_midpoint": 0.74
+ }
+}

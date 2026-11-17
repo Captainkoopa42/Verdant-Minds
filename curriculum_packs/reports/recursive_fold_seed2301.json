@@ -1,0 +1,84 @@
+{
+ "schema": "verdant.observer.recursive_fold.v0",
+ "seed": 2301,
+ "lessons": 107,
+ "wave": true,
+ "A_structures_by_depth": {
+  "1": 16,
+  "2": 3,
+  "3": 1
+ },
+ "A_promotion_record_types": {
+  "StructurePromotionEvent": 20
+ },
+ "A_found": {
+  "family": 16,
+  "world": 1,
+  "scene": 3
+ },
+ "unintended_or_forbidden_folds": [],
+ "C_new_scene_routes_to": [
+  [
+   "P_8e43601e79c0"
+  ],
+  4
+ ],
+ "C_near_miss_routes_to": [
+  [
+   "P_5226fe9f3b08",
+   "P_5763c0fa053e",
+   "P_fa02feaaee92"
+  ],
+  3
+ ],
+ "C_new_scene_recruits_scene_fold": true,
+ "C_near_miss_recruits_scene_fold": false,
+ "H_concepts_named_vs_held_in_mind": {
+  "new scene": [
+   9,
+   1
+  ],
+  "new world": [
+   27,
+   1
+  ]
+ },
+ "H_mean_bound_per_lesson_before_and_after_routing": {
+  "family": [
+   3.0,
+   3.0
+  ],
+  "scene": [
+   9.0,
+   3.0
+  ],
+  "world": [
+   27.0,
+   3.0
+  ]
+ },
+ "DF_with_all_folds": {
+  "scene_routes_to": 1,
+  "world_routes_to": 1,
+  "seeing_one_family_recalls_concepts": 9
+ },
+ "DF_lowest_fold_removed": {
+  "scene_routes_to": 5,
+  "world_routes_to": 7,
+  "seeing_one_family_recalls_concepts": 3
+ },
+ "DF_restored": {
+  "scene_routes_to": 1,
+  "world_routes_to": 1,
+  "seeing_one_family_recalls_concepts": 9
+ },
+ "B_same_run_twice_same_fingerprint": true,
+ "baseline_same_stack_without_folding": {
+  "structures": 16,
+  "largest": 3,
+  "families": 16,
+  "scenes": 0,
+  "world": 0,
+  "other": 0
+ }
+}

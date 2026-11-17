@@ -1,0 +1,50 @@
+{
+ "schema": "verdant.observer.unknown_residual.v0",
+ "families": 30,
+ "known_concepts": 90,
+ "field_dim": 128,
+ "by_new_words": {
+  "0 of 3 words new": {
+   "unknown_share_top3": [
+    0.228,
+    0.02
+   ],
+   "unknown_share_all_known": [
+    0.12,
+    0.013
+   ]
+  },
+  "1 of 3 words new": {
+   "unknown_share_top3": [
+    0.252,
+    0.023
+   ],
+   "unknown_share_all_known": [
+    0.127,
+    0.014
+   ]
+  },
+  "2 of 3 words new": {
+   "unknown_share_top3": [
+    0.276,
+    0.023
+   ],
+   "unknown_share_all_known": [
+    0.138,
+    0.016
+   ]
+  },
+  "3 of 3 words new": {
+   "unknown_share_top3": [
+    0.282,
+    0.022
+   ],
+   "unknown_share_all_known": [
+    0.147,
+    0.016
+   ]
+  }
+ },
+ "top3_rises_at_every_step": true,
+ "layout": "[mean, sd] across 30 sentences"
+}

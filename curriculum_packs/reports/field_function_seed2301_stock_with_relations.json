@@ -1,0 +1,142 @@
+{
+ "schema": "verdant.observer.field_function.v0",
+ "families": 30,
+ "lessons": 150,
+ "concepts": 90,
+ "chance_top3_contains_a_given_member": 0.0333,
+ "A_recognition_without_names": {
+  "stock": {
+   "all_members_named_top3_exact": 0.0,
+   "one_member_named_top3_exact": 0.0,
+   "one_member_named_unnamed_partners_in_top3": 0.033
+  },
+  "profile only": {
+   "all_members_named_top3_exact": 0.867,
+   "one_member_named_top3_exact": 0.333,
+   "one_member_named_unnamed_partners_in_top3": 0.333
+  },
+  "live field only": {
+   "all_members_named_top3_exact": 0.0,
+   "one_member_named_top3_exact": 0.0,
+   "one_member_named_unnamed_partners_in_top3": 0.033
+  },
+  "history only": {
+   "all_members_named_top3_exact": 0.0,
+   "one_member_named_top3_exact": 0.0,
+   "one_member_named_unnamed_partners_in_top3": 0.05
+  }
+ },
+ "B_recently_active_family_wins_ambiguous_cue": {
+  "stock": 1.0,
+  "profile only": 0.5,
+  "live field only": 1.0,
+  "history only": 0.85
+ },
+ "B_trials": 20,
+ "C_alignment_with_live_field_by_lessons_since_last_seen": [
+  [
+   0,
+   0.2796
+  ],
+  [
+   1,
+   0.1253
+  ],
+  [
+   2,
+   0.0916
+  ],
+  [
+   3,
+   0.058
+  ],
+  [
+   4,
+   0.0629
+  ],
+  [
+   5,
+   0.1145
+  ],
+  [
+   6,
+   0.0567
+  ],
+  [
+   7,
+   0.0504
+  ],
+  [
+   9,
+   0.1112
+  ],
+  [
+   11,
+   0.0884
+  ],
+  [
+   12,
+   0.0665
+  ],
+  [
+   14,
+   0.097
+  ],
+  [
+   15,
+   0.0891
+  ],
+  [
+   16,
+   0.0812
+  ]
+ ],
+ "C_floor_mean_alignment_lag_over_20": 0.0771,
+ "C_random_expectation": 0.0783,
+ "D_separation_in_noise_sds_by_lag": {
+  "complex phasors, 128 dims (256 stored numbers)": {
+   "0": 9.54,
+   "1": 4.96,
+   "2": 2.57,
+   "3": 0.99,
+   "4": 0.13,
+   "6": 0.15,
+   "8": -0.05
+  },
+  "real signs, 128 dims (128 stored numbers)": {
+   "0": 7.01,
+   "1": 4.0,
+   "2": 1.51,
+   "3": 0.47,
+   "4": 0.27,
+   "6": 0.03,
+   "8": 0.07
+  },
+  "real signs, 256 dims (256 stored numbers)": {
+   "0": 12.03,
+   "1": 5.49,
+   "2": 2.74,
+   "3": 1.12,
+   "4": 0.31,
+   "6": 0.04,
+   "8": -0.05
+  }
+ },
+ "E_standardized_terms_same_weights": {
+  "all_members_named_top3_exact": 0.067,
+  "one_member_named_unnamed_partners_in_top3": 0.05,
+  "recently_active_family_wins_ambiguous_cue": 1.0
+ },
+ "F_role_read_from_phase_both_correct_by_lag": {
+  "0": 1.0,
+  "1": 1.0,
+  "2": 0.958
+ },
+ "F_note": "Stock field adds addresses with no phase offset and reads only |overlap|, so direction is not in the field today.",
+ "G_direction_read_from_kernel_field_history": {
+  "relations": 60,
+  "source_before_target": 0.517,
+  "mean_turn": 0.0058,
+  "wave_installed": false
+ }
+}

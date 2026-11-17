@@ -1,0 +1,38 @@
+{
+ "schema": "verdant.observer.voice_loop.v0",
+ "wave_installed": false,
+ "ear": "fine",
+ "gain": 1.0,
+ "control_settings": {
+  "pitch": 5,
+  "brightness": 3,
+  "breath": 2
+ },
+ "combinations": 30,
+ "combinations_babbled": 18,
+ "babbles": 54,
+ "ear_numbers_per_sound": 48,
+ "chance_all_three": 0.033,
+ "imitating_combinations_it_babbled": {
+  "sounds": 54,
+  "all_three_controls_right": 0.222,
+  "pitch_right": 0.741,
+  "brightness_right": 0.333,
+  "breath_right": 0.852,
+  "ear_only_all_three": 0.426,
+  "ear_only_pitch": 0.778,
+  "echo_distance_by_ear": 5.66,
+  "random_setting_distance_by_ear": 9.405
+ },
+ "imitating_combinations_it_never_tried": {
+  "sounds": 36,
+  "all_three_controls_right": 0.139,
+  "pitch_right": 0.861,
+  "brightness_right": 0.333,
+  "breath_right": 0.611,
+  "ear_only_all_three": 0.0,
+  "ear_only_pitch": 0.833,
+  "echo_distance_by_ear": 7.055,
+  "random_setting_distance_by_ear": 11.922
+ }
+}

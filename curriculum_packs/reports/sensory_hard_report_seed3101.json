@@ -1,0 +1,2089 @@
+{
+  "audio": {
+    "_signature_distances": {
+      "tone_440 vs clipped_tone": 0.3183,
+      "tone_440 vs tone_1760 (different pitch)": 1.4142,
+      "tone_440 vs tone_440_quiet (same pitch, 10x quieter)": 0.0009,
+      "tone_440 vs white_noise": 1.2263
+    },
+    "click_then_silence": {
+      "all_finite": true,
+      "features_mean": {
+        "band_high": 0.0226,
+        "band_low": 0.1389,
+        "band_mid": 0.0385,
+        "centroid": 0.0514,
+        "delta": 0.05,
+        "mean": 0.0009,
+        "mean_abs": 0.0009,
+        "peak": 0.18,
+        "rms": 0.0127,
+        "zero_crossing": 0.0
+      },
+      "signature_mean": [
+        0.1381,
+        0.1114,
+        0.0673,
+        0.0204,
+        0.0154,
+        0.0313,
+        0.027,
+        0.0099,
+        0.009,
+        0.0201,
+        0.0187,
+        0.0073,
+        0.0072,
+        0.0166,
+        0.0162,
+        0.0066
+      ],
+      "windows": 5
+    },
+    "clipped_tone": {
+      "all_finite": true,
+      "features_mean": {
+        "band_high": 0.0468,
+        "band_low": 0.8446,
+        "band_mid": 0.1086,
+        "centroid": 0.2294,
+        "delta": 0.0,
+        "mean": -0.0,
+        "mean_abs": 0.8927,
+        "peak": 1.0,
+        "rms": 0.9257,
+        "zero_crossing": 0.1094
+      },
+      "signature_mean": [
+        0.0002,
+        0.9494,
+        0.0069,
+        0.0013,
+        0.0063,
+        0.2839,
+        0.0022,
+        0.0017,
+        0.1208,
+        0.019,
+        0.0013,
+        0.006,
+        0.055,
+        0.0007,
+        0.0007,
+        0.0056
+      ],
+      "windows": 5
+    },
+    "silence": {
+      "all_finite": true,
+      "features_mean": {
+        "band_high": 0.0,
+        "band_low": 0.0,
+        "band_mid": 0.0,
+        "centroid": 0.0,
+        "delta": 0.0,
+        "mean": 0.0,
+        "mean_abs": 0.0,
+        "peak": 0.0,
+        "rms": 0.0,
+        "zero_crossing": 0.0
+      },
+      "signature_mean": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "windows": 5
+    },
+    "tone_1760": {
+      "all_finite": true,
+      "features_mean": {
+        "band_high": 0.0,
+        "band_low": 0.0001,
+        "band_mid": 0.9998,
+        "centroid": 0.44,
+        "delta": 0.0,
+        "mean": -0.0,
+        "mean_abs": 0.3179,
+        "peak": 0.499,
+        "rms": 0.3535,
+        "zero_crossing": 0.4396
+      },
+      "signature_mean": [
+        0.0001,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "windows": 5
+    },
+    "tone_440": {
+      "all_finite": true,
+      "features_mean": {
+        "band_high": 0.0001,
+        "band_low": 0.9998,
+        "band_mid": 0.0001,
+        "centroid": 0.1101,
+        "delta": 0.0,
+        "mean": -0.0,
+        "mean_abs": 0.3183,
+        "peak": 0.5,
+        "rms": 0.3535,
+        "zero_crossing": 0.1094
+      },
+      "signature_mean": [
+        0.0001,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "windows": 5
+    },
+    "tone_440_quiet": {
+      "all_finite": true,
+      "features_mean": {
+        "band_high": 0.0008,
+        "band_low": 0.9985,
+        "band_mid": 0.0007,
+        "centroid": 0.1108,
+        "delta": 0.0,
+        "mean": -0.0,
+        "mean_abs": 0.0318,
+        "peak": 0.05,
+        "rms": 0.0353,
+        "zero_crossing": 0.1094
+      },
+      "signature_mean": [
+        0.0007,
+        1.0,
+        0.0002,
+        0.0001,
+        0.0001,
+        0.0004,
+        0.0002,
+        0.0001,
+        0.0002,
+        0.0,
+        0.0001,
+        0.0002,
+        0.0002,
+        0.0001,
+        0.0001,
+        0.0001
+      ],
+      "windows": 5
+    },
+    "white_noise": {
+      "all_finite": true,
+      "features_mean": {
+        "band_high": 0.3275,
+        "band_low": 0.3351,
+        "band_mid": 0.3374,
+        "centroid": 0.4966,
+        "delta": 0.02,
+        "mean": 0.0043,
+        "mean_abs": 0.2408,
+        "peak": 0.9963,
+        "rms": 0.302,
+        "zero_crossing": 0.4966
+      },
+      "signature_mean": [
+        0.2593,
+        0.2461,
+        0.2512,
+        0.2509,
+        0.2497,
+        0.249,
+        0.2501,
+        0.2602,
+        0.2533,
+        0.2476,
+        0.2499,
+        0.2524,
+        0.2364,
+        0.2524,
+        0.2442,
+        0.2384
+      ],
+      "windows": 5
+    }
+  },
+  "behavioral_authority": false,
+  "cross_episode": [
+    {
+      "candidates_after_each_video": [
+        1,
+        1
+      ],
+      "episodes_per_candidate": [
+        2
+      ],
+      "scenario": "same_object_second_video",
+      "statuses": [
+        "tracking"
+      ],
+      "true_objects": 1
+    },
+    {
+      "candidates_after_each_video": [
+        1,
+        2
+      ],
+      "episodes_per_candidate": [
+        1,
+        1
+      ],
+      "scenario": "different_object_second_video",
+      "statuses": [
+        "tracking",
+        "tracking"
+      ],
+      "true_objects": 2
+    }
+  ],
+  "deterministic_repeat": true,
+  "ground_truth_given_to_kernel": false,
+  "schema": "verdant.observer.sensory_hard_tests.v0",
+  "seed": 3101,
+  "video": [
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "2ee2ea906b255711644acbc101a1d2351d2865604957fad4b841f86f1a47fd05",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Baseline: one bright square moving right.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "single_moving_square",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "b",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "b": 12
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "4367bb1ac4a02d011b63d7f28b1d01a9a793942a9866449d4f6bdb1596b8e388",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Two squares of different brightness, opposite directions.",
+      "object_candidates": 2,
+      "regions_per_frame": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "scenario": "two_distinct_objects",
+      "true_objects": 2,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 12,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 13
+          },
+          "visible": 13
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "b",
+          "occlusions": 1,
+          "persistence": 12,
+          "purity": 1.0,
+          "reappearances": 1,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "b": 13
+          },
+          "visible": 13
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "b1ed9a1f1d167264e98a691d1d3a4c7960c798d284bc2dc694ea5dc2f686d64c",
+      "frames_decoded": 14,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 14,
+      "note": "Two identical squares pass through each other.",
+      "object_candidates": 2,
+      "regions_per_frame": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "scenario": "identical_objects_crossing",
+      "true_objects": 2,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 10,
+          "dominant": "a",
+          "occlusions": 1,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 1,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "e60c06db0a19cc28e9631b8d6f611662a98dd889363b48154411c279c65e0b16",
+      "frames_decoded": 14,
+      "frames_with_correct_region_count": 14,
+      "frames_written": 14,
+      "note": "Hidden for 2 frames, returns on its path.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "occlusion_2_frames",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 4,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 4,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 5
+          },
+          "visible": 5
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 4,
+          "dominant": "a",
+          "occlusions": 1,
+          "persistence": 4,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "occluded",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 5
+          },
+          "visible": 5
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "1d72b6963318bc95380c8bfdcb859fb2d8f537e5361261516b2bb5283a0d02ea",
+      "frames_decoded": 18,
+      "frames_with_correct_region_count": 18,
+      "frames_written": 18,
+      "note": "Hidden for 8 frames; policy maximum_occlusion_gap is 6.",
+      "object_candidates": 2,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "occlusion_8_frames",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 1,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "e99c69d16559591714c55c5d1811598c9609dec89c688769d4ec5bcdc1423b24",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Baseline plus Gaussian pixel noise, sigma 14.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "sensor_noise",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "212642449a466ae4e9ed59ee264cd7d2e5b4d41b941083d5dad24aa11b1e97d7",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Whole scene brightens steadily while the square moves.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "lighting_ramp",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 0,
+          "dominant": "static0",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.275,
+          "true_objects_touched": {
+            "static0": 12
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "mover",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "mover": 12
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 0,
+          "dominant": "static2",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.275,
+          "true_objects_touched": {
+            "static2": 12
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 0,
+          "dominant": "static1",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.275,
+          "true_objects_touched": {
+            "static1": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "bba6ffef0b9b794053d5841d5ddf8c52d0843c6b055cc82069aa8ddbe7ba1f47",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Three static patches and one mover.",
+      "object_candidates": 4,
+      "regions_per_frame": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "scenario": "static_clutter",
+      "true_objects": 4,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "candidates": [],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "3b22de24e4d0585355fb479d82521fcdf39c54cce6a6bf69b365896d22568db1",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 0,
+      "frames_written": 12,
+      "note": "Red square on green with equal luma: visible only in colour.",
+      "object_candidates": 0,
+      "regions_per_frame": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scenario": "isoluminant_colour",
+      "true_objects": 1,
+      "true_objects_never_tracked": 1,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "fixed0",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "fixed0": 12
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "fixed2",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.5,
+          "true_objects_touched": {
+            "fixed2": 12
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "fixed1",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "fixed1": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "af83ec5b237d9b6d49b0e40c7a8a3e245c7e755ac9b38e093a32baec74578948",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Three fixed objects; the whole view shifts each frame.",
+      "object_candidates": 3,
+      "regions_per_frame": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "scenario": "camera_pan",
+      "true_objects": 3,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 0,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.275,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "990915751a7520e59ed12a9cf1e3ffae4358f2c79fe6b9fb89f8e63aeb2209ed",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "One square grows from 8 to 52 pixels wide in place.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "scale_change",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "none",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 0.6,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "none": 6,
+            "slab": 4
+          },
+          "visible": 10
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 1,
+      "fingerprint": "301de604cf69a068bfbcebb6339b3f5583ddba170de0b520687009522a56b380",
+      "frames_decoded": 10,
+      "frames_with_correct_region_count": 10,
+      "frames_written": 10,
+      "note": "A slab covering about 60% of the frame drifts.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "large_object",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o12",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o12": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o02",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o02": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o13",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o13": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o00",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o00": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o01",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o01": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o14",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o14": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o06",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o06": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o10",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o10": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o05",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o05": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o08",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o08": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o09",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o09": 10
+          },
+          "visible": 10
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "o04",
+          "occlusions": 0,
+          "persistence": 9,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "o04": 10
+          },
+          "visible": 10
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "9ed0a5f28be5c4a91310b0b96b002ac6bdb48f80f97f3a53c6adb2bb2afd149e",
+      "frames_decoded": 10,
+      "frames_with_correct_region_count": 0,
+      "frames_written": 10,
+      "note": "Sixteen small squares; maximum_regions_per_frame is 12.",
+      "object_candidates": 12,
+      "regions_per_frame": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "scenario": "sixteen_objects",
+      "true_objects": 16,
+      "true_objects_never_tracked": 4,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "ac3c720cd922538280f32bbb0200b57f0976159f9ab21c7ee38c4b1d99282bd3",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Polarity reversed: dark square, bright field.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "dark_on_bright",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 0,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.275,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "65149c51531884c2a3a0dc965128b773fe1b0471e88ae8af775b7e5683ea1e5d",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "One square that never moves.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "nothing_moves",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "d28090186239929ee4bb74e60beabf8a10088202cfb2364db16b70d26549dc92",
+      "frames_decoded": 8,
+      "frames_with_correct_region_count": 8,
+      "frames_written": 8,
+      "note": "Empty black frames.",
+      "object_candidates": 0,
+      "regions_per_frame": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scenario": "blank_frames",
+      "true_objects": 0,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 9,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 10,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "a": 11
+          },
+          "visible": 11
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 1,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 0,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.15,
+          "true_objects_touched": {
+            "a": 1
+          },
+          "visible": 1
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "8d18d4e689194ef0a5186ed7584e430ed6136d6de8f58fd9746a5ec6d5720ee1",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "A 40x12 bar turns through 90 degrees in place.",
+      "object_candidates": 2,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "rotation_90",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 1,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "fe5c543bb7e240d10a4621b3df0a6aef9372602e953ea426bd25c3934dd4031a",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 0,
+      "frames_written": 12,
+      "note": "Square only 15 grey levels above the field (threshold is about 20).",
+      "object_candidates": 0,
+      "regions_per_frame": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scenario": "contrast_15_levels",
+      "true_objects": 1,
+      "true_objects_never_tracked": 1,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "d40b94d604912775a9c7d9eb3c1a3afe6482df377231804f8a5f29dc48b7fb8f",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Square 30 grey levels above the field.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "contrast_30_levels",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "db00226321c211cc332a8525c0f61c6b11170a8afc2404f8eff38f22a6d9754a",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 0,
+      "frames_written": 12,
+      "note": "A 3x3 pixel dot; below minimum_region_area_fraction.",
+      "object_candidates": 0,
+      "regions_per_frame": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scenario": "tiny_3_pixels",
+      "true_objects": 1,
+      "true_objects_never_tracked": 1,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 7,
+          "dominant": "a",
+          "occlusions": 1,
+          "persistence": 7,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "occluded",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 8
+          },
+          "visible": 8
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 4,
+          "dominant": "none",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.5,
+          "true_objects_touched": {
+            "none": 12
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 8,
+          "dominant": "none",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 0.917,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "a": 1,
+            "none": 11
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 2,
+      "fingerprint": "b68f56af2d275d351836771bb33ea2ef582fabd94c26d2be49b11945738dbf33",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 0,
+      "frames_written": 12,
+      "note": "White square over a strong left-to-right brightness ramp.",
+      "object_candidates": 3,
+      "regions_per_frame": [
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2
+      ],
+      "scenario": "gradient_background",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 1,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 11,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 11,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 12
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "d9733609742f81f1e485dadda3d418e40862213c81f17de046e928ed649604b9",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "Baseline plus Gaussian pixel noise, sigma 40.",
+      "object_candidates": 1,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "heavy_noise",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 5,
+          "dominant": "first",
+          "occlusions": 1,
+          "persistence": 5,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "occluded",
+          "support": 0.425,
+          "true_objects_touched": {
+            "first": 6
+          },
+          "visible": 6
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 5,
+          "dominant": "second",
+          "occlusions": 0,
+          "persistence": 5,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "second": 6
+          },
+          "visible": 6
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "fa4ce813af39056772e4d23e7cb8ca5693098a1bead830a96677183521175321",
+      "frames_decoded": 14,
+      "frames_with_correct_region_count": 14,
+      "frames_written": 14,
+      "note": "One object leaves; a smaller, dimmer one appears nearby 2 frames later.",
+      "object_candidates": 2,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "replacement",
+      "true_objects": 2,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 0,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 5,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 5,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 6
+          },
+          "visible": 6
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 6,
+          "dominant": "a",
+          "occlusions": 0,
+          "persistence": 5,
+          "purity": 1.0,
+          "reappearances": 0,
+          "status": "tracking",
+          "support": 0.425,
+          "true_objects_touched": {
+            "a": 6
+          },
+          "visible": 6
+        }
+      ],
+      "candidates_mixing_two_true_objects": 0,
+      "candidates_on_nothing": 0,
+      "fingerprint": "5d6dce522cec7565050bd4131ba34fee1ca7f8bf2afa144f25ad032b7f9be1e5",
+      "frames_decoded": 12,
+      "frames_with_correct_region_count": 12,
+      "frames_written": 12,
+      "note": "The square abruptly dims from 230 to 90 mid-path.",
+      "object_candidates": 2,
+      "regions_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "scenario": "brightness_jump",
+      "true_objects": 1,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 1,
+      "true_visible_per_frame": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "candidates": [
+        {
+          "ambiguity": 0,
+          "common_motion": 10,
+          "dominant": "a",
+          "occlusions": 1,
+          "persistence": 11,
+          "purity": 0.5,
+          "reappearances": 1,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "a": 6,
+            "b": 6
+          },
+          "visible": 12
+        },
+        {
+          "ambiguity": 0,
+          "common_motion": 10,
+          "dominant": "b",
+          "occlusions": 1,
+          "persistence": 11,
+          "purity": 0.5,
+          "reappearances": 1,
+          "status": "tracking",
+          "support": 0.575,
+          "true_objects_touched": {
+            "a": 6,
+            "b": 6
+          },
+          "visible": 12
+        }
+      ],
+      "candidates_mixing_two_true_objects": 2,
+      "candidates_on_nothing": 0,
+      "fingerprint": "d140b2fb2c816a837567d25faffb03a1f88438b7b3858f54738708c56b719c17",
+      "frames_decoded": 14,
+      "frames_with_correct_region_count": 14,
+      "frames_written": 14,
+      "note": "Two identical squares vanish and return in each other's place.",
+      "object_candidates": 2,
+      "regions_per_frame": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "scenario": "swap_while_hidden",
+      "true_objects": 2,
+      "true_objects_never_tracked": 0,
+      "true_objects_split_across_candidates": 2,
+      "true_visible_per_frame": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+ "schema": "verdant.observer.one_door.v0",
+ "wave_installed": true,
+ "adaptation": false,
+ "stack": false,
+ "shapes_taught": 8,
+ "showings_per_shape": 3,
+ "lessons": 64,
+ "concepts_in_the_mind": 24,
+ "structures_promoted": 0,
+ "episodes_where_the_eye_tracked_nothing": 0,
+ "chance": 0.042,
+ "seeing": {
+  "sights": 40,
+  "named_by_the_mind": 0.1,
+  "named_by_profile_term_alone": 0.75,
+  "family_recalled_from_sight": 0.225,
+  "named_by_eye_only_nearest_average": 1.0
+ },
+ "named_per_shape": {
+  "square": "0/5",
+  "wide_bar": "0/5",
+  "tall_bar": "0/5",
+  "disc": "0/5",
+  "ring": "0/5",
+  "triangle": "0/5",
+  "cross": "4/5",
+  "checker": "0/5"
+ },
+ "never_shown_shapes": {
+  "sights": 10,
+  "stand_out_known_mean": 1.75,
+  "stand_out_never_shown_mean": 1.6,
+  "told_apart_at_midpoint": 0.6
+ }
+}

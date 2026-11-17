@@ -1,0 +1,684 @@
+{
+  "schema": "verdant.curriculum.expectations.v0",
+  "pack_title": "Controls and Boundaries Curriculum 001",
+  "generator_seed": 4201,
+  "feature_mode": "text",
+  "assumed_structure_policy": {
+    "minimum_members": 3,
+    "maximum_members": 8,
+    "minimum_recurrence_events": 4,
+    "minimum_evidence_events": 4,
+    "minimum_contexts": 2,
+    "note": "Policy-derived expectations hold only under these default values."
+  },
+  "families": [
+    {
+      "family_id": "gate_pass_01",
+      "group": "gate_pass",
+      "shape": "chain3",
+      "members": [
+        "neline",
+        "sesaku",
+        "tugeda"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": true,
+        "reason": "3-8 members, 5 recurrences, 3 contexts: every stated gate is met."
+      }
+    },
+    {
+      "family_id": "gate_pass_02",
+      "group": "gate_pass",
+      "shape": "fan3",
+      "members": [
+        "dabuma",
+        "lemaro",
+        "zatuta"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": true,
+        "reason": "3-8 members, 5 recurrences, 3 contexts: every stated gate is met."
+      }
+    },
+    {
+      "family_id": "gate_pass_03",
+      "group": "gate_pass",
+      "shape": "collider3",
+      "members": [
+        "tubula",
+        "babule",
+        "kubofu"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": true,
+        "reason": "3-8 members, 5 recurrences, 3 contexts: every stated gate is met."
+      }
+    },
+    {
+      "family_id": "gate_pass_04",
+      "group": "gate_pass",
+      "shape": "triangle3",
+      "members": [
+        "nivile",
+        "nireba",
+        "bopide"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": true,
+        "reason": "3-8 members, 5 recurrences, 3 contexts: every stated gate is met."
+      }
+    },
+    {
+      "family_id": "gate_pass_05",
+      "group": "gate_pass",
+      "shape": "chain4",
+      "members": [
+        "tirole",
+        "ponoso",
+        "bidigo",
+        "pakidu"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": true,
+        "reason": "3-8 members, 5 recurrences, 3 contexts: every stated gate is met."
+      }
+    },
+    {
+      "family_id": "gate_pass_06",
+      "group": "gate_pass",
+      "shape": "star4",
+      "members": [
+        "balato",
+        "dotope",
+        "giponu",
+        "mifiru"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": true,
+        "reason": "3-8 members, 5 recurrences, 3 contexts: every stated gate is met."
+      }
+    },
+    {
+      "family_id": "under_exposed_01",
+      "group": "under_exposed",
+      "shape": "chain3",
+      "members": [
+        "sosego",
+        "sevito",
+        "balofi"
+      ],
+      "exposures": 2,
+      "distinct_contexts": 2,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "2 exposures is below minimum_recurrence_events and minimum_evidence_events (4)."
+      }
+    },
+    {
+      "family_id": "under_exposed_02",
+      "group": "under_exposed",
+      "shape": "chain3",
+      "members": [
+        "zorana",
+        "ratifu",
+        "ludagi"
+      ],
+      "exposures": 2,
+      "distinct_contexts": 2,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "2 exposures is below minimum_recurrence_events and minimum_evidence_events (4)."
+      }
+    },
+    {
+      "family_id": "under_exposed_03",
+      "group": "under_exposed",
+      "shape": "chain3",
+      "members": [
+        "sobuzo",
+        "rupuba",
+        "gokofu"
+      ],
+      "exposures": 2,
+      "distinct_contexts": 2,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "2 exposures is below minimum_recurrence_events and minimum_evidence_events (4)."
+      }
+    },
+    {
+      "family_id": "under_exposed_04",
+      "group": "under_exposed",
+      "shape": "chain3",
+      "members": [
+        "kugeva",
+        "kotage",
+        "bekedu"
+      ],
+      "exposures": 2,
+      "distinct_contexts": 2,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "2 exposures is below minimum_recurrence_events and minimum_evidence_events (4)."
+      }
+    },
+    {
+      "family_id": "single_context_01",
+      "group": "single_context",
+      "shape": "chain3",
+      "members": [
+        "fanepi",
+        "datope",
+        "midepa"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 1,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "1 context is below minimum_contexts (2)."
+      }
+    },
+    {
+      "family_id": "single_context_02",
+      "group": "single_context",
+      "shape": "chain3",
+      "members": [
+        "fikuzo",
+        "mezipu",
+        "vefida"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 1,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "1 context is below minimum_contexts (2)."
+      }
+    },
+    {
+      "family_id": "single_context_03",
+      "group": "single_context",
+      "shape": "chain3",
+      "members": [
+        "zetori",
+        "sadira",
+        "fovoze"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 1,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "1 context is below minimum_contexts (2)."
+      }
+    },
+    {
+      "family_id": "single_context_04",
+      "group": "single_context",
+      "shape": "chain3",
+      "members": [
+        "fubatu",
+        "fineke",
+        "ridumi"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 1,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "exact_candidate_promotion_eligible": false,
+        "reason": "1 context is below minimum_contexts (2)."
+      }
+    },
+    {
+      "family_id": "pairs_only_01",
+      "group": "pairs_only",
+      "shape": "pair2",
+      "members": [
+        "zitalo",
+        "faroni"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "no_eligible_candidate_contains_both_members": true,
+        "reason": "2 members is below minimum_members (3)."
+      }
+    },
+    {
+      "family_id": "pairs_only_02",
+      "group": "pairs_only",
+      "shape": "pair2",
+      "members": [
+        "fikodu",
+        "kureni"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "no_eligible_candidate_contains_both_members": true,
+        "reason": "2 members is below minimum_members (3)."
+      }
+    },
+    {
+      "family_id": "pairs_only_03",
+      "group": "pairs_only",
+      "shape": "pair2",
+      "members": [
+        "vakari",
+        "domifi"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "no_eligible_candidate_contains_both_members": true,
+        "reason": "2 members is below minimum_members (3)."
+      }
+    },
+    {
+      "family_id": "pairs_only_04",
+      "group": "pairs_only",
+      "shape": "pair2",
+      "members": [
+        "luzera",
+        "vigopo"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "expectation": {
+        "kind": "policy_derived",
+        "no_eligible_candidate_contains_both_members": true,
+        "reason": "2 members is below minimum_members (3)."
+      }
+    },
+    {
+      "family_id": "bridged_01",
+      "group": "bridged",
+      "shape": "chain3",
+      "members": [
+        "rarapu",
+        "zatize",
+        "kepika"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "bridge_concept": "kepika",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "separate_exact_candidates_or_merged",
+        "reason": "Policy does not dictate how a shared concept is handled."
+      }
+    },
+    {
+      "family_id": "bridged_02",
+      "group": "bridged",
+      "shape": "chain3",
+      "members": [
+        "kepika",
+        "fokire",
+        "tigula"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "bridge_concept": "kepika",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "separate_exact_candidates_or_merged",
+        "reason": "Policy does not dictate how a shared concept is handled."
+      }
+    },
+    {
+      "family_id": "bridged_03",
+      "group": "bridged",
+      "shape": "chain3",
+      "members": [
+        "fefonu",
+        "zulami",
+        "vegira"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "bridge_concept": "vegira",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "separate_exact_candidates_or_merged",
+        "reason": "Policy does not dictate how a shared concept is handled."
+      }
+    },
+    {
+      "family_id": "bridged_04",
+      "group": "bridged",
+      "shape": "chain3",
+      "members": [
+        "vegira",
+        "tunore",
+        "nonika"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "bridge_concept": "vegira",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "separate_exact_candidates_or_merged",
+        "reason": "Policy does not dictate how a shared concept is handled."
+      }
+    },
+    {
+      "family_id": "bridged_05",
+      "group": "bridged",
+      "shape": "chain3",
+      "members": [
+        "viriro",
+        "paveda",
+        "padugo"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "bridge_concept": "padugo",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "separate_exact_candidates_or_merged",
+        "reason": "Policy does not dictate how a shared concept is handled."
+      }
+    },
+    {
+      "family_id": "bridged_06",
+      "group": "bridged",
+      "shape": "chain3",
+      "members": [
+        "padugo",
+        "fotime",
+        "sozelu"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "interleaved",
+      "bridge_concept": "padugo",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "separate_exact_candidates_or_merged",
+        "reason": "Policy does not dictate how a shared concept is handled."
+      }
+    },
+    {
+      "family_id": "blocked_early_01",
+      "group": "blocked_early",
+      "shape": "chain3",
+      "members": [
+        "sibure",
+        "vizuba",
+        "gozasu"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "blocked_at_start",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Decay arithmetic suggests early blocked traces fade; not a stated gate."
+      }
+    },
+    {
+      "family_id": "blocked_early_02",
+      "group": "blocked_early",
+      "shape": "chain3",
+      "members": [
+        "muzigo",
+        "panetu",
+        "pileto"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "blocked_at_start",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Decay arithmetic suggests early blocked traces fade; not a stated gate."
+      }
+    },
+    {
+      "family_id": "blocked_early_03",
+      "group": "blocked_early",
+      "shape": "chain3",
+      "members": [
+        "rokeke",
+        "rumalo",
+        "fakibu"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "blocked_at_start",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Decay arithmetic suggests early blocked traces fade; not a stated gate."
+      }
+    },
+    {
+      "family_id": "blocked_early_04",
+      "group": "blocked_early",
+      "shape": "chain3",
+      "members": [
+        "mitufo",
+        "salezo",
+        "tuvita"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "blocked_at_start",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Decay arithmetic suggests early blocked traces fade; not a stated gate."
+      }
+    },
+    {
+      "family_id": "spaced_01",
+      "group": "spaced",
+      "shape": "chain3",
+      "members": [
+        "zemelo",
+        "dozamo",
+        "lidate"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "evenly_spaced",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Spaced exposure should retain traces if decay behaves as designed."
+      }
+    },
+    {
+      "family_id": "spaced_02",
+      "group": "spaced",
+      "shape": "chain3",
+      "members": [
+        "lalimi",
+        "bilipe",
+        "sipipa"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "evenly_spaced",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Spaced exposure should retain traces if decay behaves as designed."
+      }
+    },
+    {
+      "family_id": "spaced_03",
+      "group": "spaced",
+      "shape": "chain3",
+      "members": [
+        "kizuzu",
+        "tulefu",
+        "fufefa"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "evenly_spaced",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Spaced exposure should retain traces if decay behaves as designed."
+      }
+    },
+    {
+      "family_id": "spaced_04",
+      "group": "spaced",
+      "shape": "chain3",
+      "members": [
+        "vuboti",
+        "rinunu",
+        "rivunu"
+      ],
+      "exposures": 5,
+      "distinct_contexts": 3,
+      "schedule": "evenly_spaced",
+      "expectation": {
+        "kind": "exploratory",
+        "report": "plastic_associations_alive_at_end",
+        "reason": "Spaced exposure should retain traces if decay behaves as designed."
+      }
+    }
+  ],
+  "distractor_concepts": [
+    "tusofu",
+    "nosafo",
+    "kuguge",
+    "bipebe",
+    "rikuge",
+    "somabe",
+    "nasonu",
+    "difiru",
+    "fumiko",
+    "doreni",
+    "gigabi",
+    "betifa",
+    "dudevo",
+    "fobida",
+    "fimubi",
+    "bunazu"
+  ],
+  "distractor_expectation": {
+    "kind": "policy_derived",
+    "no_eligible_candidate_made_only_of_distractor_concepts": true,
+    "reason": "Each distractor pair occurs once."
+  },
+  "claims": [
+    {
+      "case": "affirmed_only",
+      "subject": "rupatu",
+      "predicate": "holds",
+      "object": "mebaka",
+      "polarities": [
+        "affirmed",
+        "affirmed",
+        "affirmed"
+      ],
+      "expectation": {
+        "kind": "exploratory",
+        "report": "status_of_each_polarity_and_any_contradiction_record",
+        "reason": "Thresholds decide the status; recorded, not asserted."
+      }
+    },
+    {
+      "case": "negated_only",
+      "subject": "nodani",
+      "predicate": "holds",
+      "object": "makano",
+      "polarities": [
+        "negated",
+        "negated",
+        "negated"
+      ],
+      "expectation": {
+        "kind": "exploratory",
+        "report": "status_of_each_polarity_and_any_contradiction_record",
+        "reason": "Thresholds decide the status; recorded, not asserted."
+      }
+    },
+    {
+      "case": "contested",
+      "subject": "lunazo",
+      "predicate": "holds",
+      "object": "mofada",
+      "polarities": [
+        "affirmed",
+        "negated",
+        "affirmed",
+        "negated"
+      ],
+      "expectation": {
+        "kind": "exploratory",
+        "report": "status_of_each_polarity_and_any_contradiction_record",
+        "reason": "Thresholds decide the status; recorded, not asserted."
+      }
+    },
+    {
+      "case": "never_claimed",
+      "subject": "gaduvi",
+      "predicate": "holds",
+      "object": "logubo",
+      "polarities": [],
+      "expectation": {
+        "kind": "policy_derived",
+        "claim_record_exists": false,
+        "reason": "The claim is never made. Absence must not be recorded as a negation."
+      }
+    }
+  ],
+  "must_not_be_read_during_cultivation": true,
+  "pack_sha256": "f03f3a490b28f742cd6bc947f0e5cf58c5c23f825669af6d81969a396e1fedf9"
+}

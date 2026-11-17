@@ -17,6 +17,27 @@ def _canonical(value):
 def _digest(value):
     return sha256(_canonical(value).encode("utf-8")).hexdigest()
 
+def _independent_group_count(pairs):
+    """Count declared provenance groups under the stated conservative policy.
+
+    Two (source_family, source_record_id) pairs belong to the same group when
+    they share a family label OR a record id, directly or through a chain of
+    such sharing. Only pairs that differ in both count as separate groups.
+    """
+    parent = {pair: pair for pair in pairs}
+    def find(pair):
+        while parent[pair] != pair:
+            parent[pair] = parent[parent[pair]]
+            pair = parent[pair]
+        return pair
+    by_family, by_record = {}, {}
+    for pair in pairs:
+        for index, seen in ((0, by_family), (1, by_record)):
+            other = seen.setdefault(pair[index], pair)
+            if other != pair:
+                parent[find(pair)] = find(other)
+    return len({find(pair) for pair in pairs})
+
 def assess_corroboration(observations, *, required_independent_sources=2):
     """Assess independent declared provenance, exact duplicates and conflicts.
 
@@ -57,12 +78,13 @@ def assess_corroboration(observations, *, required_independent_sources=2):
     claims = []
     for key, records in sorted(statements.items()):
         independent = sorted({r["family"] for r in records})
+        independent_count = _independent_group_count(independent)
         claims.append({
             "claim": {"subject":key[0],"predicate":key[1],"object":key[2],"direction":key[3]},
             "observation_ids": sorted(r["id"] for r in records),
-            "declared_independent_source_family_count": len(independent),
-            "meets_declared_independence_threshold": len(independent) >= required_independent_sources,
-            "status": "provisionally_corroborated" if len(independent) >= required_independent_sources else "single_provenance_family",
+            "declared_independent_source_family_count": independent_count,
+            "meets_declared_independence_threshold": independent_count >= required_independent_sources,
+            "status": "provisionally_corroborated" if independent_count >= required_independent_sources else "single_provenance_family",
             "source_authenticity_verified": False,
             "source_families": [{"family":a,"record_id":b} for a,b in independent],
         })
@@ -75,7 +97,8 @@ def assess_corroboration(observations, *, required_independent_sources=2):
                               "status":"conflicting_claims_require_review"})
     return {"schema":SCHEMA,"policy":"source_family_and_record_id_must_both_differ",
             "observation_count":len(observations),"claim_count":len(claims),
-            "declared_provenance_pair_count":len(groups),\n            "distinct_source_family_label_count":len({item["source_family"] for item in observations}),"claims":claims,
+            "declared_provenance_pair_count":len(groups),
+            "distinct_source_family_label_count":len({item["source_family"] for item in observations}),"claims":claims,
             "conflicts":conflicts,"authenticity_or_truth_verified":False,
             "canonical_writeback":False}
 
@@ -123,4 +146,5 @@ def run_scaling_benchmark(sizes=(32,64,128,256), irrelevant_per_node=4):
     return {"schema":SCHEMA,"benchmark":"synthetic_equal_evidence_graph_scaling",
             "sizes":list(sizes),"irrelevant_edges_per_query_node":irrelevant_per_node,
             "rows":rows,"timing_is_informational_only":True,
+            "performance_advantage_demonstrated":False,
             "native_memory_modified":False,"semantic_learning_demonstrated":False}

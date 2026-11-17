@@ -1,0 +1,13 @@
+{
+ "schema": "verdant.observer.changing_look.v0",
+ "seed": 7,
+ "recent_profiles": true,
+ "noise": 0.35,
+ "meetings": 184,
+ "named_first_by_profile_match": {
+  "new look of a changed thing": 1.0,
+  "old look of a changed thing": 1.0,
+  "unchanged thing": 1.0
+ },
+ "chance": 0.083
+}

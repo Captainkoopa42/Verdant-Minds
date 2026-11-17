@@ -1,0 +1,30 @@
+{
+ "schema": "verdant.observer.masked_abilities.v0",
+ "families": 30,
+ "chance_top1": 0.033,
+ "P_whole_family_recognised_top1": {
+  "raw prototype": {
+   "all members named": 0.867,
+   "first member only": 0.333,
+   "last member only": 0.267
+  },
+  "prototype with the shared part removed": {
+   "all members named": 0.867,
+   "first member only": 0.133,
+   "last member only": 0.1
+  }
+ },
+ "N_profile_stand_out_in_sds": {
+  "sentences about taught families": [
+   3.07,
+   1.76
+  ],
+  "sentences about never-taught tokens": [
+   2.26,
+   2.9
+  ],
+  "layout": "[mean, worst case toward the other group]",
+  "correctly_separated_at_midpoint": 0.867
+ },
+ "N_stock_prediction_error_signal": "constant 0.15 on every current-evidence item"
+}

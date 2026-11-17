@@ -1,0 +1,71 @@
+{
+ "schema": "verdant.observer.stance.v0",
+ "seed": 2301,
+ "stack": true,
+ "lessons": 304,
+ "by_kind": {
+  "true": {
+   "field_reads_it_right": "8/8",
+   "mean_net": 0.382,
+   "mean_tension": 0.0,
+   "recent_stance_is_false": "0/8",
+   "engine_contradiction_records": "0/8",
+   "engine_current_belief": {
+    "affirmed": 8
+   }
+  },
+  "false": {
+   "field_reads_it_right": "8/8",
+   "mean_net": 0.402,
+   "mean_tension": 0.0,
+   "recent_stance_is_false": "8/8",
+   "engine_contradiction_records": "0/8",
+   "engine_current_belief": {
+    "negated": 8
+   }
+  },
+  "contested": {
+   "field_reads_it_right": "8/8",
+   "mean_net": 0.081,
+   "mean_tension": 0.3,
+   "recent_stance_is_false": "6/8",
+   "engine_contradiction_records": "8/8",
+   "engine_current_belief": {
+    "None": 8
+   }
+  },
+  "reversed": {
+   "field_reads_it_right": "8/8",
+   "mean_net": 0.061,
+   "mean_tension": 0.313,
+   "recent_stance_is_false": "8/8",
+   "engine_contradiction_records": "8/8",
+   "engine_current_belief": {
+    "None": 8
+   }
+  },
+  "once": {
+   "field_reads_it_right": "8/8",
+   "mean_net": 0.4,
+   "mean_tension": 0.0,
+   "recent_stance_is_false": "0/8",
+   "engine_contradiction_records": "0/8",
+   "engine_current_belief": {
+    "affirmed": 8
+   }
+  },
+  "never": {
+   "field_reads_it_right": "8/8",
+   "mean_net": 0.0,
+   "mean_tension": 0.0,
+   "recent_stance_is_false": "0/8",
+   "engine_contradiction_records": "0/8",
+   "engine_current_belief": {
+    "None": 8
+   }
+  }
+ },
+ "field_and_engine_agree_on_conflict": "40/40",
+ "tension_ranks_conflicted_above_settled": 1.0,
+ "claim_records_untouched_by_sidecar": true
+}

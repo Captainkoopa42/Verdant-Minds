@@ -1,0 +1,552 @@
+{
+ "schema": "verdant.observer.one_wave.v0",
+ "summary": {
+  "arm": "reunion",
+  "ear": "fine",
+  "ring": false,
+  "adapt": false,
+  "rings_during_life": {
+   "total": 0,
+   "while_told_something_else": 0
+  },
+  "experiences": 68,
+  "concepts": 8,
+  "structures": 0,
+  "chance": 0.125,
+  "1_naming": {
+   "visual": {
+    "sense_alone": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 0.625,
+     "together": 1.0
+    },
+    "organism": {
+     "mostly_heard": 0.0,
+     "mostly_seen": 0.5,
+     "balanced": 0.5,
+     "together": 0.0
+    },
+    "chord": {
+     "mostly_heard": 0.0,
+     "mostly_seen": 1.0,
+     "balanced": 0.0,
+     "together": 0.0
+    },
+    "per_sense": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 0.625,
+     "together": 1.0
+    },
+    "per_sense_adapted": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 0.625,
+     "together": 1.0
+    }
+   },
+   "audio": {
+    "sense_alone": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "organism": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 0.0,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "chord": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 0.5,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "per_sense": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "per_sense_adapted": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    }
+   }
+  },
+  "3_unknown": {
+   "visual": {
+    "chord": {
+     "known_mean": {
+      "mostly_heard": 0.244,
+      "mostly_seen": 0.115,
+      "balanced": 0.263,
+      "together": 0.305
+     },
+     "novel_mean": 0.297,
+     "separation": 0.648,
+     "separation_by_group": {
+      "mostly_heard": 0.656,
+      "mostly_seen": 1.0,
+      "balanced": 0.531,
+      "together": 0.406
+     }
+    },
+    "per_sense": {
+     "known_mean": {
+      "mostly_heard": 0.003,
+      "mostly_seen": 0.001,
+      "balanced": 0.013,
+      "together": 0.0
+     },
+     "novel_mean": 0.059,
+     "separation": 0.973,
+     "separation_by_group": {
+      "mostly_heard": 0.984,
+      "mostly_seen": 1.0,
+      "balanced": 0.906,
+      "together": 1.0
+     }
+    },
+    "per_sense_adapted": {
+     "known_mean": {
+      "mostly_heard": 0.037,
+      "mostly_seen": 0.012,
+      "balanced": 0.1,
+      "together": 0.004
+     },
+     "novel_mean": 0.314,
+     "separation": 0.961,
+     "separation_by_group": {
+      "mostly_heard": 0.953,
+      "mostly_seen": 1.0,
+      "balanced": 0.891,
+      "together": 1.0
+     }
+    }
+   },
+   "audio": {
+    "chord": {
+     "known_mean": {
+      "mostly_heard": 0.077,
+      "mostly_seen": 0.69,
+      "balanced": 0.334,
+      "together": 0.327
+     },
+     "novel_mean": 0.78,
+     "separation": 0.945,
+     "separation_by_group": {
+      "mostly_heard": 1.0,
+      "mostly_seen": 0.781,
+      "balanced": 1.0,
+      "together": 1.0
+     }
+    },
+    "per_sense": {
+     "known_mean": {
+      "mostly_heard": 0.037,
+      "mostly_seen": 0.003,
+      "balanced": 0.025,
+      "together": 0.027
+     },
+     "novel_mean": 0.69,
+     "separation": 1.0,
+     "separation_by_group": {
+      "mostly_heard": 1.0,
+      "mostly_seen": 1.0,
+      "balanced": 1.0,
+      "together": 1.0
+     }
+    },
+    "per_sense_adapted": {
+     "known_mean": {
+      "mostly_heard": 0.062,
+      "mostly_seen": 0.004,
+      "balanced": 0.021,
+      "together": 0.036
+     },
+     "novel_mean": 0.812,
+     "separation": 1.0,
+     "separation_by_group": {
+      "mostly_heard": 1.0,
+      "mostly_seen": 1.0,
+      "balanced": 1.0,
+      "together": 1.0
+     }
+    }
+   }
+  },
+  "2_priming": {
+   "mean_rank": {
+    "no_sound": 4.38,
+    "sound_of_it": 4.12,
+    "sound_of_other": 4.38
+   },
+   "rank1": {
+    "no_sound": 1,
+    "sound_of_it": 2,
+    "sound_of_other": 1
+   },
+   "other_thing_mean_rank": {
+    "no_sound": 4.5,
+    "sound_of_other": 4.5
+   }
+  },
+  "4_conflict": {
+   "same_thing": {
+    "verdicts": {
+     "agree": 8,
+     "two different things": 0,
+     "unknown": 0
+    },
+    "in_phase_mean": 0.976
+   },
+   "other_known": {
+    "verdicts": {
+     "agree": 0,
+     "two different things": 8,
+     "unknown": 0
+    },
+    "in_phase_mean": 0.071
+   },
+   "never_heard": {
+    "verdicts": {
+     "agree": 0,
+     "two different things": 0,
+     "unknown": 8
+    },
+    "in_phase_mean": 0.174
+   }
+  },
+  "organism_unchanged": true
+ },
+ "priming": [
+  {
+   "thing": "pobuzo",
+   "group": "mostly_heard",
+   "no_sound": 7,
+   "no_sound_other_rank": 2,
+   "sound_of_it": 7,
+   "sound_of_it_other_rank": 2,
+   "sound_of_other": 7,
+   "sound_of_other_other_rank": 1
+  },
+  {
+   "thing": "ziluve",
+   "group": "mostly_heard",
+   "no_sound": 8,
+   "no_sound_other_rank": 5,
+   "sound_of_it": 8,
+   "sound_of_it_other_rank": 5,
+   "sound_of_other": 8,
+   "sound_of_other_other_rank": 5
+  },
+  {
+   "thing": "daliga",
+   "group": "mostly_seen",
+   "no_sound": 1,
+   "no_sound_other_rank": 2,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 2,
+   "sound_of_other": 1,
+   "sound_of_other_other_rank": 2
+  },
+  {
+   "thing": "tidive",
+   "group": "mostly_seen",
+   "no_sound": 2,
+   "no_sound_other_rank": 6,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 6,
+   "sound_of_other": 2,
+   "sound_of_other_other_rank": 6
+  },
+  {
+   "thing": "pilalu",
+   "group": "balanced",
+   "no_sound": 4,
+   "no_sound_other_rank": 5,
+   "sound_of_it": 4,
+   "sound_of_it_other_rank": 5,
+   "sound_of_other": 4,
+   "sound_of_other_other_rank": 5
+  },
+  {
+   "thing": "sipome",
+   "group": "balanced",
+   "no_sound": 2,
+   "no_sound_other_rank": 7,
+   "sound_of_it": 2,
+   "sound_of_it_other_rank": 8,
+   "sound_of_other": 2,
+   "sound_of_other_other_rank": 8
+  },
+  {
+   "thing": "sabizu",
+   "group": "together",
+   "no_sound": 6,
+   "no_sound_other_rank": 8,
+   "sound_of_it": 6,
+   "sound_of_it_other_rank": 8,
+   "sound_of_other": 6,
+   "sound_of_other_other_rank": 8
+  },
+  {
+   "thing": "zadeda",
+   "group": "together",
+   "no_sound": 5,
+   "no_sound_other_rank": 1,
+   "sound_of_it": 4,
+   "sound_of_it_other_rank": 1,
+   "sound_of_other": 5,
+   "sound_of_other_other_rank": 1
+  }
+ ],
+ "conflict": [
+  {
+   "thing": "pobuzo",
+   "condition": "same_thing",
+   "sight_says": "pobuzo",
+   "sound_says": "pobuzo",
+   "sound_unknown": 0.097,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9636832157977113,
+   "phase_of_best_turns": 0.0058439548470597255
+  },
+  {
+   "thing": "pobuzo",
+   "condition": "other_known",
+   "sight_says": "pobuzo",
+   "sound_says": "ziluve",
+   "sound_unknown": 0.015,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.2584780662136388,
+   "phase_of_best_turns": 0.0008774029567124521
+  },
+  {
+   "thing": "pobuzo",
+   "condition": "never_heard",
+   "sight_says": "pobuzo",
+   "sound_says": "daliga",
+   "sound_unknown": 0.842,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.07978212422145024,
+   "phase_of_best_turns": 0.05738239707546023
+  },
+  {
+   "thing": "ziluve",
+   "condition": "same_thing",
+   "sight_says": "ziluve",
+   "sound_says": "ziluve",
+   "sound_unknown": 0.012,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9966964536842771,
+   "phase_of_best_turns": 0.0010613723264890824
+  },
+  {
+   "thing": "ziluve",
+   "condition": "other_known",
+   "sight_says": "ziluve",
+   "sound_says": "daliga",
+   "sound_unknown": 0.001,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.32095941419096075,
+   "phase_of_best_turns": 4.660971843381435e-05
+  },
+  {
+   "thing": "ziluve",
+   "condition": "never_heard",
+   "sight_says": "ziluve",
+   "sound_says": "daliga",
+   "sound_unknown": 0.784,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.48035080778501205,
+   "phase_of_best_turns": 0.47952414860139797
+  },
+  {
+   "thing": "daliga",
+   "condition": "same_thing",
+   "sight_says": "daliga",
+   "sound_says": "daliga",
+   "sound_unknown": 0.001,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9993415881286034,
+   "phase_of_best_turns": -8.245625331362826e-05
+  },
+  {
+   "thing": "daliga",
+   "condition": "other_known",
+   "sight_says": "daliga",
+   "sound_says": "tidive",
+   "sound_unknown": 0.005,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.40604524445866164,
+   "phase_of_best_turns": 0.0011280848364533273
+  },
+  {
+   "thing": "daliga",
+   "condition": "never_heard",
+   "sight_says": "daliga",
+   "sound_says": "daliga",
+   "sound_unknown": 0.84,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.36598069838606173,
+   "phase_of_best_turns": 0.05676139111596019
+  },
+  {
+   "thing": "tidive",
+   "condition": "same_thing",
+   "sight_says": "tidive",
+   "sound_says": "tidive",
+   "sound_unknown": 0.011,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9948871797810572,
+   "phase_of_best_turns": 0.0008629434565488893
+  },
+  {
+   "thing": "tidive",
+   "condition": "other_known",
+   "sight_says": "tidive",
+   "sound_says": "pilalu",
+   "sound_unknown": 0.038,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": -0.37545896379181154,
+   "phase_of_best_turns": -0.003151595092420796
+  },
+  {
+   "thing": "tidive",
+   "condition": "never_heard",
+   "sight_says": "tidive",
+   "sound_says": "daliga",
+   "sound_unknown": 0.791,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.17134382389516134,
+   "phase_of_best_turns": 0.4719792737713175
+  },
+  {
+   "thing": "pilalu",
+   "condition": "same_thing",
+   "sight_says": "pilalu",
+   "sound_says": "pilalu",
+   "sound_unknown": 0.023,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9791579572480803,
+   "phase_of_best_turns": -0.0023926111180531113
+  },
+  {
+   "thing": "pilalu",
+   "condition": "other_known",
+   "sight_says": "pilalu",
+   "sound_says": "sipome",
+   "sound_unknown": 0.001,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": -0.2774928531861666,
+   "phase_of_best_turns": -0.00015976877558269282
+  },
+  {
+   "thing": "pilalu",
+   "condition": "never_heard",
+   "sight_says": "pilalu",
+   "sound_says": "daliga",
+   "sound_unknown": 0.844,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": -0.11975380815283458,
+   "phase_of_best_turns": 0.05636279392968949
+  },
+  {
+   "thing": "sipome",
+   "condition": "same_thing",
+   "sight_says": "sipome",
+   "sound_says": "sipome",
+   "sound_unknown": 0.021,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9926731143635003,
+   "phase_of_best_turns": 0.0012307399303399483
+  },
+  {
+   "thing": "sipome",
+   "condition": "other_known",
+   "sight_says": "sipome",
+   "sound_says": "sabizu",
+   "sound_unknown": 0.019,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.03798689445214576,
+   "phase_of_best_turns": -0.0009101150537079908
+  },
+  {
+   "thing": "sipome",
+   "condition": "never_heard",
+   "sight_says": "sipome",
+   "sound_says": "daliga",
+   "sound_unknown": 0.789,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.15647414164354642,
+   "phase_of_best_turns": 0.4733426108839291
+  },
+  {
+   "thing": "sabizu",
+   "condition": "same_thing",
+   "sight_says": "sabizu",
+   "sound_says": "sabizu",
+   "sound_unknown": 0.145,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9026870261812617,
+   "phase_of_best_turns": 0.0007490353504055329
+  },
+  {
+   "thing": "sabizu",
+   "condition": "other_known",
+   "sight_says": "sabizu",
+   "sound_says": "zadeda",
+   "sound_unknown": 0.068,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.034481966838576614,
+   "phase_of_best_turns": -0.004055475524796503
+  },
+  {
+   "thing": "sabizu",
+   "condition": "never_heard",
+   "sight_says": "sabizu",
+   "sound_says": "daliga",
+   "sound_unknown": 0.838,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.025356871807377574,
+   "phase_of_best_turns": 0.05833411099139003
+  },
+  {
+   "thing": "zadeda",
+   "condition": "same_thing",
+   "sight_says": "zadeda",
+   "sound_says": "zadeda",
+   "sound_unknown": 0.05,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9819168802796696,
+   "phase_of_best_turns": -0.003633824470419703
+  },
+  {
+   "thing": "zadeda",
+   "condition": "other_known",
+   "sight_says": "zadeda",
+   "sound_says": "pobuzo",
+   "sound_unknown": 0.1,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.1651874678388122,
+   "phase_of_best_turns": 0.005958703302135549
+  },
+  {
+   "thing": "zadeda",
+   "condition": "never_heard",
+   "sight_says": "zadeda",
+   "sound_says": "daliga",
+   "sound_unknown": 0.784,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.23095935244325705,
+   "phase_of_best_turns": 0.4801534891003648
+  }
+ ]
+}

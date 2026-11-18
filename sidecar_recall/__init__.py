@@ -205,11 +205,31 @@ def recall(kernel, cue_label: str) -> Recollection:
     return Recollection(cue_label, mode, tuple(partners), "; ".join(notes))
 
 
+def _binding_as_written(kernel, base: RelivedExperience):
+    """The concept part exactly as it was written: told concepts, plus anything that rang (sidecar_ring)."""
+    told = tuple(sorted(set(base.concept_ids)))
+    rung = {}
+    try:
+        from sidecar_ring import rings_of_frame
+        rung = rings_of_frame(kernel, _frames_by_event(kernel)[base.event_key])
+    except ImportError:
+        pass
+    if not rung:
+        return kernel._concept_binding_effect(told)
+    base_effect = kernel._concept_binding_effect(told) if told else None   # the same composition sidecar_ring uses
+    total = np.zeros(kernel.state.field.state_dim, dtype=np.complex128)
+    if base_effect is not None:
+        total += base_effect * math.sqrt(max(1, len(told)))
+    for cid, w in sorted(rung.items()):
+        total += w * kernel._address_array(kernel.state.field_addresses[cid])
+    return kernel._normalize_complex(total)
+
+
 def _experience_parts(kernel, base: RelivedExperience) -> np.ndarray:
     """Split a relived effect back into what was sensed: effect = unit(fc*F + cc*C), with C known from the
     concepts present and |F| = 1, so the scale s solves |s*effect - cc*C| = fc (one positive root)."""
     policy = kernel.state.ecwf_policy; fc, cc = policy.feature_coupling, policy.concept_coupling
-    C = kernel._concept_binding_effect(base.concept_ids)
+    C = _binding_as_written(kernel, base)
     if C is None:
         return base.effect
     b = cc * float(np.vdot(base.effect, C).real)

@@ -111,6 +111,8 @@ def _ring_apply_field_effect(self, features, modality, *, caused_by_refs, bound_
     sensed = self._project_effect(self._validated_feature_array(features), modality)
     told = tuple(sorted(set(bound_concept_ids)))
     shares, unknown = recognise(self, sensed, modality)
+    self._ring_last_reading = {"index": len(self.state.field.history), "modality": modality, "shares": shares,
+                               "unknown": unknown, "told": told, "had_views": bool(_views(self, modality)[0])}
     ring = [(cid, s) for cid, s in shares[:RING_MAX] if s >= RING_SHARE and cid not in told] if unknown <= RING_UNKNOWN else []
     index = len(self.state.field.history)
     for cid, _w in ring:
@@ -180,3 +182,206 @@ def uninstall_ring() -> None:
 
 def ring_installed() -> bool:
     return bool(_ORIGINAL)
+
+
+def how_known(kernel, concept_label: str) -> dict:
+    """Naming as its own kind of evidence: how the organism knows a concept, kept apart by kind.
+
+    named         experiences of reading in which it was told (text lessons naming it)
+    sensed_told   per sense, experiences sensed while being told what it was (OBSERVED)
+    rung          per sense, times it was recognised without being told (INFERRED)
+    knows_look_of senses through which it has its own view; a concept only named has none, so the
+                  organism can say "I know the word, not what it looks like"."""
+    from sidecar_recall import _frames_by_event
+    cid = next((c for c, x in kernel.state.concepts.items() if x.label == concept_label), None)
+    if cid is None:
+        return {"known": False}
+    mods = {ev.event_key: str(ev.details.get("modality")) for ev in kernel.state.evidence.values()
+            if ev.event_key and ev.details.get("role") == "native_payload"}
+    told: dict[str, int] = {}
+    for key, i in _frames_by_event(kernel).items():
+        if cid in kernel.state.field.history[i].bound_concept_ids:
+            m = mods.get(key, "unknown"); told[m] = told.get(m, 0) + 1
+    rung: dict[str, int] = {}
+    by_index = {i: mods.get(k, "unknown") for k, i in _frames_by_event(kernel).items()}
+    for index in kernel.state.concepts[cid].attributes.get("rings", {}):
+        m = by_index.get(int(index), "unknown"); rung[m] = rung.get(m, 0) + 1
+    a = kernel.state.concepts[cid].attributes
+    looks = sorted(k[len(VIEW_PREFIX):] for k in a if k.startswith(VIEW_PREFIX) and k[len(VIEW_PREFIX):] != "text")
+    return {"known": True, "named": told.get("text", 0), "sensed_told": {m: n for m, n in told.items() if m != "text"},
+            "rung": rung, "knows_look_of": looks}
+
+
+
+# --- 5. Binding across moments (no code change; two existing settings) ---------------------------
+# Measured (run_observer_binding.py): a thing seen and another heard at the same moment never bonded.
+# Cause: what is sensed stays present for `current_evidence_persistence` = 1 kernel cycle, and the
+# workspace caps carrying at 4 cycles, but one experience takes 4-5 cycles inside the organism
+# (sensing, resonance, workspace, plasticity, structures). So nothing sensed is ever still present
+# when the next experience arrives, and bonds need two things present together.
+# Short-term memory of one experience uses the engine's own settings:
+CARRY_ONE_EXPERIENCE = {"current_evidence_persistence": 7}       # DevelopmentalCycleConfig
+CARRY_WORKSPACE_CAP = 8                                           # WorkspacePolicy.maximum_persistence_cycles
+
+
+def carry_one_experience(kernel) -> None:
+    """Set the organism's workspace cap so a sensed item can last through the next experience."""
+    wp = kernel.state.workspace_policy
+    kernel.state.workspace_policy = wp.model_copy(update={"maximum_persistence_cycles": CARRY_WORKSPACE_CAP, "revision": wp.revision + 1})
+
+
+# --- 6. What is recognised can remind ------------------------------------------------------------
+# Measured: after binding, a NAMED sound of Q brought P to mind 4/4, an unnamed one 0/4, because
+# association recall starts only from told concepts. With install_inferred_association(), concepts
+# that rang in this experience also start association recall; every such candidate is marked
+# metadata["triggered_by_inferred"] = True and its trigger listed, so a guess stays a guess.
+_ASSOC: dict = {}
+
+
+def _inferred_association_candidates(self, kernel, experience):
+    told = _ASSOC["orig"](self, kernel, experience)
+    rung = sorted(rings_of_frame(kernel, len(kernel.state.field.history) - 1))
+    rung = [c for c in rung if c not in set(experience.concept_ids)]
+    if not rung:
+        return told
+    import dataclasses
+    extra = _ASSOC["orig"](self, kernel, dataclasses.replace(experience, concept_ids=tuple(rung)))
+    have = {(c.source_ref, c.binding_refs) for c in told}
+    present = set(experience.concept_ids)
+    marked = tuple(c.model_copy(update={"metadata": {**c.metadata, "triggered_by_inferred": True, "inferred_triggers": tuple(rung)}})
+                   for c in extra if (c.source_ref, c.binding_refs) not in have and not set(c.binding_refs) & present)
+    return tuple(told) + marked
+
+
+def install_inferred_association() -> None:
+    import verdant_development.pipeline as dev
+    if not _ASSOC:
+        _ASSOC["orig"] = dev.VerdantDevelopmentPipeline._association_recall_candidates
+        dev.VerdantDevelopmentPipeline._association_recall_candidates = _inferred_association_candidates
+
+
+def uninstall_inferred_association() -> None:
+    import verdant_development.pipeline as dev
+    if _ASSOC:
+        dev.VerdantDevelopmentPipeline._association_recall_candidates = _ASSOC.pop("orig")
+
+
+# --- 7. Tension and the unknown steer attention ------------------------------------------------------
+# Stock: every current experience enters the workspace with novelty = 0.35 and contradiction_pressure
+# = 0, whatever it is; the workspace weights both (0.06 and 0.14) but they are never measured.
+# With install_attention(), they are measured from the wave BEFORE the experience changes memory:
+#   novelty       = the unknown share of the input in its sense (1.0 if the sense has no views yet)
+#   contradiction = how much a concept it was NOT told explains, beyond what the told ones explain,
+#                   max(0, best_other - told), when the told concepts already have a view in this sense
+# Attention decides learning (plasticity weights bonds by the winning items' scores), so this steers it.
+# Each told concept also keeps a phase-aware agreement record, like the stance sidecar: +1 when the
+# input agrees with it, a half turn (-1) when it conflicts, weighted by size. read_tension() gives the
+# net (agreement minus conflict) and the tension (how much was said that cancelled out).
+_ATTN: dict = {}
+
+
+def measured_signals(kernel):
+    r = getattr(kernel, "_ring_last_reading", None)
+    if not r or r["index"] != len(kernel.state.field.history) - 1:
+        return None
+    told_share = sum(s for c, s in r["shares"] if c in r["told"])
+    others = [s for c, s in r["shares"] if c not in r["told"]]
+    told_have_views = any(VIEW_PREFIX + r["modality"] in kernel.state.concepts[c].attributes and
+                          kernel.state.concepts[c].attributes[VIEW_PREFIX + r["modality"]]["count"] > 1 for c in r["told"])
+    contradiction = max(0.0, (max(others) if others else 0.0) - told_share) if (r["told"] and told_have_views) else 0.0
+    novelty = float(min(1.0, max(0.0, r["unknown"]))) if r["had_views"] else 1.0
+    return {"novelty": novelty, "contradiction_pressure": float(min(1.0, contradiction)), "told_share": told_share, "reading": r}
+
+
+def _attn_workspace_candidates(self, kernel, experience, resonance_event):
+    out = _ATTN["orig"](self, kernel, experience, resonance_event)
+    m = measured_signals(kernel)
+    if m is None:
+        return out
+    result = []
+    for c in out:
+        if c.source_kind.value == "current_evidence":
+            c = c.model_copy(update={"signals": c.signals.model_copy(update={"novelty": m["novelty"], "contradiction_pressure": m["contradiction_pressure"]}),
+                                     "metadata": {**c.metadata, "novelty_source": "sidecar_ring.measured", "contradiction_source": "sidecar_ring.measured"}})
+        result.append(c)
+    for cid in experience.concept_ids:                      # phase-aware agreement record per told concept
+        a = kernel.state.concepts[cid].attributes
+        if VIEW_PREFIX + m["reading"]["modality"] not in a:
+            continue
+        agree = m["told_share"]; conflict = m["contradiction_pressure"]
+        _set(kernel, cid, tension_record={"writings": a.get("tension_record", {}).get("writings", 0) + 1,
+                                          "signed_sum": a.get("tension_record", {}).get("signed_sum", 0.0) + agree - conflict,
+                                          "size_sum": a.get("tension_record", {}).get("size_sum", 0.0) + agree + conflict})
+    return tuple(result)
+
+
+def read_tension(kernel) -> dict[str, dict]:
+    out = {}
+    for c in kernel.state.concepts.values():
+        t = c.attributes.get("tension_record")
+        if t and t["writings"]:
+            n = t["writings"]; out[c.label] = {"writings": n, "net": t["signed_sum"] / n, "tension": (t["size_sum"] - abs(t["signed_sum"])) / n}
+    return out
+
+
+def install_attention() -> None:
+    import verdant_development.pipeline as dev
+    if not _ATTN:
+        _ATTN["orig"] = dev.VerdantDevelopmentPipeline._workspace_candidates
+        dev.VerdantDevelopmentPipeline._workspace_candidates = _attn_workspace_candidates
+
+
+def uninstall_attention() -> None:
+    import verdant_development.pipeline as dev
+    if _ATTN:
+        dev.VerdantDevelopmentPipeline._workspace_candidates = _ATTN.pop("orig")
+
+
+# --- 8. Binding by moment, not by time (replaces carrying everything one experience) -------------
+# Measured on the 400-lesson text life: carrying every sensed item through the next experience
+# (CARRY_ONE_EXPERIENCE) bound unrelated neighbouring lessons: wrong promotions 0 -> 5, cues kept
+# 145 -> 139 of 148. What binding needed was the same MOMENT (a look and a sound in one context), so
+# with install_moment_carry() the previous experience's told concepts are offered again only when
+# the new experience shares its context; labelled "same moment: <event>", grounded slightly less.
+_MOMENT: dict = {}
+
+
+def _context_of_frame(kernel, index: int):
+    frame = kernel.state.field.history[index]
+    for ref in frame.caused_by_refs:
+        ev = kernel.state.evidence.get(ref)
+        if ev is not None and ev.details.get("role") == "native_payload":
+            return ev.details.get("context_id"), ev.event_key, ref, tuple(frame.bound_concept_ids)
+    return None, None, None, ()
+
+
+def _moment_workspace_candidates(self, kernel, experience, resonance_event):
+    out = _MOMENT["orig"](self, kernel, experience, resonance_event)
+    h = kernel.state.field.history
+    if len(h) < 2:
+        return out
+    now_ctx, _k, _r, _c = _context_of_frame(kernel, len(h) - 1)
+    prev_ctx, prev_key, prev_ref, prev_concepts = _context_of_frame(kernel, len(h) - 2)
+    prev_concepts = tuple(c for c in prev_concepts if c not in set(experience.concept_ids))
+    if not now_ctx or now_ctx != prev_ctx or not prev_concepts:
+        return out
+    from verdant_kernel.models import WorkspaceCandidateInput, WorkspaceSignals, WorkspaceSourceKind
+    extra = WorkspaceCandidateInput(
+        source_kind=WorkspaceSourceKind.CURRENT_EVIDENCE, source_ref=prev_ref,
+        label=f"same moment: {prev_key}", evidence_refs=(prev_ref,), resource_request=self.config.current_evidence_resource,
+        persistence_cycles=1, signals=WorkspaceSignals(evidence_grounding=0.72, relevance=0.65, prediction_error=0.0, novelty=0.0),
+        binding_refs=tuple(sorted(prev_concepts)), metadata={"developmental_stage": "same_moment_carry", "context_id": now_ctx})
+    return tuple(out) + (extra,)
+
+
+def install_moment_carry() -> None:
+    import verdant_development.pipeline as dev
+    if not _MOMENT:
+        _MOMENT["orig"] = dev.VerdantDevelopmentPipeline._workspace_candidates
+        dev.VerdantDevelopmentPipeline._workspace_candidates = _moment_workspace_candidates
+
+
+def uninstall_moment_carry() -> None:
+    import verdant_development.pipeline as dev
+    if _MOMENT:
+        dev.VerdantDevelopmentPipeline._workspace_candidates = _MOMENT.pop("orig")

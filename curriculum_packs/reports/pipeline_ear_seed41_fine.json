@@ -1,0 +1,468 @@
+{
+ "schema": "verdant.observer.pipeline_ear.v0",
+ "summary": {
+  "ear": "fine",
+  "description_width": 48,
+  "lessons": 32,
+  "known_rang_exactly_right": "32/32",
+  "never_heard_rang_nothing": "16/16",
+  "readout_named_known": "32/32",
+  "unknown_mean": {
+   "known": 0.021,
+   "never_heard": 0.632
+  },
+  "never_heard_over_half_unknown": "16/16",
+  "known_over_half_unknown": "0/32",
+  "pipeline_samples_ingested": 48
+ },
+ "rows": [
+  {
+   "group": "known",
+   "voice": "mubesa",
+   "rang": [
+    "mubesa"
+   ],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.01015195280489804
+  },
+  {
+   "group": "known",
+   "voice": "mubesa",
+   "rang": [
+    "mubesa"
+   ],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.011391677853664435
+  },
+  {
+   "group": "known",
+   "voice": "mubesa",
+   "rang": [
+    "mubesa"
+   ],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.007304119474143456
+  },
+  {
+   "group": "known",
+   "voice": "mubesa",
+   "rang": [
+    "mubesa"
+   ],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.005864889850283062
+  },
+  {
+   "group": "known",
+   "voice": "nefifi",
+   "rang": [
+    "nefifi"
+   ],
+   "rang_right": true,
+   "readout_best": "nefifi",
+   "unknown": 0.0028722645961331427
+  },
+  {
+   "group": "known",
+   "voice": "nefifi",
+   "rang": [
+    "nefifi"
+   ],
+   "rang_right": true,
+   "readout_best": "nefifi",
+   "unknown": 0.003430678810539225
+  },
+  {
+   "group": "known",
+   "voice": "nefifi",
+   "rang": [
+    "nefifi"
+   ],
+   "rang_right": true,
+   "readout_best": "nefifi",
+   "unknown": 0.1119799357043415
+  },
+  {
+   "group": "known",
+   "voice": "nefifi",
+   "rang": [
+    "nefifi"
+   ],
+   "rang_right": true,
+   "readout_best": "nefifi",
+   "unknown": 0.0063351561201188955
+  },
+  {
+   "group": "known",
+   "voice": "suradu",
+   "rang": [
+    "suradu"
+   ],
+   "rang_right": true,
+   "readout_best": "suradu",
+   "unknown": 0.07574484225616206
+  },
+  {
+   "group": "known",
+   "voice": "suradu",
+   "rang": [
+    "suradu"
+   ],
+   "rang_right": true,
+   "readout_best": "suradu",
+   "unknown": 0.012459021795677481
+  },
+  {
+   "group": "known",
+   "voice": "suradu",
+   "rang": [
+    "suradu"
+   ],
+   "rang_right": true,
+   "readout_best": "suradu",
+   "unknown": 0.01876205207881378
+  },
+  {
+   "group": "known",
+   "voice": "suradu",
+   "rang": [
+    "suradu"
+   ],
+   "rang_right": true,
+   "readout_best": "suradu",
+   "unknown": 0.019296723628563668
+  },
+  {
+   "group": "known",
+   "voice": "bozize",
+   "rang": [
+    "bozize"
+   ],
+   "rang_right": true,
+   "readout_best": "bozize",
+   "unknown": 0.050106029525586945
+  },
+  {
+   "group": "known",
+   "voice": "bozize",
+   "rang": [
+    "bozize"
+   ],
+   "rang_right": true,
+   "readout_best": "bozize",
+   "unknown": 0.024871627639610254
+  },
+  {
+   "group": "known",
+   "voice": "bozize",
+   "rang": [
+    "bozize"
+   ],
+   "rang_right": true,
+   "readout_best": "bozize",
+   "unknown": 0.004240459722165294
+  },
+  {
+   "group": "known",
+   "voice": "bozize",
+   "rang": [
+    "bozize"
+   ],
+   "rang_right": true,
+   "readout_best": "bozize",
+   "unknown": 0.02536037762992087
+  },
+  {
+   "group": "known",
+   "voice": "ditofu",
+   "rang": [
+    "ditofu"
+   ],
+   "rang_right": true,
+   "readout_best": "ditofu",
+   "unknown": 0.1740342296099179
+  },
+  {
+   "group": "known",
+   "voice": "ditofu",
+   "rang": [
+    "ditofu"
+   ],
+   "rang_right": true,
+   "readout_best": "ditofu",
+   "unknown": 0.008220110648918076
+  },
+  {
+   "group": "known",
+   "voice": "ditofu",
+   "rang": [
+    "ditofu"
+   ],
+   "rang_right": true,
+   "readout_best": "ditofu",
+   "unknown": 0.024559191583247937
+  },
+  {
+   "group": "known",
+   "voice": "ditofu",
+   "rang": [
+    "ditofu"
+   ],
+   "rang_right": true,
+   "readout_best": "ditofu",
+   "unknown": 0.021196861131754806
+  },
+  {
+   "group": "known",
+   "voice": "sadafe",
+   "rang": [
+    "sadafe"
+   ],
+   "rang_right": true,
+   "readout_best": "sadafe",
+   "unknown": 0.004838952804318915
+  },
+  {
+   "group": "known",
+   "voice": "sadafe",
+   "rang": [
+    "sadafe"
+   ],
+   "rang_right": true,
+   "readout_best": "sadafe",
+   "unknown": 0.02480768198569128
+  },
+  {
+   "group": "known",
+   "voice": "sadafe",
+   "rang": [
+    "sadafe"
+   ],
+   "rang_right": true,
+   "readout_best": "sadafe",
+   "unknown": 0.013693452799544887
+  },
+  {
+   "group": "known",
+   "voice": "sadafe",
+   "rang": [
+    "sadafe"
+   ],
+   "rang_right": true,
+   "readout_best": "sadafe",
+   "unknown": 0.004240966086434402
+  },
+  {
+   "group": "known",
+   "voice": "bilera",
+   "rang": [
+    "bilera"
+   ],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.0003558872504517956
+  },
+  {
+   "group": "known",
+   "voice": "bilera",
+   "rang": [
+    "bilera"
+   ],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.0002672424953093212
+  },
+  {
+   "group": "known",
+   "voice": "bilera",
+   "rang": [
+    "bilera"
+   ],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.0006831923190258
+  },
+  {
+   "group": "known",
+   "voice": "bilera",
+   "rang": [
+    "bilera"
+   ],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.0008027487908335677
+  },
+  {
+   "group": "known",
+   "voice": "rufova",
+   "rang": [
+    "rufova"
+   ],
+   "rang_right": true,
+   "readout_best": "rufova",
+   "unknown": 0.007277501066929811
+  },
+  {
+   "group": "known",
+   "voice": "rufova",
+   "rang": [
+    "rufova"
+   ],
+   "rang_right": true,
+   "readout_best": "rufova",
+   "unknown": 0.0068550392911783395
+  },
+  {
+   "group": "known",
+   "voice": "rufova",
+   "rang": [
+    "rufova"
+   ],
+   "rang_right": true,
+   "readout_best": "rufova",
+   "unknown": 0.003158711480571376
+  },
+  {
+   "group": "known",
+   "voice": "rufova",
+   "rang": [
+    "rufova"
+   ],
+   "rang_right": true,
+   "readout_best": "rufova",
+   "unknown": 0.0021037620940274416
+  },
+  {
+   "group": "never_heard",
+   "voice": "kofasa",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.5507179828317683
+  },
+  {
+   "group": "never_heard",
+   "voice": "kofasa",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.5467431394140251
+  },
+  {
+   "group": "never_heard",
+   "voice": "kofasa",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.546644760411593
+  },
+  {
+   "group": "never_heard",
+   "voice": "kofasa",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.54897118442724
+  },
+  {
+   "group": "never_heard",
+   "voice": "masozo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.7230174859252256
+  },
+  {
+   "group": "never_heard",
+   "voice": "masozo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.726802218137186
+  },
+  {
+   "group": "never_heard",
+   "voice": "masozo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.7350659862205634
+  },
+  {
+   "group": "never_heard",
+   "voice": "masozo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "mubesa",
+   "unknown": 0.7234557503653817
+  },
+  {
+   "group": "never_heard",
+   "voice": "gadedo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bozize",
+   "unknown": 0.6723582919440764
+  },
+  {
+   "group": "never_heard",
+   "voice": "gadedo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bozize",
+   "unknown": 0.7175885595080715
+  },
+  {
+   "group": "never_heard",
+   "voice": "gadedo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bozize",
+   "unknown": 0.7976944941054797
+  },
+  {
+   "group": "never_heard",
+   "voice": "gadedo",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "sadafe",
+   "unknown": 0.7996980753999641
+  },
+  {
+   "group": "never_heard",
+   "voice": "tomuti",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.5053380070810296
+  },
+  {
+   "group": "never_heard",
+   "voice": "tomuti",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.5053668930583497
+  },
+  {
+   "group": "never_heard",
+   "voice": "tomuti",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.5059551725892641
+  },
+  {
+   "group": "never_heard",
+   "voice": "tomuti",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "bilera",
+   "unknown": 0.5061275214444068
+  }
+ ]
+}

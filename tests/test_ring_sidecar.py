@@ -104,3 +104,83 @@ def test_adaptation_reads_the_cosine_after_removing_the_usual(rung):
         assert abs(np.vdot(u, F) - want) < 1e-12
     finally:
         k._ring_query_modality = None; k._ring_query = None; sidecar_ring.uninstall_ring()
+
+
+def _moments(carry: bool, remind: bool):
+    """P seen then Q heard in the same moment, 6 times; R seen and S heard always apart."""
+    import run_observer_long_life as R
+    sidecar_ring.install_ring(adapt=True)
+    if remind:
+        sidecar_ring.install_inferred_association()
+    saved = dict(R.PIPELINE_CONFIG)
+    try:
+        if carry:
+            R.PIPELINE_CONFIG.update(sidecar_ring.CARRY_ONE_EXPERIENCE)
+        rng = np.random.default_rng(3); P, R_ = rng.normal(size=24), rng.normal(size=24); Q, S = rng.normal(size=16), rng.normal(size=16)
+        fillers = [(rng.normal(size=24), f"f{i}") for i in range(4)]
+        k = VerdantKernel(seed=2, state_dim=128, run_label="moments")
+        if carry:
+            sidecar_ring.carry_one_experience(k)
+        pipe, _ = R.build_pipeline("reunion")
+        n = 0
+        def go(mod, base, names):
+            nonlocal n; n += 1; pipe.advance(k, _cmd(f"m{n}", mod, base + 0.1 * rng.normal(size=base.size), names))
+        for e in range(6):
+            go("visual", P, ("pee",)); go("audio", Q, ("queue",))
+            go("visual", R_, ("arr",))
+            for f, nm in fillers:
+                go("visual", f, (nm,))
+            go("audio", S, ("ess",))
+        ids = {x.label: c for c, x in k.state.concepts.items()}
+        def bond(a, b):
+            return max((x.strength for x in k.state.plasticity_associations.values() if set(x.concept_ids) == {ids[a], ids[b]}), default=0.0)
+        state = k.state.model_copy(deep=True)
+        fork = VerdantKernel.from_state(state); pipe.advance(fork, _cmd("test", "audio", Q, ()))
+        w = fork.state.workspace_cycle_events[-1].report
+        reminded = {fork.state.concepts[m].label for a in w.assessments if a.candidate.source_kind.value == "local_association"
+                    and a.disposition.value == "admit" for m in a.candidate.binding_refs}
+        return bond("pee", "queue"), bond("arr", "ess"), reminded
+    finally:
+        R.PIPELINE_CONFIG.clear(); R.PIPELINE_CONFIG.update(saved)
+        sidecar_ring.uninstall_inferred_association(); sidecar_ring.uninstall_ring()
+
+
+def test_short_term_memory_binds_what_happens_together_and_only_that():
+    without = _moments(False, False); with_carry = _moments(True, False); remind = _moments(True, True)
+    assert without[0] == 0.0 and without[1] == 0.0                   # stock: nothing sensed survives into the next moment
+    assert with_carry[0] > 0.24 and with_carry[1] == 0.0               # together binds, apart does not
+    assert "pee" not in with_carry[2] and "pee" in remind[2]           # an unnamed sound reminds only when recognition can remind
+
+
+def test_conflict_is_flagged_and_familiar_is_not():
+    sidecar_ring.install_ring(adapt=True); sidecar_ring.install_attention()
+    try:
+        rng = np.random.default_rng(4); sounds = {w: rng.normal(size=16) for w in "abcd"}
+        k = VerdantKernel(seed=5, state_dim=128, run_label="attention"); pipe = VerdantDevelopmentPipeline()
+        for e in range(4):
+            for w in "abcd":
+                pipe.advance(k, _cmd(f"l{w}{e}", "audio", sounds[w] + 0.1 * rng.normal(size=16), (w,)))
+        def signals():
+            cur = [x for x in k.state.workspace_cycle_events[-1].report.assessments
+                   if x.candidate.source_kind.value == "current_evidence" and x.carried_from_item_id is None][0]
+            assert cur.candidate.metadata.get("contradiction_source") == "sidecar_ring.measured"
+            return cur.candidate.signals, cur.effective_score
+        pipe.advance(k, _cmd("right", "audio", sounds["a"] + 0.1 * rng.normal(size=16), ("a",)))
+        right, right_score = signals()
+        pipe.advance(k, _cmd("wrong", "audio", sounds["b"] + 0.1 * rng.normal(size=16), ("a",)))   # told a, sounds like b
+        wrong, wrong_score = signals()
+        assert right.contradiction_pressure < 0.2 < wrong.contradiction_pressure and wrong_score > right_score
+        assert sidecar_ring.read_tension(k)["a"]["tension"] > sidecar_ring.read_tension(k)["c"]["tension"]
+    finally:
+        sidecar_ring.uninstall_attention(); sidecar_ring.uninstall_ring()
+
+
+def test_how_known_keeps_naming_apart_from_sensing(rung):
+    k, *_ = rung
+    sidecar_ring.install_ring()
+    try:
+        a = sidecar_ring.how_known(k, "a")
+    finally:
+        sidecar_ring.uninstall_ring()
+    assert a["named"] == 0 and a["sensed_told"] == {"visual": 4, "audio": 1} and a["knows_look_of"] == ["audio", "visual"]
+    assert a["rung"].get("audio", 0) >= 1

@@ -1,0 +1,3284 @@
+{
+ "schema": "verdant.observer.imagination_reality.v0",
+ "summary": {
+  "now": {
+   "A_moment_alignment": {
+    "imagined": 0.977,
+    "unchanged_memory": 0.844,
+    "wrong_newcomer": 0.841,
+    "sensing_imagined": 0.959,
+    "sensing_unchanged": 0.95,
+    "shares_moment": 0.976,
+    "sensing_shares": 0.957,
+    "sensing_word_looks": 0.961,
+    "sensing_reread": 1.0
+   },
+   "A_imagined_beats_unchanged_memory": 12,
+   "A_imagined_beats_wrong_newcomer": 12,
+   "B_top6_overlap": {
+    "imagined": 0.833,
+    "shares": 0.847,
+    "word_looks": 0.792,
+    "reread": 1.0,
+    "unchanged_memory": 0.611,
+    "wrong_newcomer": 0.569,
+    "diagnostic_given_the_true_look": 1.0
+   },
+   "B_top1": {
+    "word_looks": 10,
+    "reread": 12
+   },
+   "B_shares_top1_match": 11,
+   "B_shares_vs_average_per_trial": {
+    "better": 1,
+    "same": 11,
+    "worse": 0
+   },
+   "A_sensing_shares_beats_average": 3,
+   "B_diagnostic_true_look_exact_order": 12,
+   "B_newcomer_in_top6": {
+    "imagined": 12,
+    "real": 11,
+    "agree": 11
+   },
+   "B_top1_match": 11,
+   "A_field_after": {
+    "imagined_now": 0.991,
+    "unchanged_memory_now": 0.935
+   },
+   "C_newcomer": {
+    "predicted": 26,
+    "really_offered": 26,
+    "hits": 26,
+    "won_attention": 26
+   },
+   "C_rest_of_scene": {
+    "predicted": 26,
+    "really_offered": 26,
+    "hits": 26
+   },
+   "C_swapped_out_piece_came_back": 12,
+   "C_imagination_said_it_would_come_back": 12
+  },
+  "later": {
+   "A_moment_alignment": {
+    "imagined": 0.977,
+    "unchanged_memory": 0.844,
+    "wrong_newcomer": 0.841,
+    "sensing_imagined": 0.959,
+    "sensing_unchanged": 0.95,
+    "shares_moment": 0.976,
+    "sensing_shares": 0.957,
+    "sensing_word_looks": 0.961,
+    "sensing_reread": 1.0
+   },
+   "A_imagined_beats_unchanged_memory": 12,
+   "A_imagined_beats_wrong_newcomer": 12,
+   "B_top6_overlap": {
+    "imagined": 0.722,
+    "shares": 0.736,
+    "word_looks": 0.722,
+    "reread": 0.736,
+    "unchanged_memory": 0.528,
+    "wrong_newcomer": 0.486,
+    "diagnostic_given_the_true_look": 0.736
+   },
+   "B_top1": {
+    "word_looks": 10,
+    "reread": 12
+   },
+   "B_shares_top1_match": 11,
+   "B_shares_vs_average_per_trial": {
+    "better": 1,
+    "same": 11,
+    "worse": 0
+   },
+   "A_sensing_shares_beats_average": 3,
+   "B_diagnostic_true_look_exact_order": 0,
+   "B_newcomer_in_top6": {
+    "imagined": 12,
+    "real": 11,
+    "agree": 11
+   },
+   "B_top1_match": 11,
+   "A_field_after": {
+    "imagined_now": 0.926,
+    "unchanged_memory_now": 0.87
+   },
+   "C_newcomer": {
+    "predicted": 26,
+    "really_offered": 26,
+    "hits": 26,
+    "won_attention": 26
+   },
+   "C_rest_of_scene": {
+    "predicted": 26,
+    "really_offered": 26,
+    "hits": 26
+   },
+   "C_swapped_out_piece_came_back": 12,
+   "C_imagination_said_it_would_come_back": 12
+  },
+  "SIMULATED_now_vs_real_later": {
+   "moment": 1.0,
+   "came_to_mind": 0.736
+  },
+  "shares": {
+   "experiences": 406,
+   "concepts": 338,
+   "max_recovery_residual": 1.4858203471986692e-09,
+   "mean_unknown": 0.146
+  },
+  "trials": 12,
+  "filler_lessons_before_later": 20,
+  "organism_unchanged": true
+ },
+ "trials": [
+  {
+   "trial": 0,
+   "memory": "life-v0-4242-00115",
+   "swap": "tokere -> gomipa",
+   "wrong_newcomer": "nagase",
+   "scene": [
+    "kokado",
+    "gomipa",
+    "zosone"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9733401090048255,
+     "unchanged_memory": 0.8243964903320258,
+     "wrong_newcomer": 0.8576528662147003,
+     "sensing_imagined": 0.9441472862642231,
+     "sensing_unchanged": 0.936788871263686,
+     "shares_moment": 0.9725009973632718,
+     "sensing_shares": 0.9423365718332434,
+     "sensing_word_looks": 0.9802085014655976,
+     "sensing_reread": 0.9999999999999991
+    },
+    "B_came_to_mind": {
+     "imagined": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.8333333333333334,
+     "shares": 1.0,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "kokado",
+       0.6382801382767662
+      ],
+      [
+       "zosone",
+       0.6086996748438644
+      ],
+      [
+       "gomipa",
+       0.5898790685626734
+      ],
+      [
+       "pinezi",
+       0.5532898360032251
+      ],
+      [
+       "tokere",
+       0.5495063911386757
+      ],
+      [
+       "pikofe",
+       0.5404540233000067
+      ]
+     ],
+     "real_list": [
+      [
+       "kokado",
+       0.6244426439018862
+      ],
+      [
+       "zosone",
+       0.5931240822019594
+      ],
+      [
+       "gomipa",
+       0.5662895128190543
+      ],
+      [
+       "pinezi",
+       0.5404768238403648
+      ],
+      [
+       "tokere",
+       0.5259014329345827
+      ],
+      [
+       "pikofe",
+       0.5193902983928376
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9893627858847033,
+     "unchanged_memory_now": 0.9295477854392767
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "fogiki",
+      "gimaro"
+     ],
+     "newcomer_really_offered": [
+      "fogiki",
+      "gimaro"
+     ],
+     "newcomer_won_attention": [
+      "fogiki",
+      "gimaro"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "kokado": [
+       "tokere"
+      ],
+      "zosone": [
+       "tokere"
+      ]
+     },
+     "rest_really_offered": {
+      "kokado": [
+       "tokere"
+      ],
+      "zosone": [
+       "tokere"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9733401090048258,
+     "unchanged_memory": 0.8243964903320261,
+     "wrong_newcomer": 0.8576528662147005,
+     "sensing_imagined": 0.9441472862642237,
+     "sensing_unchanged": 0.9367888712636865,
+     "shares_moment": 0.972500997363272,
+     "sensing_shares": 0.942336571833244,
+     "sensing_word_looks": 0.9802085014655983,
+     "sensing_reread": 0.9999999999999998
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.8333333333333334,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.6666666666666666,
+     "reread": 0.8333333333333334,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.8333333333333334,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "kokado",
+       0.6382801382767662
+      ],
+      [
+       "zosone",
+       0.6086996748438644
+      ],
+      [
+       "gomipa",
+       0.5898790685626734
+      ],
+      [
+       "pinezi",
+       0.5532898360032251
+      ],
+      [
+       "tokere",
+       0.5495063911386757
+      ],
+      [
+       "pikofe",
+       0.5404540233000067
+      ]
+     ],
+     "real_list": [
+      [
+       "kokado",
+       0.6300278098905066
+      ],
+      [
+       "zosone",
+       0.6031645140082824
+      ],
+      [
+       "gomipa",
+       0.5753451576782328
+      ],
+      [
+       "tokere",
+       0.5370564000304188
+      ],
+      [
+       "pikofe",
+       0.5276113246518941
+      ],
+      [
+       "susefe",
+       0.5239428583875657
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9281741796122934,
+     "unchanged_memory_now": 0.861959561128285
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "fogiki",
+      "gimaro"
+     ],
+     "newcomer_really_offered": [
+      "fogiki",
+      "gimaro"
+     ],
+     "newcomer_won_attention": [
+      "fogiki",
+      "gimaro"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "kokado": [
+       "tokere"
+      ],
+      "zosone": [
+       "tokere"
+      ]
+     },
+     "rest_really_offered": {
+      "kokado": [
+       "tokere"
+      ],
+      "zosone": [
+       "tokere"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999997,
+    "came_to_mind": 0.8333333333333334
+   }
+  },
+  {
+   "trial": 1,
+   "memory": "life-v0-4242-00194",
+   "swap": "fogiki -> nagase",
+   "wrong_newcomer": "telege",
+   "scene": [
+    "gimaro",
+    "gomipa",
+    "nagase"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9528400529179081,
+     "unchanged_memory": 0.8067121157843248,
+     "wrong_newcomer": 0.7988535213556366,
+     "sensing_imagined": 0.914869226324422,
+     "sensing_unchanged": 0.8884576239015455,
+     "shares_moment": 0.9502354342737979,
+     "sensing_shares": 0.910803452418489,
+     "sensing_word_looks": 0.971023015877248,
+     "sensing_reread": 1.0
+    },
+    "B_came_to_mind": {
+     "imagined": 0.5,
+     "wrong_newcomer": 0.3333333333333333,
+     "unchanged_memory": 0.3333333333333333,
+     "shares": 0.5,
+     "word_looks": 0.5,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "gomipa",
+       0.6322272748111676
+      ],
+      [
+       "gimaro",
+       0.5703268650793576
+      ],
+      [
+       "nagase",
+       0.5643989211847139
+      ],
+      [
+       "malipa",
+       0.5351855389175194
+      ],
+      [
+       "zusini",
+       0.5307697159275079
+      ],
+      [
+       "fogiki",
+       0.5278593751276146
+      ]
+     ],
+     "real_list": [
+      [
+       "gomipa",
+       0.5996804564536184
+      ],
+      [
+       "nagase",
+       0.5510513971482587
+      ],
+      [
+       "gimaro",
+       0.5368742738553103
+      ],
+      [
+       "pikofe",
+       0.5235206634686488
+      ],
+      [
+       "zidigi",
+       0.5128244680905837
+      ],
+      [
+       "pinezi",
+       0.5115785199678017
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9803559656511212,
+     "unchanged_memory_now": 0.9187681748276402
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "sarutu",
+      "zegepa"
+     ],
+     "newcomer_really_offered": [
+      "sarutu",
+      "zegepa"
+     ],
+     "newcomer_won_attention": [
+      "sarutu",
+      "zegepa"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "gimaro": [
+       "fogiki"
+      ],
+      "gomipa": [
+       "fogiki"
+      ]
+     },
+     "rest_really_offered": {
+      "gimaro": [
+       "fogiki"
+      ],
+      "gomipa": [
+       "fogiki"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9528400529179079,
+     "unchanged_memory": 0.8067121157843246,
+     "wrong_newcomer": 0.7988535213556364,
+     "sensing_imagined": 0.9148692263244216,
+     "sensing_unchanged": 0.8884576239015451,
+     "shares_moment": 0.9502354342737976,
+     "sensing_shares": 0.9108034524184885,
+     "sensing_word_looks": 0.9710230158772477,
+     "sensing_reread": 0.9999999999999997
+    },
+    "B_came_to_mind": {
+     "imagined": 0.5,
+     "wrong_newcomer": 0.3333333333333333,
+     "unchanged_memory": 0.3333333333333333,
+     "shares": 0.5,
+     "word_looks": 0.6666666666666666,
+     "reread": 0.6666666666666666,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.6666666666666666,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "gomipa",
+       0.6322272748111676
+      ],
+      [
+       "gimaro",
+       0.5703268650793576
+      ],
+      [
+       "nagase",
+       0.5643989211847139
+      ],
+      [
+       "malipa",
+       0.5351855389175194
+      ],
+      [
+       "zusini",
+       0.5307697159275079
+      ],
+      [
+       "fogiki",
+       0.5278593751276146
+      ]
+     ],
+     "real_list": [
+      [
+       "gomipa",
+       0.6075173410648276
+      ],
+      [
+       "nagase",
+       0.5579269443037793
+      ],
+      [
+       "gimaro",
+       0.5335398928512677
+      ],
+      [
+       "pikofe",
+       0.531636930399827
+      ],
+      [
+       "vimipa",
+       0.5186721122963452
+      ],
+      [
+       "kokado",
+       0.5149305146553671
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9172308076408932,
+     "unchanged_memory_now": 0.8577205565345155
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "sarutu",
+      "zegepa"
+     ],
+     "newcomer_really_offered": [
+      "sarutu",
+      "zegepa"
+     ],
+     "newcomer_won_attention": [
+      "sarutu",
+      "zegepa"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "gimaro": [
+       "fogiki"
+      ],
+      "gomipa": [
+       "fogiki"
+      ]
+     },
+     "rest_really_offered": {
+      "gimaro": [
+       "fogiki"
+      ],
+      "gomipa": [
+       "fogiki"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999999,
+    "came_to_mind": 0.6666666666666666
+   }
+  },
+  {
+   "trial": 2,
+   "memory": "life-v0-4242-00054",
+   "swap": "sarutu -> telege",
+   "wrong_newcomer": "rizabo",
+   "scene": [
+    "telege",
+    "nagase",
+    "zegepa"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9811403598382837,
+     "unchanged_memory": 0.837816155651421,
+     "wrong_newcomer": 0.8400831105887182,
+     "sensing_imagined": 0.9688461002229474,
+     "sensing_unchanged": 0.9635277952822712,
+     "shares_moment": 0.979421838940518,
+     "sensing_shares": 0.9659513380131798,
+     "sensing_word_looks": 0.9420145802813917,
+     "sensing_reread": 1.0
+    },
+    "B_came_to_mind": {
+     "imagined": 1.0,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 1.0,
+     "word_looks": 0.6666666666666666,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "nagase",
+       0.5932639184244701
+      ],
+      [
+       "zegepa",
+       0.5924410810294185
+      ],
+      [
+       "telege",
+       0.5687578897899235
+      ],
+      [
+       "zebune",
+       0.5416491665929903
+      ],
+      [
+       "pinezi",
+       0.5393343956601928
+      ],
+      [
+       "susefe",
+       0.5384821890537723
+      ]
+     ],
+     "real_list": [
+      [
+       "nagase",
+       0.5820037126424779
+      ],
+      [
+       "zegepa",
+       0.5794486868117054
+      ],
+      [
+       "telege",
+       0.5558520990437987
+      ],
+      [
+       "zebune",
+       0.5375706046243803
+      ],
+      [
+       "pinezi",
+       0.5304906396631849
+      ],
+      [
+       "susefe",
+       0.5255469112900139
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9923150856381466,
+     "unchanged_memory_now": 0.9327078516982993
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "torare",
+      "vafepi"
+     ],
+     "newcomer_really_offered": [
+      "torare",
+      "vafepi"
+     ],
+     "newcomer_won_attention": [
+      "torare",
+      "vafepi"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "zegepa": [
+       "sarutu"
+      ],
+      "nagase": [
+       "sarutu"
+      ]
+     },
+     "rest_really_offered": {
+      "nagase": [
+       "sarutu"
+      ],
+      "zegepa": [
+       "sarutu"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9811403598382833,
+     "unchanged_memory": 0.8378161556514204,
+     "wrong_newcomer": 0.8400831105887178,
+     "sensing_imagined": 0.9688461002229465,
+     "sensing_unchanged": 0.9635277952822703,
+     "shares_moment": 0.9794218389405176,
+     "sensing_shares": 0.9659513380131789,
+     "sensing_word_looks": 0.9420145802813908,
+     "sensing_reread": 0.9999999999999991
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.3333333333333333,
+     "unchanged_memory": 0.5,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 0.8333333333333334,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.8333333333333334,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "nagase",
+       0.5932639184244701
+      ],
+      [
+       "zegepa",
+       0.5924410810294185
+      ],
+      [
+       "telege",
+       0.5687578897899235
+      ],
+      [
+       "zebune",
+       0.5416491665929903
+      ],
+      [
+       "pinezi",
+       0.5393343956601928
+      ],
+      [
+       "susefe",
+       0.5384821890537723
+      ]
+     ],
+     "real_list": [
+      [
+       "nagase",
+       0.5902318943407464
+      ],
+      [
+       "zegepa",
+       0.584073971076735
+      ],
+      [
+       "telege",
+       0.5527940467532666
+      ],
+      [
+       "zebune",
+       0.5511034640293672
+      ],
+      [
+       "susefe",
+       0.5420903192313883
+      ],
+      [
+       "vagafi",
+       0.5270314880957544
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9311746249687269,
+     "unchanged_memory_now": 0.8834284535391149
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "torare",
+      "vafepi"
+     ],
+     "newcomer_really_offered": [
+      "torare",
+      "vafepi"
+     ],
+     "newcomer_won_attention": [
+      "torare",
+      "vafepi"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "zegepa": [
+       "sarutu"
+      ],
+      "nagase": [
+       "sarutu"
+      ]
+     },
+     "rest_really_offered": {
+      "nagase": [
+       "sarutu"
+      ],
+      "zegepa": [
+       "sarutu"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999994,
+    "came_to_mind": 0.8333333333333334
+   }
+  },
+  {
+   "trial": 3,
+   "memory": "life-v0-4242-00002",
+   "swap": "vafepi -> rizabo",
+   "wrong_newcomer": "sudoda",
+   "scene": [
+    "telege",
+    "rizabo",
+    "torare"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9590227516749639,
+     "unchanged_memory": 0.8001037841100174,
+     "wrong_newcomer": 0.8107071943629224,
+     "sensing_imagined": 0.9303682381953658,
+     "sensing_unchanged": 0.8937888769493266,
+     "shares_moment": 0.962452846111146,
+     "sensing_shares": 0.9361710282408475,
+     "sensing_word_looks": 0.9711820047355179,
+     "sensing_reread": 0.9999999999999999
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.3333333333333333,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.6666666666666666,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "torare",
+       0.6038885037072782
+      ],
+      [
+       "telege",
+       0.5837765235748067
+      ],
+      [
+       "tepodi",
+       0.5394697702280566
+      ],
+      [
+       "rizabo",
+       0.537492759863444
+      ],
+      [
+       "malipa",
+       0.5317739630753284
+      ],
+      [
+       "vagafi",
+       0.5316804734881356
+      ]
+     ],
+     "real_list": [
+      [
+       "torare",
+       0.5742093877856924
+      ],
+      [
+       "telege",
+       0.5475507158848822
+      ],
+      [
+       "rizabo",
+       0.5307860521945338
+      ],
+      [
+       "malipa",
+       0.5243303305093047
+      ],
+      [
+       "zumapu",
+       0.5181279376996971
+      ],
+      [
+       "vagafi",
+       0.5147536607954702
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9829002546867082,
+     "unchanged_memory_now": 0.9163042162146656
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "refafa",
+      "zekogu"
+     ],
+     "newcomer_really_offered": [
+      "refafa",
+      "zekogu"
+     ],
+     "newcomer_won_attention": [
+      "refafa",
+      "zekogu"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "telege": [
+       "vafepi"
+      ],
+      "torare": [
+       "vafepi"
+      ]
+     },
+     "rest_really_offered": {
+      "telege": [
+       "vafepi"
+      ],
+      "torare": [
+       "vafepi"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.959022751674964,
+     "unchanged_memory": 0.8001037841100176,
+     "wrong_newcomer": 0.8107071943629225,
+     "sensing_imagined": 0.9303682381953661,
+     "sensing_unchanged": 0.893788876949327,
+     "shares_moment": 0.9624528461111462,
+     "sensing_shares": 0.9361710282408479,
+     "sensing_word_looks": 0.9711820047355182,
+     "sensing_reread": 1.0000000000000004
+    },
+    "B_came_to_mind": {
+     "imagined": 0.6666666666666666,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.5,
+     "shares": 0.6666666666666666,
+     "word_looks": 0.8333333333333334,
+     "reread": 0.6666666666666666,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.6666666666666666,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "torare",
+       0.6038885037072782
+      ],
+      [
+       "telege",
+       0.5837765235748067
+      ],
+      [
+       "tepodi",
+       0.5394697702280566
+      ],
+      [
+       "rizabo",
+       0.537492759863444
+      ],
+      [
+       "malipa",
+       0.5317739630753284
+      ],
+      [
+       "vagafi",
+       0.5316804734881356
+      ]
+     ],
+     "real_list": [
+      [
+       "torare",
+       0.5680205020105991
+      ],
+      [
+       "telege",
+       0.5433922195562939
+      ],
+      [
+       "rizabo",
+       0.5380971674218465
+      ],
+      [
+       "rigeno",
+       0.5269914042790427
+      ],
+      [
+       "zebune",
+       0.5256320268470233
+      ],
+      [
+       "malipa",
+       0.5201750782825117
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9155385216209582,
+     "unchanged_memory_now": 0.8441500517439434
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "refafa",
+      "zekogu"
+     ],
+     "newcomer_really_offered": [
+      "refafa",
+      "zekogu"
+     ],
+     "newcomer_won_attention": [
+      "refafa",
+      "zekogu"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "telege": [
+       "vafepi"
+      ],
+      "torare": [
+       "vafepi"
+      ]
+     },
+     "rest_really_offered": {
+      "telege": [
+       "vafepi"
+      ],
+      "torare": [
+       "vafepi"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999997,
+    "came_to_mind": 0.6666666666666666
+   }
+  },
+  {
+   "trial": 4,
+   "memory": "life-v0-4242-00343",
+   "swap": "refafa -> sudoda",
+   "wrong_newcomer": "pagoge",
+   "scene": [
+    "sudoda",
+    "rizabo",
+    "zekogu"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.981184591882748,
+     "unchanged_memory": 0.8394361607133869,
+     "wrong_newcomer": 0.8388925650219343,
+     "sensing_imagined": 0.9674271498926357,
+     "sensing_unchanged": 0.9562822461428677,
+     "shares_moment": 0.9825637226145265,
+     "sensing_shares": 0.9697587940095844,
+     "sensing_word_looks": 0.954004915599285,
+     "sensing_reread": 0.9999999999999994
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "zekogu",
+       0.61377904276402
+      ],
+      [
+       "rizabo",
+       0.5744390255921893
+      ],
+      [
+       "sudoda",
+       0.5605235433708906
+      ],
+      [
+       "kokado",
+       0.5413977980259241
+      ],
+      [
+       "refafa",
+       0.5235836366595756
+      ],
+      [
+       "zidigi",
+       0.5228336332134466
+      ]
+     ],
+     "real_list": [
+      [
+       "zekogu",
+       0.5990821208085907
+      ],
+      [
+       "rizabo",
+       0.5597465629769196
+      ],
+      [
+       "sudoda",
+       0.5474921259182619
+      ],
+      [
+       "kokado",
+       0.5253817637999306
+      ],
+      [
+       "zidigi",
+       0.5181355327444153
+      ],
+      [
+       "pinezi",
+       0.5025978812772905
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9920925378863007,
+     "unchanged_memory_now": 0.9315715087021343
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "panaze",
+      "zarare"
+     ],
+     "newcomer_really_offered": [
+      "panaze",
+      "zarare"
+     ],
+     "newcomer_won_attention": [
+      "panaze",
+      "zarare"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "zekogu": [
+       "refafa"
+      ],
+      "rizabo": [
+       "refafa"
+      ]
+     },
+     "rest_really_offered": {
+      "rizabo": [
+       "refafa"
+      ],
+      "zekogu": [
+       "refafa"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9811845918827483,
+     "unchanged_memory": 0.8394361607133871,
+     "wrong_newcomer": 0.8388925650219345,
+     "sensing_imagined": 0.9674271498926363,
+     "sensing_unchanged": 0.9562822461428682,
+     "shares_moment": 0.9825637226145267,
+     "sensing_shares": 0.9697587940095849,
+     "sensing_word_looks": 0.9540049155992856,
+     "sensing_reread": 1.0
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 0.8333333333333334,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.8333333333333334,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "zekogu",
+       0.61377904276402
+      ],
+      [
+       "rizabo",
+       0.5744390255921893
+      ],
+      [
+       "sudoda",
+       0.5605235433708906
+      ],
+      [
+       "kokado",
+       0.5413977980259241
+      ],
+      [
+       "refafa",
+       0.5235836366595756
+      ],
+      [
+       "zidigi",
+       0.5228336332134466
+      ]
+     ],
+     "real_list": [
+      [
+       "zekogu",
+       0.5885251371044713
+      ],
+      [
+       "rizabo",
+       0.5674282877452789
+      ],
+      [
+       "sudoda",
+       0.5535985480204657
+      ],
+      [
+       "kokado",
+       0.5293388810699277
+      ],
+      [
+       "tokere",
+       0.507164053958577
+      ],
+      [
+       "zidigi",
+       0.506892008277567
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.925102901493276,
+     "unchanged_memory_now": 0.8654278779500205
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "panaze",
+      "zarare"
+     ],
+     "newcomer_really_offered": [
+      "panaze",
+      "zarare"
+     ],
+     "newcomer_won_attention": [
+      "panaze",
+      "zarare"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "zekogu": [
+       "refafa"
+      ],
+      "rizabo": [
+       "refafa"
+      ]
+     },
+     "rest_really_offered": {
+      "rizabo": [
+       "refafa"
+      ],
+      "zekogu": [
+       "refafa"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 1.0,
+    "came_to_mind": 0.8333333333333334
+   }
+  },
+  {
+   "trial": 5,
+   "memory": "life-v0-4242-00097",
+   "swap": "zarare -> pagoge",
+   "wrong_newcomer": "fipisa",
+   "scene": [
+    "sudoda",
+    "pagoge",
+    "panaze"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.982923358324212,
+     "unchanged_memory": 0.8548901119360737,
+     "wrong_newcomer": 0.8338621479384012,
+     "sensing_imagined": 0.9704163539881009,
+     "sensing_unchanged": 0.9688773660457415,
+     "shares_moment": 0.9775993743317196,
+     "sensing_shares": 0.9612064406634276,
+     "sensing_word_looks": 0.9526282581382498,
+     "sensing_reread": 1.0000000000000004
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "panaze",
+       0.6140608137014268
+      ],
+      [
+       "sudoda",
+       0.5911718832335886
+      ],
+      [
+       "pagoge",
+       0.5518155008364016
+      ],
+      [
+       "kokado",
+       0.5437087316066532
+      ],
+      [
+       "pinezi",
+       0.5415501856032028
+      ],
+      [
+       "susefe",
+       0.526240641796262
+      ]
+     ],
+     "real_list": [
+      [
+       "panaze",
+       0.6049263800640216
+      ],
+      [
+       "sudoda",
+       0.5867025380871305
+      ],
+      [
+       "pagoge",
+       0.5343958966061264
+      ],
+      [
+       "kokado",
+       0.5140562236107006
+      ],
+      [
+       "pinezi",
+       0.511704619795069
+      ],
+      [
+       "kokape",
+       0.5028309408970514
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9928076513030041,
+     "unchanged_memory_now": 0.9369584568671144
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "kokape",
+      "rigeno",
+      "tigila"
+     ],
+     "newcomer_really_offered": [
+      "kokape",
+      "rigeno",
+      "tigila"
+     ],
+     "newcomer_won_attention": [
+      "kokape",
+      "rigeno",
+      "tigila"
+     ],
+     "hits": 3,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "panaze": [
+       "zarare"
+      ],
+      "sudoda": [
+       "zarare"
+      ]
+     },
+     "rest_really_offered": {
+      "sudoda": [
+       "zarare"
+      ],
+      "panaze": [
+       "zarare"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9829233583242117,
+     "unchanged_memory": 0.8548901119360734,
+     "wrong_newcomer": 0.8338621479384009,
+     "sensing_imagined": 0.9704163539881002,
+     "sensing_unchanged": 0.9688773660457409,
+     "shares_moment": 0.9775993743317192,
+     "sensing_shares": 0.9612064406634269,
+     "sensing_word_looks": 0.9526282581382491,
+     "sensing_reread": 1.0
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.5,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.6666666666666666,
+     "reread": 0.6666666666666666,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.6666666666666666,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "panaze",
+       0.6140608137014268
+      ],
+      [
+       "sudoda",
+       0.5911718832335886
+      ],
+      [
+       "pagoge",
+       0.5518155008364016
+      ],
+      [
+       "kokado",
+       0.5437087316066532
+      ],
+      [
+       "pinezi",
+       0.5415501856032028
+      ],
+      [
+       "susefe",
+       0.526240641796262
+      ]
+     ],
+     "real_list": [
+      [
+       "panaze",
+       0.6049945096626219
+      ],
+      [
+       "sudoda",
+       0.5927577958750414
+      ],
+      [
+       "pagoge",
+       0.5344928070514701
+      ],
+      [
+       "kokado",
+       0.5186798828282521
+      ],
+      [
+       "rigeno",
+       0.5107540041008399
+      ],
+      [
+       "susefe",
+       0.5100112253592342
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9280634991873717,
+     "unchanged_memory_now": 0.8758521927753462
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "kokape",
+      "rigeno",
+      "tigila"
+     ],
+     "newcomer_really_offered": [
+      "kokape",
+      "rigeno",
+      "tigila"
+     ],
+     "newcomer_won_attention": [
+      "kokape",
+      "rigeno",
+      "tigila"
+     ],
+     "hits": 3,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "panaze": [
+       "zarare"
+      ],
+      "sudoda": [
+       "zarare"
+      ]
+     },
+     "rest_really_offered": {
+      "sudoda": [
+       "zarare"
+      ],
+      "panaze": [
+       "zarare"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 1.0000000000000004,
+    "came_to_mind": 0.6666666666666666
+   }
+  },
+  {
+   "trial": 6,
+   "memory": "life-v0-4242-00004",
+   "swap": "kokape -> fipisa",
+   "wrong_newcomer": "limovu",
+   "scene": [
+    "rigeno",
+    "pagoge",
+    "fipisa",
+    "tigila"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.991343343325442,
+     "unchanged_memory": 0.8942414804620696,
+     "wrong_newcomer": 0.890330216413329,
+     "sensing_imagined": 0.9844782273534524,
+     "sensing_unchanged": 0.9842875126989655,
+     "shares_moment": 0.9913160749303075,
+     "sensing_shares": 0.9844598388799326,
+     "sensing_word_looks": 0.9793342715043093,
+     "sensing_reread": 0.9999999999999998
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": false,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "rigeno",
+       0.6206878436687187
+      ],
+      [
+       "tigila",
+       0.5937144475606335
+      ],
+      [
+       "pagoge",
+       0.5752422259087057
+      ],
+      [
+       "susefe",
+       0.5566990872216022
+      ],
+      [
+       "zumapu",
+       0.5459526774946405
+      ],
+      [
+       "fipisa",
+       0.5450562622410708
+      ]
+     ],
+     "real_list": [
+      [
+       "rigeno",
+       0.6189621963478382
+      ],
+      [
+       "tigila",
+       0.5870543491201475
+      ],
+      [
+       "pagoge",
+       0.5716084715566936
+      ],
+      [
+       "zumapu",
+       0.5495392734466348
+      ],
+      [
+       "susefe",
+       0.5478638804933231
+      ],
+      [
+       "malipa",
+       0.5386410232334801
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.996452864083157,
+     "unchanged_memory_now": 0.9566657928394562
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "fuseda",
+      "tapona"
+     ],
+     "newcomer_really_offered": [
+      "fuseda",
+      "tapona"
+     ],
+     "newcomer_won_attention": [
+      "fuseda",
+      "tapona"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "pagoge": [
+       "kokape"
+      ],
+      "rigeno": [
+       "kokape"
+      ],
+      "tigila": [
+       "kokape"
+      ]
+     },
+     "rest_really_offered": {
+      "rigeno": [
+       "kokape"
+      ],
+      "pagoge": [
+       "kokape"
+      ],
+      "tigila": [
+       "kokape"
+      ]
+     },
+     "rest_hits": 3,
+     "rest_offered_total": 3,
+     "rest_predicted_total": 3,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9913433433254418,
+     "unchanged_memory": 0.8942414804620695,
+     "wrong_newcomer": 0.8903302164133288,
+     "sensing_imagined": 0.984478227353452,
+     "sensing_unchanged": 0.9842875126989655,
+     "shares_moment": 0.991316074930307,
+     "sensing_shares": 0.9844598388799324,
+     "sensing_word_looks": 0.9793342715043092,
+     "sensing_reread": 0.9999999999999996
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 0.8333333333333334,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.8333333333333334,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": false,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "rigeno",
+       0.6206878436687187
+      ],
+      [
+       "tigila",
+       0.5937144475606335
+      ],
+      [
+       "pagoge",
+       0.5752422259087057
+      ],
+      [
+       "susefe",
+       0.5566990872216022
+      ],
+      [
+       "zumapu",
+       0.5459526774946405
+      ],
+      [
+       "fipisa",
+       0.5450562622410708
+      ]
+     ],
+     "real_list": [
+      [
+       "rigeno",
+       0.634635993111086
+      ],
+      [
+       "tigila",
+       0.5904728269520453
+      ],
+      [
+       "pagoge",
+       0.5761168703444087
+      ],
+      [
+       "susefe",
+       0.560557206968022
+      ],
+      [
+       "pogule",
+       0.5419067473166729
+      ],
+      [
+       "zumapu",
+       0.5395785658431728
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9307203528154401,
+     "unchanged_memory_now": 0.8887717148410956
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "fuseda",
+      "tapona"
+     ],
+     "newcomer_really_offered": [
+      "fuseda",
+      "tapona"
+     ],
+     "newcomer_won_attention": [
+      "fuseda",
+      "tapona"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "pagoge": [
+       "kokape"
+      ],
+      "rigeno": [
+       "kokape"
+      ],
+      "tigila": [
+       "kokape"
+      ]
+     },
+     "rest_really_offered": {
+      "rigeno": [
+       "kokape"
+      ],
+      "pagoge": [
+       "kokape"
+      ],
+      "tigila": [
+       "kokape"
+      ]
+     },
+     "rest_hits": 3,
+     "rest_offered_total": 3,
+     "rest_predicted_total": 3,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999998,
+    "came_to_mind": 0.8333333333333334
+   }
+  },
+  {
+   "trial": 7,
+   "memory": "life-v0-4242-00344",
+   "swap": "fuseda -> limovu",
+   "wrong_newcomer": "moduta",
+   "scene": [
+    "tapona",
+    "limovu",
+    "fipisa"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9769328546423065,
+     "unchanged_memory": 0.8250114293236042,
+     "wrong_newcomer": 0.847706493030923,
+     "sensing_imagined": 0.9579061863307358,
+     "sensing_unchanged": 0.9553905548769035,
+     "shares_moment": 0.9740356755903257,
+     "sensing_shares": 0.9527176622387024,
+     "sensing_word_looks": 0.9550906606767252,
+     "sensing_reread": 1.0000000000000004
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.5,
+     "shares": 0.8333333333333334,
+     "word_looks": 1.0,
+     "reread": 1.0,
+     "word_looks_top1_match": false,
+     "reread_top1_match": true,
+     "shares_top1_match": false,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": false,
+     "imagined_list": [
+      [
+       "limovu",
+       0.5988222294623464
+      ],
+      [
+       "tapona",
+       0.584020604932529
+      ],
+      [
+       "fipisa",
+       0.5725370937859402
+      ],
+      [
+       "susefe",
+       0.5438115120540933
+      ],
+      [
+       "pinezi",
+       0.5416424834515282
+      ],
+      [
+       "zidigi",
+       0.5408724702240935
+      ]
+     ],
+     "real_list": [
+      [
+       "tapona",
+       0.5774403071847402
+      ],
+      [
+       "limovu",
+       0.5743185776589377
+      ],
+      [
+       "fipisa",
+       0.5641805642788765
+      ],
+      [
+       "pinezi",
+       0.5393879879094374
+      ],
+      [
+       "zidigi",
+       0.5381357085006636
+      ],
+      [
+       "tiropi",
+       0.5280318091132558
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.990546904099013,
+     "unchanged_memory_now": 0.9277398240039749
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "dibali",
+      "lagise"
+     ],
+     "newcomer_really_offered": [
+      "dibali",
+      "lagise"
+     ],
+     "newcomer_won_attention": [
+      "dibali",
+      "lagise"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "tapona": [
+       "fuseda"
+      ],
+      "fipisa": [
+       "fuseda"
+      ]
+     },
+     "rest_really_offered": {
+      "tapona": [
+       "fuseda"
+      ],
+      "fipisa": [
+       "fuseda"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9769328546423057,
+     "unchanged_memory": 0.8250114293236035,
+     "wrong_newcomer": 0.8477064930309225,
+     "sensing_imagined": 0.9579061863307348,
+     "sensing_unchanged": 0.9553905548769026,
+     "shares_moment": 0.974035675590325,
+     "sensing_shares": 0.9527176622387012,
+     "sensing_word_looks": 0.9550906606767242,
+     "sensing_reread": 0.9999999999999993
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 0.8333333333333334,
+     "word_looks_top1_match": false,
+     "reread_top1_match": true,
+     "shares_top1_match": false,
+     "diagnostic_given_the_true_look": 0.8333333333333334,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": false,
+     "imagined_list": [
+      [
+       "limovu",
+       0.5988222294623464
+      ],
+      [
+       "tapona",
+       0.584020604932529
+      ],
+      [
+       "fipisa",
+       0.5725370937859402
+      ],
+      [
+       "susefe",
+       0.5438115120540933
+      ],
+      [
+       "pinezi",
+       0.5416424834515282
+      ],
+      [
+       "zidigi",
+       0.5408724702240935
+      ]
+     ],
+     "real_list": [
+      [
+       "tapona",
+       0.5714461783563457
+      ],
+      [
+       "limovu",
+       0.571052654436126
+      ],
+      [
+       "fipisa",
+       0.5632413487323384
+      ],
+      [
+       "tiropi",
+       0.5389364329649319
+      ],
+      [
+       "susefe",
+       0.5368221030067528
+      ],
+      [
+       "zidigi",
+       0.5277772809357638
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9314365752108807,
+     "unchanged_memory_now": 0.861049355216586
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "dibali",
+      "lagise"
+     ],
+     "newcomer_really_offered": [
+      "dibali",
+      "lagise"
+     ],
+     "newcomer_won_attention": [
+      "dibali",
+      "lagise"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "tapona": [
+       "fuseda"
+      ],
+      "fipisa": [
+       "fuseda"
+      ]
+     },
+     "rest_really_offered": {
+      "tapona": [
+       "fuseda"
+      ],
+      "fipisa": [
+       "fuseda"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 1.0,
+    "came_to_mind": 0.8333333333333334
+   }
+  },
+  {
+   "trial": 8,
+   "memory": "life-v0-4242-00266",
+   "swap": "lagise -> moduta",
+   "wrong_newcomer": "megomu",
+   "scene": [
+    "dibali",
+    "moduta",
+    "limovu"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.985261560207637,
+     "unchanged_memory": 0.8461270244902652,
+     "wrong_newcomer": 0.8527235217982684,
+     "sensing_imagined": 0.973568658738017,
+     "sensing_unchanged": 0.965624660172223,
+     "shares_moment": 0.9833961872840459,
+     "sensing_shares": 0.970221909332435,
+     "sensing_word_looks": 0.9690117409872403,
+     "sensing_reread": 0.9999999999999998
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "limovu",
+       0.6231373834472406
+      ],
+      [
+       "dibali",
+       0.5890565928956429
+      ],
+      [
+       "moduta",
+       0.561849470708023
+      ],
+      [
+       "pinezi",
+       0.5448348568921112
+      ],
+      [
+       "zidigi",
+       0.5356793883389839
+      ],
+      [
+       "lagise",
+       0.5344443506215866
+      ]
+     ],
+     "real_list": [
+      [
+       "limovu",
+       0.6167026938946872
+      ],
+      [
+       "dibali",
+       0.5862255949722556
+      ],
+      [
+       "moduta",
+       0.5525484648202582
+      ],
+      [
+       "lagise",
+       0.52666083174061
+      ],
+      [
+       "zidigi",
+       0.5206097933048526
+      ],
+      [
+       "tepodi",
+       0.516692898420913
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.993841006439159,
+     "unchanged_memory_now": 0.9341606428745853
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "mitilu",
+      "sibipo",
+      "zevuni"
+     ],
+     "newcomer_really_offered": [
+      "mitilu",
+      "sibipo",
+      "zevuni"
+     ],
+     "newcomer_won_attention": [
+      "mitilu",
+      "sibipo",
+      "zevuni"
+     ],
+     "hits": 3,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "dibali": [
+       "lagise"
+      ],
+      "limovu": [
+       "lagise"
+      ]
+     },
+     "rest_really_offered": {
+      "dibali": [
+       "lagise"
+      ],
+      "limovu": [
+       "lagise"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9852615602076371,
+     "unchanged_memory": 0.8461270244902652,
+     "wrong_newcomer": 0.8527235217982685,
+     "sensing_imagined": 0.9735686587380171,
+     "sensing_unchanged": 0.9656246601722231,
+     "shares_moment": 0.9833961872840459,
+     "sensing_shares": 0.9702219093324351,
+     "sensing_word_looks": 0.9690117409872404,
+     "sensing_reread": 1.0
+    },
+    "B_came_to_mind": {
+     "imagined": 0.5,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.3333333333333333,
+     "shares": 0.6666666666666666,
+     "word_looks": 0.6666666666666666,
+     "reread": 0.6666666666666666,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.6666666666666666,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "limovu",
+       0.6231373834472406
+      ],
+      [
+       "dibali",
+       0.5890565928956429
+      ],
+      [
+       "moduta",
+       0.561849470708023
+      ],
+      [
+       "pinezi",
+       0.5448348568921112
+      ],
+      [
+       "zidigi",
+       0.5356793883389839
+      ],
+      [
+       "lagise",
+       0.5344443506215866
+      ]
+     ],
+     "real_list": [
+      [
+       "limovu",
+       0.6115901541544089
+      ],
+      [
+       "dibali",
+       0.5970236893340505
+      ],
+      [
+       "moduta",
+       0.5484408006526575
+      ],
+      [
+       "tiropi",
+       0.5117875418081452
+      ],
+      [
+       "lazasi",
+       0.5110638572854272
+      ],
+      [
+       "tepodi",
+       0.5102198483165381
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9258152417176061,
+     "unchanged_memory_now": 0.8780160590385889
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "mitilu",
+      "sibipo",
+      "zevuni"
+     ],
+     "newcomer_really_offered": [
+      "mitilu",
+      "sibipo",
+      "zevuni"
+     ],
+     "newcomer_won_attention": [
+      "mitilu",
+      "sibipo",
+      "zevuni"
+     ],
+     "hits": 3,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "dibali": [
+       "lagise"
+      ],
+      "limovu": [
+       "lagise"
+      ]
+     },
+     "rest_really_offered": {
+      "dibali": [
+       "lagise"
+      ],
+      "limovu": [
+       "lagise"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999998,
+    "came_to_mind": 0.6666666666666666
+   }
+  },
+  {
+   "trial": 9,
+   "memory": "life-v0-4242-00273",
+   "swap": "zevuni -> megomu",
+   "wrong_newcomer": "telazi",
+   "scene": [
+    "sibipo",
+    "megomu",
+    "mitilu",
+    "moduta"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9884430094842018,
+     "unchanged_memory": 0.8918205481425645,
+     "wrong_newcomer": 0.8685909564746113,
+     "sensing_imagined": 0.9797149221544581,
+     "sensing_unchanged": 0.9722032822683209,
+     "shares_moment": 0.9895321188007142,
+     "sensing_shares": 0.9817077123868142,
+     "sensing_word_looks": 0.9690951632588628,
+     "sensing_reread": 0.9999999999999999
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 1.0,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": false,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "mitilu",
+       0.5900047121529685
+      ],
+      [
+       "sibipo",
+       0.5823958161273501
+      ],
+      [
+       "megomu",
+       0.5714561930053216
+      ],
+      [
+       "moduta",
+       0.5639242689562998
+      ],
+      [
+       "pinezi",
+       0.5518335440195791
+      ],
+      [
+       "ledugu",
+       0.5326959317987929
+      ]
+     ],
+     "real_list": [
+      [
+       "mitilu",
+       0.5825019181514196
+      ],
+      [
+       "sibipo",
+       0.579191105638365
+      ],
+      [
+       "megomu",
+       0.5668195800227082
+      ],
+      [
+       "moduta",
+       0.5563053145260161
+      ],
+      [
+       "pinezi",
+       0.5424566271562131
+      ],
+      [
+       "zofabo",
+       0.5230716609725058
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9953301701715768,
+     "unchanged_memory_now": 0.9555999964565278
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "morazu",
+      "zofabo"
+     ],
+     "newcomer_really_offered": [
+      "morazu",
+      "zofabo"
+     ],
+     "newcomer_won_attention": [
+      "morazu",
+      "zofabo"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "sibipo": [
+       "zevuni"
+      ],
+      "moduta": [
+       "zevuni"
+      ],
+      "mitilu": [
+       "zevuni"
+      ]
+     },
+     "rest_really_offered": {
+      "sibipo": [
+       "zevuni"
+      ],
+      "mitilu": [
+       "zevuni"
+      ],
+      "moduta": [
+       "zevuni"
+      ]
+     },
+     "rest_hits": 3,
+     "rest_offered_total": 3,
+     "rest_predicted_total": 3,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9884430094842016,
+     "unchanged_memory": 0.8918205481425643,
+     "wrong_newcomer": 0.868590956474611,
+     "sensing_imagined": 0.9797149221544577,
+     "sensing_unchanged": 0.9722032822683204,
+     "shares_moment": 0.989532118800714,
+     "sensing_shares": 0.9817077123868138,
+     "sensing_word_looks": 0.9690951632588624,
+     "sensing_reread": 0.9999999999999993
+    },
+    "B_came_to_mind": {
+     "imagined": 0.6666666666666666,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.5,
+     "shares": 0.6666666666666666,
+     "word_looks": 0.6666666666666666,
+     "reread": 0.6666666666666666,
+     "word_looks_top1_match": false,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.6666666666666666,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "mitilu",
+       0.5900047121529685
+      ],
+      [
+       "sibipo",
+       0.5823958161273501
+      ],
+      [
+       "megomu",
+       0.5714561930053216
+      ],
+      [
+       "moduta",
+       0.5639242689562998
+      ],
+      [
+       "pinezi",
+       0.5518335440195791
+      ],
+      [
+       "ledugu",
+       0.5326959317987929
+      ]
+     ],
+     "real_list": [
+      [
+       "mitilu",
+       0.5735046174043424
+      ],
+      [
+       "sibipo",
+       0.5718180228401718
+      ],
+      [
+       "megomu",
+       0.5672382902665519
+      ],
+      [
+       "moduta",
+       0.5543352370674317
+      ],
+      [
+       "rigeno",
+       0.5332075215659791
+      ],
+      [
+       "pogule",
+       0.5307783962134938
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9332266759030969,
+     "unchanged_memory_now": 0.8983177182475132
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "morazu",
+      "zofabo"
+     ],
+     "newcomer_really_offered": [
+      "morazu",
+      "zofabo"
+     ],
+     "newcomer_won_attention": [
+      "morazu",
+      "zofabo"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "sibipo": [
+       "zevuni"
+      ],
+      "moduta": [
+       "zevuni"
+      ],
+      "mitilu": [
+       "zevuni"
+      ]
+     },
+     "rest_really_offered": {
+      "sibipo": [
+       "zevuni"
+      ],
+      "mitilu": [
+       "zevuni"
+      ],
+      "moduta": [
+       "zevuni"
+      ]
+     },
+     "rest_hits": 3,
+     "rest_offered_total": 3,
+     "rest_predicted_total": 3,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999996,
+    "came_to_mind": 0.6666666666666666
+   }
+  },
+  {
+   "trial": 10,
+   "memory": "life-v0-4242-00139",
+   "swap": "zofabo -> telazi",
+   "wrong_newcomer": "rikuve",
+   "scene": [
+    "megomu",
+    "telazi",
+    "morazu"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9763879147739903,
+     "unchanged_memory": 0.8492353981100145,
+     "wrong_newcomer": 0.8242057945412575,
+     "sensing_imagined": 0.9597578389002132,
+     "sensing_unchanged": 0.9495563383606277,
+     "shares_moment": 0.9753718604931964,
+     "sensing_shares": 0.9580867914641898,
+     "sensing_word_looks": 0.9483589613783164,
+     "sensing_reread": 0.9999999999999999
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "megomu",
+       0.6165172273068948
+      ],
+      [
+       "morazu",
+       0.5652324565411344
+      ],
+      [
+       "telazi",
+       0.5640393594129155
+      ],
+      [
+       "zofabo",
+       0.5566222804783443
+      ],
+      [
+       "pinezi",
+       0.5440608064145207
+      ],
+      [
+       "gomutu",
+       0.536152437650861
+      ]
+     ],
+     "real_list": [
+      [
+       "megomu",
+       0.6023060679682041
+      ],
+      [
+       "morazu",
+       0.5607045375232267
+      ],
+      [
+       "telazi",
+       0.5465714712366817
+      ],
+      [
+       "zofabo",
+       0.5410874901764405
+      ],
+      [
+       "gomutu",
+       0.51986245181222
+      ],
+      [
+       "susefe",
+       0.5162051427431021
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9900983398737643,
+     "unchanged_memory_now": 0.9364553520950084
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "geruzi",
+      "tolobu"
+     ],
+     "newcomer_really_offered": [
+      "geruzi",
+      "tolobu"
+     ],
+     "newcomer_won_attention": [
+      "geruzi",
+      "tolobu"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "morazu": [
+       "zofabo"
+      ],
+      "megomu": [
+       "zofabo"
+      ]
+     },
+     "rest_really_offered": {
+      "megomu": [
+       "zofabo"
+      ],
+      "morazu": [
+       "zofabo"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9763879147739905,
+     "unchanged_memory": 0.8492353981100148,
+     "wrong_newcomer": 0.8242057945412576,
+     "sensing_imagined": 0.9597578389002134,
+     "sensing_unchanged": 0.949556338360628,
+     "shares_moment": 0.9753718604931966,
+     "sensing_shares": 0.9580867914641902,
+     "sensing_word_looks": 0.9483589613783168,
+     "sensing_reread": 1.0000000000000002
+    },
+    "B_came_to_mind": {
+     "imagined": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "unchanged_memory": 0.5,
+     "shares": 0.6666666666666666,
+     "word_looks": 0.6666666666666666,
+     "reread": 0.8333333333333334,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.8333333333333334,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "megomu",
+       0.6165172273068948
+      ],
+      [
+       "morazu",
+       0.5652324565411344
+      ],
+      [
+       "telazi",
+       0.5640393594129155
+      ],
+      [
+       "zofabo",
+       0.5566222804783443
+      ],
+      [
+       "pinezi",
+       0.5440608064145207
+      ],
+      [
+       "gomutu",
+       0.536152437650861
+      ]
+     ],
+     "real_list": [
+      [
+       "megomu",
+       0.6004659319514764
+      ],
+      [
+       "morazu",
+       0.5682687161359823
+      ],
+      [
+       "telazi",
+       0.5563578146882874
+      ],
+      [
+       "susefe",
+       0.5291859060619704
+      ],
+      [
+       "gomutu",
+       0.5224014048309829
+      ],
+      [
+       "pikofe",
+       0.5188054223633872
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9225437662614018,
+     "unchanged_memory_now": 0.8492681683883216
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "geruzi",
+      "tolobu"
+     ],
+     "newcomer_really_offered": [
+      "geruzi",
+      "tolobu"
+     ],
+     "newcomer_won_attention": [
+      "geruzi",
+      "tolobu"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "morazu": [
+       "zofabo"
+      ],
+      "megomu": [
+       "zofabo"
+      ]
+     },
+     "rest_really_offered": {
+      "megomu": [
+       "zofabo"
+      ],
+      "morazu": [
+       "zofabo"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 1.0000000000000002,
+    "came_to_mind": 0.8333333333333334
+   }
+  },
+  {
+   "trial": 11,
+   "memory": "life-v0-4242-00131",
+   "swap": "tolobu -> rikuve",
+   "wrong_newcomer": "tiropi",
+   "scene": [
+    "telazi",
+    "rikuve",
+    "geruzi"
+   ],
+   "now": {
+    "A_moment": {
+     "imagined": 0.9768751461800279,
+     "unchanged_memory": 0.8554551415590396,
+     "wrong_newcomer": 0.8342991937661205,
+     "sensing_imagined": 0.9594106987818003,
+     "sensing_unchanged": 0.9618082876865323,
+     "shares_moment": 0.9726813526343252,
+     "sensing_shares": 0.9520446722496976,
+     "sensing_word_looks": 0.9356722760835119,
+     "sensing_reread": 0.9999999999999997
+    },
+    "B_came_to_mind": {
+     "imagined": 0.8333333333333334,
+     "wrong_newcomer": 0.6666666666666666,
+     "unchanged_memory": 0.6666666666666666,
+     "shares": 0.8333333333333334,
+     "word_looks": 0.8333333333333334,
+     "reread": 1.0,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 1.0,
+     "diagnostic_true_look_exact_order": true,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "geruzi",
+       0.603013061783418
+      ],
+      [
+       "telazi",
+       0.5892468322311825
+      ],
+      [
+       "pinezi",
+       0.5576072912202424
+      ],
+      [
+       "rikuve",
+       0.5490648358173784
+      ],
+      [
+       "tepodi",
+       0.5437763773984844
+      ],
+      [
+       "natita",
+       0.5341966002298272
+      ]
+     ],
+     "real_list": [
+      [
+       "geruzi",
+       0.5941173573776539
+      ],
+      [
+       "telazi",
+       0.5812740583072508
+      ],
+      [
+       "pinezi",
+       0.5360499376506243
+      ],
+      [
+       "rikuve",
+       0.5226765744514207
+      ],
+      [
+       "tepodi",
+       0.5213451663394655
+      ],
+      [
+       "zabifu",
+       0.5170745974355795
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9905610720658768,
+     "unchanged_memory_now": 0.939769406674766
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "liveki",
+      "pozepo"
+     ],
+     "newcomer_really_offered": [
+      "liveki",
+      "pozepo"
+     ],
+     "newcomer_won_attention": [
+      "liveki",
+      "pozepo"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "geruzi": [
+       "tolobu"
+      ],
+      "telazi": [
+       "tolobu"
+      ]
+     },
+     "rest_really_offered": {
+      "telazi": [
+       "tolobu"
+      ],
+      "geruzi": [
+       "tolobu"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "later": {
+    "A_moment": {
+     "imagined": 0.9768751461800279,
+     "unchanged_memory": 0.8554551415590396,
+     "wrong_newcomer": 0.8342991937661205,
+     "sensing_imagined": 0.9594106987818004,
+     "sensing_unchanged": 0.9618082876865323,
+     "shares_moment": 0.9726813526343254,
+     "sensing_shares": 0.9520446722496978,
+     "sensing_word_looks": 0.935672276083512,
+     "sensing_reread": 0.9999999999999997
+    },
+    "B_came_to_mind": {
+     "imagined": 0.6666666666666666,
+     "wrong_newcomer": 0.5,
+     "unchanged_memory": 0.3333333333333333,
+     "shares": 0.6666666666666666,
+     "word_looks": 0.5,
+     "reread": 0.5,
+     "word_looks_top1_match": true,
+     "reread_top1_match": true,
+     "shares_top1_match": true,
+     "diagnostic_given_the_true_look": 0.5,
+     "diagnostic_true_look_exact_order": false,
+     "newcomer_in_real_top6": true,
+     "newcomer_in_imagined_top6": true,
+     "top1_match": true,
+     "imagined_list": [
+      [
+       "geruzi",
+       0.603013061783418
+      ],
+      [
+       "telazi",
+       0.5892468322311825
+      ],
+      [
+       "pinezi",
+       0.5576072912202424
+      ],
+      [
+       "rikuve",
+       0.5490648358173784
+      ],
+      [
+       "tepodi",
+       0.5437763773984844
+      ],
+      [
+       "natita",
+       0.5341966002298272
+      ]
+     ],
+     "real_list": [
+      [
+       "geruzi",
+       0.599633780480927
+      ],
+      [
+       "telazi",
+       0.5926585955921646
+      ],
+      [
+       "rikuve",
+       0.5347029423201641
+      ],
+      [
+       "susefe",
+       0.5244325486801173
+      ],
+      [
+       "tiropi",
+       0.5187125514421426
+      ],
+      [
+       "natita",
+       0.5167040096674362
+      ]
+     ]
+    },
+    "A_field_after": {
+     "imagined_now": 0.9275228428435972,
+     "unchanged_memory_now": 0.8783344860794786
+    },
+    "C_second_step": {
+     "newcomer_predicted": [
+      "liveki",
+      "pozepo"
+     ],
+     "newcomer_really_offered": [
+      "liveki",
+      "pozepo"
+     ],
+     "newcomer_won_attention": [
+      "liveki",
+      "pozepo"
+     ],
+     "hits": 2,
+     "false": [],
+     "missed": [],
+     "rest_predicted": {
+      "geruzi": [
+       "tolobu"
+      ],
+      "telazi": [
+       "tolobu"
+      ]
+     },
+     "rest_really_offered": {
+      "telazi": [
+       "tolobu"
+      ],
+      "geruzi": [
+       "tolobu"
+      ]
+     },
+     "rest_hits": 2,
+     "rest_offered_total": 2,
+     "rest_predicted_total": 2,
+     "swapped_out_piece_came_back": true
+    }
+   },
+   "SIMULATED_now_vs_real_later": {
+    "moment": 0.9999999999999996,
+    "came_to_mind": 0.5
+   }
+  }
+ ]
+}

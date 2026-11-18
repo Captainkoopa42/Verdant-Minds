@@ -1,0 +1,75 @@
+{
+ "schema": "verdant.observer.attention.v0",
+ "summary": {
+  "steer": true,
+  "signals": {
+   "conflict": {
+    "novelty": 0.016,
+    "contradiction": 1.0,
+    "workspace_score": 0.65,
+    "moments": 3
+   },
+   "correct": {
+    "novelty": 0.025,
+    "contradiction": 0.0,
+    "workspace_score": 0.405,
+    "moments": 8
+   },
+   "familiar": {
+    "novelty": 0.018,
+    "contradiction": 0.0,
+    "workspace_score": 0.37,
+    "moments": 8
+   },
+   "learning": {
+    "novelty": 0.253,
+    "contradiction": 0.0,
+    "workspace_score": 0.524,
+    "moments": 48
+   },
+   "new": {
+    "novelty": 0.216,
+    "contradiction": 0.0,
+    "workspace_score": 0.434,
+    "moments": 8
+   },
+   "seen_first": {
+    "novelty": 0.026,
+    "contradiction": 0.0,
+    "workspace_score": 0.397,
+    "moments": 16
+   }
+  },
+  "bonds_new_pairs": [
+   0.375,
+   0.405
+  ],
+  "bonds_familiar_pairs": [
+   0.501,
+   0.566
+  ],
+  "false_alarms": "0/8",
+  "conflicts_flagged": "3/3",
+  "tension": {
+   "redeni": {
+    "writings": 14,
+    "net": 0.822,
+    "tension": 0.0
+   },
+   "biseza": {
+    "writings": 16,
+    "net": 0.457,
+    "tension": 0.375
+   },
+   "lunubu": {
+    "writings": 13,
+    "net": 0.814,
+    "tension": 0.0
+   }
+  },
+  "who": {
+   "told_but_conflicting": "biseza",
+   "control_familiar": "redeni"
+  }
+ }
+}

@@ -42,10 +42,16 @@ EXTRA_ARMS = ("surprise", "surprise_wave", "reunion", "whole")
 SCHEMA = "verdant.observer.long_life.v0"
 
 
+PIPELINE_CONFIG: dict = {}          # optional DevelopmentalCycleConfig overrides (e.g. current_evidence_persistence)
+
+
 def build_pipeline(arm: str):
     from verdant_development import VerdantDevelopmentPipeline
     from verdant_structures import VerdantStructurePipeline
     stages = {}; structures = VerdantStructurePipeline()
+    if PIPELINE_CONFIG:
+        from verdant_development.pipeline import DevelopmentalCycleConfig
+        stages["config"] = DevelopmentalCycleConfig(**PIPELINE_CONFIG)
     extra = arm in EXTRA_ARMS; name = arm
     if arm in ("surprise_wave", "whole"):
         from sidecar_wave import install_wave
@@ -140,11 +146,19 @@ def checkpoint_score(kernel, expectations: dict, lesson: int) -> dict:
             "concepts": len(state.concepts), "bonds": len(state.plasticity_associations), "evidence": len(state.evidence)}
 
 
+READER = {"on": False}
+SENSES = {"on": False}
+
+
 def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed: int, checkpoint_every: int,
             promote_every: int, max_promotions: int, stop_after: int | None) -> None:
     from verdant_kernel import VerdantKernel
     from verdant_kernel.models import KernelState
     state_dim, commands, pack_sha = load_commands(pack_path)
+    if READER["on"]:                                   # sidecar_reader: the reading organ also hands in each word's own look
+        from sidecar_reader import attach, install_reader
+        install_reader(); texts = {it["item_id"]: it["source_text"] for sec in json.loads(pack_path.read_text())["sections"] for it in sec["items"]}
+        commands = [attach(c, texts[c.metadata["item_id"]]) if c.modality == "text" and c.metadata.get("item_id") in texts else c for c in commands]
     stem = pack_path.stem; log_path = out_dir / f"{stem}__{arm}.jsonl"; state_path = out_dir / f"{stem}__{arm}.state.json"
     done_path = out_dir / f"{stem}__{arm}.done.json"
     if done_path.exists():
@@ -155,6 +169,9 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
         print(f"[{arm}] resuming at lesson {len(kernel.state.processed_event_keys)}", flush=True)
     else:
         kernel = VerdantKernel(seed=seed, state_dim=state_dim, run_label=f"long-life-{arm}")
+        if SENSES["on"]:
+            from sidecar_ring import carry_one_experience
+            carry_one_experience(kernel)
         log_path.write_text("", encoding="utf-8")
     start = len(kernel.state.processed_event_keys); total = len(commands) if stop_after is None else min(len(commands), stop_after)
     window = time.perf_counter(); began = window; promoted_window = 0; refusals: list[str] = []
@@ -204,6 +221,10 @@ def main() -> None:
     parser.add_argument("--max-promotions", type=int, default=4)
     parser.add_argument("--stop-after", type=int, default=None, help="Stop each arm at this lesson (it stays resumable).")
     parser.add_argument("--no-accelerate", action="store_true", help="Run without the byte-exact long-life accelerators.")
+    parser.add_argument("--reader", action="store_true", help="sidecar_reader: words seen separately (field unchanged).")
+    parser.add_argument("--senses", action="store_true", help="sidecar_ring stack: per-sense views, ringing, adaptation, carry one experience, reminding, measured attention.")
+    parser.add_argument("--senses-without", default="", help="comma list of parts to leave out of --senses: moment, remind, attention")
+    parser.add_argument("--senses-with", default="", help="extra parts: carry (carry everything one experience; measured harmful)")
     args = parser.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
     if args.pack is None:
@@ -213,6 +234,19 @@ def main() -> None:
         if not args.pack.exists():
             write(args.lessons, args.life_seed, args.out_dir); print(f"generated {args.pack.name}")
     expect_path = args.pack.with_name(args.pack.stem + ".expectations.json")
+    READER["on"] = args.reader
+    if args.senses:
+        import sidecar_ring as ring
+        leave = set(filter(None, args.senses_without.split(",")))
+        ring.install_ring(adapt=True)
+        if "remind" not in leave:
+            ring.install_inferred_association()
+        if "attention" not in leave:
+            ring.install_attention()
+        if "carry" in args.senses_with.split(","):           # the old carry, kept only to reproduce its measured harm
+            PIPELINE_CONFIG.update(ring.CARRY_ONE_EXPERIENCE); SENSES["on"] = True
+        if "moment" not in leave:
+            ring.install_moment_carry()
     if not args.no_accelerate:
         from sidecar_acceleration import install_long_life_acceleration
         install_long_life_acceleration()

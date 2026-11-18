@@ -1,0 +1,528 @@
+{
+ "schema": "verdant.observer.pipeline_ear.v0",
+ "summary": {
+  "ear": "builtin",
+  "description_width": 10,
+  "lessons": 32,
+  "known_rang_exactly_right": "20/32",
+  "never_heard_rang_nothing": "0/16",
+  "readout_named_known": "32/32",
+  "unknown_mean": {
+   "known": 0.009,
+   "never_heard": 0.013
+  },
+  "never_heard_over_half_unknown": "0/16",
+  "known_over_half_unknown": "0/32",
+  "pipeline_samples_ingested": 48
+ },
+ "rows": [
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "rivato",
+    "robade"
+   ],
+   "rang_right": false,
+   "readout_best": "robade",
+   "unknown": 9.729674868802249e-05
+  },
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "robade"
+   ],
+   "rang_right": true,
+   "readout_best": "robade",
+   "unknown": 5.853483883823714e-05
+  },
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "robade"
+   ],
+   "rang_right": true,
+   "readout_best": "robade",
+   "unknown": 9.920260844559992e-05
+  },
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "kaveto",
+    "robade"
+   ],
+   "rang_right": false,
+   "readout_best": "robade",
+   "unknown": 0.0007777302167022088
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "damali",
+    "gurape"
+   ],
+   "rang_right": false,
+   "readout_best": "gurape",
+   "unknown": 0.07304364909624447
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "gurape"
+   ],
+   "rang_right": true,
+   "readout_best": "gurape",
+   "unknown": 0.00016622975270368982
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "gurape",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "gurape",
+   "unknown": 0.0007795482093330401
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "gurape"
+   ],
+   "rang_right": true,
+   "readout_best": "gurape",
+   "unknown": 0.0002964639306929684
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.03917579548664417
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.00045316155189278895
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.0002915050470125769
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.0005640528316188709
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 0.0061210277237263395
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 0.0005818782947911254
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 7.3195393266988e-05
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 0.00031784658155091316
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.02102219412488378
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.00010462893620138194
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.00012515463327188324
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 7.296074407595659e-05
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali",
+    "gurape"
+   ],
+   "rang_right": false,
+   "readout_best": "damali",
+   "unknown": 0.06077884716645402
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali"
+   ],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.010745925433750018
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali"
+   ],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.0028252442832172923
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali",
+    "rivato"
+   ],
+   "rang_right": false,
+   "readout_best": "damali",
+   "unknown": 0.01795109905956881
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "damali",
+    "rivato"
+   ],
+   "rang_right": false,
+   "readout_best": "rivato",
+   "unknown": 0.019438043396298108
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "rivato"
+   ],
+   "rang_right": true,
+   "readout_best": "rivato",
+   "unknown": 0.00031201243659927596
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "damali",
+    "rivato"
+   ],
+   "rang_right": false,
+   "readout_best": "rivato",
+   "unknown": 0.0008971653883471171
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "lifevi",
+    "rivato"
+   ],
+   "rang_right": false,
+   "readout_best": "rivato",
+   "unknown": 0.0007324145369744734
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi",
+    "rivato"
+   ],
+   "rang_right": false,
+   "readout_best": "pamapi",
+   "unknown": 0.04113101295660445
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi",
+    "rivato"
+   ],
+   "rang_right": false,
+   "readout_best": "pamapi",
+   "unknown": 0.0002701514977428941
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi"
+   ],
+   "rang_right": true,
+   "readout_best": "pamapi",
+   "unknown": 0.0006912142345087404
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi",
+    "rivato"
+   ],
+   "rang_right": false,
+   "readout_best": "pamapi",
+   "unknown": 0.0006229190092621825
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [
+    "damali",
+    "tumenu"
+   ],
+   "rang_right": false,
+   "readout_best": "tumenu",
+   "unknown": 0.06577747126415719
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [
+    "damali",
+    "tumenu"
+   ],
+   "rang_right": false,
+   "readout_best": "tumenu",
+   "unknown": 0.0013731572151087492
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [
+    "damali",
+    "tumenu"
+   ],
+   "rang_right": false,
+   "readout_best": "tumenu",
+   "unknown": 0.0013850417731876136
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [
+    "damali",
+    "tumenu"
+   ],
+   "rang_right": false,
+   "readout_best": "tumenu",
+   "unknown": 0.0013776905442844589
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [
+    "lifevi",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.06886979313805999
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [
+    "lifevi",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.005110453551053434
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [
+    "lifevi",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.0041120498485063385
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [
+    "lifevi",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.0053494794848647515
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [
+    "gurape",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "gurape",
+   "unknown": 0.015954138786874905
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [
+    "gurape",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "gurape",
+   "unknown": 0.00396926480513574
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [
+    "gurape",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "gurape",
+   "unknown": 0.004207713210020886
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [
+    "gurape",
+    "pamapi"
+   ],
+   "rang_right": false,
+   "readout_best": "gurape",
+   "unknown": 0.0031029759563219535
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [
+    "kaveto",
+    "lifevi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.022360294278643427
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [
+    "kaveto",
+    "lifevi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.00023401729492590463
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [
+    "kaveto",
+    "lifevi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.0006694421636639203
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [
+    "kaveto",
+    "lifevi"
+   ],
+   "rang_right": false,
+   "readout_best": "lifevi",
+   "unknown": 0.000824928880314111
+  }
+ ]
+}

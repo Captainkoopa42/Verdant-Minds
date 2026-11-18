@@ -1,0 +1,468 @@
+{
+ "schema": "verdant.observer.pipeline_ear.v0",
+ "summary": {
+  "ear": "fine",
+  "description_width": 48,
+  "lessons": 32,
+  "known_rang_exactly_right": "32/32",
+  "never_heard_rang_nothing": "16/16",
+  "readout_named_known": "32/32",
+  "unknown_mean": {
+   "known": 0.026,
+   "never_heard": 0.597
+  },
+  "never_heard_over_half_unknown": "16/16",
+  "known_over_half_unknown": "0/32",
+  "pipeline_samples_ingested": 48
+ },
+ "rows": [
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "robade"
+   ],
+   "rang_right": true,
+   "readout_best": "robade",
+   "unknown": 0.001216240322984147
+  },
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "robade"
+   ],
+   "rang_right": true,
+   "readout_best": "robade",
+   "unknown": 0.0018953419330698165
+  },
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "robade"
+   ],
+   "rang_right": true,
+   "readout_best": "robade",
+   "unknown": 0.03083423906640285
+  },
+  {
+   "group": "known",
+   "voice": "robade",
+   "rang": [
+    "robade"
+   ],
+   "rang_right": true,
+   "readout_best": "robade",
+   "unknown": 0.008151261641312805
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "gurape"
+   ],
+   "rang_right": true,
+   "readout_best": "gurape",
+   "unknown": 0.005279297974305781
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "gurape"
+   ],
+   "rang_right": true,
+   "readout_best": "gurape",
+   "unknown": 0.003089041223667415
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "gurape"
+   ],
+   "rang_right": true,
+   "readout_best": "gurape",
+   "unknown": 0.004895074028051407
+  },
+  {
+   "group": "known",
+   "voice": "gurape",
+   "rang": [
+    "gurape"
+   ],
+   "rang_right": true,
+   "readout_best": "gurape",
+   "unknown": 0.0027134177781709154
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.025631938946012407
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.011058821949405186
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.0639474103568865
+  },
+  {
+   "group": "known",
+   "voice": "tumenu",
+   "rang": [
+    "tumenu"
+   ],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.023116851027557055
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 0.02709088716114755
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 0.0009902953323400008
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 0.0011689194863620273
+  },
+  {
+   "group": "known",
+   "voice": "kaveto",
+   "rang": [
+    "kaveto"
+   ],
+   "rang_right": true,
+   "readout_best": "kaveto",
+   "unknown": 0.05766226847489511
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.18186864288656646
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.035175068356890576
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.035350218054705465
+  },
+  {
+   "group": "known",
+   "voice": "lifevi",
+   "rang": [
+    "lifevi"
+   ],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.03300545940955455
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali"
+   ],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.0022015299239953575
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali"
+   ],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.02261544897279912
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali"
+   ],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.029725834847803917
+  },
+  {
+   "group": "known",
+   "voice": "damali",
+   "rang": [
+    "damali"
+   ],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.012863052904610544
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "rivato"
+   ],
+   "rang_right": true,
+   "readout_best": "rivato",
+   "unknown": 0.003053875162035822
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "rivato"
+   ],
+   "rang_right": true,
+   "readout_best": "rivato",
+   "unknown": 0.0012184653129213555
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "rivato"
+   ],
+   "rang_right": true,
+   "readout_best": "rivato",
+   "unknown": 0.008215320500463003
+  },
+  {
+   "group": "known",
+   "voice": "rivato",
+   "rang": [
+    "rivato"
+   ],
+   "rang_right": true,
+   "readout_best": "rivato",
+   "unknown": 0.003083762958518927
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi"
+   ],
+   "rang_right": true,
+   "readout_best": "pamapi",
+   "unknown": 0.022920518681228953
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi"
+   ],
+   "rang_right": true,
+   "readout_best": "pamapi",
+   "unknown": 0.0656896221274591
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi"
+   ],
+   "rang_right": true,
+   "readout_best": "pamapi",
+   "unknown": 0.05033070782877955
+  },
+  {
+   "group": "known",
+   "voice": "pamapi",
+   "rang": [
+    "pamapi"
+   ],
+   "rang_right": true,
+   "readout_best": "pamapi",
+   "unknown": 0.06540672658791272
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.6703131336111972
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.6824583832518223
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.6759945942927421
+  },
+  {
+   "group": "never_heard",
+   "voice": "zuzire",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "damali",
+   "unknown": 0.6704023766295865
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5323316813916643
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5234929561993479
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5197933661268352
+  },
+  {
+   "group": "never_heard",
+   "voice": "tabevi",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5234965438888965
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.5664223616747891
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.6240324260697689
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.5828249979137465
+  },
+  {
+   "group": "never_heard",
+   "voice": "dezami",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "tumenu",
+   "unknown": 0.583779330223709
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5968655492713958
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5984697455196069
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5977785560790284
+  },
+  {
+   "group": "never_heard",
+   "voice": "nifile",
+   "rang": [],
+   "rang_right": true,
+   "readout_best": "lifevi",
+   "unknown": 0.5973280323229055
+  }
+ ]
+}

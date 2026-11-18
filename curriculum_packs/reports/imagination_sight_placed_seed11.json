@@ -1,0 +1,580 @@
+{
+ "schema": "verdant.observer.imagination_senses.v0",
+ "summary": {
+  "sense": "sight",
+  "sight_description": "placed",
+  "places_swapped_alike": 0.8358,
+  "scenes": 60,
+  "trials": 8,
+  "top_k": 3,
+  "description_width": 74,
+  "concepts": 8,
+  "structures": 1,
+  "objects_tracked_per_scene": {
+   "mean": 2.0,
+   "min": 2
+  },
+  "shares": {
+   "experiences": 60,
+   "max_recovery_residual": 3.12046657556923e-09,
+   "mean_unknown": 0.028
+  },
+  "now": {
+   "sensing": {
+    "unchanged": 0.9166,
+    "average_look": 0.9444,
+    "shares": 0.9918,
+    "wrong_newcomer": 0.9282,
+    "true_look": 1.0
+   },
+   "came_to_mind": {
+    "unchanged": 0.542,
+    "average_look": 0.833,
+    "shares": 0.917,
+    "wrong_newcomer": 0.542,
+    "true_look": 1.0
+   },
+   "top1": {
+    "unchanged": 1,
+    "average_look": 8,
+    "shares": 8,
+    "wrong_newcomer": 1,
+    "true_look": 8
+   },
+   "shares_beat_average_on_sensing": 8,
+   "shares_vs_average_came_to_mind": {
+    "better": 2,
+    "same": 6,
+    "worse": 0
+   }
+  },
+  "later": {
+   "sensing": {
+    "unchanged": 0.9166,
+    "average_look": 0.9444,
+    "shares": 0.9918,
+    "wrong_newcomer": 0.9282,
+    "true_look": 1.0
+   },
+   "came_to_mind": {
+    "unchanged": 0.292,
+    "average_look": 0.5,
+    "shares": 0.583,
+    "wrong_newcomer": 0.292,
+    "true_look": 0.583
+   },
+   "top1": {
+    "unchanged": 0,
+    "average_look": 3,
+    "shares": 3,
+    "wrong_newcomer": 0,
+    "true_look": 3
+   },
+   "shares_beat_average_on_sensing": 8,
+   "shares_vs_average_came_to_mind": {
+    "better": 2,
+    "same": 6,
+    "worse": 0
+   }
+  },
+  "organism_unchanged": true
+ },
+ "trials": [
+  {
+   "trial": 0,
+   "memory": "sight-009",
+   "swap": "lorepe -> razuda",
+   "kept": "nuvedo",
+   "now": {
+    "real_top": [
+     "razuda",
+     "zugevu",
+     "keduva"
+    ],
+    "sensing": {
+     "unchanged": 0.9579147353984063,
+     "average_look": 0.9599793095465955,
+     "shares": 0.9981532410617927,
+     "wrong_newcomer": 0.9662009952142331,
+     "true_look": 0.9999999999999996
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 1.0,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "nimuza",
+     "keduva",
+     "razuda"
+    ],
+    "sensing": {
+     "unchanged": 0.9579147353984069,
+     "average_look": 0.9599793095465959,
+     "shares": 0.9981532410617934,
+     "wrong_newcomer": 0.9662009952142335,
+     "true_look": 1.0
+    },
+    "came_to_mind": {
+     "unchanged": 0.0,
+     "average_look": 0.3333333333333333,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.0,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 1,
+   "memory": "sight-015",
+   "swap": "razuda -> zugevu",
+   "kept": "ronuse",
+   "now": {
+    "real_top": [
+     "zugevu",
+     "keduva",
+     "ronuse"
+    ],
+    "sensing": {
+     "unchanged": 0.8758779531564761,
+     "average_look": 0.9249295068588869,
+     "shares": 0.9932987554046235,
+     "wrong_newcomer": 0.8929350868393716,
+     "true_look": 1.0
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "zugevu",
+     "nimuza",
+     "sinasa"
+    ],
+    "sensing": {
+     "unchanged": 0.8758779531564765,
+     "average_look": 0.9249295068588872,
+     "shares": 0.9932987554046239,
+     "wrong_newcomer": 0.892935086839372,
+     "true_look": 1.0000000000000004
+    },
+    "came_to_mind": {
+     "unchanged": 0.0,
+     "average_look": 0.3333333333333333,
+     "shares": 0.3333333333333333,
+     "wrong_newcomer": 0.0,
+     "true_look": 0.3333333333333333
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   }
+  },
+  {
+   "trial": 2,
+   "memory": "sight-001",
+   "swap": "zugevu -> ronuse",
+   "kept": "keduva",
+   "now": {
+    "real_top": [
+     "keduva",
+     "ronuse",
+     "begubo"
+    ],
+    "sensing": {
+     "unchanged": 0.935461703562833,
+     "average_look": 0.9537304412291528,
+     "shares": 0.9869089460931649,
+     "wrong_newcomer": 0.9460340821665048,
+     "true_look": 0.9999999999999996
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "keduva",
+     "nimuza",
+     "ronuse"
+    ],
+    "sensing": {
+     "unchanged": 0.9354617035628334,
+     "average_look": 0.9537304412291534,
+     "shares": 0.9869089460931654,
+     "wrong_newcomer": 0.9460340821665052,
+     "true_look": 1.0
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   }
+  },
+  {
+   "trial": 3,
+   "memory": "sight-002",
+   "swap": "razuda -> nuzonu",
+   "kept": "lorepe",
+   "now": {
+    "real_top": [
+     "lorepe",
+     "zugevu",
+     "nuzonu"
+    ],
+    "sensing": {
+     "unchanged": 0.876990695032081,
+     "average_look": 0.9160826251067061,
+     "shares": 0.993678512182186,
+     "wrong_newcomer": 0.8954968637791222,
+     "true_look": 0.9999999999999991
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 1.0,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": true,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "nimuza",
+     "lorepe",
+     "nuzonu"
+    ],
+    "sensing": {
+     "unchanged": 0.8769906950320819,
+     "average_look": 0.916082625106707,
+     "shares": 0.993678512182187,
+     "wrong_newcomer": 0.8954968637791232,
+     "true_look": 1.0000000000000002
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.3333333333333333,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 4,
+   "memory": "sight-000",
+   "swap": "zugevu -> ronuse",
+   "kept": "begubo",
+   "now": {
+    "real_top": [
+     "begubo",
+     "keduva",
+     "ronuse"
+    ],
+    "sensing": {
+     "unchanged": 0.9066933741681145,
+     "average_look": 0.9370504778797735,
+     "shares": 0.9870939124600329,
+     "wrong_newcomer": 0.9201765534942867,
+     "true_look": 0.9999999999999997
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": true,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "nimuza",
+     "begubo",
+     "ronuse"
+    ],
+    "sensing": {
+     "unchanged": 0.9066933741681149,
+     "average_look": 0.9370504778797741,
+     "shares": 0.9870939124600334,
+     "wrong_newcomer": 0.9201765534942874,
+     "true_look": 1.0000000000000004
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 5,
+   "memory": "sight-005",
+   "swap": "razuda -> ronuse",
+   "kept": "nuzonu",
+   "now": {
+    "real_top": [
+     "nuzonu",
+     "keduva",
+     "ronuse"
+    ],
+    "sensing": {
+     "unchanged": 0.9412462313335086,
+     "average_look": 0.9723831984858357,
+     "shares": 0.9971752814648633,
+     "wrong_newcomer": 0.9578515942364838,
+     "true_look": 1.0
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "nimuza",
+     "nuzonu",
+     "sinasa"
+    ],
+    "sensing": {
+     "unchanged": 0.9412462313335084,
+     "average_look": 0.9723831984858354,
+     "shares": 0.9971752814648631,
+     "wrong_newcomer": 0.9578515942364836,
+     "true_look": 0.9999999999999999
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.3333333333333333,
+     "shares": 0.3333333333333333,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.3333333333333333
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 6,
+   "memory": "sight-009",
+   "swap": "lorepe -> zugevu",
+   "kept": "nuvedo",
+   "now": {
+    "real_top": [
+     "zugevu",
+     "nuvedo",
+     "keduva"
+    ],
+    "sensing": {
+     "unchanged": 0.9286852832901502,
+     "average_look": 0.9510754803029632,
+     "shares": 0.9897379164994791,
+     "wrong_newcomer": 0.9333637755722947,
+     "true_look": 1.0000000000000004
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "zugevu",
+     "nimuza",
+     "nuvedo"
+    ],
+    "sensing": {
+     "unchanged": 0.9286852832901494,
+     "average_look": 0.9510754803029627,
+     "shares": 0.9897379164994784,
+     "wrong_newcomer": 0.9333637755722941,
+     "true_look": 0.9999999999999997
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   }
+  },
+  {
+   "trial": 7,
+   "memory": "sight-002",
+   "swap": "lorepe -> zugevu",
+   "kept": "razuda",
+   "now": {
+    "real_top": [
+     "zugevu",
+     "razuda",
+     "keduva"
+    ],
+    "sensing": {
+     "unchanged": 0.9102222065972692,
+     "average_look": 0.9397243537941086,
+     "shares": 0.9885276250018367,
+     "wrong_newcomer": 0.9134957100915824,
+     "true_look": 0.9999999999999998
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "nimuza",
+     "razuda",
+     "zugevu"
+    ],
+    "sensing": {
+     "unchanged": 0.9102222065972692,
+     "average_look": 0.9397243537941086,
+     "shares": 0.9885276250018368,
+     "wrong_newcomer": 0.9134957100915824,
+     "true_look": 0.9999999999999998
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  }
+ ]
+}

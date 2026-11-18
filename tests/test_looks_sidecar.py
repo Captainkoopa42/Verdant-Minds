@@ -132,3 +132,26 @@ def test_pieces_can_only_be_told_apart_if_they_were_met_apart(reader):
     assert min(r_varied) > 0.5
     assert np.allclose(stuck.share[ids["alba"]], stuck.share[ids["eput"]], atol=1e-6)   # always together: indistinguishable
     assert np.allclose(stuck.share[ids["cind"]], stuck.share[ids["doro"]], atol=1e-6)
+
+
+def test_placed_sight_tells_places_apart_and_swaps_in_place():
+    from sidecar_looks import placed_sight, recover_input
+    rng = np.random.default_rng(8); looks = {w: 1.0 + 0.3 * rng.normal(size=10) for w in WORDS}      # looks much alike, like real ones
+    def scene(left, right):
+        return np.concatenate([looks[left], [0.25, 0.5], looks[right], [0.75, 0.5]])
+    k = VerdantKernel(seed=6, state_dim=64, run_label="placed"); pipe = VerdantDevelopmentPipeline(); keys = {}
+    for n, (a, b) in enumerate(itertools.permutations(WORDS, 2)):
+        if {a, b} == {"alba", "gulo"}:
+            continue                                                                 # never seen together
+        keys[(a, b)] = f"p{n}"; pipe.advance(k, _cmd(f"p{n}", "visual", scene(a, b), (a, b)))
+    one = k._project_effect(k._validated_feature_array(scene("cind", "doro")), "visual")
+    other = k._project_effect(k._validated_feature_array(scene("doro", "cind")), "visual")
+    assert abs(np.vdot(one, other)) < 0.99                                           # A left/B right differs from B left/A right
+    shares = learn_shares(k, placed_sight(10, 2)); key = keys[("alba", "cind")]
+    look, _m = imagined_look(k, shares, key, "cind", "gulo")
+    memory, _r = recover_input(k, key, placed_sight(10, 2))
+    wave = lambda v: k._project_effect(k._validated_feature_array(v), "visual")
+    truth = wave(scene("alba", "gulo"))
+    assert abs(np.vdot(wave(look), truth)) > abs(np.vdot(wave(memory), truth)) + 0.01     # closer to the never-seen pair
+    unit = lambda v: np.asarray(v) / np.linalg.norm(v)
+    assert float(unit(np.asarray(look)[:10]) @ unit(memory[:10])) > 1 - 1e-9              # the left place is untouched

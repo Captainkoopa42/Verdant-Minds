@@ -139,3 +139,10 @@ descriptions are already unit length, so the first reality check never showed it
    lost size from its own record: alternately, the size that lets the pieces' shares explain the
    experience best, then the shares again (8 rounds). Reading needs no refit (whole-number counts
    fix the size exactly). The first run's numbers are kept in the git history of the report only.
+
+## Follow-up (2026-11-18): reading and sight with what is where
+See docs/SENSES_READINESS_V0.md. Reading: a reader that sees words separately (sidecar_reader)
+leaves development exactly stock; word looks alone did not fix reading (boundary patterns belong to
+neither word), keeping the words in order made the imagined look exact (by construction) and what
+came to mind 100% now. Sight: a placed description (what is where) makes scenes distinct (swapped
+places 0.84 alike instead of identical) and, after one fix, shares win 8/8 on both seeds.

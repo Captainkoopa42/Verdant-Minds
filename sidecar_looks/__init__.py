@@ -23,7 +23,7 @@ from scipy.optimize import minimize_scalar
 
 from sidecar_recall import _experience_parts, _frames_by_event, relive
 
-__all__ = ["Sense", "reading", "hearing", "sight", "unknown_sense", "recover_input", "learn_shares",
+__all__ = ["Sense", "reading", "hearing", "sight", "placed_sight", "unknown_sense", "recover_input", "learn_shares",
            "imagined_look", "Shares", "modality_of"]
 
 
@@ -37,6 +37,8 @@ class Sense:
     averages: bool = False                              # pieces average (sight) rather than add
     assumption: str = ""
     fit_scale: bool = False                             # the organism takes every input at unit size; refit the lost size from the record
+    slots: int = 0                                      # placed sight: objects in places, left to right
+    slot_width: int = 0                                 # numbers per place: the object's look, then where it is (x, y)
 
 
 # --- reading: log1p(counts of hashed letter patterns), unit length -------------------------------
@@ -79,6 +81,16 @@ def hearing(width: int = 48, modality: str = "audio") -> Sense:
 # --- sight: perception's per-object appearances, pooled --------------------------------------------
 def sight(width: int, modality: str = "visual") -> Sense:
     return Sense("sight", modality, width, lambda x, s=1.0: s * np.asarray(x, dtype=np.float64), lambda m: m, averages=True, fit_scale=True)
+
+
+def placed_sight(look_width: int, slots: int = 2, modality: str = "visual") -> Sense:
+    """Sight that keeps what is where: per place, the object's look then its position. Pieces occupy
+    places; a piece's share is its look (wherever it was); the adding space sums the looks over places."""
+    sw = look_width + 2
+
+    def to_mix(x, s=1.0):
+        x = s * np.asarray(x, dtype=np.float64); return sum(x[i * sw:i * sw + look_width] for i in range(slots))
+    return Sense("placed sight", modality, slots * sw, to_mix, lambda m: m, fit_scale=True, slots=slots, slot_width=sw)
 
 
 def unknown_sense(width: int, modality: str) -> Sense:
@@ -146,6 +158,7 @@ class Shares:
     experiences: int = 0
     max_recovery_residual: float = 0.0
     scales: dict[str, float] = field(default_factory=dict)  # event key -> refitted size of its description
+    word_looks: bool = False                                  # shares are observed whole-word looks (sidecar_reader)
 
 
 def learn_shares(kernel, sense: Sense, *, ridge: float = 1e-3, event_keys: list[str] | None = None) -> Shares:
@@ -190,7 +203,7 @@ def learn_shares(kernel, sense: Sense, *, ridge: float = 1e-3, event_keys: list[
         else:                                                 # linear senses: the size enters linearly
             for _round in range(8):
                 for i, u in enumerate(units):
-                    t = M[i] @ S; scales[i] = max(1e-6, float(u @ t) / float(u @ u))
+                    t = M[i] @ S; m1 = sense.to_mix(u, 1.0); scales[i] = max(1e-6, float(m1 @ t) / float(m1 @ m1))
                 scales /= np.mean(scales); X, S = solve(scales)
     left = X - M @ S
     unknown = {k: float(np.linalg.norm(l) / (np.linalg.norm(x) + 1e-300)) for k, l, x in zip(keys, left, X)}
@@ -206,10 +219,26 @@ def imagined_look(kernel, shares: Shares, event_key: str, swap_out: str, swap_in
     o, n = label_to_id[swap_out], label_to_id[swap_in]
     if o not in shares.share or n not in shares.share:
         raise KeyError("No share learned for one of the pieces in this sense.")
-    F, _ = recover_input(kernel, event_key, shares.sense); mix = shares.sense.to_mix(F, shares.scales.get(event_key, 1.0))
+    F, _ = recover_input(kernel, event_key, shares.sense)
+    if shares.sense.slots:                        # placed sight: replace what is in the out-piece's place, keep where
+        sense = shares.sense; lw = sense.slot_width - 2; full = shares.scales.get(event_key, 1.0) * np.asarray(F)
+        def cos(a, b):
+            return float(a @ b / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-300))
+        common = shares.common / sense.slots                       # each place's share of what every scene has
+        def part(i):
+            return full[i * sense.slot_width:i * sense.slot_width + lw]
+        place = max(range(sense.slots), key=lambda i: cos(part(i) - common, shares.share[o]))
+        full = full.copy()
+        full[place * sense.slot_width:place * sense.slot_width + lw] = part(place) - shares.share[o] + shares.share[n]
+        return [float(v) for v in full], sense.modality
+    mix = shares.sense.to_mix(F, shares.scales.get(event_key, 1.0))
     k = len(kernel.state.field.history[_frames_by_event(kernel)[event_key]].bound_concept_ids)
     w = 1.0 / k if shares.sense.averages else 1.0
+    if shares.word_looks:                        # how many times the word is in this memory (fixed rule: least squares, 1..3)
+        g = shares.share[o]; w = float(np.clip(np.round(float(mix @ g) / float(g @ g)), 1, 3)) if g @ g > 0 else 1.0
     new = mix - w * shares.share[o] + w * shares.share[n]
+    if shares.sense.name == "reading":
+        new = np.maximum(new, 0.0)
     if shares.sense.name == "hearing":
         new = np.maximum(new, 0.0); new = new / new.sum() if new.sum() > 0 else mix
     return [float(v) for v in shares.sense.from_mix(new)], shares.sense.modality

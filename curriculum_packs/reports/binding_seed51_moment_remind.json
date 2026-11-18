@@ -1,0 +1,153 @@
+{
+ "schema": "verdant.observer.binding.v0",
+ "summary": {
+  "carry": false,
+  "remind": true,
+  "moment": true,
+  "1_bonds": {
+   "together": [
+    0.434,
+    0.424
+   ],
+   "never_together": [
+    0.0,
+    0.0
+   ]
+  },
+  "2_sound_brings_the_other_to_mind": {
+   "together": "2/2",
+   "never_together": "0/2"
+  },
+  "2_unnamed_sound_brings_the_other_to_mind": {
+   "together": "2/2",
+   "never_together": "0/2"
+  },
+  "3_sound_brings_back_its_own_look": "6/6",
+  "3_alignment": {
+   "own": 0.987,
+   "best_other": 0.325
+  },
+  "4_how_known": {
+   "named_both": {
+    "known": true,
+    "named": 2,
+    "sensed_told": {
+     "visual": 4,
+     "audio": 4
+    },
+    "rung": {
+     "text": 1
+    },
+    "knows_look_of": [
+     "audio",
+     "visual"
+    ]
+   },
+   "seen_only": {
+    "known": true,
+    "named": 0,
+    "sensed_told": {
+     "visual": 6
+    },
+    "rung": {},
+    "knows_look_of": [
+     "visual"
+    ]
+   },
+   "heard_only": {
+    "known": true,
+    "named": 0,
+    "sensed_told": {
+     "audio": 6
+    },
+    "rung": {
+     "audio": 1
+    },
+    "knows_look_of": [
+     "audio"
+    ]
+   },
+   "only_named": {
+    "known": true,
+    "named": 3,
+    "sensed_told": {},
+    "rung": {
+     "text": 3
+    },
+    "knows_look_of": []
+   }
+  }
+ },
+ "rows": {
+  "together": [
+   {
+    "seen": "vanena",
+    "heard": "bazude",
+    "bond": 0.434,
+    "sound_brings_the_other_to_mind": true,
+    "unnamed_sound_brings_the_other_to_mind": true
+   },
+   {
+    "seen": "pobome",
+    "heard": "lanuve",
+    "bond": 0.424,
+    "sound_brings_the_other_to_mind": true,
+    "unnamed_sound_brings_the_other_to_mind": true
+   }
+  ],
+  "never_together": [
+   {
+    "seen": "rinodu",
+    "heard": "vosamu",
+    "bond": 0.0,
+    "sound_brings_the_other_to_mind": false,
+    "unnamed_sound_brings_the_other_to_mind": false
+   },
+   {
+    "seen": "vanusu",
+    "heard": "duvipo",
+    "bond": 0.0,
+    "sound_brings_the_other_to_mind": false,
+    "unnamed_sound_brings_the_other_to_mind": false
+   }
+  ]
+ },
+ "look_back": [
+  {
+   "thing": "gupege",
+   "heard_as": "gupege",
+   "its_look_lines_up": 0.9818095350827816,
+   "best_other_look": 0.29492482845152973
+  },
+  {
+   "thing": "zukopo",
+   "heard_as": "zukopo",
+   "its_look_lines_up": 0.9878760334998143,
+   "best_other_look": 0.26759244414804195
+  },
+  {
+   "thing": "tupiri",
+   "heard_as": "tupiri",
+   "its_look_lines_up": 0.9820553167061208,
+   "best_other_look": 0.15526118902866887
+  },
+  {
+   "thing": "mimaza",
+   "heard_as": "mimaza",
+   "its_look_lines_up": 0.983029474106664,
+   "best_other_look": 0.5430263225719667
+  },
+  {
+   "thing": "bukane",
+   "heard_as": "bukane",
+   "its_look_lines_up": 0.9932835528123631,
+   "best_other_look": 0.20647693014679816
+  },
+  {
+   "thing": "lukine",
+   "heard_as": "lukine",
+   "its_look_lines_up": 0.993033871951005,
+   "best_other_look": 0.4825227780970712
+  }
+ ]
+}

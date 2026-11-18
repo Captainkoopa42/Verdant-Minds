@@ -1,0 +1,75 @@
+{
+ "schema": "verdant.observer.attention.v0",
+ "summary": {
+  "steer": true,
+  "signals": {
+   "conflict": {
+    "novelty": 0.02,
+    "contradiction": 0.962,
+    "workspace_score": 0.645,
+    "moments": 3
+   },
+   "correct": {
+    "novelty": 0.016,
+    "contradiction": 0.0,
+    "workspace_score": 0.405,
+    "moments": 8
+   },
+   "familiar": {
+    "novelty": 0.016,
+    "contradiction": 0.0,
+    "workspace_score": 0.387,
+    "moments": 8
+   },
+   "learning": {
+    "novelty": 0.237,
+    "contradiction": 0.0,
+    "workspace_score": 0.523,
+    "moments": 48
+   },
+   "new": {
+    "novelty": 0.136,
+    "contradiction": 0.0,
+    "workspace_score": 0.412,
+    "moments": 8
+   },
+   "seen_first": {
+    "novelty": 0.02,
+    "contradiction": 0.0,
+    "workspace_score": 0.396,
+    "moments": 16
+   }
+  },
+  "bonds_new_pairs": [
+   0.41,
+   0.387
+  ],
+  "bonds_familiar_pairs": [
+   0.535,
+   0.585
+  ],
+  "false_alarms": "0/8",
+  "conflicts_flagged": "3/3",
+  "tension": {
+   "kitini": {
+    "writings": 13,
+    "net": 0.804,
+    "tension": 0.0
+   },
+   "lamole": {
+    "writings": 16,
+    "net": 0.488,
+    "tension": 0.361
+   },
+   "nepevi": {
+    "writings": 14,
+    "net": 0.824,
+    "tension": 0.0
+   }
+  },
+  "who": {
+   "told_but_conflicting": "lamole",
+   "control_familiar": "nepevi"
+  }
+ }
+}

@@ -108,10 +108,18 @@ class Sight:
             seen = [eye.state.object_observations[o] for o in cand.observation_ids if o in eye.state.object_observations]
             seen = [o for o in seen if o.kind.value == "visible" and o.appearance_features]
             if seen:
-                tracks.append((len(seen), np.mean([o.appearance_features for o in seen], axis=0)))
-        tracks.sort(key=lambda t: -t[0]); used = [a for _n, a in tracks[: len(recipe["parts"])]]
+                where = [o.position for o in seen if o.position is not None]
+                xy = np.mean(where, axis=0) if where else np.array([0.5, 0.5])
+                xy = xy / SIZE if np.max(xy) > 1.5 else xy
+                tracks.append((len(seen), np.mean([o.appearance_features for o in seen], axis=0), xy))
+        tracks.sort(key=lambda t: -t[0]); used = tracks[: len(recipe["parts"])]
         self.last_objects = len(tracks)
-        return [float(v) for v in np.mean(used, axis=0)]
+        if not getattr(self, "placed", False):
+            return [float(v) for v in np.mean([a for _n, a, _xy in used], axis=0)]
+        used.sort(key=lambda t: t[2][0]); lw = len(used[0][1]); out = np.zeros(2 * (lw + 2))   # what is where, left to right
+        for i, (_n, a, xy) in enumerate(used[:2]):
+            out[i * (lw + 2):i * (lw + 2) + lw] = a; out[i * (lw + 2) + lw:(i + 1) * (lw + 2)] = xy
+        return [float(v) for v in out]
 
 
 # ------------------------------------------------------------------ the run
@@ -130,16 +138,18 @@ def main() -> None:
     ap = argparse.ArgumentParser(); ap.add_argument("--sense", choices=("hearing", "sight"), required=True)
     ap.add_argument("--seed", type=int, default=11); ap.add_argument("--exposures", type=int, default=3)
     ap.add_argument("--held-out", type=int, default=8); ap.add_argument("--filler", type=int, default=20)
+    ap.add_argument("--sight-description", choices=("pooled", "placed"), default="pooled")
     ap.add_argument("--out", type=Path, required=True); a = ap.parse_args()
     from sidecar_acceleration import install_long_life_acceleration; install_long_life_acceleration()
     from sidecar_bond_clock import install_changes_only; install_changes_only()
     from run_observer_long_life import build_pipeline, promote_eligible
     from run_observer_imagination_reality import real_beat
     from sidecar_recall import imagine, relive, _experience_parts
-    from sidecar_looks import hearing, sight, learn_shares, imagined_look
+    from sidecar_looks import hearing, sight, placed_sight, learn_shares, imagined_look
 
     rng = random.Random(a.seed); tokens = Tokens(rng)
     world = Hearing(rng, tokens) if a.sense == "hearing" else Sight(rng, tokens)
+    world.placed = a.sight_description == "placed"
     names = sorted(world.things); pairs = list(itertools.combinations(names, 2)); rng.shuffle(pairs)
     held = pairs[: a.held_out]; heard = pairs[a.held_out:]
     held_set = {frozenset(p) for p in held}
@@ -158,7 +168,20 @@ def main() -> None:
         if (i + 1) % 20 == 0:
             promote_eligible(kernel, structures, 4)
     print(f"grew on {len(scenes)} scenes; concepts {len(kernel.state.concepts)}; structures {len(kernel.state.structures)}", flush=True)
-    sense = hearing(len(feats), world.modality) if a.sense == "hearing" else sight(len(feats), world.modality)
+    if a.sense == "hearing":
+        sense = hearing(len(feats), world.modality)
+    elif world.placed:
+        sense = placed_sight(len(feats) // 2 - 2, 2, world.modality)
+    else:
+        sense = sight(len(feats), world.modality)
+    # how different two scenes look: same pair, places swapped (pooled sight cannot tell them apart)
+    order_test = []
+    if a.sense == "sight":
+        for j, (x, y) in enumerate(heard[:4]):
+            r1 = world.recipe((x, y)); r2 = json.loads(json.dumps(r1)); r2["parts"] = [(r1["parts"][1][0], *r1["parts"][0][1:]), (r1["parts"][0][0], *r1["parts"][1][1:])]
+            f1, f2 = world.render(r1, work, f"ord{j}a"), world.render(r2, work, f"ord{j}b")
+            order_test.append(align(kernel._project_effect(kernel._validated_feature_array(f1), world.modality),
+                                    kernel._project_effect(kernel._validated_feature_array(f2), world.modality)))
     shares = learn_shares(kernel, sense)
     filler = []
     fnames = sorted(world.filler_things)
@@ -196,7 +219,8 @@ def main() -> None:
                          "top1": {k: v.readout[0][0] == got[0] for k, v in preds.items()}}
         rows.append(row); print(json.dumps({"swap": row["swap"], **{w: {k: round(x, 3) for k, x in row[w]["sensing"].items()} for w in ("now",)},
                                             "mind_now": row["now"]["came_to_mind"]}), flush=True)
-    summary = {"sense": a.sense, "scenes": len(scenes), "trials": len(rows), "top_k": top, "description_width": len(feats),
+    summary = {"sense": a.sense, "sight_description": a.sight_description if a.sense == "sight" else None,
+               "places_swapped_alike": round(float(np.mean(order_test)), 4) if order_test else None, "scenes": len(scenes), "trials": len(rows), "top_k": top, "description_width": len(feats),
                "concepts": len(kernel.state.concepts), "structures": len(kernel.state.structures),
                "objects_tracked_per_scene": None if a.sense == "hearing" else {"mean": float(np.mean(objects)), "min": int(min(objects))},
                "shares": {"experiences": shares.experiences, "max_recovery_residual": shares.max_recovery_residual,

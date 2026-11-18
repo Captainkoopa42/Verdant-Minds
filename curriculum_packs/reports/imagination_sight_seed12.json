@@ -1,0 +1,578 @@
+{
+ "schema": "verdant.observer.imagination_senses.v0",
+ "summary": {
+  "sense": "sight",
+  "scenes": 60,
+  "trials": 8,
+  "top_k": 3,
+  "description_width": 35,
+  "concepts": 8,
+  "structures": 0,
+  "objects_tracked_per_scene": {
+   "mean": 2.0,
+   "min": 2
+  },
+  "shares": {
+   "experiences": 60,
+   "max_recovery_residual": 4.882367104394045e-09,
+   "mean_unknown": 0.032
+  },
+  "now": {
+   "sensing": {
+    "unchanged": 0.9625,
+    "average_look": 0.9847,
+    "shares": 0.9992,
+    "wrong_newcomer": 0.9721,
+    "true_look": 1.0
+   },
+   "came_to_mind": {
+    "unchanged": 0.625,
+    "average_look": 0.917,
+    "shares": 0.958,
+    "wrong_newcomer": 0.625,
+    "true_look": 1.0
+   },
+   "top1": {
+    "unchanged": 3,
+    "average_look": 8,
+    "shares": 8,
+    "wrong_newcomer": 2,
+    "true_look": 8
+   },
+   "shares_beat_average_on_sensing": 8,
+   "shares_vs_average_came_to_mind": {
+    "better": 1,
+    "same": 7,
+    "worse": 0
+   }
+  },
+  "later": {
+   "sensing": {
+    "unchanged": 0.9625,
+    "average_look": 0.9847,
+    "shares": 0.9992,
+    "wrong_newcomer": 0.9721,
+    "true_look": 1.0
+   },
+   "came_to_mind": {
+    "unchanged": 0.458,
+    "average_look": 0.583,
+    "shares": 0.583,
+    "wrong_newcomer": 0.417,
+    "true_look": 0.583
+   },
+   "top1": {
+    "unchanged": 0,
+    "average_look": 0,
+    "shares": 0,
+    "wrong_newcomer": 0,
+    "true_look": 0
+   },
+   "shares_beat_average_on_sensing": 8,
+   "shares_vs_average_came_to_mind": {
+    "better": 0,
+    "same": 8,
+    "worse": 0
+   }
+  },
+  "organism_unchanged": true
+ },
+ "trials": [
+  {
+   "trial": 0,
+   "memory": "sight-003",
+   "swap": "dusiso -> lebuze",
+   "kept": "bufole",
+   "now": {
+    "real_top": [
+     "lebuze",
+     "bufole",
+     "fobini"
+    ],
+    "sensing": {
+     "unchanged": 0.9496943034962194,
+     "average_look": 0.9860979253144039,
+     "shares": 0.9999477393634622,
+     "wrong_newcomer": 0.9672913503698619,
+     "true_look": 1.0000000000000004
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "tapepa",
+     "bufole",
+     "lebuze"
+    ],
+    "sensing": {
+     "unchanged": 0.949694303496219,
+     "average_look": 0.9860979253144038,
+     "shares": 0.9999477393634619,
+     "wrong_newcomer": 0.9672913503698616,
+     "true_look": 0.9999999999999999
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 1,
+   "memory": "sight-006",
+   "swap": "sotugu -> lebuze",
+   "kept": "gamodo",
+   "now": {
+    "real_top": [
+     "gamodo",
+     "lebuze",
+     "fobini"
+    ],
+    "sensing": {
+     "unchanged": 0.9550703421381855,
+     "average_look": 0.9742038135390353,
+     "shares": 0.9994891292149921,
+     "wrong_newcomer": 0.9597744157402855,
+     "true_look": 1.0000000000000007
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": true,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": true,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "tapepa",
+     "fulupe",
+     "gamodo"
+    ],
+    "sensing": {
+     "unchanged": 0.9550703421381846,
+     "average_look": 0.9742038135390344,
+     "shares": 0.9994891292149913,
+     "wrong_newcomer": 0.9597744157402847,
+     "true_look": 0.9999999999999997
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.3333333333333333,
+     "shares": 0.3333333333333333,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.3333333333333333
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 2,
+   "memory": "sight-000",
+   "swap": "vabazu -> sotugu",
+   "kept": "nisusi",
+   "now": {
+    "real_top": [
+     "nisusi",
+     "sotugu",
+     "fobini"
+    ],
+    "sensing": {
+     "unchanged": 0.9676580182568519,
+     "average_look": 0.9906757936285665,
+     "shares": 0.9994179627664254,
+     "wrong_newcomer": 0.9839079738425069,
+     "true_look": 1.0000000000000002
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": true,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "sotugu",
+     "nisusi",
+     "tapepa"
+    ],
+    "sensing": {
+     "unchanged": 0.9676580182568513,
+     "average_look": 0.9906757936285658,
+     "shares": 0.9994179627664247,
+     "wrong_newcomer": 0.9839079738425063,
+     "true_look": 0.9999999999999996
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 3,
+   "memory": "sight-001",
+   "swap": "sotugu -> gamodo",
+   "kept": "dusiso",
+   "now": {
+    "real_top": [
+     "gamodo",
+     "dusiso",
+     "fobini"
+    ],
+    "sensing": {
+     "unchanged": 0.9519485875128735,
+     "average_look": 0.9736405736801894,
+     "shares": 0.9979030930479642,
+     "wrong_newcomer": 0.9597931504854947,
+     "true_look": 0.9999999999999993
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "tapepa",
+     "gamodo",
+     "dusiso"
+    ],
+    "sensing": {
+     "unchanged": 0.9519485875128746,
+     "average_look": 0.9736405736801906,
+     "shares": 0.9979030930479654,
+     "wrong_newcomer": 0.9597931504854961,
+     "true_look": 1.0000000000000004
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 4,
+   "memory": "sight-001",
+   "swap": "sotugu -> lebuze",
+   "kept": "dusiso",
+   "now": {
+    "real_top": [
+     "lebuze",
+     "dusiso",
+     "fobini"
+    ],
+    "sensing": {
+     "unchanged": 0.9613738084314087,
+     "average_look": 0.9776501711167317,
+     "shares": 0.9995104936140867,
+     "wrong_newcomer": 0.9659120735842459,
+     "true_look": 1.0000000000000002
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "tapepa",
+     "dusiso",
+     "fulupe"
+    ],
+    "sensing": {
+     "unchanged": 0.9613738084314083,
+     "average_look": 0.9776501711167314,
+     "shares": 0.9995104936140865,
+     "wrong_newcomer": 0.9659120735842456,
+     "true_look": 1.0
+    },
+    "came_to_mind": {
+     "unchanged": 0.3333333333333333,
+     "average_look": 0.3333333333333333,
+     "shares": 0.3333333333333333,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.3333333333333333
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 5,
+   "memory": "sight-001",
+   "swap": "sotugu -> fobini",
+   "kept": "dusiso",
+   "now": {
+    "real_top": [
+     "fobini",
+     "dusiso",
+     "nisusi"
+    ],
+    "sensing": {
+     "unchanged": 0.9779473843829076,
+     "average_look": 0.9951467797706065,
+     "shares": 0.9994993310812039,
+     "wrong_newcomer": 0.9810391324762591,
+     "true_look": 0.9999999999999989
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "tapepa",
+     "fobini",
+     "dusiso"
+    ],
+    "sensing": {
+     "unchanged": 0.9779473843829084,
+     "average_look": 0.9951467797706071,
+     "shares": 0.9994993310812047,
+     "wrong_newcomer": 0.98103913247626,
+     "true_look": 0.9999999999999997
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 6,
+   "memory": "sight-008",
+   "swap": "gamodo -> sotugu",
+   "kept": "fobini",
+   "now": {
+    "real_top": [
+     "fobini",
+     "sotugu",
+     "nisusi"
+    ],
+    "sensing": {
+     "unchanged": 0.9753350229846182,
+     "average_look": 0.9913406840920247,
+     "shares": 0.9985944102201615,
+     "wrong_newcomer": 0.9860039366547776,
+     "true_look": 0.9999999999999993
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 0.6666666666666666,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": true,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": true,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "sotugu",
+     "tapepa",
+     "fobini"
+    ],
+    "sensing": {
+     "unchanged": 0.9753350229846192,
+     "average_look": 0.9913406840920256,
+     "shares": 0.9985944102201624,
+     "wrong_newcomer": 0.9860039366547788,
+     "true_look": 1.0000000000000004
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  },
+  {
+   "trial": 7,
+   "memory": "sight-003",
+   "swap": "dusiso -> fobini",
+   "kept": "bufole",
+   "now": {
+    "real_top": [
+     "fobini",
+     "bufole",
+     "sotugu"
+    ],
+    "sensing": {
+     "unchanged": 0.9606123889723647,
+     "average_look": 0.9888038984992216,
+     "shares": 0.9993119420167476,
+     "wrong_newcomer": 0.9734020616571162,
+     "true_look": 0.9999999999999991
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 1.0,
+     "shares": 1.0,
+     "wrong_newcomer": 0.6666666666666666,
+     "true_look": 1.0
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": true,
+     "shares": true,
+     "wrong_newcomer": false,
+     "true_look": true
+    }
+   },
+   "later": {
+    "real_top": [
+     "tapepa",
+     "fobini",
+     "bufole"
+    ],
+    "sensing": {
+     "unchanged": 0.960612388972365,
+     "average_look": 0.9888038984992219,
+     "shares": 0.9993119420167479,
+     "wrong_newcomer": 0.9734020616571166,
+     "true_look": 0.9999999999999993
+    },
+    "came_to_mind": {
+     "unchanged": 0.6666666666666666,
+     "average_look": 0.6666666666666666,
+     "shares": 0.6666666666666666,
+     "wrong_newcomer": 0.3333333333333333,
+     "true_look": 0.6666666666666666
+    },
+    "top1": {
+     "unchanged": false,
+     "average_look": false,
+     "shares": false,
+     "wrong_newcomer": false,
+     "true_look": false
+    }
+   }
+  }
+ ]
+}

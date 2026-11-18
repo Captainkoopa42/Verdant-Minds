@@ -123,6 +123,8 @@ def main() -> None:
     families = [f for f in exp["families"] if f["group"] in ("massed", "spaced_short", "spaced_long", "returning")
                 and all(m in {label[c] for c in earned} for m in f["members"])]
     rng = random.Random(a.seed); rng.shuffle(families)
+    from sidecar_looks import reading, learn_shares, imagined_look
+    shares = learn_shares(kernel, reading(len(next(iter(items.values()))["feature_vector"])))
     trials = []
     for i in range(min(a.trials, len(families) // 3 * 3)):
         base, other, third = families[i], families[(i + 1) % len(families)], families[(i + 2) % len(families)]
@@ -134,6 +136,7 @@ def main() -> None:
     for n, (key, out_c, in_c, wrong_c) in enumerate(trials):
         im = imagine(kernel, key, out_c, in_c, context="now"); wrong = imagine(kernel, key, out_c, wrong_c, context="now")
         same = imagine(kernel, key, out_c, out_c, context="now", second_step=False)       # the memory replayed unchanged
+        shared = imagine(kernel, key, out_c, in_c, context="now", look=imagined_look(kernel, shares, key, out_c, in_c))
         true_look = imagine(kernel, key, out_c, in_c, context="now", look=(swapped_item(items[key], out_c, in_c, "x")["feature_vector"], "text"))
         base = relive(kernel, key); base_sensed = _experience_parts(kernel, base)
         from sidecar_recall import _brought_by
@@ -158,9 +161,12 @@ def main() -> None:
             row[when] = {
                 "A_moment": {"imagined": align(im.effect, real["effect"]), "unchanged_memory": align(base.effect, real["effect"]),
                              "wrong_newcomer": align(wrong.effect, real["effect"]),
-                             "sensing_imagined": align(im.sensed, real["sensed"]), "sensing_unchanged": align(base_sensed, real["sensed"])},
+                             "sensing_imagined": align(im.sensed, real["sensed"]), "sensing_unchanged": align(base_sensed, real["sensed"]),
+                             "shares_moment": align(shared.effect, real["effect"]), "sensing_shares": align(shared.sensed, real["sensed"])},
                 "B_came_to_mind": {"imagined": overlap(im.readout, real["resonance"]), "wrong_newcomer": overlap(wrong.readout, real["resonance"]),
                                    "unchanged_memory": overlap(same.readout, real["resonance"]),
+                                   "shares": overlap(shared.readout, real["resonance"]),
+                                   "shares_top1_match": shared.readout[0][0] == real["resonance"][0][0],
                                    "diagnostic_given_the_true_look": overlap(true_look.readout, real["resonance"]),
                                    "diagnostic_true_look_exact_order": [l for l, _ in true_look.readout] == [l for l, _ in real["resonance"]],
                                    "newcomer_in_real_top6": in_c in {l for l, _ in real["resonance"]},
@@ -199,7 +205,12 @@ def main() -> None:
             "A_moment_alignment": {k: mean([r["A_moment"][k] for r in R]) for k in R[0]["A_moment"]},
             "A_imagined_beats_unchanged_memory": sum(r["A_moment"]["imagined"] > r["A_moment"]["unchanged_memory"] for r in R),
             "A_imagined_beats_wrong_newcomer": sum(r["A_moment"]["imagined"] > r["A_moment"]["wrong_newcomer"] for r in R),
-            "B_top6_overlap": {k: mean([r["B_came_to_mind"][k] for r in R]) for k in ("imagined", "unchanged_memory", "wrong_newcomer", "diagnostic_given_the_true_look")},
+            "B_top6_overlap": {k: mean([r["B_came_to_mind"][k] for r in R]) for k in ("imagined", "shares", "unchanged_memory", "wrong_newcomer", "diagnostic_given_the_true_look")},
+            "B_shares_top1_match": sum(r["B_came_to_mind"]["shares_top1_match"] for r in R),
+            "B_shares_vs_average_per_trial": {"better": sum(r["B_came_to_mind"]["shares"] > r["B_came_to_mind"]["imagined"] for r in R),
+                                              "same": sum(r["B_came_to_mind"]["shares"] == r["B_came_to_mind"]["imagined"] for r in R),
+                                              "worse": sum(r["B_came_to_mind"]["shares"] < r["B_came_to_mind"]["imagined"] for r in R)},
+            "A_sensing_shares_beats_average": sum(r["A_moment"]["sensing_shares"] > r["A_moment"]["sensing_imagined"] for r in R),
             "B_diagnostic_true_look_exact_order": sum(r["B_came_to_mind"]["diagnostic_true_look_exact_order"] for r in R),
             "B_newcomer_in_top6": {"imagined": sum(r["B_came_to_mind"]["newcomer_in_imagined_top6"] for r in R), "real": sum(r["B_came_to_mind"]["newcomer_in_real_top6"] for r in R),
                                    "agree": sum(r["B_came_to_mind"]["newcomer_in_imagined_top6"] == r["B_came_to_mind"]["newcomer_in_real_top6"] for r in R)},
@@ -213,6 +224,8 @@ def main() -> None:
             "C_imagination_said_it_would_come_back": sum(r["swap"].split(" -> ")[0] in set().union(*map(set, r[when]["C_second_step"]["rest_predicted"].values())) for r in rows),
         }
     summary["SIMULATED_now_vs_real_later"] = {k: mean([r["SIMULATED_now_vs_real_later"][k] for r in rows]) for k in ("moment", "came_to_mind")}
+    summary["shares"] = {"experiences": shares.experiences, "concepts": len(shares.concept_ids),
+                         "max_recovery_residual": shares.max_recovery_residual, "mean_unknown": round(float(np.mean(list(shares.unknown.values()))), 3)}
     summary["trials"] = len(rows); summary["filler_lessons_before_later"] = len(filler)
     summary["organism_unchanged"] = kernel.fingerprint() == fp
     a.out.write_text(json.dumps({"schema": "verdant.observer.imagination_reality.v0", "summary": summary, "trials": rows}, indent=1, default=str))

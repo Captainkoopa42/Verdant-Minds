@@ -292,7 +292,7 @@ def imagine(kernel, event_key: str, swap_out: str, swap_in: str, *, context: str
     if look is None:
         sensed_new = _unit(sensed + (p_in - p_out) / k)      # declared before testing: newcomer's average look, one share in k
     else:                                                    # a described look (features, modality), e.g. from a sketch or a sentence
-        sensed_new = kernel._project_effect(np.asarray(look[0], dtype=np.float64), look[1])
+        sensed_new = kernel._project_effect(kernel._validated_feature_array(look[0]), look[1])   # same scaling as real intake
     C_new = kernel._concept_binding_effect(scene)
     effect = _unit(policy.feature_coupling * sensed_new + policy.concept_coupling * C_new)
 

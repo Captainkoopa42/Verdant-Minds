@@ -224,7 +224,7 @@ def main() -> None:
     parser.add_argument("--reader", action="store_true", help="sidecar_reader: words seen separately (field unchanged).")
     parser.add_argument("--senses", action="store_true", help="sidecar_ring stack: per-sense views, ringing, adaptation, carry one experience, reminding, measured attention.")
     parser.add_argument("--senses-without", default="", help="comma list of parts to leave out of --senses: moment, remind, attention")
-    parser.add_argument("--senses-with", default="", help="extra parts: carry (carry everything one experience; measured harmful)")
+    parser.add_argument("--senses-with", default="", help="extra parts: carry (carry everything one experience; measured harmful), signed (roadmap Stage A)")
     args = parser.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
     if args.pack is None:
@@ -238,7 +238,8 @@ def main() -> None:
     if args.senses:
         import sidecar_ring as ring
         leave = set(filter(None, args.senses_without.split(",")))
-        ring.install_ring(adapt=True)
+        extra = args.senses_with.split(",")
+        ring.install_ring(adapt=True, signed="quarter" if "signed" in extra or "quarter" in extra else ("half" if "half" in extra else False))
         if "remind" not in leave:
             ring.install_inferred_association()
         if "attention" not in leave:

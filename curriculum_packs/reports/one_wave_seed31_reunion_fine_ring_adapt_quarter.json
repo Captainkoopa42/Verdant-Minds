@@ -1,0 +1,554 @@
+{
+ "schema": "verdant.observer.one_wave.v0",
+ "summary": {
+  "arm": "reunion",
+  "ear": "fine",
+  "ring": true,
+  "adapt": true,
+  "signed": "quarter",
+  "half_turn_rings_during_life": 1,
+  "rings_during_life": {
+   "total": 22,
+   "while_told_something_else": 22
+  },
+  "experiences": 68,
+  "concepts": 8,
+  "structures": 0,
+  "chance": 0.125,
+  "1_naming": {
+   "visual": {
+    "sense_alone": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "organism": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 0.625,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "chord": {
+     "mostly_heard": 0.0,
+     "mostly_seen": 1.0,
+     "balanced": 0.0,
+     "together": 0.125
+    },
+    "per_sense": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 0.875,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "per_sense_adapted": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 0.875,
+     "balanced": 1.0,
+     "together": 1.0
+    }
+   },
+   "audio": {
+    "sense_alone": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "organism": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "chord": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 0.375,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "per_sense": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    },
+    "per_sense_adapted": {
+     "mostly_heard": 1.0,
+     "mostly_seen": 1.0,
+     "balanced": 1.0,
+     "together": 1.0
+    }
+   }
+  },
+  "3_unknown": {
+   "visual": {
+    "chord": {
+     "known_mean": {
+      "mostly_heard": 0.295,
+      "mostly_seen": 0.125,
+      "balanced": 0.227,
+      "together": 0.291
+     },
+     "novel_mean": 0.237,
+     "separation": 0.449,
+     "separation_by_group": {
+      "mostly_heard": 0.188,
+      "mostly_seen": 1.0,
+      "balanced": 0.609,
+      "together": 0.0
+     }
+    },
+    "per_sense": {
+     "known_mean": {
+      "mostly_heard": 0.023,
+      "mostly_seen": 0.007,
+      "balanced": 0.011,
+      "together": 0.0
+     },
+     "novel_mean": 0.017,
+     "separation": 0.828,
+     "separation_by_group": {
+      "mostly_heard": 0.75,
+      "mostly_seen": 0.859,
+      "balanced": 0.703,
+      "together": 1.0
+     }
+    },
+    "per_sense_adapted": {
+     "known_mean": {
+      "mostly_heard": 0.109,
+      "mostly_seen": 0.067,
+      "balanced": 0.114,
+      "together": 0.002
+     },
+     "novel_mean": 0.178,
+     "separation": 0.828,
+     "separation_by_group": {
+      "mostly_heard": 0.75,
+      "mostly_seen": 0.891,
+      "balanced": 0.672,
+      "together": 1.0
+     }
+    }
+   },
+   "audio": {
+    "chord": {
+     "known_mean": {
+      "mostly_heard": 0.093,
+      "mostly_seen": 0.741,
+      "balanced": 0.235,
+      "together": 0.422
+     },
+     "novel_mean": 0.749,
+     "separation": 0.875,
+     "separation_by_group": {
+      "mostly_heard": 1.0,
+      "mostly_seen": 0.5,
+      "balanced": 1.0,
+      "together": 1.0
+     }
+    },
+    "per_sense": {
+     "known_mean": {
+      "mostly_heard": 0.006,
+      "mostly_seen": 0.078,
+      "balanced": 0.026,
+      "together": 0.02
+     },
+     "novel_mean": 0.671,
+     "separation": 1.0,
+     "separation_by_group": {
+      "mostly_heard": 1.0,
+      "mostly_seen": 1.0,
+      "balanced": 1.0,
+      "together": 1.0
+     }
+    },
+    "per_sense_adapted": {
+     "known_mean": {
+      "mostly_heard": 0.012,
+      "mostly_seen": 0.094,
+      "balanced": 0.032,
+      "together": 0.022
+     },
+     "novel_mean": 0.832,
+     "separation": 1.0,
+     "separation_by_group": {
+      "mostly_heard": 1.0,
+      "mostly_seen": 1.0,
+      "balanced": 1.0,
+      "together": 1.0
+     }
+    }
+   }
+  },
+  "2_priming": {
+   "mean_rank": {
+    "no_sound": 2.0,
+    "sound_of_it": 1.0,
+    "sound_of_other": 2.5
+   },
+   "rank1": {
+    "no_sound": 5,
+    "sound_of_it": 8,
+    "sound_of_other": 2
+   },
+   "other_thing_mean_rank": {
+    "no_sound": 5.0,
+    "sound_of_other": 1.88
+   }
+  },
+  "4_conflict": {
+   "same_thing": {
+    "verdicts": {
+     "agree": 8,
+     "two different things": 0,
+     "unknown": 0
+    },
+    "in_phase_mean": 0.986
+   },
+   "other_known": {
+    "verdicts": {
+     "agree": 0,
+     "two different things": 8,
+     "unknown": 0
+    },
+    "in_phase_mean": 0.107
+   },
+   "never_heard": {
+    "verdicts": {
+     "agree": 0,
+     "two different things": 0,
+     "unknown": 8
+    },
+    "in_phase_mean": 0.195
+   }
+  },
+  "organism_unchanged": true
+ },
+ "priming": [
+  {
+   "thing": "popogu",
+   "group": "mostly_heard",
+   "no_sound": 1,
+   "no_sound_other_rank": 8,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 7,
+   "sound_of_other": 2,
+   "sound_of_other_other_rank": 4
+  },
+  {
+   "thing": "dabole",
+   "group": "mostly_heard",
+   "no_sound": 1,
+   "no_sound_other_rank": 3,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 2,
+   "sound_of_other": 1,
+   "sound_of_other_other_rank": 2
+  },
+  {
+   "thing": "gimire",
+   "group": "mostly_seen",
+   "no_sound": 2,
+   "no_sound_other_rank": 6,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 5,
+   "sound_of_other": 3,
+   "sound_of_other_other_rank": 1
+  },
+  {
+   "thing": "gemusu",
+   "group": "mostly_seen",
+   "no_sound": 2,
+   "no_sound_other_rank": 6,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 6,
+   "sound_of_other": 2,
+   "sound_of_other_other_rank": 3
+  },
+  {
+   "thing": "bazele",
+   "group": "balanced",
+   "no_sound": 1,
+   "no_sound_other_rank": 6,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 5,
+   "sound_of_other": 1,
+   "sound_of_other_other_rank": 2
+  },
+  {
+   "thing": "gezoba",
+   "group": "balanced",
+   "no_sound": 7,
+   "no_sound_other_rank": 4,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 4,
+   "sound_of_other": 7,
+   "sound_of_other_other_rank": 1
+  },
+  {
+   "thing": "tuzose",
+   "group": "together",
+   "no_sound": 1,
+   "no_sound_other_rank": 2,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 2,
+   "sound_of_other": 2,
+   "sound_of_other_other_rank": 1
+  },
+  {
+   "thing": "gotigi",
+   "group": "together",
+   "no_sound": 1,
+   "no_sound_other_rank": 5,
+   "sound_of_it": 1,
+   "sound_of_it_other_rank": 5,
+   "sound_of_other": 2,
+   "sound_of_other_other_rank": 1
+  }
+ ],
+ "conflict": [
+  {
+   "thing": "popogu",
+   "condition": "same_thing",
+   "sight_says": "popogu",
+   "sound_says": "popogu",
+   "sound_unknown": 0.003,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9989606231870597,
+   "phase_of_best_turns": 0.00010693035612280795
+  },
+  {
+   "thing": "popogu",
+   "condition": "other_known",
+   "sight_says": "popogu",
+   "sound_says": "dabole",
+   "sound_unknown": 0.058,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.19426720441127215,
+   "phase_of_best_turns": -0.0011277215227001812
+  },
+  {
+   "thing": "popogu",
+   "condition": "never_heard",
+   "sight_says": "popogu",
+   "sound_says": "gimire",
+   "sound_unknown": 0.791,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.3579259153648288,
+   "phase_of_best_turns": -0.042081620812464846
+  },
+  {
+   "thing": "dabole",
+   "condition": "same_thing",
+   "sight_says": "dabole",
+   "sound_says": "dabole",
+   "sound_unknown": 0.002,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9991857285929732,
+   "phase_of_best_turns": 0.0006632214076780902
+  },
+  {
+   "thing": "dabole",
+   "condition": "other_known",
+   "sight_says": "dabole",
+   "sound_says": "gimire",
+   "sound_unknown": 0.061,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.23081339684983632,
+   "phase_of_best_turns": -0.0006388161013752253
+  },
+  {
+   "thing": "dabole",
+   "condition": "never_heard",
+   "sight_says": "dabole",
+   "sound_says": "tuzose",
+   "sound_unknown": 0.883,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.22655938017440974,
+   "phase_of_best_turns": 0.4609536187799135
+  },
+  {
+   "thing": "gimire",
+   "condition": "same_thing",
+   "sight_says": "gimire",
+   "sound_says": "gimire",
+   "sound_unknown": 0.062,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9689508314206333,
+   "phase_of_best_turns": 0.0002769334093245108
+  },
+  {
+   "thing": "gimire",
+   "condition": "other_known",
+   "sight_says": "gimire",
+   "sound_says": "gemusu",
+   "sound_unknown": 0.256,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.3273095921922169,
+   "phase_of_best_turns": 0.0035787643884652477
+  },
+  {
+   "thing": "gimire",
+   "condition": "never_heard",
+   "sight_says": "gimire",
+   "sound_says": "gimire",
+   "sound_unknown": 0.796,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.5066446355392606,
+   "phase_of_best_turns": -0.044655792537172175
+  },
+  {
+   "thing": "gemusu",
+   "condition": "same_thing",
+   "sight_says": "gemusu",
+   "sound_says": "gemusu",
+   "sound_unknown": 0.0,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9998134494752988,
+   "phase_of_best_turns": -9.447449547148761e-05
+  },
+  {
+   "thing": "gemusu",
+   "condition": "other_known",
+   "sight_says": "gemusu",
+   "sound_says": "bazele",
+   "sound_unknown": 0.01,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": -0.370551780109097,
+   "phase_of_best_turns": -0.0021602688559642052
+  },
+  {
+   "thing": "gemusu",
+   "condition": "never_heard",
+   "sight_says": "gemusu",
+   "sound_says": "tuzose",
+   "sound_unknown": 0.849,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.01763057642909844,
+   "phase_of_best_turns": 0.47494882985226666
+  },
+  {
+   "thing": "bazele",
+   "condition": "same_thing",
+   "sight_says": "bazele",
+   "sound_says": "bazele",
+   "sound_unknown": 0.024,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9799356932876034,
+   "phase_of_best_turns": 0.0033719382618549736
+  },
+  {
+   "thing": "bazele",
+   "condition": "other_known",
+   "sight_says": "bazele",
+   "sound_says": "gezoba",
+   "sound_unknown": 0.024,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": -0.24541929777334553,
+   "phase_of_best_turns": -0.0020051280921412964
+  },
+  {
+   "thing": "bazele",
+   "condition": "never_heard",
+   "sight_says": "bazele",
+   "sound_says": "gimire",
+   "sound_unknown": 0.81,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": -0.289829520687945,
+   "phase_of_best_turns": -0.047972612609263394
+  },
+  {
+   "thing": "gezoba",
+   "condition": "same_thing",
+   "sight_says": "gezoba",
+   "sound_says": "gezoba",
+   "sound_unknown": 0.046,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9846311318086377,
+   "phase_of_best_turns": -0.0033607131759711057
+  },
+  {
+   "thing": "gezoba",
+   "condition": "other_known",
+   "sight_says": "gezoba",
+   "sound_says": "tuzose",
+   "sound_unknown": 0.001,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.4131239024845703,
+   "phase_of_best_turns": 0.00010422201572732518
+  },
+  {
+   "thing": "gezoba",
+   "condition": "never_heard",
+   "sight_says": "gezoba",
+   "sound_says": "tuzose",
+   "sound_unknown": 0.879,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.2751525072613545,
+   "phase_of_best_turns": 0.46262335015058476
+  },
+  {
+   "thing": "tuzose",
+   "condition": "same_thing",
+   "sight_says": "tuzose",
+   "sound_says": "tuzose",
+   "sound_unknown": 0.001,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9995805633784339,
+   "phase_of_best_turns": 2.0574317486065053e-05
+  },
+  {
+   "thing": "tuzose",
+   "condition": "other_known",
+   "sight_says": "tuzose",
+   "sound_says": "gotigi",
+   "sound_unknown": 0.068,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.16748336938789732,
+   "phase_of_best_turns": 4.8459391902736755e-05
+  },
+  {
+   "thing": "tuzose",
+   "condition": "never_heard",
+   "sight_says": "tuzose",
+   "sound_says": "gimire",
+   "sound_unknown": 0.784,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.3692019688317283,
+   "phase_of_best_turns": -0.03890793789011641
+  },
+  {
+   "thing": "gotigi",
+   "condition": "same_thing",
+   "sight_says": "gotigi",
+   "sound_says": "gotigi",
+   "sound_unknown": 0.063,
+   "verdict": "agree",
+   "expected_vs_heard_in_phase": 0.9562049816807767,
+   "phase_of_best_turns": 0.004160154257230942
+  },
+  {
+   "thing": "gotigi",
+   "condition": "other_known",
+   "sight_says": "gotigi",
+   "sound_says": "popogu",
+   "sound_unknown": 0.013,
+   "verdict": "two different things",
+   "expected_vs_heard_in_phase": 0.13849807805428993,
+   "phase_of_best_turns": -0.0010562708829092728
+  },
+  {
+   "thing": "gotigi",
+   "condition": "never_heard",
+   "sight_says": "gotigi",
+   "sound_says": "tuzose",
+   "sound_unknown": 0.869,
+   "verdict": "unknown",
+   "expected_vs_heard_in_phase": 0.09365880275879335,
+   "phase_of_best_turns": 0.45488933872664244
+  }
+ ]
+}

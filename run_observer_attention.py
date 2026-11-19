@@ -24,11 +24,12 @@ sys.path[:0] = [str(REPO), str(REPO / "workbench" / "backend"), str(REPO / "curr
 
 def main() -> None:
     ap = argparse.ArgumentParser(); ap.add_argument("--seed", type=int, default=61); ap.add_argument("--steer", action="store_true")
+    ap.add_argument("--signed", choices=("none", "half", "quarter"), default="none", help="roadmap Stage A: how a conflicting ring is turned")
     ap.add_argument("--out", type=Path, required=True); a = ap.parse_args()
     from sidecar_acceleration import install_long_life_acceleration; install_long_life_acceleration()
     from sidecar_bond_clock import install_changes_only; install_changes_only()
     import sidecar_ring as ring
-    ring.install_ring(adapt=True)
+    ring.install_ring(adapt=True, signed={"none": False, "half": "half", "quarter": "quarter"}[a.signed])
     if a.steer:
         ring.install_attention()
     import run_observer_long_life as R
@@ -64,9 +65,20 @@ def main() -> None:
     rng.shuffle(phase2)
     kernel = VerdantKernel(seed=a.seed, state_dim=128, run_label=f"attention-{a.steer}")
     ring.carry_one_experience(kernel); pipe, _ = R.build_pipeline("reunion")
+    stance_rows = []; recent = []
     for b in phase1 + phase2:
         for c in b:
-            pipe.advance(kernel, c)
+            pipe.advance(kernel, c); recent = (recent + [c.concept_proposals[0].label])[-4:]
+            if kinds[c.event_key] in ("conflict", "correct"):
+                st = ring.read_stances(kernel); told = c.concept_proposals[0].label
+                stance_rows.append({"kind": kinds[c.event_key], "told": told, "told_stance": st.get(told),
+                                    "conflict_with": fam[4]["name"] if kinds[c.event_key] == "conflict" else None,
+                                    "other_stance": st.get(fam[4]["name"]) if kinds[c.event_key] == "conflict" else None,
+                                    "false_contradictions": sorted(l for l, v in st.items() if v["verdict"] == "contradicted" and l != (fam[4]["name"] if kinds[c.event_key] == "conflict" else None)),
+                                    "uninvolved_standing_out": sum(v["stands_out"] for l, v in st.items() if l in {t["name"] for t in fam} - set(recent) - {fam[4]["name"]}),
+                                    "uninvolved": len({t["name"] for t in fam} - set(recent) - {fam[4]["name"]}),
+                                    "false_tension": sorted(l for l, v in st.items() if v["verdict"] == "in tension"),
+                                    })
     rows = []
     for w in kernel.state.workspace_cycle_events:
         for x in w.report.assessments:
@@ -91,7 +103,28 @@ def main() -> None:
                "tension": {k: {kk: round(vv, 3) for kk, vv in v.items()} for k, v in ring.read_tension(kernel).items()
                            if k in (fam[2]["name"], fam[0]["name"], fam[5]["name"])},
                "who": {"told_but_conflicting": fam[2]["name"], "control_familiar": fam[0]["name"]}}
-    a.out.write_text(json.dumps({"schema": "verdant.observer.attention.v0", "summary": summary}, indent=1))
+    from sidecar_recall import relive, _experience_parts
+    worst = max(float(np.max(np.abs(_experience_parts(kernel, relive(kernel, k_)) - kernel._project_effect(kernel._validated_feature_array(
+        next(c.feature_vector for b in phase1 + phase2 for c in b if c.event_key == k_)), next(c.modality for b in phase1 + phase2 for c in b if c.event_key == k_)))))
+        for k_ in kinds)
+    C = [r for r in stance_rows if r["kind"] == "conflict"]; K = [r for r in stance_rows if r["kind"] == "correct"]
+    def standing(s_, cond):
+        return bool(s_ and s_["stands_out"] and cond(s_["support"]))
+    summary["signed"] = a.signed
+    summary["stances"] = {
+        "1_conflict_other_contradicted": f'{sum(standing(r["other_stance"], lambda v: v < -0.3) for r in C)}/{len(C)}',
+        "1_conflict_told_agrees": f'{sum(standing(r["told_stance"], lambda v: v > 0.3) for r in C)}/{len(C)}',
+        "1_conflict_other_in_tension": f'{sum(standing(r["other_stance"], lambda v: True) and r["other_stance"]["tension"] > 0.5 for r in C)}/{len(C)}',
+        "1_conflict_other_presence": [round(r["other_stance"]["presence"], 3) if r["other_stance"] else None for r in C],
+        "1_conflict_other_tension": [round(r["other_stance"]["tension"], 3) if r["other_stance"] else None for r in C],
+        "2_correct_no_false_tension": f'{sum(not r["false_tension"] for r in K)}/{len(K)}',
+        "1_conflict_other_support": [round(r["other_stance"]["support"], 3) if r["other_stance"] else None for r in C],
+        "1_conflict_other_stands_out": [bool(r["other_stance"] and r["other_stance"]["stands_out"]) for r in C],
+        "2_correct_told_agrees": f'{sum(standing(r["told_stance"], lambda v: v > 0.3) for r in K)}/{len(K)}',
+        "2_correct_no_false_contradiction": f'{sum(not r["false_contradictions"] for r in K)}/{len(K)}',
+        "3_uninvolved_not_standing_out": round(1 - sum(r["uninvolved_standing_out"] for r in stance_rows) / max(1, sum(r["uninvolved"] for r in stance_rows)), 3),
+        "5_relive_worst_error": worst}
+    a.out.write_text(json.dumps({"schema": "verdant.observer.attention.v0", "summary": summary, "stance_rows": stance_rows}, indent=1, default=str))
     print(json.dumps(summary, indent=1))
 
 

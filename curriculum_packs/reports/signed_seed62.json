@@ -1,0 +1,274 @@
+{
+ "schema": "verdant.observer.attention.v0",
+ "summary": {
+  "steer": false,
+  "signals": {
+   "conflict": {
+    "novelty": 0.35,
+    "contradiction": 0.0,
+    "workspace_score": 0.53,
+    "moments": 3
+   },
+   "correct": {
+    "novelty": 0.35,
+    "contradiction": 0.0,
+    "workspace_score": 0.425,
+    "moments": 8
+   },
+   "familiar": {
+    "novelty": 0.35,
+    "contradiction": 0.0,
+    "workspace_score": 0.39,
+    "moments": 8
+   },
+   "learning": {
+    "novelty": 0.35,
+    "contradiction": 0.0,
+    "workspace_score": 0.53,
+    "moments": 48
+   },
+   "new": {
+    "novelty": 0.35,
+    "contradiction": 0.0,
+    "workspace_score": 0.443,
+    "moments": 8
+   },
+   "seen_first": {
+    "novelty": 0.35,
+    "contradiction": 0.0,
+    "workspace_score": 0.416,
+    "moments": 16
+   }
+  },
+  "bonds_new_pairs": [
+   0.465,
+   0.405
+  ],
+  "bonds_familiar_pairs": [
+   0.507,
+   0.559
+  ],
+  "false_alarms": "0/8",
+  "conflicts_flagged": "0/3",
+  "tension": {},
+  "who": {
+   "told_but_conflicting": "biseza",
+   "control_familiar": "redeni"
+  },
+  "signed": false,
+  "stances": {
+   "1_conflict_other_contradicted": "0/3",
+   "1_conflict_told_agrees": "3/3",
+   "1_conflict_other_support": [
+    0.996,
+    0.991,
+    0.998
+   ],
+   "1_conflict_other_stands_out": [
+    true,
+    true,
+    true
+   ],
+   "2_correct_told_agrees": "8/8",
+   "2_correct_no_false_contradiction": "8/8",
+   "3_uninvolved_not_standing_out": 0.889,
+   "5_relive_worst_error": 2.1163626406917047e-16
+  }
+ },
+ "stance_rows": [
+  {
+   "kind": "correct",
+   "told": "sifufe",
+   "told_stance": {
+    "presence": 0.6619906403211396,
+    "stands_out": true,
+    "support": 0.9999724839152341,
+    "uncertainty": 0.007418316008160628,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 0,
+   "uninvolved": 4
+  },
+  {
+   "kind": "correct",
+   "told": "bonubi",
+   "told_stance": {
+    "presence": 0.5589975048962034,
+    "stands_out": true,
+    "support": 0.9918464765062042,
+    "uncertainty": 0.12743848336443703,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 0,
+   "uninvolved": 4
+  },
+  {
+   "kind": "correct",
+   "told": "redeni",
+   "told_stance": {
+    "presence": 0.6716345804350815,
+    "stands_out": true,
+    "support": 0.9992672455087701,
+    "uncertainty": 0.03827495334178336,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 0,
+   "uninvolved": 4
+  },
+  {
+   "kind": "correct",
+   "told": "lunubu",
+   "told_stance": {
+    "presence": 0.5089908894525728,
+    "stands_out": true,
+    "support": 0.9985062679426393,
+    "uncertainty": 0.05463728469883651,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 1,
+   "uninvolved": 4
+  },
+  {
+   "kind": "conflict",
+   "told": "biseza",
+   "told_stance": {
+    "presence": 0.4229064302382295,
+    "stands_out": true,
+    "support": 0.9726785198075353,
+    "uncertainty": 0.23215619118391384,
+    "verdict": "agrees"
+   },
+   "conflict_with": "reteta",
+   "other_stance": {
+    "presence": 0.33126286561599394,
+    "stands_out": true,
+    "support": 0.995545480263796,
+    "uncertainty": 0.09428253669862746,
+    "verdict": "agrees"
+   },
+   "false_contradictions": [],
+   "uninvolved_standing_out": 1,
+   "uninvolved": 4
+  },
+  {
+   "kind": "conflict",
+   "told": "biseza",
+   "told_stance": {
+    "presence": 0.388212743761227,
+    "stands_out": true,
+    "support": 0.9999823364876609,
+    "uncertainty": 0.005943627905465331,
+    "verdict": "agrees"
+   },
+   "conflict_with": "reteta",
+   "other_stance": {
+    "presence": 0.32601614424511594,
+    "stands_out": true,
+    "support": 0.9913235130255698,
+    "uncertainty": 0.13144463672072382,
+    "verdict": "agrees"
+   },
+   "false_contradictions": [],
+   "uninvolved_standing_out": 1,
+   "uninvolved": 4
+  },
+  {
+   "kind": "conflict",
+   "told": "biseza",
+   "told_stance": {
+    "presence": 0.3408624789834715,
+    "stands_out": true,
+    "support": 0.9733872556841574,
+    "uncertainty": 0.22916642527138403,
+    "verdict": "agrees"
+   },
+   "conflict_with": "reteta",
+   "other_stance": {
+    "presence": 0.4702447111241913,
+    "stands_out": true,
+    "support": 0.9976094713748894,
+    "uncertainty": 0.06910385389479935,
+    "verdict": "agrees"
+   },
+   "false_contradictions": [],
+   "uninvolved_standing_out": 0,
+   "uninvolved": 4
+  },
+  {
+   "kind": "correct",
+   "told": "sifufe",
+   "told_stance": {
+    "presence": 0.5505556683314695,
+    "stands_out": true,
+    "support": 0.9999046794725582,
+    "uncertainty": 0.013806953642293635,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 0,
+   "uninvolved": 4
+  },
+  {
+   "kind": "correct",
+   "told": "redeni",
+   "told_stance": {
+    "presence": 0.7065968337878651,
+    "stands_out": true,
+    "support": 0.9993712316168619,
+    "uncertainty": 0.035456190102665604,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 0,
+   "uninvolved": 4
+  },
+  {
+   "kind": "correct",
+   "told": "reteta",
+   "told_stance": {
+    "presence": 0.46914366206318114,
+    "stands_out": true,
+    "support": 0.9968094475345952,
+    "uncertainty": 0.07981807630966024,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 1,
+   "uninvolved": 5
+  },
+  {
+   "kind": "correct",
+   "told": "biseza",
+   "told_stance": {
+    "presence": 0.530281222600701,
+    "stands_out": true,
+    "support": 0.9998424749896786,
+    "uncertainty": 0.017748949448176368,
+    "verdict": "agrees"
+   },
+   "conflict_with": null,
+   "other_stance": null,
+   "false_contradictions": [],
+   "uninvolved_standing_out": 1,
+   "uninvolved": 4
+  }
+ ]
+}

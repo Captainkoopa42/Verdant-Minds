@@ -57,11 +57,12 @@ def main() -> None:
     ap.add_argument("--arm", choices=("reunion", "whole"), default="reunion"); ap.add_argument("--ear", choices=("fine", "pipeline"), default="fine")
     ap.add_argument("--ring", action="store_true", help="per-sense views + recognition rings the wave (sidecar_ring)")
     ap.add_argument("--adapt", action="store_true", help="with --ring: adaptation in the wave for the resonance profile term")
+    ap.add_argument("--signed", choices=("none", "half", "quarter"), default="none", help="with --ring: how a conflicting ring is turned (roadmap Stage A)")
     ap.add_argument("--tests", type=int, default=4); ap.add_argument("--out", type=Path, required=True); a = ap.parse_args()
     from sidecar_acceleration import install_long_life_acceleration; install_long_life_acceleration()
     from sidecar_bond_clock import install_changes_only; install_changes_only()
     if a.ring:
-        from sidecar_ring import install_ring; install_ring(adapt=a.adapt)
+        from sidecar_ring import install_ring; install_ring(adapt=a.adapt, signed={"none": False, "half": "half", "quarter": "quarter"}[a.signed])
     from run_observer_long_life import build_pipeline, promote_eligible
     from run_observer_one_door import KINDS, episode, eye
     from run_observer_imagination_senses import RATE, fine_ear, make_voice
@@ -203,7 +204,8 @@ def main() -> None:
                           "in_phase_mean": round(float(np.mean([r["expected_vs_heard_in_phase"] for r in rows if r["expected_vs_heard_in_phase"] is not None])), 3)}
 
     rung = [(c.label, len(c.attributes.get("rings", {})), c.attributes.get("ring_disagreements", 0)) for c in kernel.state.concepts.values()]
-    summary = {"arm": a.arm, "ear": a.ear, "ring": a.ring, "adapt": a.adapt,
+    summary = {"arm": a.arm, "ear": a.ear, "ring": a.ring, "adapt": a.adapt, "signed": a.signed,
+               "half_turn_rings_during_life": sum(1 for c in kernel.state.concepts.values() for w in c.attributes.get("rings", {}).values() if isinstance(w, dict) or w < 0),
                "rings_during_life": {"total": sum(r[1] for r in rung), "while_told_something_else": sum(r[2] for r in rung)}, "experiences": n, "concepts": len(kernel.state.concepts),
                "structures": len(kernel.state.structures), "chance": round(1 / len(names), 3),
                "1_naming": naming_out, "3_unknown": unknown_out,

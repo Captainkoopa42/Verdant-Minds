@@ -175,3 +175,98 @@ A (signed resonance) -> B (rhythm) -> C (temperature) -> D (propositions) -> E (
 A first: it fixes the clearest open problem and D needs refutation in the field. B before C: the
 temperature's averages are per moment, which B defines. C before D: the load of open questions
 should feed the temperature. E is independent and can move earlier. F waits for a conversation.
+
+---
+## Stage A preregistration (2026-11-19, before the first run)
+
+Reading. For a concept with address a in the field F: z = ⟨a, F⟩ (no known turns to remove yet:
+stock and the ring stack write in step; the wave sidecar's role turns are not combined with Stage A
+in this first version). presence = |z|; it **stands out** when presence exceeds the mean of all
+concepts' presences by 3 standard deviations. support = Re z / |z|; uncertainty = |Im z| / |z|.
+Support is only read for concepts that stand out: for the rest, z is noise and its sign is random,
+so "unrelated" means "does not stand out", not "support near 0".
+
+Writing. In `sidecar_ring`, when an experience is in conflict (the same contradiction measure the
+attention stage uses: best untold share minus told share > 0.2, told concepts already having a view
+in that sense), the untold concepts that outweigh the told ones ring at a half turn (weight −share)
+instead of in step. Logged with their sign; reliving rebuilds them exactly.
+
+Pass criteria, `run_observer_signed.py`, seeds 61 and 62 (the attention world), ring + adaptation +
+signed vs ring + adaptation:
+1. right after a conflicting moment (told X, sounding like Y): Y stands out with support < −0.3 in
+   >= 5 of 6 conflicts; X stands out with support > +0.3 in >= 5 of 6;
+2. after correctly told moments: the told concept stands out with support > +0.3 in >= 14 of 16, and
+   no concept stands out with support < −0.3 (false contradictions) in >= 15 of 16;
+3. uninvolved familiar concepts do not stand out in >= 95% of readings;
+4. without signed writing, conflicting Y reads support > 0 (shows the change is what makes it negative);
+5. reliving exact (< 1e-9) on every moment, including half-turn rings.
+Gates: the recognition world (`run_observer_one_wave.py`, seeds 31-33, ring + adaptation) names as
+before (sight within 1 of 32 per seed, sound unchanged); the 400-lesson text life with the senses
+stack + signed keeps 145/148, 43/46, 0 wrong; the full suite passes.
+
+### Stage A, first run: the preregistered "stands out" rule failed (recorded as it happened)
+Signed writing worked: the conflicting concept read support −0.96 to −0.99 with signed writing and
++0.99 to +1.00 without (both seeds), and reliving stayed exact (2e-16). But NO concept stood out under
+the rule above, not even the one just told, so criteria 1-2 failed. Cause: a crowd rule (mean + 3 SD)
+cannot flag outliers in a ~14-concept world when two concepts are present, since they inflate the SD
+themselves. Replacement, fixed before re-running and not tuned on the values: a concept is **present**
+when its alignment exceeds 3 times what a random unrelated address gives in a field of D dimensions,
+|z| > 3/√D (D = 128: 0.265; for a random address |z|² averages 1/D, so exceeding 3 times that RMS
+happens about once in 8,000 readings, whatever the number of concepts). Criteria 1-5 unchanged otherwise.
+
+### Stage A, second run (chance floor) and a design finding
+Half-turn version, seeds 61 + 62: (1) conflicting concept contradicted 5/6, told concept agrees 5/6
+(pass); (2) after correct moments the told concept agrees 16/16, no false contradiction 16/16 (pass);
+(3) "uninvolved" concepts not present 93% / 91% (fail as written: every exception had been told 1-2
+moments earlier, so it really was still in the field; the criterion confused "not in this moment" with
+"absent"); (4) without signed writing the conflicting concept agrees 6/6 (pass); (5) replay exact (pass).
+
+Finding: writing the opposition at a half turn onto the concept's own address CANCELS its existing
+presence. In a unit test the conflicting concept's presence fell from 0.488 to 0.263 (below the floor,
+so the contradiction made itself invisible); the one miss in criterion 1 was the same effect. That
+violates "contradiction is carried, not erased". The soul equation already says how to carry it:
+U = (M + −M)^i: opposites summed cancel; the turn i keeps both.
+
+### Stage A.2 preregistration: unresolved conflict at a quarter turn, refutation at a half turn
+* An UNRESOLVED conflict (told X, sensed Y) rings Y a quarter turn off (weight i * share): held beside
+  Y's existing presence, not subtracted from it. The half turn is reserved for a SETTLED refutation
+  (Council, Stage D).
+* Reading: tension = Im z / |z| (signed; the sin part), support = Re z / |z| (the cos part).
+  Verdicts for present concepts: contradicted (support < −0.3), in tension (tension > 0.5),
+  agrees (support > 0.3), otherwise uncertain.
+Pass criteria (seeds 61, 62):
+1. conflicting Y present and in tension (tension > 0.5) in >= 5/6; Y's presence >= 0.9 x its presence
+   with in-step writing in >= 5/6 (carried, not erased); told X agrees in >= 5/6;
+2. after correct moments: told concept agrees in >= 14/16; no present concept in tension in >= 15/16;
+3. concepts not told in the last 4 moments are not present in >= 95% of readings;
+4. with in-step writing, Y's tension < 0.3 in >= 5/6;
+5. replay exact (< 1e-9) on every moment.
+
+### Stage A.2 results (quarter turn kept as the default for unresolved conflict)
+Reports `signedA2_seed{61,62}_{none,quarter}.json`.
+
+| criterion | result |
+|---|---|
+| 1a conflicting concept present and in tension | **6/6** (tension 0.82-0.99) pass |
+| 1b its presence >= 0.9 x in-step writing | **2/6, fail as written** (see below) |
+| 1c told concept agrees | 5/6 pass |
+| 2 correct moments: told agrees / no false tension | 16/16, 16/16 pass |
+| 3 not told in the last 4 moments: not present | 100%, 100% pass |
+| 4 in-step writing: no tension | 6/6 pass |
+| 5 replay exact | 2.5e-16 pass |
+
+1b compared against the wrong thing: writing in step adds straight onto a concept's presence and a
+quarter turn adds at right angles, so it can never reach in-step presence (|p + iw| < p + w). What
+the criterion meant to test, that the conflict is carried and not erased, is 1a: present 6/6 with
+the quarter turn, against 5/6 and a halved presence with the half turn. Recorded as a criterion error,
+not re-scored. Three of this stage's criteria were mis-specified (crowd floor, "uninvolved", 1b); the
+mechanism behaved as designed each time, and every correction is written above before its re-run.
+
+Gates: recognition world seeds 31-33 with ring + adaptation + quarter: organism sight naming 29, 27,
+25 of 32 and sound 32 of 32 (identical to without), priming identical, conflict verdicts identical;
+turned rings during each whole life: 1, 1, 0 (correct teaching rarely triggers the conflict rule).
+400-lesson text life with the senses stack + quarter: **145/148 kept, 43/46 promoted, 0 wrong**.
+
+Phase budget update: unresolved conflict now uses the quarter turn, the same turn `sidecar_wave`
+uses for a relation's target. The two are not combined yet; combining them requires removing the
+role turns per frame before reading tension (planned with Stage B's de-rotation).

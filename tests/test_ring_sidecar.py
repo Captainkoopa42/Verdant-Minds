@@ -184,3 +184,44 @@ def test_how_known_keeps_naming_apart_from_sensing(rung):
         sidecar_ring.uninstall_ring()
     assert a["named"] == 0 and a["sensed_told"] == {"visual": 4, "audio": 1} and a["knows_look_of"] == ["audio", "visual"]
     assert a["rung"].get("audio", 0) >= 1
+
+
+def _conflict_life(signed):
+    sidecar_ring.install_ring(adapt=True, signed=signed)
+    try:
+        rng = np.random.default_rng(4); sounds = {w: rng.normal(size=16) for w in "abcd"}
+        k = VerdantKernel(seed=5, state_dim=128, run_label="signed"); pipe = VerdantDevelopmentPipeline(); feats = {}
+        for e in range(4):
+            for w in "abcd":
+                f = sounds[w] + 0.1 * rng.normal(size=16); feats[f"l{w}{e}"] = f; pipe.advance(k, _cmd(f"l{w}{e}", "audio", f, (w,)))
+        f = sounds["b"] + 0.1 * rng.normal(size=16); feats["wrong"] = f
+        pipe.advance(k, _cmd("wrong", "audio", f, ("a",)))                      # told a, sounds like b
+        return k, sidecar_ring.read_stances(k), feats
+    finally:
+        sidecar_ring.uninstall_ring()
+
+
+def test_an_unresolved_conflict_is_held_in_tension_not_erased():
+    k, st, feats = _conflict_life("quarter")
+    rung = sidecar_ring.rings_of_frame(k, len(k.state.field.history) - 1)
+    assert [(k.state.concepts[c].label, isinstance(w, complex)) for c, w in rung.items()] == [("b", True)]
+    assert st["b"]["stands_out"] and st["b"]["verdict"] == "in tension" and st["a"]["verdict"] == "agrees"
+    for key, f in feats.items():                                                          # replay stays exact
+        assert np.max(np.abs(_experience_parts(k, relive(k, key)) - k._project_effect(k._validated_feature_array(f), "audio"))) < 1e-9
+
+
+def test_a_half_turn_cancels_what_is_there_which_is_why_it_is_kept_for_refutation():
+    _k, held, _f = _conflict_life("quarter"); _k2, opposed, _f2 = _conflict_life("half")
+    assert opposed["b"]["support"] < -0.3                                                  # it does read as contradicted
+    assert opposed["b"]["presence"] < held["b"]["presence"]                                # but at the cost of presence
+
+
+def test_without_signed_writing_the_conflict_reads_as_agreement():
+    _k, st, _f = _conflict_life(False)
+    assert st["b"]["stands_out"] and st["b"]["support"] > 0.3 and st["b"]["tension"] < 0.3
+
+
+def test_presence_floor_is_chance_based():
+    k, st, _f = _conflict_life("quarter")
+    floor = sidecar_ring.CHANCE_MULTIPLE / np.sqrt(k.state.field.state_dim)
+    assert all(v["stands_out"] == (v["presence"] > floor) for v in st.values())

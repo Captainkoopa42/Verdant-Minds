@@ -35,7 +35,8 @@ import numpy as np
 RING_SHARE = 0.25
 RING_UNKNOWN = 0.5
 RING_MAX = 2
-_SETTINGS = {"adapt": False}
+_SETTINGS = {"adapt": False, "signed": False}
+CONFLICT_LINE = 0.2      # the contradiction measure above which an experience counts as a conflict
 VIEW_PREFIX = "view::"
 _ORIGINAL: dict = {}
 
@@ -78,13 +79,13 @@ def _sense_mean(kernel, modality):
     return None if tot is None else tot / n
 
 
-def rings_of_frame(kernel, index: int) -> dict[str, float]:
-    """concept_id -> ring weight for one field-history frame (empty if nothing rang)."""
+def rings_of_frame(kernel, index: int) -> dict:
+    """concept_id -> ring weight for one field-history frame (real, or complex for a turned ring)."""
     out = {}
     for cid, c in kernel.state.concepts.items():
         w = c.attributes.get("rings", {}).get(str(index))
         if w is not None:
-            out[cid] = float(w)
+            out[cid] = complex(w["re"], w["im"]) if isinstance(w, dict) else float(w)
     return out
 
 
@@ -114,6 +115,11 @@ def _ring_apply_field_effect(self, features, modality, *, caused_by_refs, bound_
     self._ring_last_reading = {"index": len(self.state.field.history), "modality": modality, "shares": shares,
                                "unknown": unknown, "told": told, "had_views": bool(_views(self, modality)[0])}
     ring = [(cid, s) for cid, s in shares[:RING_MAX] if s >= RING_SHARE and cid not in told] if unknown <= RING_UNKNOWN else []
+    if _SETTINGS["signed"] and told:
+        contradiction, told_share = conflict_of(self, shares, told, modality)
+        if contradiction > CONFLICT_LINE:              # told X, but it is Y: Y is written opposed, at a half turn
+            turn = 1j if _SETTINGS["signed"] == "quarter" else -1.0
+            ring = [(cid, turn * s if s > told_share else s) for cid, s in ring]
     index = len(self.state.field.history)
     for cid, _w in ring:
         self._ensure_field_address(cid)
@@ -124,7 +130,7 @@ def _ring_apply_field_effect(self, features, modality, *, caused_by_refs, bound_
         self._ring_pending = None
     for cid, w in ring:
         a = self.state.concepts[cid].attributes
-        _set(self, cid, rings={**a.get("rings", {}), str(index): float(w)},
+        _set(self, cid, rings={**a.get("rings", {}), str(index): (float(w) if not np.iscomplexobj(w) else {"re": float(np.real(w)), "im": float(np.imag(w))})},
              ring_disagreements=int(a.get("ring_disagreements", 0)) + (1 if told else 0))
     for cid in told:                                           # the told concept's view through this sense
         a = self.state.concepts[cid].attributes.get(VIEW_PREFIX + modality)
@@ -162,10 +168,12 @@ def _ring_inspect_resonance(self, features, modality, **kwargs):
         self._ring_query_modality = None; self._ring_query = None
 
 
-def install_ring(*, adapt: bool = False) -> None:
-    """adapt=True: the resonance profile term compares view and input relative to the sense's usual wave."""
+def install_ring(*, adapt: bool = False, signed: bool = False) -> None:
+    """adapt=True: the resonance profile term compares view and input relative to the sense's usual wave.
+    signed: in a conflicting experience, what outweighs the told rings turned: "quarter" (unresolved conflict,
+    held beside the concept, roadmap Stage A.2) or True / "half" (opposed, which cancels existing presence)."""
     from verdant_kernel import VerdantKernel
-    _SETTINGS["adapt"] = adapt
+    _SETTINGS["adapt"] = adapt; _SETTINGS["signed"] = signed
     if _ORIGINAL:
         return
     for name, fn in (("_apply_field_effect", _ring_apply_field_effect), ("_concept_binding_effect", _ring_binding_effect),
@@ -280,15 +288,22 @@ def uninstall_inferred_association() -> None:
 _ATTN: dict = {}
 
 
+def conflict_of(kernel, shares, told, modality) -> tuple[float, float]:
+    """(contradiction, told share): how much an untold concept explains beyond the told ones, counted only
+    when the told concepts already have a view in this sense (otherwise it is a first meeting, not a conflict)."""
+    told_share = sum(s for c, s in shares if c in told)
+    others = [s for c, s in shares if c not in told]
+    told_have_views = any(VIEW_PREFIX + modality in kernel.state.concepts[c].attributes and
+                          kernel.state.concepts[c].attributes[VIEW_PREFIX + modality]["count"] > 1 for c in told if c in kernel.state.concepts)
+    contradiction = max(0.0, (max(others) if others else 0.0) - told_share) if (told and told_have_views) else 0.0
+    return contradiction, told_share
+
+
 def measured_signals(kernel):
     r = getattr(kernel, "_ring_last_reading", None)
     if not r or r["index"] != len(kernel.state.field.history) - 1:
         return None
-    told_share = sum(s for c, s in r["shares"] if c in r["told"])
-    others = [s for c, s in r["shares"] if c not in r["told"]]
-    told_have_views = any(VIEW_PREFIX + r["modality"] in kernel.state.concepts[c].attributes and
-                          kernel.state.concepts[c].attributes[VIEW_PREFIX + r["modality"]]["count"] > 1 for c in r["told"])
-    contradiction = max(0.0, (max(others) if others else 0.0) - told_share) if (r["told"] and told_have_views) else 0.0
+    contradiction, told_share = conflict_of(kernel, r["shares"], r["told"], r["modality"])
     novelty = float(min(1.0, max(0.0, r["unknown"]))) if r["had_views"] else 1.0
     return {"novelty": novelty, "contradiction_pressure": float(min(1.0, contradiction)), "told_share": told_share, "reading": r}
 
@@ -385,3 +400,34 @@ def uninstall_moment_carry() -> None:
     import verdant_development.pipeline as dev
     if _MOMENT:
         dev.VerdantDevelopmentPipeline._workspace_candidates = _MOMENT.pop("orig")
+
+
+# --- 9. Signed reading (roadmap Stage A, from the 2024 resonance equation) ---------------------------
+# Stock resonance reads |<a, F>|, so a concept written at a half turn reads like one written in step.
+# Read the two parts separately, as R = W cos(theta) + eta sin(theta) did:
+#   presence    = |z|                 how much the concept is in the field (the stock reading)
+#   support     = Re z / |z|          +1 agrees (in step), -1 contradicted (half turn)
+#   uncertainty = |Im z| / |z|        turned away for no known reason
+# Support only means something for a concept that is PRESENT: alignment above 3 times what a random
+# unrelated address gives in a field of D dimensions (|z| > 3/sqrt(D); a crowd rule, mean + 3 SD, was
+# tried first and failed: in small worlds the present concepts inflate the SD themselves). For the rest
+# z is noise and its sign is random: they are "unrelated".
+CHANCE_MULTIPLE = 3.0
+
+
+def read_stances(kernel, field: np.ndarray | None = None) -> dict[str, dict]:
+    """label -> presence, stands_out, support, uncertainty, verdict (agrees / contradicted / unrelated)."""
+    state = kernel.state
+    F = field if field is not None else np.asarray(state.field.real) + 1j * np.asarray(state.field.imag)
+    ids = [c for c in state.concepts if c in state.field_addresses]
+    z = np.array([np.vdot(kernel._address_array(state.field_addresses[c]), F) for c in ids])
+    pres = np.abs(z); floor = CHANCE_MULTIPLE / np.sqrt(len(F))
+    out = {}
+    for c, zz, p in zip(ids, z, pres):
+        stands = p > floor
+        support = float(zz.real / p) if p > 0 else 0.0
+        tension = float(zz.imag / p) if p > 0 else 0.0
+        verdict = ("contradicted" if support < -0.3 else "in tension" if tension > 0.5 else "agrees" if support > 0.3 else "uncertain") if stands else "unrelated"
+        out[state.concepts[c].label] = {"presence": float(p), "stands_out": bool(stands), "support": support,
+                                        "tension": tension, "uncertainty": abs(tension), "verdict": verdict}
+    return out

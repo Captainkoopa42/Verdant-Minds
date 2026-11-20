@@ -148,6 +148,8 @@ def checkpoint_score(kernel, expectations: dict, lesson: int) -> dict:
 
 READER = {"on": False}
 SENSES = {"on": False}
+COUNCIL = {"mode": None}            # sidecar_council: None = the runner's own clock (as before); clock | ready | steady
+INQUIRY = {"on": False}             # sidecar_inquiry: open questions watched in shadow (read-only)
 
 
 def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed: int, checkpoint_every: int,
@@ -164,6 +166,13 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
     if done_path.exists():
         print(f"[{arm}] already finished ({done_path.name})"); return
     pipeline, structures = build_pipeline(arm)
+    if COUNCIL["mode"]:
+        from sidecar_council import ConveningDevelopmentPipeline
+        pipeline = ConveningDevelopmentPipeline(pipeline, structures, mode=COUNCIL["mode"], limit=max_promotions,
+                                                every=promote_every, reify=arm == "whole")
+    if INQUIRY["on"]:
+        from sidecar_inquiry import InquiringDevelopmentPipeline
+        pipeline = InquiringDevelopmentPipeline(pipeline, authority=INQUIRY.get("authority"))
     if state_path.exists():
         kernel = VerdantKernel.from_state(KernelState.model_validate_json(state_path.read_text(encoding="utf-8")))
         print(f"[{arm}] resuming at lesson {len(kernel.state.processed_event_keys)}", flush=True)
@@ -177,7 +186,9 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
     window = time.perf_counter(); began = window; promoted_window = 0; refusals: list[str] = []
     for lesson in range(start + 1, total + 1):
         pipeline.advance(kernel, commands[lesson - 1])
-        if lesson % promote_every == 0:
+        if COUNCIL["mode"]:
+            promoted_window += pipeline.promoted_last
+        elif lesson % promote_every == 0:
             count, refused = promote_eligible(kernel, structures, max_promotions, reify=arm == "whole"); promoted_window += count; refusals += refused
         if lesson % checkpoint_every == 0 or lesson == total:
             now = time.perf_counter(); beats = (lesson - 1) % checkpoint_every + 1 if lesson == total and lesson % checkpoint_every else checkpoint_every
@@ -194,6 +205,13 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
             inner = getattr(pipeline, "inner", pipeline)
             if hasattr(inner, "surprise_log"):
                 row["surprise"] = inner.surprise_log[-checkpoint_every:]
+            if INQUIRY["on"]:
+                row["inquiry"] = pipeline.shadow.summary(kernel, expectations)
+            if COUNCIL["mode"]:
+                lags = pipeline.log.lags()
+                row["council"] = {"mode": COUNCIL["mode"], "sittings": pipeline.log.sittings, "promoted": len(lags),
+                                  "lag_mean": round(sum(lags) / len(lags), 2) if lags else None, "lag_max": max(lags, default=None),
+                                  "refusals": pipeline.log.refusals[-3:]}
             if hasattr(pipeline, "reports"):
                 row["rehearsal_beats_committed"] = sum(r.committed for r in pipeline.reports)
             with log_path.open("a", encoding="utf-8") as handle:
@@ -221,6 +239,11 @@ def main() -> None:
     parser.add_argument("--max-promotions", type=int, default=4)
     parser.add_argument("--stop-after", type=int, default=None, help="Stop each arm at this lesson (it stays resumable).")
     parser.add_argument("--no-accelerate", action="store_true", help="Run without the byte-exact long-life accelerators.")
+    parser.add_argument("--council", default=None, choices=("clock", "ready", "steady"),
+                        help="sidecar_council: who decides when the Council sits (default: the runner's clock, as before).")
+    parser.add_argument("--inquiry", action="store_true", help="sidecar_inquiry: open questions watched in shadow (read-only).")
+    parser.add_argument("--inquiry-authority", default=None, choices=("sleep",),
+                        help="FORK ONLY: stalled cohesion questions direct what sleep rehearses.")
     parser.add_argument("--reader", action="store_true", help="sidecar_reader: words seen separately (field unchanged).")
     parser.add_argument("--senses", action="store_true", help="sidecar_ring stack: per-sense views, ringing, adaptation, carry one experience, reminding, measured attention.")
     parser.add_argument("--senses-without", default="", help="comma list of parts to leave out of --senses: moment, remind, attention")
@@ -234,7 +257,7 @@ def main() -> None:
         if not args.pack.exists():
             write(args.lessons, args.life_seed, args.out_dir); print(f"generated {args.pack.name}")
     expect_path = args.pack.with_name(args.pack.stem + ".expectations.json")
-    READER["on"] = args.reader
+    READER["on"] = args.reader; COUNCIL["mode"] = args.council; INQUIRY["on"] = args.inquiry or bool(args.inquiry_authority); INQUIRY["authority"] = args.inquiry_authority
     if args.senses:
         import sidecar_ring as ring
         leave = set(filter(None, args.senses_without.split(",")))

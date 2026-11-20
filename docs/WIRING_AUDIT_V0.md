@@ -84,3 +84,10 @@ correct-answer transfer was falsified, and the line was paused.
 Expected risk: steps 2-3 change what a life learns (that is the point); the 400-lesson gate
 measures whether old results hold, and new tests must show the stages fire for the right
 reasons, never on noise.
+
+## Progress (2026-11-20)
+* Step 1, the Council convenes itself: built (`sidecar_council`, `--council ready|steady|clock`),
+  passes on lives 9001 and 4242; see `SELF_CONVENING_COUNCIL_V0.md`.
+* Step 6, obligations read-only: built as `sidecar_inquiry` (substrate detectors via `inspect`
+  plus a developmental bridge), proved read-only over a whole life; a forked organism where
+  stalled questions direct sleep improves both lives; see `OPEN_QUESTIONS_SHADOW_V0.md`.

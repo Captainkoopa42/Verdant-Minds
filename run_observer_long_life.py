@@ -79,7 +79,7 @@ def build_pipeline(arm: str):
         pipeline = VerdantDevelopmentPipeline(**stages)
     if arm == "full":
         from sidecar_rehearsal import RehearsalConfig, RehearsingDevelopmentPipeline
-        pipeline = RehearsingDevelopmentPipeline(pipeline, RehearsalConfig(min_real_exposures=1))
+        pipeline = RehearsingDevelopmentPipeline(pipeline, RehearsalConfig(min_real_exposures=1, horizon_experiences=HORIZON["experiences"]))
     return pipeline, structures
 
 
@@ -153,7 +153,8 @@ SENSES = {"on": False}
 COUNCIL = {"mode": None}            # sidecar_council: None = the runner's own clock (as before); clock | ready | steady
 INQUIRY = {"on": False}
 HEAT = {"mode": None}
-GEAR = {"mode": None}               # sidecar_gear: None | watch | drive (fork only)               # sidecar_heat: None | watch | revise (fork only)             # sidecar_inquiry: open questions watched in shadow (read-only)
+GEAR = {"mode": None}
+HORIZON = {"experiences": None}     # sleep's horizon in real experiences instead of kernel cycles (None = cycles, as before)               # sidecar_gear: None | watch | drive (fork only)               # sidecar_heat: None | watch | revise (fork only)             # sidecar_inquiry: open questions watched in shadow (read-only)
 
 
 def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed: int, checkpoint_every: int,
@@ -270,6 +271,8 @@ def main() -> None:
     parser.add_argument("--no-accelerate", action="store_true", help="Run without the byte-exact long-life accelerators.")
     parser.add_argument("--council", default=None, choices=("clock", "ready", "steady"),
                         help="sidecar_council: who decides when the Council sits (default: the runner's clock, as before).")
+    parser.add_argument("--horizon-experiences", type=int, default=None,
+                        help="count sleep's horizon in real experiences (76 = the stock 400 cycles at ~5.3 cycles per experience).")
     parser.add_argument("--gear", default=None, choices=("watch", "drive"),
                         help="sidecar_gear: temperature vs drifting Tg (watch), or, FORK ONLY, sleep and Council holds driven by it (drive).")
     parser.add_argument("--heat", default=None, choices=("watch", "revise"),
@@ -290,7 +293,7 @@ def main() -> None:
         if not args.pack.exists():
             write(args.lessons, args.life_seed, args.out_dir); print(f"generated {args.pack.name}")
     expect_path = args.pack.with_name(args.pack.stem + ".expectations.json")
-    READER["on"] = args.reader; COUNCIL["mode"] = args.council; INQUIRY["on"] = args.inquiry or bool(args.inquiry_authority); INQUIRY["authority"] = args.inquiry_authority; HEAT["mode"] = args.heat; GEAR["mode"] = args.gear
+    READER["on"] = args.reader; COUNCIL["mode"] = args.council; INQUIRY["on"] = args.inquiry or bool(args.inquiry_authority); INQUIRY["authority"] = args.inquiry_authority; HEAT["mode"] = args.heat; GEAR["mode"] = args.gear; HORIZON["experiences"] = args.horizon_experiences
     if args.senses:
         import sidecar_ring as ring
         leave = set(filter(None, args.senses_without.split(",")))

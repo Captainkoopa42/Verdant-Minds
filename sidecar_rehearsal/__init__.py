@@ -52,6 +52,10 @@ class RehearsalConfig:
     min_real_exposures: int = 2         # real exposures a bond needs before it may be rehearsed
     refresh_below: float = 0.26         # only bonds weaker than this are refreshed
     horizon_cycles: int = 400           # stop rehearsing what has not really recurred for this long
+    horizon_experiences: int | None = None   # if set, the horizon is counted in real experiences instead of kernel
+                                             # cycles, so internal operations (Council sittings, structural
+                                             # challenges, refolds) cannot shorten memory. 76 = 400 cycles at the
+                                             # ~5.3 cycles a real experience takes: the same span, a different clock.
     resource_request: float = 0.15
     evidence_grounding: float = 1.0
     relevance: float = 0.90
@@ -112,11 +116,19 @@ class VerdantRehearsalPipeline:
         one item re-presents one remembered experience.
         """
         s = kernel.state; cfg = self.config; groups: dict[str, list] = {}
+        order = None
+        if cfg.horizon_experiences is not None:
+            order = {key: i for i, key in enumerate(s.processed_event_keys)}; now = len(order)
         for bond in s.plasticity_associations.values():
             if bond.strength >= cfg.refresh_below:
                 continue
             count, cycle, latest = self._real_exposures(kernel, bond)
-            if latest is None or count < cfg.min_real_exposures or s.cycle - cycle > cfg.horizon_cycles:
+            if latest is None or count < cfg.min_real_exposures:
+                continue
+            if order is None:
+                if s.cycle - cycle > cfg.horizon_cycles:
+                    continue
+            elif now - order.get(s.evidence[latest].event_key, -10 ** 9) > cfg.horizon_experiences:
                 continue
             groups.setdefault(latest, []).append((count, cycle, bond))
         rows = []

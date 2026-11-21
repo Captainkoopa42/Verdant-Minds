@@ -90,3 +90,15 @@ def test_sleep_uses_the_waking_plasticity_stage_so_the_bond_clock_pauses():
     assert committed
     sleeps = [e for e in kernel.state.plasticity_events if "suspended=1" in e.report.operation]
     assert len(sleeps) == len(committed)                      # every committed sleep beat paused the clock
+
+
+def test_horizon_in_experiences_counts_real_experiences_only():
+    kernel = _run(VerdantDevelopmentPipeline(), _lessons())
+    wide_cycles = VerdantRehearsalPipeline(RehearsalConfig(min_real_exposures=1, refresh_below=1.0, horizon_cycles=10 ** 6)).select(kernel)
+    wide_exps = VerdantRehearsalPipeline(RehearsalConfig(min_real_exposures=1, refresh_below=1.0, horizon_experiences=10 ** 6)).select(kernel)
+    assert wide_exps == wide_cycles
+    narrow = VerdantRehearsalPipeline(RehearsalConfig(min_real_exposures=1, refresh_below=1.0, horizon_experiences=0)).select(kernel)
+    last_key = list(kernel.state.processed_event_keys)[-1]
+    assert all(kernel.state.evidence[e].event_key == last_key for e, _, _ in narrow)
+    kernel.state.cycle += 10 ** 6                      # kernel bookkeeping advancing the clock does not shorten it
+    assert VerdantRehearsalPipeline(RehearsalConfig(min_real_exposures=1, refresh_below=1.0, horizon_experiences=10 ** 6)).select(kernel) == wide_exps

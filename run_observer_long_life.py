@@ -154,7 +154,8 @@ COUNCIL = {"mode": None}            # sidecar_council: None = the runner's own c
 INQUIRY = {"on": False}
 HEAT = {"mode": None}
 GEAR = {"mode": None}
-HORIZON = {"experiences": None}     # sleep's horizon in real experiences instead of kernel cycles (None = cycles, as before)               # sidecar_gear: None | watch | drive (fork only)               # sidecar_heat: None | watch | revise (fork only)             # sidecar_inquiry: open questions watched in shadow (read-only)
+HORIZON = {"experiences": None}
+ORGANISM = {"parts": None}          # verdant_organism: the folded-in organism replaces every stage flag above     # sleep's horizon in real experiences instead of kernel cycles (None = cycles, as before)               # sidecar_gear: None | watch | drive (fork only)               # sidecar_heat: None | watch | revise (fork only)             # sidecar_inquiry: open questions watched in shadow (read-only)
 
 
 def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed: int, checkpoint_every: int,
@@ -170,18 +171,30 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
     done_path = out_dir / f"{stem}__{arm}.done.json"
     if done_path.exists():
         print(f"[{arm}] already finished ({done_path.name})"); return
-    pipeline, structures = build_pipeline(arm)
-    if GEAR["mode"]:
+    if ORGANISM["parts"] is not None:
+        from verdant_organism import Organism
+        organism = Organism(ORGANISM["parts"]); pipeline, structures = organism.pipeline, organism.structures
+    else:
+        pipeline, structures = build_pipeline(arm)
+    if ORGANISM["parts"] is not None:
+        pass
+    elif GEAR["mode"]:
         from sidecar_gear import GearPipeline
         pipeline = GearPipeline(pipeline, mode=GEAR["mode"])
-    if COUNCIL["mode"]:
+    if ORGANISM["parts"] is not None:
+        pass
+    elif COUNCIL["mode"]:
         from sidecar_council import ConveningDevelopmentPipeline
         pipeline = ConveningDevelopmentPipeline(pipeline, structures, mode=COUNCIL["mode"], limit=max_promotions,
                                                 every=promote_every, reify=arm == "whole")
-    if HEAT["mode"]:
+    if ORGANISM["parts"] is not None:
+        pass
+    elif HEAT["mode"]:
         from sidecar_heat import HeatDevelopmentPipeline
         pipeline = HeatDevelopmentPipeline(pipeline, mode=HEAT["mode"])
-    if INQUIRY["on"]:
+    if ORGANISM["parts"] is not None:
+        pass
+    elif INQUIRY["on"]:
         from sidecar_inquiry import InquiringDevelopmentPipeline
         pipeline = InquiringDevelopmentPipeline(pipeline, authority=INQUIRY.get("authority"))
     if state_path.exists():
@@ -197,7 +210,9 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
     window = time.perf_counter(); began = window; promoted_window = 0; refusals: list[str] = []
     for lesson in range(start + 1, total + 1):
         pipeline.advance(kernel, commands[lesson - 1])
-        if COUNCIL["mode"]:
+        if ORGANISM["parts"] is not None and ORGANISM["parts"].council:
+            promoted_window += organism.layer("ConveningDevelopmentPipeline").promoted_last
+        elif COUNCIL["mode"]:
             promoted_window += pipeline.promoted_last
         elif lesson % promote_every == 0:
             count, refused = promote_eligible(kernel, structures, max_promotions, reify=arm == "whole"); promoted_window += count; refusals += refused
@@ -226,13 +241,17 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
                 row["changing_world"] = score_changing_world(kernel, expectations, heat_log, lesson)
                 if kernel.fingerprint() != fingerprint:
                     raise RuntimeError("Changing-world scoring changed canonical state.")
-            if GEAR["mode"]:
+            if ORGANISM["parts"] is not None:
+                row["organism"] = organism.report(); row["organism"]["questions"].pop("by_group", None) if "questions" in row["organism"] else None
+                if organism.layer("InquiringDevelopmentPipeline") is not None:
+                    row["inquiry"] = organism.layer("InquiringDevelopmentPipeline").shadow.summary(kernel, expectations)
+            elif GEAR["mode"]:
                 node = pipeline
                 while type(node).__name__ != "GearPipeline":
                     node = node.__dict__["inner"]
                 row["gear"] = node.summary(); gear_rows = node.gear_log.rows
                 row["gear_trace"] = gear_rows[-checkpoint_every:]
-            if INQUIRY["on"]:
+            if INQUIRY["on"] and ORGANISM["parts"] is None:
                 row["inquiry"] = pipeline.shadow.summary(kernel, expectations)
             if COUNCIL["mode"]:
                 council = pipeline
@@ -271,6 +290,9 @@ def main() -> None:
     parser.add_argument("--no-accelerate", action="store_true", help="Run without the byte-exact long-life accelerators.")
     parser.add_argument("--council", default=None, choices=("clock", "ready", "steady"),
                         help="sidecar_council: who decides when the Council sits (default: the runner's clock, as before).")
+    parser.add_argument("--organism", default=None, choices=("default", "lean", "everything"),
+                        help="grow the folded-in verdant_organism (default = every validated part; lean = without the senses/wave/profiles/stance/reader/ear patches); other stage flags are ignored.")
+    parser.add_argument("--organism-with", default="", help="candidate parts to add to --organism default, comma list: senses,fine_ear,reader,wave_fold,profiles,stance")
     parser.add_argument("--horizon-experiences", type=int, default=None,
                         help="count sleep's horizon in real experiences (76 = the stock 400 cycles at ~5.3 cycles per experience).")
     parser.add_argument("--gear", default=None, choices=("watch", "drive"),
@@ -294,6 +316,13 @@ def main() -> None:
             write(args.lessons, args.life_seed, args.out_dir); print(f"generated {args.pack.name}")
     expect_path = args.pack.with_name(args.pack.stem + ".expectations.json")
     READER["on"] = args.reader; COUNCIL["mode"] = args.council; INQUIRY["on"] = args.inquiry or bool(args.inquiry_authority); INQUIRY["authority"] = args.inquiry_authority; HEAT["mode"] = args.heat; GEAR["mode"] = args.gear; HORIZON["experiences"] = args.horizon_experiences
+    if args.organism:
+        from verdant_organism import Parts
+        ORGANISM["parts"] = {"default": Parts(), "lean": Parts().lean(), "everything": Parts().everything()}[args.organism]
+        if args.organism_with:
+            import dataclasses
+            ORGANISM["parts"] = dataclasses.replace(ORGANISM["parts"], **{k: True for k in args.organism_with.split(",") if k})
+        READER["on"] = ORGANISM["parts"].reader          # the reader also needs each lesson's words handed in
     if args.senses:
         import sidecar_ring as ring
         leave = set(filter(None, args.senses_without.split(",")))

@@ -66,3 +66,18 @@ def test_revise_is_deterministic():
 def test_bad_mode_refused():
     with pytest.raises(ValueError):
         HeatDevelopmentPipeline(None, mode="melt")
+
+
+def test_a_member_that_keeps_coming_back_is_never_revised_away():
+    partial = ("alef", "bet", "gimel")
+    lessons = ([_cmd(i, OLD if i % 2 == 0 else OTHER, f"ctx{i % 3}") for i in range(10)]
+               + [_cmd(i, (OLD if (i // 2) % 2 == 0 else partial) if i % 2 == 0 else OTHER, f"ctx{i % 3}") for i in range(10, 34)])
+    kernel = VerdantKernel(seed=11, state_dim=32, run_label="heat-test")
+    pipe = HeatDevelopmentPipeline(ConveningDevelopmentPipeline(VerdantDevelopmentPipeline(), VerdantStructurePipeline(), mode="ready"),
+                                   mode="revise")
+    for lesson in lessons:
+        pipe.advance(kernel, lesson)
+    groups, _ = _by_labels(kernel)
+    old = next(sid for sid, m in groups.items() if m == frozenset(OLD))
+    assert kernel.structure_is_available(old) and not any(r[2] == "revise" for r in pipe.heat_log.refolds)
+    assert pipe.heat_log.voided >= 1                   # its absences were voided by its returns

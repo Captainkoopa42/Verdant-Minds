@@ -52,11 +52,16 @@ def _quality_dict(candidate) -> dict[str, float]:
 
 
 class CultivationSession:
-    def __init__(self, kernel: VerdantKernel, checkpoint_path: Path) -> None:
+    def __init__(self, kernel: VerdantKernel, checkpoint_path: Path, organism=None) -> None:
         self.kernel = kernel
         self.checkpoint_path = checkpoint_path
-        self.development = VerdantDevelopmentPipeline()
-        self.structures = VerdantStructurePipeline()
+        self.organism = organism
+        if organism is not None:                         # verdant_organism: the folded-in organism runs the heartbeat
+            self.development = organism.pipeline
+            self.structures = organism.structures
+        else:                                            # --stock: the original Milestone 18 heartbeat
+            self.development = VerdantDevelopmentPipeline()
+            self.structures = VerdantStructurePipeline()
         self.compilation = VerdantCompilationPipeline()
         self.interaction = VerdantStructureInteractionPipeline()
         self.hierarchy = VerdantHierarchyPipeline()
@@ -748,6 +753,8 @@ def main() -> int:
     parser.add_argument("--script", type=Path, help="run JSONL cultivation events before interactive mode")
     parser.add_argument("--non-interactive", action="store_true")
     parser.add_argument("--seed", type=int, default=7741)
+    parser.add_argument("--stock", action="store_true",
+                        help="use the original stock heartbeat instead of the folded-in verdant_organism")
     parser.add_argument("--state-dim", type=int, default=128)
     args = parser.parse_args()
 
@@ -762,7 +769,12 @@ def main() -> int:
             run_label="cultivation-runner-m18",
         )
         print("Started clean Verdant cultivation kernel.")
-    session = CultivationSession(kernel, checkpoint_path)
+    organism = None
+    if not args.stock:
+        from verdant_organism import Organism, Parts
+        organism = Organism(Parts())
+        print("Heartbeat: verdant_organism (every validated part; --stock for the original heartbeat).")
+    session = CultivationSession(kernel, checkpoint_path, organism=organism)
 
     if args.script:
         session.run_jsonl(args.script)

@@ -22,10 +22,13 @@ Where the heat sits. For each member m, ``drift(m) = 1 - mean strength of m's bo
 strength of the bonds not touching m`` (clipped to [0, 1]). The member the rest are leaving
 has the largest drift.
 
-``revise`` mode (fork only): after each real experience that recruits a promoted structure
-(at least half its members present) while one member is absent, the absent member's bonds to
-the present members are challenged through ``record_structural_challenge``, with that
-experience's evidence and confidence = drift(m). Milestone 18 decides when the challenges are
+``revise`` mode: after each real experience that recruits a promoted structure (at least half
+its members present) while one member is absent, an observation against each of the absent
+member's bonds to the present members waits beside the organism, with that experience's
+evidence and confidence = drift(m). A later experience that shows the member together with the
+rest voids its waiting observations (it has not left). Only an unbroken run of absences strong
+enough for M18 (its own policy) is recorded through ``record_structural_challenge``, one
+canonical challenge per waiting observation, each with its own evidence. Milestone 18 decides when the challenges are
 mature (its own policy: >= 2 observations, combined confidence >= 0.75), what the outcome is
 (stable / revise / split / unresolved), and the Council commits; the parent is preserved,
 never erased. Confidence is the heat itself: a member that merely went unmentioned while its
@@ -84,6 +87,7 @@ class HeatLog:
     challenges: list = field(default_factory=list)     # (experience, structure_id, departed label id, confidence)
     refolds: list = field(default_factory=list)        # (experience, structure_id, disposition, produced ids)
     refusals: list = field(default_factory=list)
+    voided: int = 0                                    # waiting challenge observations voided by a fresh sighting
 
 
 class HeatDevelopmentPipeline:
@@ -93,7 +97,7 @@ class HeatDevelopmentPipeline:
         if mode not in ("watch", "revise"):
             raise ValueError("mode must be 'watch' or 'revise'")
         self.inner, self.mode = inner, mode
-        self.heat_log = HeatLog(); self.pending: set[str] = set()
+        self.heat_log = HeatLog(); self.pending: set[str] = set(); self.waiting: dict = {}
         if mode == "revise":
             if departure_aware:
                 self.refolding = departure_aware_refolding()
@@ -134,12 +138,18 @@ class HeatDevelopmentPipeline:
         present, evidence = self._experience_concepts(kernel, command)
         if not present or not evidence:
             return
-        touched = []
+        touched = []; policy = kernel.state.refolding_policy
         for sid, s in sorted(kernel.state.structures.items()):
             if not _available(kernel, sid):
                 continue
             members = set(s.member_concept_ids); here = members & present; absent = members - present
-            if len(here) * 2 < len(members) or not absent:
+            if len(here) * 2 < len(members):
+                continue
+            # a member seen again together with the rest has not left: its waiting challenges are void
+            for m in sorted(here):
+                for key in [k for k in self.waiting if k[0] == sid and k[2] == m]:
+                    self.heat_log.voided += len(self.waiting.pop(key))
+            if not absent:
                 continue
             d = drift(kernel, s)
             for m in sorted(absent):
@@ -147,18 +157,26 @@ class HeatDevelopmentPipeline:
                 if conf <= 0.0:
                     continue
                 for e in s.internal_edge_snapshots:
-                    pair = tuple(e.concept_ids)
-                    if m in pair and (set(pair) - {m}) <= here:
-                        existing = kernel.state.structural_challenges.get(stable_id("structural_challenge", sid, tuple(sorted(pair))))
-                        policy = kernel.state.refolding_policy
-                        if existing is not None and len(existing.observations) >= policy.minimum_challenge_events \
-                                and existing.combined_confidence >= policy.minimum_combined_confidence:
-                            continue                     # already mature: every record costs the organism a cycle
-                        try:
-                            self.refolding.challenge(kernel, sid, pair, evidence_refs=evidence, confidence=conf)
-                            self.heat_log.challenges.append((n, sid, m, conf)); touched.append(sid)
-                        except Exception as exc:
-                            self.heat_log.refusals.append(f"{n} challenge: {type(exc).__name__}: {str(exc)[:80]}")
+                    pair = tuple(sorted(e.concept_ids))
+                    if m not in pair or not (set(pair) - {m}) <= here:
+                        continue
+                    existing = kernel.state.structural_challenges.get(stable_id("structural_challenge", sid, pair))
+                    if existing is not None and len(existing.observations) >= policy.minimum_challenge_events \
+                            and existing.combined_confidence >= policy.minimum_combined_confidence:
+                        continue                         # already mature in the kernel
+                    queue = self.waiting.setdefault((sid, pair, m), [])
+                    queue.append((evidence, conf))
+                    remaining = 1.0
+                    for _, c in queue:
+                        remaining *= 1.0 - c
+                    if len(queue) >= policy.minimum_challenge_events and 1.0 - remaining >= policy.minimum_combined_confidence:
+                        # an unbroken run of absences, strong enough for M18: now it becomes canonical evidence
+                        for ev, c in self.waiting.pop((sid, pair, m)):
+                            try:
+                                self.refolding.challenge(kernel, sid, pair, evidence_refs=ev, confidence=c)
+                                self.heat_log.challenges.append((n, sid, m, c)); touched.append(sid)
+                            except Exception as exc:
+                                self.heat_log.refusals.append(f"{n} challenge: {type(exc).__name__}: {str(exc)[:80]}")
         self.pending.update(touched)
         in_mind = {item.source_ref for item in kernel.state.workspace_items.values()
                    if item.source_kind.value == "earned_structure"}

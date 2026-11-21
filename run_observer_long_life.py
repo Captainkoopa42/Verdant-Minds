@@ -121,6 +121,8 @@ def checkpoint_score(kernel, expectations: dict, lesson: int) -> dict:
     promoted = [frozenset(label_of[m] for m in unfold(kernel, s.member_concept_ids)) for s in state.structures.values()]
     should_pass = {frozenset(f["members"]) for f in expectations["families"]
                    if f["expectation"].get("exact_candidate_promotion_eligible") is True}
+    should_pass |= {frozenset(f["revision"]["allowed_revision"]) for f in expectations["families"]
+                    if f.get("revision", {}).get("allowed_revision")}      # a correct Milestone 18 revision is not a wrong promotion
     groups: dict[str, collections.Counter] = collections.OrderedDict()
     for family in expectations["families"]:
         if family["last_lesson"] > lesson:
@@ -149,7 +151,9 @@ def checkpoint_score(kernel, expectations: dict, lesson: int) -> dict:
 READER = {"on": False}
 SENSES = {"on": False}
 COUNCIL = {"mode": None}            # sidecar_council: None = the runner's own clock (as before); clock | ready | steady
-INQUIRY = {"on": False}             # sidecar_inquiry: open questions watched in shadow (read-only)
+INQUIRY = {"on": False}
+HEAT = {"mode": None}
+GEAR = {"mode": None}               # sidecar_gear: None | watch | drive (fork only)               # sidecar_heat: None | watch | revise (fork only)             # sidecar_inquiry: open questions watched in shadow (read-only)
 
 
 def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed: int, checkpoint_every: int,
@@ -166,10 +170,16 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
     if done_path.exists():
         print(f"[{arm}] already finished ({done_path.name})"); return
     pipeline, structures = build_pipeline(arm)
+    if GEAR["mode"]:
+        from sidecar_gear import GearPipeline
+        pipeline = GearPipeline(pipeline, mode=GEAR["mode"])
     if COUNCIL["mode"]:
         from sidecar_council import ConveningDevelopmentPipeline
         pipeline = ConveningDevelopmentPipeline(pipeline, structures, mode=COUNCIL["mode"], limit=max_promotions,
                                                 every=promote_every, reify=arm == "whole")
+    if HEAT["mode"]:
+        from sidecar_heat import HeatDevelopmentPipeline
+        pipeline = HeatDevelopmentPipeline(pipeline, mode=HEAT["mode"])
     if INQUIRY["on"]:
         from sidecar_inquiry import InquiringDevelopmentPipeline
         pipeline = InquiringDevelopmentPipeline(pipeline, authority=INQUIRY.get("authority"))
@@ -205,13 +215,32 @@ def run_arm(arm: str, pack_path: Path, expect_path: Path, out_dir: Path, *, seed
             inner = getattr(pipeline, "inner", pipeline)
             if hasattr(inner, "surprise_log"):
                 row["surprise"] = inner.surprise_log[-checkpoint_every:]
+            if any("revision" in f for f in expectations["families"]):
+                from sidecar_heat import score_changing_world
+                heat_log = None; node = pipeline
+                while node is not None:
+                    if type(node).__name__ == "HeatDevelopmentPipeline":
+                        heat_log = node.heat_log; break
+                    node = getattr(node, "__dict__", {}).get("inner")
+                row["changing_world"] = score_changing_world(kernel, expectations, heat_log, lesson)
+                if kernel.fingerprint() != fingerprint:
+                    raise RuntimeError("Changing-world scoring changed canonical state.")
+            if GEAR["mode"]:
+                node = pipeline
+                while type(node).__name__ != "GearPipeline":
+                    node = node.__dict__["inner"]
+                row["gear"] = node.summary(); gear_rows = node.gear_log.rows
+                row["gear_trace"] = gear_rows[-checkpoint_every:]
             if INQUIRY["on"]:
                 row["inquiry"] = pipeline.shadow.summary(kernel, expectations)
             if COUNCIL["mode"]:
-                lags = pipeline.log.lags()
-                row["council"] = {"mode": COUNCIL["mode"], "sittings": pipeline.log.sittings, "promoted": len(lags),
+                council = pipeline
+                while type(council).__name__ != "ConveningDevelopmentPipeline":
+                    council = council.__dict__["inner"]
+                lags = council.log.lags()
+                row["council"] = {"mode": COUNCIL["mode"], "sittings": council.log.sittings, "promoted": len(lags),
                                   "lag_mean": round(sum(lags) / len(lags), 2) if lags else None, "lag_max": max(lags, default=None),
-                                  "refusals": pipeline.log.refusals[-3:]}
+                                  "refusals": council.log.refusals[-3:]}
             if hasattr(pipeline, "reports"):
                 row["rehearsal_beats_committed"] = sum(r.committed for r in pipeline.reports)
             with log_path.open("a", encoding="utf-8") as handle:
@@ -241,6 +270,10 @@ def main() -> None:
     parser.add_argument("--no-accelerate", action="store_true", help="Run without the byte-exact long-life accelerators.")
     parser.add_argument("--council", default=None, choices=("clock", "ready", "steady"),
                         help="sidecar_council: who decides when the Council sits (default: the runner's clock, as before).")
+    parser.add_argument("--gear", default=None, choices=("watch", "drive"),
+                        help="sidecar_gear: temperature vs drifting Tg (watch), or, FORK ONLY, sleep and Council holds driven by it (drive).")
+    parser.add_argument("--heat", default=None, choices=("watch", "revise"),
+                        help="sidecar_heat: local heat read from the bonds (watch), or, FORK ONLY, heat challenges stale folds through M18 + Council (revise).")
     parser.add_argument("--inquiry", action="store_true", help="sidecar_inquiry: open questions watched in shadow (read-only).")
     parser.add_argument("--inquiry-authority", default=None, choices=("sleep",),
                         help="FORK ONLY: stalled cohesion questions direct what sleep rehearses.")
@@ -257,7 +290,7 @@ def main() -> None:
         if not args.pack.exists():
             write(args.lessons, args.life_seed, args.out_dir); print(f"generated {args.pack.name}")
     expect_path = args.pack.with_name(args.pack.stem + ".expectations.json")
-    READER["on"] = args.reader; COUNCIL["mode"] = args.council; INQUIRY["on"] = args.inquiry or bool(args.inquiry_authority); INQUIRY["authority"] = args.inquiry_authority
+    READER["on"] = args.reader; COUNCIL["mode"] = args.council; INQUIRY["on"] = args.inquiry or bool(args.inquiry_authority); INQUIRY["authority"] = args.inquiry_authority; HEAT["mode"] = args.heat; GEAR["mode"] = args.gear
     if args.senses:
         import sidecar_ring as ring
         leave = set(filter(None, args.senses_without.split(",")))

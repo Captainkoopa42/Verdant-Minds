@@ -80,6 +80,9 @@ class ConveningDevelopmentPipeline:
         else:
             go = [c for c in waiting if c in self._seen_last]
         self._seen_last = set(waiting)
+        gear = self.inner
+        if go and self.mode != "clock" and type(gear).__name__ == "GearPipeline" and gear.mode == "drive" and gear.hot:
+            gear.gear_log.holds += 1; go = []             # the gear is hot: change is under way, commit when it settles
         if go:
             self.log.sittings += 1
         for cid in go:

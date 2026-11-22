@@ -1,0 +1,215 @@
+{
+ "schema": "verdant.observer.whole_life.v0",
+ "seed": 9001,
+ "parts": "lean",
+ "lessons": 784,
+ "fingerprint": "2ee7ede711fe90b0aed825740376f9292a25715b099232d5165cf85d538f315e",
+ "organism": {
+  "revision": "verdant_organism_v0",
+  "parts": {
+   "recurrence": true,
+   "bond_clock": true,
+   "surprise": true,
+   "reunion": true,
+   "sleep": true,
+   "horizon_experiences": 76,
+   "council": "ready",
+   "council_limit": 4,
+   "heat": "revise",
+   "question_sleep": true,
+   "gear": "watch",
+   "acceleration": true,
+   "senses": false,
+   "fine_ear": false,
+   "reader": false,
+   "wave_fold": false,
+   "profiles": false,
+   "stance": false
+  },
+  "council": {
+   "sittings": 74,
+   "promoted": 78,
+   "refusals": []
+  },
+  "heat": {
+   "challenges": 85,
+   "refolds": [
+    [
+     200,
+     "structure_694190b41edea5b77d2ad755",
+     "revise"
+    ],
+    [
+     274,
+     "structure_5caea6655ec421ecdea21f2d",
+     "revise"
+    ],
+    [
+     286,
+     "structure_afc510b2e5c4d1eba8669457",
+     "retired_to_existing"
+    ],
+    [
+     416,
+     "structure_49b08c7ca863a64221319338",
+     "unresolved"
+    ],
+    [
+     455,
+     "structure_af836a4482acb6445e7fa8cc",
+     "unresolved"
+    ],
+    [
+     496,
+     "structure_60f9f4d1b584dcdd2e1a522d",
+     "revise"
+    ],
+    [
+     502,
+     "structure_23deb29959b8172ea34cedd8",
+     "retired_to_existing"
+    ],
+    [
+     551,
+     "structure_4aa6e380cba28bdd181241ad",
+     "retired_to_existing"
+    ],
+    [
+     632,
+     "structure_7b5838967619cb44d9d95691",
+     "revise"
+    ],
+    [
+     698,
+     "structure_b9d67b00ab895ffe6b5ae211",
+     "revise"
+    ],
+    [
+     728,
+     "structure_7b2f816983ede3f166481dac",
+     "retired_to_existing"
+    ]
+   ],
+   "refusals": []
+  },
+  "gear": {
+   "experiences": 784,
+   "hot_share": 0.223,
+   "hot_spells": 113,
+   "tg_now": 0.7752,
+   "spread_now": 0.54,
+   "sleeps": 0,
+   "sleep_reasons": {},
+   "sleeps_committed": 0,
+   "council_holds": 0
+  },
+  "questions": {
+   "questions": 218,
+   "open": 10,
+   "stalled_now": 130,
+   "resolved": 78,
+   "ever_stalled": 172,
+   "stalled_then_resolved": 42,
+   "wakes": 174,
+   "named_last_gate_at_stall": 16,
+   "gates_at_open": {
+    "boundary_selectivity": 49,
+    "cross_context_stability": 123,
+    "evidence_diversity": 124,
+    "internal_cohesion": 205,
+    "reconstructability": 51,
+    "recurrence": 218
+   },
+   "gates_still_failing": {
+    "boundary_selectivity": 48,
+    "cross_context_stability": 34,
+    "evidence_diversity": 43,
+    "internal_cohesion": 126,
+    "reconstructability": 47,
+    "recurrence": 126
+   },
+   "substrate_findings": {
+    "dependency_gap": 0,
+    "contradiction": 6,
+    "prediction_failure": 0,
+    "identity_ambiguity": 0,
+    "failed_policy": 0
+   },
+   "substrate_errors": {},
+   "fingerprint_breaks": 0,
+   "sleep_requests": 248
+  },
+  "sleep_beats_committed": 98
+ },
+ "checks": {
+  "T_text": {
+   "kept": "139/148",
+   "promoted": "38/46",
+   "active_wrong": 0,
+   "reversals_revised": "5/5",
+   "controls_revised": 0,
+   "failing_group_promotions": 0,
+   "heat_auc_at_end": 0.86
+  },
+  "V_voices": {
+   "known_named": "24/24",
+   "never_heard_over_half_unknown": "0/12",
+   "unknown_mean": {
+    "known": 0.0,
+    "never_heard": 0.001
+   }
+  },
+  "B_binding": {
+   "bond_together": [
+    0.0,
+    0.0
+   ],
+   "bond_apart": [
+    0.0,
+    0.0
+   ],
+   "unnamed_sound_brings_partner": {
+    "together": "0/2",
+    "apart": "0/2"
+   }
+  },
+  "L_look_back": "0/6",
+  "F_folds": {
+   "g1": {
+    "folded": false,
+    "depth": 0
+   },
+   "g2": {
+    "folded": false,
+    "depth": 0
+   },
+   "g3": {
+    "folded": false,
+    "depth": 0
+   },
+   "twice": {
+    "folded": false,
+    "depth": 0
+   },
+   "one_context": {
+    "folded": false,
+    "depth": 0
+   },
+   "world": {
+    "folded": false
+   }
+  },
+  "S_stance": {},
+  "I_imagination": {
+   "relived": "5/5",
+   "recall_ok": true,
+   "imagined_kinds": [
+    "IMAGINED"
+   ],
+   "simulate_left_mind_unchanged": true
+  },
+  "mind_unchanged_by_checks": true,
+  "lessons": 784
+ },
+ "minutes": 32.8
+}

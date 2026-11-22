@@ -67,6 +67,8 @@ class Parts:
     reunion: bool = True
     sleep: bool = True
     horizon_experiences: int | None = 76
+    sleep_priority: str = "neglected"       # "confirmed" (most-met first) or "neglected" (longest-unreinforced first)
+    horizon_lived: bool = False             # defend a bond for as long as the world kept confirming it (no fixed span)
     # self-direction
     council: str | None = "ready"          # "ready" | "steady" | "clock" | None (caller promotes)
     council_limit: int = 4
@@ -129,6 +131,36 @@ def _install_globals(parts: Parts) -> None:
     _INSTALLED["key"] = key
 
 
+def _sleep_respects_suspicion(beat) -> None:
+    """Sleep does not practise a bond that heat revision currently suspects is no longer true.
+
+    Found by the whole-life gate: with fair sleep turns (longest-neglected first) the departed
+    member of a changed pattern became the longest-neglected memory, so sleep kept refreshing the
+    very bonds revision was gathering evidence against, and a stale merged fold survived. A
+    suspicion exists only while an unbroken run of absences is waiting (a fresh sighting of the
+    member with the rest voids it), so sleep defends the bond again the moment the world does."""
+    heat = beat
+    while type(heat).__name__ != "HeatDevelopmentPipeline":
+        heat = heat.__dict__["inner"]
+    node = heat
+    while node is not None and type(node).__name__ != "RehearsingDevelopmentPipeline":
+        node = node.__dict__.get("inner")
+    rehearsal = node.rehearsal; plain = rehearsal.select
+
+    def select(kernel):
+        suspect = {frozenset(pair) for (_sid, pair, _m), waiting in heat.waiting.items() if waiting}
+        if not suspect:
+            return plain(kernel)
+        out = []
+        for evidence_id, concepts, bonds in plain(kernel):
+            keep = tuple(b for b in bonds if frozenset(kernel.state.plasticity_associations[b].concept_ids) not in suspect)
+            if keep:
+                out.append((evidence_id, tuple(sorted({c for b in keep for c in kernel.state.plasticity_associations[b].concept_ids})), keep))
+        return tuple(out)
+
+    rehearsal.select = select
+
+
 class Organism:
     """A Verdant life: the heartbeat, its self-direction, and its read-only capabilities."""
 
@@ -164,7 +196,9 @@ class Organism:
         if parts.sleep:
             from sidecar_rehearsal import RehearsalConfig, RehearsingDevelopmentPipeline
             beat = RehearsingDevelopmentPipeline(beat, RehearsalConfig(min_real_exposures=1,
-                                                                       horizon_experiences=parts.horizon_experiences))
+                                                                       horizon_experiences=parts.horizon_experiences,
+                                                                       horizon_lived=parts.horizon_lived,
+                                                                       priority=parts.sleep_priority))
         if parts.gear:
             from sidecar_gear import GearPipeline
             beat = GearPipeline(beat, mode=parts.gear)
@@ -175,6 +209,8 @@ class Organism:
         if parts.heat:
             from sidecar_heat import HeatDevelopmentPipeline
             beat = HeatDevelopmentPipeline(beat, mode=parts.heat)
+        if parts.heat == "revise" and parts.sleep:
+            _sleep_respects_suspicion(beat)
         if parts.question_sleep:
             if not parts.sleep:
                 raise ValueError("question_sleep needs sleep")

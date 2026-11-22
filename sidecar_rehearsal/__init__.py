@@ -52,6 +52,12 @@ class RehearsalConfig:
     min_real_exposures: int = 2         # real exposures a bond needs before it may be rehearsed
     refresh_below: float = 0.26         # only bonds weaker than this are refreshed
     horizon_cycles: int = 400           # stop rehearsing what has not really recurred for this long
+    priority: str = "confirmed"         # which fading memories sleep practises first: "confirmed" (most real
+                                        # exposures, then most recent: the original rule) or "neglected" (the one
+                                        # longest without any reinforcement first, so every really-met memory gets a turn)
+    horizon_lived: bool = False         # if set, no fixed horizon: a bond is defended for as long as the world kept
+                                        # confirming it (from its first to its last real exposure, counted in real
+                                        # experiences). Overrides horizon_cycles / horizon_experiences.
     horizon_experiences: int | None = None   # if set, the horizon is counted in real experiences instead of kernel
                                              # cycles, so internal operations (Council sittings, structural
                                              # challenges, refolds) cannot shorten memory. 76 = 400 cycles at the
@@ -61,6 +67,8 @@ class RehearsalConfig:
     relevance: float = 0.90
 
     def __post_init__(self) -> None:
+        if self.priority not in ("confirmed", "neglected"):
+            raise ValueError("priority must be 'confirmed' or 'neglected'")
         if self.every_experiences < 1 or self.max_items < 1 or self.min_real_exposures < 1:
             raise ValueError("Rehearsal needs every_experiences>=1, max_items>=1 and min_real_exposures>=1.")
 
@@ -117,7 +125,7 @@ class VerdantRehearsalPipeline:
         """
         s = kernel.state; cfg = self.config; groups: dict[str, list] = {}
         order = None
-        if cfg.horizon_experiences is not None:
+        if cfg.horizon_experiences is not None or cfg.horizon_lived:
             order = {key: i for i, key in enumerate(s.processed_event_keys)}; now = len(order)
         for bond in s.plasticity_associations.values():
             if bond.strength >= cfg.refresh_below:
@@ -128,12 +136,20 @@ class VerdantRehearsalPipeline:
             if order is None:
                 if s.cycle - cycle > cfg.horizon_cycles:
                     continue
+            elif cfg.horizon_lived:
+                seen = [order[s.evidence[r].event_key] for r in bond.evidence_refs
+                        if r in s.evidence and s.evidence[r].kind == EvidenceKind.OBSERVATION and s.evidence[r].event_key in order]
+                if not seen or now - max(seen) > max(seen) - min(seen):
+                    continue                    # gone longer than it was ever confirmed: the world dropped it
             elif now - order.get(s.evidence[latest].event_key, -10 ** 9) > cfg.horizon_experiences:
                 continue
             groups.setdefault(latest, []).append((count, cycle, bond))
         rows = []
         for evidence_id, items in groups.items():
-            rows.append((-max(i[0] for i in items), -max(i[1] for i in items), evidence_id, items))
+            if cfg.priority == "neglected":
+                rows.append((min(i[2].last_reinforced_cycle for i in items), -max(i[0] for i in items), evidence_id, items))
+            else:
+                rows.append((-max(i[0] for i in items), -max(i[1] for i in items), evidence_id, items))
         rows.sort(key=lambda r: r[:3])
         out = []
         for _, _, evidence_id, items in rows[:cfg.max_items]:

@@ -1,0 +1,203 @@
+{
+ "schema": "verdant.observer.whole_life.v0",
+ "seed": 4242,
+ "parts": "default",
+ "horizon": "lived",
+ "lessons": 784,
+ "fingerprint": "0cea7fd0b498f2a091840f754fc91b3359004ae7386feab40cdc7cde9188582d",
+ "organism": {
+  "revision": "verdant_organism_v0",
+  "parts": {
+   "recurrence": true,
+   "bond_clock": true,
+   "surprise": true,
+   "reunion": true,
+   "sleep": true,
+   "horizon_experiences": 76,
+   "sleep_priority": "neglected",
+   "horizon_lived": true,
+   "council": "ready",
+   "council_limit": 4,
+   "heat": "revise",
+   "question_sleep": true,
+   "gear": "watch",
+   "acceleration": true,
+   "senses": true,
+   "fine_ear": true,
+   "reader": true,
+   "wave_fold": true,
+   "profiles": true,
+   "stance": true
+  },
+  "council": {
+   "sittings": 74,
+   "promoted": 74,
+   "refusals": []
+  },
+  "heat": {
+   "challenges": 57,
+   "refolds": [
+    [
+     240,
+     "structure_a4fd0b4b31785694c568344f",
+     "revise"
+    ],
+    [
+     312,
+     "structure_51de6157c9a88cd9d7638e78",
+     "revise"
+    ],
+    [
+     328,
+     "structure_c8ddc4f1ee27d07a4f941cac",
+     "revise"
+    ],
+    [
+     344,
+     "structure_3082a24545872d27930b5905",
+     "unresolved"
+    ],
+    [
+     515,
+     "structure_07569cd2988577323a5c7f45",
+     "unresolved"
+    ],
+    [
+     560,
+     "structure_eaeb93fd23fdcaeafda8caaf",
+     "revise"
+    ],
+    [
+     655,
+     "structure_972990bf9382e6f96e5eec0e",
+     "revise"
+    ]
+   ],
+   "refusals": []
+  },
+  "gear": {
+   "experiences": 784,
+   "hot_share": 0.267,
+   "hot_spells": 130,
+   "tg_now": 0.4936,
+   "spread_now": 0.3571,
+   "sleeps": 0,
+   "sleep_reasons": {},
+   "sleeps_committed": 0,
+   "council_holds": 0
+  },
+  "questions": {
+   "questions": 143,
+   "open": 2,
+   "stalled_now": 67,
+   "resolved": 74,
+   "ever_stalled": 105,
+   "stalled_then_resolved": 38,
+   "wakes": 181,
+   "named_last_gate_at_stall": 10,
+   "gates_at_open": {
+    "boundary_selectivity": 5,
+    "cross_context_stability": 129,
+    "evidence_diversity": 129,
+    "internal_cohesion": 143,
+    "reconstructability": 4,
+    "recurrence": 143
+   },
+   "gates_still_failing": {
+    "cross_context_stability": 35,
+    "evidence_diversity": 43,
+    "internal_cohesion": 60,
+    "reconstructability": 6,
+    "recurrence": 50
+   },
+   "substrate_findings": {
+    "dependency_gap": 0,
+    "contradiction": 5,
+    "prediction_failure": 0,
+    "identity_ambiguity": 0,
+    "failed_policy": 0
+   },
+   "substrate_errors": {},
+   "fingerprint_breaks": 0,
+   "sleep_requests": 221
+  },
+  "sleep_beats_committed": 84
+ },
+ "checks": {
+  "T_text": {
+   "kept": "123/148",
+   "promoted": "34/46",
+   "active_wrong": 0,
+   "reversals_revised": "5/5",
+   "controls_revised": 0,
+   "failing_group_promotions": 0,
+   "heat_auc_at_end": 0.722
+  },
+  "V_voices": {
+   "known_named": "24/24",
+   "never_heard_over_half_unknown": "12/12",
+   "unknown_mean": {
+    "known": 0.036,
+    "never_heard": 0.721
+   }
+  },
+  "B_binding": {
+   "bond_together": [
+    0.0,
+    0.117
+   ],
+   "bond_apart": [
+    0.0,
+    0.0
+   ],
+   "unnamed_sound_brings_partner": {
+    "together": "0/2",
+    "apart": "0/2"
+   }
+  },
+  "L_look_back": "6/6",
+  "F_folds": {
+   "g1": {
+    "folded": true,
+    "depth": 2
+   },
+   "g2": {
+    "folded": true,
+    "depth": 2
+   },
+   "g3": {
+    "folded": true,
+    "depth": 2
+   },
+   "twice": {
+    "folded": false,
+    "depth": 0
+   },
+   "one_context": {
+    "folded": false,
+    "depth": 0
+   },
+   "world": {
+    "folded": true
+   }
+  },
+  "S_stance": {
+   "affirmed_only": 0.0,
+   "contested": 0.22,
+   "negated_only": 0.0,
+   "reversed_late": 0.283
+  },
+  "I_imagination": {
+   "relived": "5/5",
+   "recall_ok": true,
+   "imagined_kinds": [
+    "IMAGINED"
+   ],
+   "simulate_left_mind_unchanged": true
+  },
+  "mind_unchanged_by_checks": true,
+  "lessons": 784
+ },
+ "minutes": 34.9,
+ "sleep_priority": "neglected"
+}

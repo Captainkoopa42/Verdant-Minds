@@ -153,9 +153,7 @@ class HeatDevelopmentPipeline:
                 continue
             d = drift(kernel, s)
             for m in sorted(absent):
-                conf = round(d.get(m, 0.0), 6)
-                if conf <= 0.0:
-                    continue
+                conf = round(d.get(m, 0.0), 6)   # absence alone starts a suspicion; drift says how strong it is
                 for e in s.internal_edge_snapshots:
                     pair = tuple(sorted(e.concept_ids))
                     if m not in pair or not (set(pair) - {m}) <= here:
@@ -169,9 +167,11 @@ class HeatDevelopmentPipeline:
                     remaining = 1.0
                     for _, c in queue:
                         remaining *= 1.0 - c
-                    if len(queue) >= policy.minimum_challenge_events and 1.0 - remaining >= policy.minimum_combined_confidence:
+                    strong = [(ev, c) for ev, c in queue if c > 0.0]
+                    if len(strong) >= policy.minimum_challenge_events and 1.0 - remaining >= policy.minimum_combined_confidence:
                         # an unbroken run of absences, strong enough for M18: now it becomes canonical evidence
-                        for ev, c in self.waiting.pop((sid, pair, m)):
+                        self.waiting.pop((sid, pair, m))
+                        for ev, c in strong:
                             try:
                                 self.refolding.challenge(kernel, sid, pair, evidence_refs=ev, confidence=c)
                                 self.heat_log.challenges.append((n, sid, m, c)); touched.append(sid)

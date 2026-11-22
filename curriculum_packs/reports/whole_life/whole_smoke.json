@@ -1,0 +1,156 @@
+{
+ "schema": "verdant.observer.whole_life.v0",
+ "seed": 7,
+ "parts": "default",
+ "lessons": 272,
+ "fingerprint": "4285d3b673ffc9c8c658ad9f312c2e45eeddec79020eb8d196c0b57b29706b9d",
+ "organism": {
+  "revision": "verdant_organism_v0",
+  "parts": {
+   "recurrence": true,
+   "bond_clock": true,
+   "surprise": true,
+   "reunion": true,
+   "sleep": true,
+   "horizon_experiences": 76,
+   "council": "ready",
+   "council_limit": 4,
+   "heat": "revise",
+   "question_sleep": true,
+   "gear": "watch",
+   "acceleration": true,
+   "senses": true,
+   "fine_ear": true,
+   "reader": true,
+   "wave_fold": true,
+   "profiles": true,
+   "stance": true
+  },
+  "council": {
+   "sittings": 22,
+   "promoted": 22,
+   "refusals": []
+  },
+  "heat": {
+   "challenges": 0,
+   "refolds": [],
+   "refusals": []
+  },
+  "gear": {
+   "experiences": 272,
+   "hot_share": 0.195,
+   "hot_spells": 39,
+   "tg_now": 0.2206,
+   "spread_now": 0.1935,
+   "sleeps": 0,
+   "sleep_reasons": {},
+   "sleeps_committed": 0,
+   "council_holds": 0
+  },
+  "questions": {
+   "questions": 28,
+   "open": 1,
+   "stalled_now": 5,
+   "resolved": 22,
+   "ever_stalled": 6,
+   "stalled_then_resolved": 1,
+   "wakes": 3,
+   "named_last_gate_at_stall": 0,
+   "gates_at_open": {
+    "cross_context_stability": 28,
+    "evidence_diversity": 28,
+    "internal_cohesion": 28,
+    "reconstructability": 4,
+    "recurrence": 28
+   },
+   "gates_still_failing": {
+    "cross_context_stability": 3,
+    "evidence_diversity": 5,
+    "internal_cohesion": 5,
+    "recurrence": 5
+   },
+   "substrate_findings": {
+    "dependency_gap": 0,
+    "contradiction": 6,
+    "prediction_failure": 0,
+    "identity_ambiguity": 0,
+    "failed_policy": 0
+   },
+   "substrate_errors": {},
+   "fingerprint_breaks": 0,
+   "sleep_requests": 0
+  },
+  "sleep_beats_committed": 34
+ },
+ "checks": {
+  "T_text": {
+   "kept": "6/6",
+   "promoted": "2/2",
+   "active_wrong": 0,
+   "reversals_revised": "0/0",
+   "controls_revised": 0,
+   "failing_group_promotions": 0,
+   "heat_auc_at_end": null
+  },
+  "V_voices": {
+   "known_named": "24/24",
+   "never_heard_over_half_unknown": "12/12",
+   "unknown_mean": {
+    "known": 0.02,
+    "never_heard": 0.675
+   }
+  },
+  "B_binding": {
+   "bond_together": [
+    0.275,
+    0.244
+   ],
+   "bond_apart": [
+    0.0,
+    0.0
+   ],
+   "unnamed_sound_brings_partner": {
+    "together": "2/2",
+    "apart": "0/2"
+   }
+  },
+  "L_look_back": "6/6",
+  "F_folds": {
+   "g1": {
+    "folded": true,
+    "depth": 2
+   },
+   "g2": {
+    "folded": true,
+    "depth": 2
+   },
+   "g3": {
+    "folded": true,
+    "depth": 2
+   },
+   "twice": {
+    "folded": false,
+    "depth": 0
+   },
+   "one_context": {
+    "folded": false,
+    "depth": 0
+   },
+   "world": {
+    "folded": true
+   }
+  },
+  "S_stance": {
+   "affirmed_only": 0.0,
+   "contested": 0.307,
+   "negated_only": 0.0,
+   "reversed_late": 0.328
+  },
+  "I_imagination": {
+   "error": "AttributeError: 'Simulated' object has no attribute 'unchanged'"
+  },
+  "mind_unchanged_by_checks": true,
+  "lessons": 272
+ },
+ "minutes": 2.9
+}

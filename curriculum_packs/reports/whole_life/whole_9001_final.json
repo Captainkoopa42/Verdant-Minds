@@ -1,0 +1,204 @@
+{
+ "schema": "verdant.observer.whole_life.v0",
+ "seed": 9001,
+ "parts": "default",
+ "horizon": "76",
+ "lessons": 784,
+ "fingerprint": "f791b801cd5fabbb36232829d8b81ac33e2156027b336fe4180e47c972bdcad3",
+ "organism": {
+  "revision": "verdant_organism_v0",
+  "parts": {
+   "recurrence": true,
+   "bond_clock": true,
+   "surprise": true,
+   "reunion": true,
+   "sleep": true,
+   "horizon_experiences": 76,
+   "sleep_priority": "neglected",
+   "horizon_lived": false,
+   "council": "ready",
+   "council_limit": 4,
+   "heat": "revise",
+   "question_sleep": true,
+   "gear": "watch",
+   "acceleration": true,
+   "senses": true,
+   "fine_ear": true,
+   "reader": true,
+   "wave_fold": true,
+   "profiles": true,
+   "stance": true
+  },
+  "council": {
+   "sittings": 81,
+   "promoted": 81,
+   "refusals": []
+  },
+  "heat": {
+   "challenges": 57,
+   "refolds": [
+    [
+     174,
+     "structure_694190b41edea5b77d2ad755",
+     "revise"
+    ],
+    [
+     274,
+     "structure_5caea6655ec421ecdea21f2d",
+     "revise"
+    ],
+    [
+     398,
+     "structure_49b08c7ca863a64221319338",
+     "unresolved"
+    ],
+    [
+     485,
+     "structure_af836a4482acb6445e7fa8cc",
+     "unresolved"
+    ],
+    [
+     496,
+     "structure_60f9f4d1b584dcdd2e1a522d",
+     "revise"
+    ],
+    [
+     632,
+     "structure_7b5838967619cb44d9d95691",
+     "revise"
+    ],
+    [
+     698,
+     "structure_b9d67b00ab895ffe6b5ae211",
+     "revise"
+    ]
+   ],
+   "refusals": []
+  },
+  "gear": {
+   "experiences": 784,
+   "hot_share": 0.242,
+   "hot_spells": 123,
+   "tg_now": 0.5117,
+   "spread_now": 0.3476,
+   "sleeps": 0,
+   "sleep_reasons": {},
+   "sleeps_committed": 0,
+   "council_holds": 0
+  },
+  "questions": {
+   "questions": 142,
+   "open": 1,
+   "stalled_now": 60,
+   "resolved": 81,
+   "ever_stalled": 102,
+   "stalled_then_resolved": 42,
+   "wakes": 175,
+   "named_last_gate_at_stall": 21,
+   "gates_at_open": {
+    "boundary_selectivity": 4,
+    "cross_context_stability": 129,
+    "evidence_diversity": 129,
+    "internal_cohesion": 139,
+    "reconstructability": 4,
+    "recurrence": 142
+   },
+   "gates_still_failing": {
+    "boundary_selectivity": 1,
+    "cross_context_stability": 35,
+    "evidence_diversity": 43,
+    "internal_cohesion": 51,
+    "reconstructability": 9,
+    "recurrence": 49
+   },
+   "substrate_findings": {
+    "dependency_gap": 0,
+    "contradiction": 6,
+    "prediction_failure": 0,
+    "identity_ambiguity": 0,
+    "failed_policy": 0
+   },
+   "substrate_errors": {},
+   "fingerprint_breaks": 0,
+   "sleep_requests": 278
+  },
+  "sleep_beats_committed": 98
+ },
+ "checks": {
+  "T_text": {
+   "kept": "144/148",
+   "promoted": "41/46",
+   "active_wrong": 0,
+   "reversals_revised": "5/5",
+   "controls_revised": 0,
+   "failing_group_promotions": 0,
+   "heat_auc_at_end": 0.84
+  },
+  "V_voices": {
+   "known_named": "24/24",
+   "never_heard_over_half_unknown": "12/12",
+   "unknown_mean": {
+    "known": 0.016,
+    "never_heard": 0.76
+   }
+  },
+  "B_binding": {
+   "bond_together": [
+    0.0,
+    0.1
+   ],
+   "bond_apart": [
+    0.0,
+    0.0
+   ],
+   "unnamed_sound_brings_partner": {
+    "together": "0/2",
+    "apart": "0/2"
+   }
+  },
+  "L_look_back": "6/6",
+  "F_folds": {
+   "g1": {
+    "folded": true,
+    "depth": 2
+   },
+   "g2": {
+    "folded": true,
+    "depth": 2
+   },
+   "g3": {
+    "folded": true,
+    "depth": 2
+   },
+   "twice": {
+    "folded": false,
+    "depth": 0
+   },
+   "one_context": {
+    "folded": false,
+    "depth": 0
+   },
+   "world": {
+    "folded": true
+   }
+  },
+  "S_stance": {
+   "affirmed_only": 0.0,
+   "contested": 0.342,
+   "negated_only": 0.0,
+   "reversed_late": 0.319
+  },
+  "I_imagination": {
+   "relived": "5/5",
+   "recall_ok": true,
+   "imagined_kinds": [
+    "IMAGINED"
+   ],
+   "simulate_left_mind_unchanged": true
+  },
+  "mind_unchanged_by_checks": true,
+  "lessons": 784
+ },
+ "minutes": 37.8,
+ "sleep_priority": "neglected"
+}

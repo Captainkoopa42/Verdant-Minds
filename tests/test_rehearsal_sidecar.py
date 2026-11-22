@@ -102,3 +102,17 @@ def test_horizon_in_experiences_counts_real_experiences_only():
     assert all(kernel.state.evidence[e].event_key == last_key for e, _, _ in narrow)
     kernel.state.cycle += 10 ** 6                      # kernel bookkeeping advancing the clock does not shorten it
     assert VerdantRehearsalPipeline(RehearsalConfig(min_real_exposures=1, refresh_below=1.0, horizon_experiences=10 ** 6)).select(kernel) == wide_exps
+
+
+def test_lived_horizon_defends_a_bond_as_long_as_the_world_confirmed_it():
+    kernel = _run(VerdantDevelopmentPipeline(), _lessons())
+    lived = VerdantRehearsalPipeline(RehearsalConfig(min_real_exposures=1, refresh_below=1.0, horizon_lived=True))
+    order = {k: i for i, k in enumerate(kernel.state.processed_event_keys)}; now = len(order)
+    for evidence_id, _concepts, bonds in lived.select(kernel):
+        for aid in bonds:
+            bond = kernel.state.plasticity_associations[aid]
+            seen = [order[kernel.state.evidence[r].event_key] for r in bond.evidence_refs
+                    if r in kernel.state.evidence and kernel.state.evidence[r].kind.value == "observation"]
+            assert now - max(seen) <= max(seen) - min(seen)
+    kernel.state.cycle += 10 ** 6                      # kernel bookkeeping does not shorten it either
+    assert lived.select(kernel) == VerdantRehearsalPipeline(RehearsalConfig(min_real_exposures=1, refresh_below=1.0, horizon_lived=True)).select(kernel)
